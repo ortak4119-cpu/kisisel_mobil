@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "16046442525",
+    "project_id": "nazar-d2761",
+    "storage_bucket": "nazar-d2761.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:16046442525:android:ba82dddc2332e2fa0cdef4",
+        "android_client_info": {
+          "package_name": "com.aedev.kisisel"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJbcpbVEq755zzpu8cGUL2zKVIsht05yM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

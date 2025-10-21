@@ -1,0 +1,419 @@
+import 'package:flutter/material.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:in_app_review/in_app_review.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'dart:io';
+import '../../../core/init/locator.dart';
+import '../../../service/auth/auth_service.dart';
+import '../../../service/settings/settings_service.dart';
+import '../../../models/settings/settings_models.dart';
+import '../../../core/route/app_router.gr.dart';
+import '../../../core/utils/custom_snackbar.dart';
+import '../../../core/utils/color_constant.dart';
+
+class SettingsViewModel extends ChangeNotifier {
+  final IAuthService _authService = locator.get<IAuthService>();
+  final ISettingsService _settingsService = locator.get<ISettingsService>();
+  final InAppReview _inAppReview = InAppReview.instance;
+
+  String _appVersion = '1.0.0';
+  bool _isLoading = false;
+  Settings? _settings;
+
+  String get appVersion => _appVersion;
+  bool get isLoading => _isLoading;
+  Settings? get settings => _settings;
+
+  SettingsViewModel() {
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    await _loadAppVersion();
+    await loadSettings();
+  }
+
+  Future<void> _loadAppVersion() async {
+    try {
+      final packageInfo = await PackageInfo.fromPlatform();
+      _appVersion = packageInfo.version;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error loading app version: $e');
+    }
+  }
+
+  Future<void> loadSettings() async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      final response = await _settingsService.getSettings();
+
+      if (response.isSuccess && response.data != null) {
+        _settings = response.data;
+      }
+    } catch (e) {
+      debugPrint('Error loading settings: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> updateNotificationSettings({
+    bool? notificationsEnabled,
+    bool? taskNotifications,
+    bool? habitNotifications,
+    bool? subscriptionNotifications,
+    bool? noteNotifications,
+    bool? diaryReminders,
+    bool? socialNotifications,
+  }) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      final request = SettingsUpdateRequest(
+        notificationsEnabled: notificationsEnabled,
+        taskNotifications: taskNotifications,
+        habitNotifications: habitNotifications,
+        subscriptionNotifications: subscriptionNotifications,
+        noteNotifications: noteNotifications,
+        diaryReminders: diaryReminders,
+        socialNotifications: socialNotifications,
+      );
+
+      final response = await _settingsService.updateSettings(request);
+
+      if (response.isSuccess && response.data != null) {
+        _settings = response.data;
+      }
+    } catch (e) {
+      debugPrint('Error updating notification settings: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> updateSecuritySettings({
+    bool? requireBiometric,
+    int? autoLockTimeout,
+  }) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      final request = SettingsUpdateRequest(
+        requireBiometric: requireBiometric,
+        autoLockTimeout: autoLockTimeout,
+      );
+
+      final response = await _settingsService.updateSettings(request);
+
+      if (response.isSuccess && response.data != null) {
+        _settings = response.data;
+      }
+    } catch (e) {
+      debugPrint('Error updating security settings: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> updatePreferences({
+    String? firstDayOfWeek,
+    String? dateFormat,
+    String? timeFormat,
+  }) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      final request = SettingsUpdateRequest(
+        firstDayOfWeek: firstDayOfWeek,
+        dateFormat: dateFormat,
+        timeFormat: timeFormat,
+      );
+
+      final response = await _settingsService.updateSettings(request);
+
+      if (response.isSuccess && response.data != null) {
+        _settings = response.data;
+      }
+    } catch (e) {
+      debugPrint('Error updating preferences: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> purchasePremium(BuildContext context) async {
+    CustomSnackBar.showInfo(
+      context,
+      'Premium satın alma özelliği yakında eklenecek',
+    );
+  }
+
+  Future<void> restorePurchases(BuildContext context) async {
+    CustomSnackBar.showInfo(
+      context,
+      'Satın alımları geri yükleme özelliği yakında eklenecek',
+    );
+  }
+
+  Future<void> logout(BuildContext context) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      final response = await _authService.logout();
+
+      if (response.isSuccess) {
+        if (context.mounted) {
+          CustomSnackBar.showSuccess(
+            context,
+            'Başarıyla çıkış yapıldı',
+          );
+          context.router.replaceAll([const SplashRoute()]);
+        }
+      } else {
+        if (context.mounted) {
+          CustomSnackBar.showError(context, response.errorMessage);
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        CustomSnackBar.showError(context, 'Çıkış yapılırken bir hata oluştu');
+      }
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> logoutAllDevices(BuildContext context) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      final response = await _authService.logoutAllDevices();
+
+      if (response.isSuccess) {
+        if (context.mounted) {
+          CustomSnackBar.showSuccess(
+            context,
+            'Tüm cihazlardan çıkış yapıldı',
+          );
+          context.router.replaceAll([const SplashRoute()]);
+        }
+      } else {
+        if (context.mounted) {
+          CustomSnackBar.showError(context, response.errorMessage);
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        CustomSnackBar.showError(
+          context,
+          'Tüm cihazlardan çıkış yapılırken bir hata oluştu',
+        );
+      }
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> openPrivacyPolicy() async {
+    final url = Uri.parse('https://yourapp.com/privacy-policy');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  Future<void> openTermsOfService() async {
+    final url = Uri.parse('https://yourapp.com/terms-of-service');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  Future<void> contactUs() async {
+    final email = Uri(
+      scheme: 'mailto',
+      path: 'support@yourapp.com',
+      query: 'subject=Destek Talebi',
+    );
+
+    if (await canLaunchUrl(email)) {
+      await launchUrl(email);
+    }
+  }
+
+  Future<void> rateApp() async {
+    try {
+      if (await _inAppReview.isAvailable()) {
+        await _inAppReview.requestReview();
+      } else {
+        final appId = Platform.isIOS
+            ? 'your-ios-app-id'
+            : 'com.yourcompany.yourapp';
+        final url = Platform.isIOS
+            ? 'https://apps.apple.com/app/id$appId?action=write-review'
+            : 'https://play.google.com/store/apps/details?id=$appId';
+
+        final uri = Uri.parse(url);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
+      }
+    } catch (e) {
+      debugPrint('Error rating app: $e');
+    }
+  }
+
+  void showLogoutDialog(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          backgroundColor: isDarkMode
+              ? ColorConstant.cardColorDark
+              : ColorConstant.cardColorLight,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          title: Text(
+            'Çıkış Yap',
+            style: TextStyle(
+              color: isDarkMode
+                  ? ColorConstant.textPrimaryDark
+                  : ColorConstant.textPrimaryLight,
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          content: Text(
+            'Çıkış yapmak istediğinizden emin misiniz?',
+            style: TextStyle(
+              color: isDarkMode
+                  ? ColorConstant.textSecondaryDark
+                  : ColorConstant.textSecondaryLight,
+              fontSize: 15,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              style: TextButton.styleFrom(
+                foregroundColor: isDarkMode
+                    ? ColorConstant.textSecondaryDark
+                    : ColorConstant.textSecondaryLight,
+              ),
+              child: const Text(
+                'İptal',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                logout(context);
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: ColorConstant.errorRed,
+              ),
+              child: const Text(
+                'Çıkış Yap',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void showLogoutAllDevicesDialog(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          backgroundColor: isDarkMode
+              ? ColorConstant.cardColorDark
+              : ColorConstant.cardColorLight,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          title: Text(
+            'Tüm Cihazlardan Çıkış Yap',
+            style: TextStyle(
+              color: isDarkMode
+                  ? ColorConstant.textPrimaryDark
+                  : ColorConstant.textPrimaryLight,
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          content: Text(
+            'Tüm cihazlardan çıkış yapmak istediğinizden emin misiniz? Bu işlem sonrası tekrar giriş yapmanız gerekecektir.',
+            style: TextStyle(
+              color: isDarkMode
+                  ? ColorConstant.textSecondaryDark
+                  : ColorConstant.textSecondaryLight,
+              fontSize: 15,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              style: TextButton.styleFrom(
+                foregroundColor: isDarkMode
+                    ? ColorConstant.textSecondaryDark
+                    : ColorConstant.textSecondaryLight,
+              ),
+              child: const Text(
+                'İptal',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                logoutAllDevices(context);
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: ColorConstant.errorRed,
+              ),
+              child: const Text(
+                'Tümünden Çıkış Yap',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
