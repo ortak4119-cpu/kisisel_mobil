@@ -244,7 +244,7 @@ class _TasksHabitsViewState extends State<TasksHabitsView>
                 ],
               ),
             ),
-            floatingActionButton: FloatingActionButton.extended(
+            floatingActionButton: FloatingActionButton(
               onPressed: () {
                 if (_tabController.index == 0) {
                   _showAddHabitDialog(context, viewModel, isDarkMode);
@@ -254,8 +254,9 @@ class _TasksHabitsViewState extends State<TasksHabitsView>
               },
               backgroundColor: Colors.transparent,
               elevation: 0,
-              label: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: Container(
+                width: 56,
+                height: 56,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
@@ -270,7 +271,7 @@ class _TasksHabitsViewState extends State<TasksHabitsView>
                       ColorConstant.accentBlue.withOpacity(0.8),
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(16),
+                  shape: BoxShape.circle,  // Yuvarlak
                   boxShadow: [
                     BoxShadow(
                       color: (_tabController.index == 0
@@ -282,23 +283,10 @@ class _TasksHabitsViewState extends State<TasksHabitsView>
                     ),
                   ],
                 ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.add_rounded,
-                      color: ColorConstant.white,
-                      size: 24,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      _tabController.index == 0 ? 'Yeni Alışkanlık' : 'Yeni Görev',
-                      style: TextStyle(
-                        color: ColorConstant.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
+                child: Icon(
+                  Icons.add_rounded,
+                  color: ColorConstant.white,
+                  size: 28,
                 ),
               ),
             ),
@@ -964,10 +952,10 @@ class _TasksTab extends StatelessWidget {
           );
         },
         child: Container(
-          margin: const EdgeInsets.only(bottom: 12),
+          margin: const EdgeInsets.only(bottom: 8),
           decoration: BoxDecoration(
             color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: isDarkMode
                   ? ColorConstant.borderColorDark
@@ -991,9 +979,9 @@ class _TasksTab extends StatelessWidget {
                   ),
                 );
               },
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(16),
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(12),
                 child: Row(
                   children: [
                     // Animated Checkbox
@@ -1001,8 +989,8 @@ class _TasksTab extends StatelessWidget {
                       onTap: () => viewModel.toggleTaskComplete(task, context),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
-                        width: 28,
-                        height: 28,
+                        width: 24,
+                        height: 24,
                         decoration: BoxDecoration(
                           gradient: task.isCompleted
                               ? LinearGradient(
@@ -1023,7 +1011,7 @@ class _TasksTab extends StatelessWidget {
                                 : ColorConstant.borderColorLight),
                             width: 2,
                           ),
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(6),
                           boxShadow: task.isCompleted
                               ? [
                             BoxShadow(
@@ -1037,13 +1025,13 @@ class _TasksTab extends StatelessWidget {
                         child: task.isCompleted
                             ? Icon(
                           Icons.check_rounded,
-                          size: 18,
+                          size: 16,
                           color: ColorConstant.white,
                         )
                             : null,
                       ),
                     ),
-                    const SizedBox(width: 14),
+                    const SizedBox(width: 12),
 
                     // Content
                     Expanded(
@@ -1056,7 +1044,7 @@ class _TasksTab extends StatelessWidget {
                                 child: Text(
                                   task.title,
                                   style: TextStyle(
-                                    fontSize: 16,
+                                    fontSize: 15,
                                     fontWeight: FontWeight.w600,
                                     color: task.isCompleted
                                         ? (isDarkMode
@@ -1075,25 +1063,29 @@ class _TasksTab extends StatelessWidget {
                           ),
                           if (task.description != null &&
                               task.description!.isNotEmpty) ...[
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 3),
                             Text(
                               task.description!,
-                              maxLines: 2,
+                              maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                fontSize: 13,
+                                fontSize: 12,
                                 color: isDarkMode
                                     ? ColorConstant.textSecondaryDark
                                     : ColorConstant.textSecondaryLight,
                               ),
                             ),
                           ],
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 6),
                           Wrap(
-                            spacing: 8,
-                            runSpacing: 6,
+                            spacing: 6,
+                            runSpacing: 4,
                             children: [
                               _buildFunPriorityBadge(task.priority, isDarkMode),
+                              if (task.isRecurring &&
+                                  task.recurringPattern != null &&
+                                  task.recurringPattern != 'none')
+                                _buildRecurrenceBadge(task.recurringPattern!, isDarkMode),
                               if (task.dueDate != null)
                                 _buildInfoChip(
                                   '📅 ${task.dueDate}',
@@ -1145,7 +1137,7 @@ class _TasksTab extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -1153,18 +1145,18 @@ class _TasksTab extends StatelessWidget {
             color.withOpacity(0.1),
           ],
         ),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(6),
         border: Border.all(color: color.withOpacity(0.4), width: 1.5),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 12)),
-          const SizedBox(width: 4),
+          Text(emoji, style: const TextStyle(fontSize: 11)),
+          const SizedBox(width: 3),
           Text(
             label,
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 10,
               fontWeight: FontWeight.w700,
               color: color,
             ),
@@ -1176,10 +1168,10 @@ class _TasksTab extends StatelessWidget {
 
   Widget _buildInfoChip(String text, Color color, bool isDarkMode) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(6),
         border: Border.all(
           color: color.withOpacity(0.3),
           width: 1,
@@ -1188,7 +1180,7 @@ class _TasksTab extends StatelessWidget {
       child: Text(
         text,
         style: TextStyle(
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: FontWeight.w600,
           color: color,
         ),
@@ -1485,6 +1477,63 @@ class _AddTaskBottomSheet extends StatelessWidget {
                               'Yüksek',
                               '🔥',
                               ColorConstant.errorRed,
+                              isDarkMode,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Recurrence Type
+                        Text(
+                          'Tekrar Sıklığı',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: isDarkMode
+                                ? ColorConstant.textSecondaryDark
+                                : ColorConstant.textSecondaryLight,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            _buildRecurrenceChip(
+                              context,
+                              vm,
+                              'none',
+                              'Tek Seferlik',
+                              '📌',
+                              ColorConstant.accentBlue,
+                              isDarkMode,
+                            ),
+                            const SizedBox(width: 8),
+                            _buildRecurrenceChip(
+                              context,
+                              vm,
+                              'daily',
+                              'Günlük',
+                              '📅',
+                              Colors.blue,
+                              isDarkMode,
+                            ),
+                            const SizedBox(width: 8),
+                            _buildRecurrenceChip(
+                              context,
+                              vm,
+                              'weekly',
+                              'Haftalık',
+                              '🗓️',
+                              Colors.purple,
+                              isDarkMode,
+                            ),
+                            const SizedBox(width: 8),
+                            _buildRecurrenceChip(
+                              context,
+                              vm,
+                              'monthly',
+                              'Aylık',
+                              '📆',
+                              Colors.orange,
                               isDarkMode,
                             ),
                           ],
@@ -2019,4 +2068,118 @@ class _AddHabitBottomSheet extends StatelessWidget {
       ),
     );
   }
+}
+Widget _buildRecurrenceChip(
+    BuildContext context,
+    TasksHabitsViewModel vm,
+    String recurrence,
+    String label,
+    String emoji,
+    Color color,
+    bool isDarkMode,
+    ) {
+  final isSelected = vm.taskRecurrence == recurrence;
+  return Expanded(
+    child: GestureDetector(
+      onTap: () => vm.setTaskRecurrence(recurrence),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+        decoration: BoxDecoration(
+          gradient: isSelected
+              ? LinearGradient(
+            colors: [
+              color.withOpacity(0.2),
+              color.withOpacity(0.1),
+            ],
+          )
+              : null,
+          color: isSelected ? null : Colors.transparent,
+          border: Border.all(
+            color: isSelected
+                ? color
+                : (isDarkMode
+                ? ColorConstant.borderColorDark
+                : ColorConstant.borderColorLight),
+            width: isSelected ? 2 : 1,
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 16)),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: isSelected
+                    ? color
+                    : (isDarkMode
+                    ? ColorConstant.textSecondaryDark
+                    : ColorConstant.textSecondaryLight),
+                fontWeight: FontWeight.w700,
+                fontSize: 10,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+Widget _buildRecurrenceBadge(String recurringPattern, bool isDarkMode) {
+  Color color;
+  String label;
+  String emoji;
+
+  switch (recurringPattern) {
+    case 'daily':
+      color = Colors.blue;
+      label = 'Günlük';
+      emoji = '📅';
+      break;
+    case 'weekly':
+      color = Colors.purple;
+      label = 'Haftalık';
+      emoji = '🗓️';
+      break;
+    case 'monthly':
+      color = Colors.orange;
+      label = 'Aylık';
+      emoji = '📆';
+      break;
+    default:
+      return const SizedBox.shrink();
+  }
+
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        colors: [
+          color.withOpacity(0.2),
+          color.withOpacity(0.1),
+        ],
+      ),
+      borderRadius: BorderRadius.circular(6),
+      border: Border.all(color: color.withOpacity(0.4), width: 1.5),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(emoji, style: const TextStyle(fontSize: 11)),
+        const SizedBox(width: 3),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            color: color,
+          ),
+        ),
+      ],
+    ),
+  );
 }

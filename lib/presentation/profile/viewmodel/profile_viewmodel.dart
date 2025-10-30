@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../core/init/locator.dart';
 import '../../../models/settings/settings_models.dart';
 import '../../../models/social/social_model.dart';
@@ -13,9 +15,16 @@ class ProfileViewModel extends ChangeNotifier {
   final IProfileService _profileService = locator.get<IProfileService>();
   final ISocialService _socialService = locator.get<ISocialService>();
   final IGamificationService _gamificationService = locator.get<IGamificationService>();
+  final ImagePicker _imagePicker = ImagePicker();
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
+
+  bool _isUploadingAvatar = false;
+  bool get isUploadingAvatar => _isUploadingAvatar;
+
+  bool _isUploadingCover = false;
+  bool get isUploadingCover => _isUploadingCover;
 
   // Current User
   User? _currentUser;
@@ -115,6 +124,136 @@ class ProfileViewModel extends ChangeNotifier {
       debugPrint('Error updating profile: $e');
     } finally {
       _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // ==================== IMAGE UPLOAD ====================
+
+  Future<void> updateProfilePicture(BuildContext context, ImageSource source) async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: source,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+
+      if (image == null) return;
+
+      _isUploadingAvatar = true;
+      notifyListeners();
+
+      final file = File(image.path);
+      final response = await _profileService.updateAvatar(file);
+
+      if (response.isSuccess && response.data != null) {
+        // Update current user profile picture
+        if (_currentUser != null) {
+          _currentUser = User(
+            id: _currentUser!.id,
+            email: _currentUser!.email,
+            username: _currentUser!.username,
+            displayName: _currentUser!.displayName,
+            profilePictureUrl: response.data!,
+            coverImageUrl: _currentUser!.coverImageUrl,
+            bio: _currentUser!.bio,
+            preferredLanguage: _currentUser!.preferredLanguage,
+            isGuest: _currentUser!.isGuest,
+            isVerified: _currentUser!.isVerified,
+            subscriptionType: _currentUser!.subscriptionType,
+            subscriptionStatus: _currentUser!.subscriptionStatus,
+            profileVisibility: _currentUser!.profileVisibility,
+            showLevel: _currentUser!.showLevel,
+            showAchievements: _currentUser!.showAchievements,
+            showHabits: _currentUser!.showHabits,
+            level: _currentUser!.level,
+            createdAt: _currentUser!.createdAt,
+          );
+        }
+
+        if (context.mounted) {
+          CustomSnackBar.showSuccess(context, 'Profil fotoğrafı güncellendi! 📸');
+        }
+      } else {
+        if (context.mounted) {
+          CustomSnackBar.showError(
+            context,
+            response.errorMessage ?? 'Fotoğraf yüklenemedi',
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error updating profile picture: $e');
+      if (context.mounted) {
+        CustomSnackBar.showError(context, 'Fotoğraf yüklenirken hata oluştu');
+      }
+    } finally {
+      _isUploadingAvatar = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> updateCoverImage(BuildContext context, ImageSource source) async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: source,
+        maxWidth: 1920,
+        maxHeight: 1080,
+        imageQuality: 85,
+      );
+
+      if (image == null) return;
+
+      _isUploadingCover = true;
+      notifyListeners();
+
+      final file = File(image.path);
+      final response = await _profileService.updateCover(file);
+
+      if (response.isSuccess && response.data != null) {
+        // Update current user cover image
+        if (_currentUser != null) {
+          _currentUser = User(
+            id: _currentUser!.id,
+            email: _currentUser!.email,
+            username: _currentUser!.username,
+            displayName: _currentUser!.displayName,
+            profilePictureUrl: _currentUser!.profilePictureUrl,
+            coverImageUrl: response.data!,
+            bio: _currentUser!.bio,
+            preferredLanguage: _currentUser!.preferredLanguage,
+            isGuest: _currentUser!.isGuest,
+            isVerified: _currentUser!.isVerified,
+            subscriptionType: _currentUser!.subscriptionType,
+            subscriptionStatus: _currentUser!.subscriptionStatus,
+            profileVisibility: _currentUser!.profileVisibility,
+            showLevel: _currentUser!.showLevel,
+            showAchievements: _currentUser!.showAchievements,
+            showHabits: _currentUser!.showHabits,
+            level: _currentUser!.level,
+            createdAt: _currentUser!.createdAt,
+          );
+        }
+
+        if (context.mounted) {
+          CustomSnackBar.showSuccess(context, 'Kapak fotoğrafı güncellendi! 🎨');
+        }
+      } else {
+        if (context.mounted) {
+          CustomSnackBar.showError(
+            context,
+            response.errorMessage ?? 'Fotoğraf yüklenemedi',
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error updating cover image: $e');
+      if (context.mounted) {
+        CustomSnackBar.showError(context, 'Fotoğraf yüklenirken hata oluştu');
+      }
+    } finally {
+      _isUploadingCover = false;
       notifyListeners();
     }
   }

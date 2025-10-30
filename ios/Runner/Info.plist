@@ -14,6 +14,12 @@
 	<string>6.0</string>
 	<key>CFBundleName</key>
 	<string>base</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Profil ve kapak fotoğrafı çekmek için kamera erişimine ihtiyacımız var.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Profil ve kapak fotoğrafı seçmek için fotoğraf galerisine erişim gerekiyor.</string>
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>Fotoğrafları kaydetmek için galeri erişimi gerekiyor.</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

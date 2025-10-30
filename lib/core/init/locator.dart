@@ -1,3 +1,4 @@
+import 'package:base/service/calender/calendar_service.dart';
 import 'package:base/service/social/social_service.dart';
 import 'package:get_it/get_it.dart';
 
@@ -30,6 +31,7 @@ void setupLocator() {
   locator.registerLazySingleton<ITaskService>(() => TaskService());
   locator.registerLazySingleton<INoteService>(() => NoteService());
   locator.registerLazySingleton<IDiaryService>(() => DiaryService());
+  locator.registerLazySingleton<ICalendarService>(() => CalendarService());
 
   // Finance Services
   locator.registerLazySingleton<IBudgetService>(() => BudgetService());

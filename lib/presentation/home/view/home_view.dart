@@ -1,10 +1,10 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:base/presentation/calender/view/calender_view.dart';
 import 'package:base/presentation/finance/view/finance_view.dart';
 import 'package:base/presentation/notes_diary/view/notes_diary_view.dart';
 import 'package:base/presentation/profile/view/profile_view.dart';
 import 'package:base/presentation/tasks_habits/view/tasks_habits_view.dart';
 import 'package:flutter/material.dart';
-import 'package:google_nav_bar/google_nav_bar.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/route/app_router.gr.dart';
 
@@ -23,6 +23,7 @@ class _HomeViewState extends State<HomeView> {
   final List<Widget> _pages = [
     const NotesDiaryView(),
     const TasksHabitsView(),
+    const CalendarView(),
     const FinanceView(),
     const ProfileView(),
   ];
@@ -36,67 +37,122 @@ class _HomeViewState extends State<HomeView> {
           ? ColorConstant.bgColorDark
           : ColorConstant.bgColorLight,
       body: _pages[_selectedIndex],
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: isDarkMode
-              ? ColorConstant.cardColorDark
-              : ColorConstant.white,
-          boxShadow: [
-            BoxShadow(
-              color: isDarkMode
-                  ? ColorConstant.black.withOpacity(0.3)
-                  : ColorConstant.primaryPurple.withOpacity(0.1),
-              blurRadius: 20,
-              offset: const Offset(0, -5),
-            ),
-          ],
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          setState(() {
+            _selectedIndex = 2; // Takvim sayfasına git
+          });
+        },
+        backgroundColor: _selectedIndex == 2
+            ? (isDarkMode
+            ? ColorConstant.primaryDarkModePurple
+            : ColorConstant.primaryPurple)
+            : (isDarkMode
+            ? ColorConstant.primaryDarkModePurple.withOpacity(0.8)
+            : ColorConstant.primaryPurple.withOpacity(0.8)),
+        elevation: 6,
+        child: Icon(
+          Icons.calendar_month_rounded,
+          color: Colors.white,
+          size: _selectedIndex == 2 ? 30 : 28,
         ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: GNav(
-              selectedIndex: _selectedIndex,
-              onTabChange: (index) {
-                setState(() {
-                  _selectedIndex = index;
-                });
-              },
-              gap: 8,
-              activeColor: isDarkMode
-                  ? ColorConstant.white
-                  : ColorConstant.white,
-              iconSize: 24,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              duration: const Duration(milliseconds: 400),
-              tabBackgroundColor: isDarkMode
-                  ? ColorConstant.primaryDarkModePurple
-                  : ColorConstant.primaryPurple,
-              color: isDarkMode
-                  ? ColorConstant.textMutedDark
-                  : ColorConstant.textMutedLight,
-              tabs: const [
-                GButton(
-                  icon: Icons.home_rounded,
-                  text: 'Ana Sayfa',
-                ),
-                GButton(
-                  icon: Icons.task_rounded,
-                  text: 'Görevler',
-                ),
-                GButton(
-                  icon: Icons.attach_money,
-                  text: 'Finans',
-                ),
-                GButton(
-                  icon: Icons.person_rounded,
-                  text: 'Profil',
-                ),
-              ],
-            ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: BottomAppBar(
+        color: isDarkMode
+            ? ColorConstant.cardColorDark
+            : ColorConstant.white,
+        elevation: 8,
+        notchMargin: 8,
+        shape: const CircularNotchedRectangle(),
+        child: SizedBox(
+          height: 60,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildNavItem(
+                icon: Icons.home_rounded,
+                label: 'Ana Sayfa',
+                index: 0,
+                isDarkMode: isDarkMode,
+              ),
+              _buildNavItem(
+                icon: Icons.task_rounded,
+                label: 'Görevler',
+                index: 1,
+                isDarkMode: isDarkMode,
+              ),
+              const SizedBox(width: 40), // Ortadaki FAB için boşluk
+              _buildNavItem(
+                icon: Icons.attach_money,
+                label: 'Finans',
+                index: 3,
+                isDarkMode: isDarkMode,
+              ),
+              _buildNavItem(
+                icon: Icons.person_rounded,
+                label: 'Profil',
+                index: 4,
+                isDarkMode: isDarkMode,
+              ),
+            ],
           ),
         ),
       ),
+    );
+  }
 
+  Widget _buildNavItem({
+    required IconData icon,
+    required String label,
+    required int index,
+    required bool isDarkMode,
+  }) {
+    final isSelected = _selectedIndex == index;
+    return Expanded(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            setState(() {
+              _selectedIndex = index;
+            });
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                color: isSelected
+                    ? (isDarkMode
+                    ? ColorConstant.primaryDarkModePurple
+                    : ColorConstant.primaryPurple)
+                    : (isDarkMode
+                    ? ColorConstant.textMutedDark
+                    : ColorConstant.textMutedLight),
+                size: 24,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: isSelected ? 12 : 11,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  color: isSelected
+                      ? (isDarkMode
+                      ? ColorConstant.primaryDarkModePurple
+                      : ColorConstant.primaryPurple)
+                      : (isDarkMode
+                      ? ColorConstant.textMutedDark
+                      : ColorConstant.textMutedLight),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -261,7 +317,7 @@ class _HomeViewState extends State<HomeView> {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 4),
                     Text(
                       subtitle,
                       style: TextStyle(
@@ -289,11 +345,9 @@ class _HomeViewState extends State<HomeView> {
   }
 }
 
-// ==================== SAYFA WIDGET'LARI ====================
-
-// Dashboard Page
-class DashboardPage extends StatelessWidget {
-  const DashboardPage({super.key});
+// Home Page
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -315,28 +369,6 @@ class DashboardPage extends StatelessWidget {
             fontWeight: FontWeight.w800,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: Icon(
-              Icons.notifications_rounded,
-              color: isDarkMode
-                  ? ColorConstant.textPrimaryDark
-                  : ColorConstant.textPrimaryLight,
-            ),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: Icon(
-              Icons.settings_rounded,
-              color: isDarkMode
-                  ? ColorConstant.textPrimaryDark
-                  : ColorConstant.textPrimaryLight,
-            ),
-            onPressed: () {
-              context.router.push(const SettingsRoute());
-            },
-          ),
-        ],
       ),
       body: Center(
         child: Column(
@@ -345,14 +377,7 @@ class DashboardPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    ColorConstant.primaryPurple.withOpacity(0.2),
-                    ColorConstant.accentBlue.withOpacity(0.2),
-                  ],
-                ),
+                color: ColorConstant.primaryPurple.withOpacity(0.15),
                 shape: BoxShape.circle,
               ),
               child: Icon(

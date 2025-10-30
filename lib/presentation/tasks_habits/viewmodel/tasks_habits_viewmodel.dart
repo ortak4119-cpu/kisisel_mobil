@@ -40,6 +40,8 @@ class TasksHabitsViewModel extends ChangeNotifier {
   int get taskPriority => _taskPriority;
   String _taskType = 'daily';
   String get taskType => _taskType;
+  String _taskRecurrence = 'none';
+  String get taskRecurrence => _taskRecurrence;
 
   void setTaskPriority(int priority) {
     _taskPriority = priority;
@@ -48,6 +50,11 @@ class TasksHabitsViewModel extends ChangeNotifier {
 
   void setTaskType(String type) {
     _taskType = type;
+    notifyListeners();
+  }
+
+  void setTaskRecurrence(String recurrence) {
+    _taskRecurrence = recurrence;
     notifyListeners();
   }
 
@@ -81,6 +88,7 @@ class TasksHabitsViewModel extends ChangeNotifier {
     taskDescriptionController.clear();
     _taskPriority = 1;
     _taskType = 'daily';
+    _taskRecurrence = 'none';
     _editingTaskId = null;
     notifyListeners();
   }
@@ -103,6 +111,7 @@ class TasksHabitsViewModel extends ChangeNotifier {
     taskDescriptionController.text = task.description ?? '';
     _taskPriority = task.priority;
     _taskType = task.taskType;
+    _taskRecurrence = task.recurringPattern ?? 'none';
     notifyListeners();
   }
 
@@ -129,11 +138,11 @@ class TasksHabitsViewModel extends ChangeNotifier {
         taskType: _taskType,
         priority: _taskPriority,
         reminderEnabled: false,
-        isRecurring: false,
+        isRecurring: _taskRecurrence != 'none',
+        recurringPattern: _taskRecurrence != 'none' ? _taskRecurrence : null,
         dueDate: null,
         dueTime: null,
         reminderBeforeMinutes: null,
-        recurringPattern: null,
         estimatedDurationMinutes: null,
         parentTaskId: null,
       );
@@ -299,11 +308,11 @@ class TasksHabitsViewModel extends ChangeNotifier {
         taskType: _taskType,
         priority: _taskPriority,
         reminderEnabled: false,
-        isRecurring: false,
+        isRecurring: _taskRecurrence != 'none',
+        recurringPattern: _taskRecurrence != 'none' ? _taskRecurrence : null,
         dueDate: null,
         dueTime: null,
         reminderBeforeMinutes: null,
-        recurringPattern: null,
         estimatedDurationMinutes: null,
         parentTaskId: null,
       );

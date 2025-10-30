@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../response/service_response.dart';
 
 abstract class BaseApiService {
-  static const String baseUrl = 'http://localhost:8000/api';
+  static const String baseUrl = 'https://goodlifesync.com/api';
   static const Duration timeout = Duration(seconds: 30);
 
   static String? _authToken;

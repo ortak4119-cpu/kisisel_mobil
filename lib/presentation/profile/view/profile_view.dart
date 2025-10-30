@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:auto_route/auto_route.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../core/route/app_router.gr.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/utils/custom_snackbar.dart';
@@ -102,7 +103,7 @@ class _ProfileViewState extends State<ProfileView>
               headerSliverBuilder: (context, innerBoxIsScrolled) {
                 return [
                   SliverAppBar(
-                    expandedHeight: 320,
+                    expandedHeight: 280,
                     floating: false,
                     pinned: true,
                     automaticallyImplyLeading: false,
@@ -239,24 +240,63 @@ class _ProfileViewState extends State<ProfileView>
 
     return Stack(
       children: [
-        // Gradient Cover
-        Container(
-          height: 160,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                ColorConstant.accentBlue,
-                const Color(0xFF667EEA),
-                ColorConstant.primaryPurple,
-              ],
-            ),
+        // Gradient Cover with Edit Button
+        GestureDetector(
+          onTap: () => _showImageSourceDialog(context, viewModel, isCover: true),
+          child: Stack(
+            children: [
+              Container(
+                height: 160,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      ColorConstant.accentBlue,
+                      const Color(0xFF667EEA),
+                      ColorConstant.primaryPurple,
+                    ],
+                  ),
+                ),
+                child: user.coverImageUrl != null
+                    ? Image.network(user.coverImageUrl!, fit: BoxFit.cover)
+                    : null,
+              ),
+              // Cover Edit Button
+              Positioned(
+                top: 100,
+                left: 16,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.6),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: ColorConstant.white.withOpacity(0.3),
+                      width: 2,
+                    ),
+                  ),
+                  child: IconButton(
+                    onPressed: () => _showImageSourceDialog(context, viewModel, isCover: true),
+                    icon: viewModel.isUploadingCover
+                        ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: ColorConstant.white,
+                      ),
+                    )
+                        : Icon(
+                      Icons.photo_camera_rounded,
+                      color: ColorConstant.white,
+                      size: 22,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-          child: user.coverImageUrl != null
-              ? Image.network(user.coverImageUrl!, fit: BoxFit.cover)
-              : null,
         ),
 
         // Decorative circles
@@ -292,51 +332,103 @@ class _ProfileViewState extends State<ProfileView>
           right: 0,
           child: Column(
             children: [
-              // Avatar
-              TweenAnimationBuilder<double>(
-                tween: Tween(begin: 0.0, end: 1.0),
-                duration: const Duration(milliseconds: 600),
-                curve: Curves.elasticOut,
-                builder: (context, value, child) {
-                  return Transform.scale(
-                    scale: value,
+              // Avatar with Edit Button
+              Stack(
+                children: [
+                  TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0.0, end: 1.0),
+                    duration: const Duration(milliseconds: 600),
+                    curve: Curves.elasticOut,
+                    builder: (context, value, child) {
+                      return Transform.scale(
+                        scale: value,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isDarkMode
+                                  ? ColorConstant.bgColorDark
+                                  : ColorConstant.bgColorLight,
+                              width: 5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: ColorConstant.accentBlue.withOpacity(0.3),
+                                blurRadius: 20,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
+                          ),
+                          child: CircleAvatar(
+                            radius: 54,
+                            backgroundColor: ColorConstant.white,
+                            backgroundImage: user.profilePictureUrl != null
+                                ? NetworkImage(user.profilePictureUrl!)
+                                : null,
+                            child: user.profilePictureUrl == null
+                                ? Text(
+                              user.displayName[0].toUpperCase(),
+                              style: TextStyle(
+                                fontSize: 42,
+                                fontWeight: FontWeight.w900,
+                                color: ColorConstant.accentBlue,
+                              ),
+                            )
+                                : null,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  // Avatar Edit Button
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
                     child: Container(
                       decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            ColorConstant.accentBlue,
+                            ColorConstant.primaryPurple,
+                          ],
+                        ),
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: isDarkMode
                               ? ColorConstant.bgColorDark
                               : ColorConstant.bgColorLight,
-                          width: 5,
+                          width: 3,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: ColorConstant.accentBlue.withOpacity(0.3),
-                            blurRadius: 20,
-                            offset: const Offset(0, 8),
+                            color: ColorConstant.accentBlue.withOpacity(0.4),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
                           ),
                         ],
                       ),
-                      child: CircleAvatar(
-                        radius: 54,
-                        backgroundColor: ColorConstant.white,
-                        backgroundImage: user.profilePictureUrl != null
-                            ? NetworkImage(user.profilePictureUrl!)
-                            : null,
-                        child: user.profilePictureUrl == null
-                            ? Text(
-                          user.displayName[0].toUpperCase(),
-                          style: TextStyle(
-                            fontSize: 42,
-                            fontWeight: FontWeight.w900,
-                            color: ColorConstant.accentBlue,
+                      child: IconButton(
+                        onPressed: () => _showImageSourceDialog(context, viewModel, isCover: false),
+                        icon: viewModel.isUploadingAvatar
+                            ? SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: ColorConstant.white,
                           ),
                         )
-                            : null,
+                            : Icon(
+                          Icons.edit_rounded,
+                          color: ColorConstant.white,
+                          size: 18,
+                        ),
+                        padding: const EdgeInsets.all(8),
+                        constraints: const BoxConstraints(),
                       ),
                     ),
-                  );
-                },
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
 
@@ -375,68 +467,148 @@ class _ProfileViewState extends State<ProfileView>
                   ),
                 ],
               ),
-              const SizedBox(height: 6),
-
-              // Username badge
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                decoration: BoxDecoration(
-                  color: isDarkMode
-                      ? ColorConstant.cardColorDark
-                      : ColorConstant.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: ColorConstant.accentBlue.withOpacity(0.3),
-                    width: 1.5,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('👤', style: TextStyle(fontSize: 14)),
-                    const SizedBox(width: 6),
-                    Text(
-                      '@${user.username}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: ColorConstant.accentBlue,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              if (user.bio != null && user.bio!.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 40),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: isDarkMode
-                        ? ColorConstant.cardColorDark.withOpacity(0.5)
-                        : ColorConstant.white.withOpacity(0.9),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    user.bio!,
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 13,
-                      height: 1.4,
-                      color: isDarkMode
-                          ? ColorConstant.textSecondaryDark
-                          : ColorConstant.textSecondaryLight,
-                    ),
-                  ),
-                ),
-              ],
             ],
           ),
         ),
       ],
+    );
+  }
+
+  void _showImageSourceDialog(BuildContext context, ProfileViewModel viewModel, {required bool isCover}) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: isDarkMode
+                      ? ColorConstant.borderColorDark
+                      : ColorConstant.borderColorLight,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  isCover ? '📸 Kapak Fotoğrafı Seç' : '👤 Profil Fotoğrafı Seç',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: isDarkMode
+                        ? ColorConstant.textPrimaryDark
+                        : ColorConstant.textPrimaryLight,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              ListTile(
+                leading: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        ColorConstant.accentBlue,
+                        ColorConstant.primaryPurple,
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(Icons.photo_library_rounded, color: ColorConstant.white),
+                ),
+                title: Text(
+                  'Galeriden Seç',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: isDarkMode
+                        ? ColorConstant.textPrimaryDark
+                        : ColorConstant.textPrimaryLight,
+                  ),
+                ),
+                subtitle: Text(
+                  'Mevcut fotoğraflarından seç',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: isDarkMode
+                        ? ColorConstant.textSecondaryDark
+                        : ColorConstant.textSecondaryLight,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  if (isCover) {
+                    viewModel.updateCoverImage(context, ImageSource.gallery);
+                  } else {
+                    viewModel.updateProfilePicture(context, ImageSource.gallery);
+                  }
+                },
+              ),
+              ListTile(
+                leading: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        ColorConstant.accentYellow,
+                        ColorConstant.accentOrange,
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(Icons.camera_alt_rounded, color: ColorConstant.white),
+                ),
+                title: Text(
+                  'Fotoğraf Çek',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: isDarkMode
+                        ? ColorConstant.textPrimaryDark
+                        : ColorConstant.textPrimaryLight,
+                  ),
+                ),
+                subtitle: Text(
+                  'Yeni bir fotoğraf çek',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: isDarkMode
+                        ? ColorConstant.textSecondaryDark
+                        : ColorConstant.textSecondaryLight,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  if (isCover) {
+                    viewModel.updateCoverImage(context, ImageSource.camera);
+                  } else {
+                    viewModel.updateProfilePicture(context, ImageSource.camera);
+                  }
+                },
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

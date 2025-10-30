@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../core/init/locator.dart';
 import '../../../service/note/note_service.dart';
 import '../../../service/diary/diary_service.dart';
 import '../../../models/note/note_models.dart';
 import '../../../models/diary/diary_models.dart';
 import '../../../core/utils/custom_snackbar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+enum NotesViewMode { grid, list }
 class NotesDiaryViewModel extends ChangeNotifier {
   final INoteService _noteService = locator.get<INoteService>();
   final IDiaryService _diaryService = locator.get<IDiaryService>();
@@ -24,6 +27,8 @@ class NotesDiaryViewModel extends ChangeNotifier {
   // Categories
   List<NoteCategory> _categories = [];
   List<NoteCategory> get categories => _categories;
+  NotesViewMode _notesViewMode = NotesViewMode.grid;
+  NotesViewMode get notesViewMode => _notesViewMode;
 
   // Note Form State
   final TextEditingController noteTitleController = TextEditingController();
@@ -415,6 +420,37 @@ class NotesDiaryViewModel extends ChangeNotifier {
       debugPrint('Toggle pin exception: $e');
     }
   }
+  Future<void> loadViewMode() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedMode = prefs.getString('notes_view_mode');
+      if (savedMode != null) {
+        _notesViewMode = savedMode == 'list' ? NotesViewMode.list : NotesViewMode.grid;
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Error loading view mode: $e');
+    }
+  }
+
+  Future<void> toggleViewMode() async {
+    try {
+      _notesViewMode = _notesViewMode == NotesViewMode.grid
+          ? NotesViewMode.list
+          : NotesViewMode.grid;
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+        'notes_view_mode',
+        _notesViewMode == NotesViewMode.list ? 'list' : 'grid',
+      );
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error toggling view mode: $e');
+    }
+  }
+
 
   Future<void> lockNote(int noteId, String pin, BuildContext context) async {
     try {
@@ -751,7 +787,38 @@ class NotesDiaryViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
+  // ==================== COPY TO CLIPBOARD ====================
 
+// ==================== COPY TO CLIPBOARD ====================
+
+  Future<void> copyNoteToClipboard(Note note, BuildContext context) async {
+    try {
+      // Sadece içeriği kopyala
+      String textToCopy = note.content ?? '';
+
+      if (textToCopy.isEmpty) {
+        if (context.mounted) {
+          CustomSnackBar.showError(context, 'Not içeriği boş');
+        }
+        return;
+      }
+
+      // Clipboard'a kopyala
+      await Clipboard.setData(ClipboardData(text: textToCopy));
+
+      if (context.mounted) {
+        CustomSnackBar.showSuccess(
+          context,
+          'Not içeriği kopyalandı',
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        CustomSnackBar.showError(context, 'Kopyalama başarısız');
+      }
+      debugPrint('Copy to clipboard exception: $e');
+    }
+  }
   Future<void> loadDiaryEntriesByMonth(int month, int year) async {
     try {
       _isLoading = true;
@@ -953,12 +1020,12 @@ class NotesDiaryViewModel extends ChangeNotifier {
   }
 
   // ==================== COMMON ====================
-
   Future<void> refreshAll() async {
     await Future.wait([
       loadNotes(),
       loadDiaryEntries(),
       loadCategories(),
+      loadViewMode(), // Bu satırı ekleyin
     ]);
   }
 }

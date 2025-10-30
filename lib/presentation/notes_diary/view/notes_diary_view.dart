@@ -54,6 +54,21 @@ class _NotesDiaryViewState extends State<NotesDiaryView> {
                                 ),
                               ),
                             ),
+                            if (_isNotesView)
+                              IconButton(
+                                onPressed: () => viewModel.toggleViewMode(),
+                                icon: Icon(
+                                  viewModel.notesViewMode == NotesViewMode.grid
+                                      ? Icons.view_list_rounded
+                                      : Icons.grid_view_rounded,
+                                  color: isDarkMode
+                                      ? ColorConstant.textSecondaryDark
+                                      : ColorConstant.textSecondaryLight,
+                                ),
+                                tooltip: viewModel.notesViewMode == NotesViewMode.grid
+                                    ? 'Liste görünümü'
+                                    : 'Kart görünümü',
+                              ),
                             // Filter/Options button
                             if (_isNotesView)
                               IconButton(
@@ -249,7 +264,7 @@ class _NotesDiaryViewState extends State<NotesDiaryView> {
                 ],
               ),
             ),
-            floatingActionButton: FloatingActionButton.extended(
+            floatingActionButton: FloatingActionButton(
               onPressed: () {
                 if (_isNotesView) {
                   _showAddNoteDialog(context, viewModel, isDarkMode);
@@ -259,8 +274,9 @@ class _NotesDiaryViewState extends State<NotesDiaryView> {
               },
               backgroundColor: Colors.transparent,
               elevation: 0,
-              label: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: Container(
+                width: 56,
+                height: 56,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
@@ -275,7 +291,7 @@ class _NotesDiaryViewState extends State<NotesDiaryView> {
                       const Color(0xFFFF8A5C),
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(16),
+                  shape: BoxShape.circle,  // ← Yuvarlak yapar
                   boxShadow: [
                     BoxShadow(
                       color: (_isNotesView
@@ -287,23 +303,10 @@ class _NotesDiaryViewState extends State<NotesDiaryView> {
                     ),
                   ],
                 ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.add_rounded,
-                      color: ColorConstant.white,
-                      size: 24,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      _isNotesView ? 'Yeni Not' : 'Yeni Giriş',
-                      style: TextStyle(
-                        color: ColorConstant.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
+                child: Icon(
+                  Icons.add_rounded,
+                  color: ColorConstant.white,
+                  size: 28,
                 ),
               ),
             ),
@@ -899,6 +902,7 @@ class _CategoryManagerSheet extends StatelessWidget {
                                     ],
                                   ),
                                 ),
+
                                 PopupMenuItem(
                                   onTap: () {
                                     Future.delayed(
@@ -1665,6 +1669,7 @@ class _DiaryDetailSheet extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         itemBuilder: (context) => [
+
                           PopupMenuItem(
                             onTap: () {
                               Future.delayed(
@@ -1945,6 +1950,8 @@ class _DiaryDetailSheet extends StatelessWidget {
 
 // ==================== NOTLAR İÇERİĞİ ====================
 // ==================== NOTLAR İÇERİĞİ ====================
+// ==================== TAM _NotesContent CLASS'I ====================
+// Bu kodu mevcut _NotesContent class'ınızın yerine koyun
 
 class _NotesContent extends StatelessWidget {
   final NotesDiaryViewModel viewModel;
@@ -1969,20 +1976,9 @@ class _NotesContent extends StatelessWidget {
       onRefresh: () => viewModel.loadNotes(),
       color: const Color(0xFFB794F6),
       child: filteredNotes.isNotEmpty
-          ? GridView.builder(
-        padding: const EdgeInsets.all(20),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.85,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-        ),
-        itemCount: filteredNotes.length,
-        itemBuilder: (context, index) {
-          final note = filteredNotes[index];
-          return _buildNoteCard(context, note, viewModel, isDarkMode);
-        },
-      )
+          ? (viewModel.notesViewMode == NotesViewMode.grid
+          ? _buildGridView(context, filteredNotes, isDarkMode)
+          : _buildListView(context, filteredNotes, isDarkMode))
           : _buildEmptyState(
         icon: Icons.note_add_rounded,
         message: 'Henüz not yok',
@@ -1991,6 +1987,485 @@ class _NotesContent extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildGridView(BuildContext context, List<Note> notes, bool isDarkMode) {
+    return GridView.builder(
+      padding: const EdgeInsets.all(16),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        childAspectRatio: 0.70,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+      ),
+      itemCount: notes.length,
+      itemBuilder: (context, index) {
+        final note = notes[index];
+        return _buildNoteCard(context, note, viewModel, isDarkMode);
+      },
+    );
+  }
+
+  Widget _buildListView(BuildContext context, List<Note> notes, bool isDarkMode) {
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      itemCount: notes.length,
+      itemBuilder: (context, index) {
+        final note = notes[index];
+        return _buildNoteListItem(context, note, viewModel, isDarkMode);
+      },
+    );
+  }
+
+  Widget _buildNoteListItem(
+      BuildContext context,
+      Note note,
+      NotesDiaryViewModel viewModel,
+      bool isDarkMode,
+      ) {
+    final category = note.categoryId != null
+        ? viewModel.categories.firstWhere(
+          (c) => c.id == note.categoryId,
+      orElse: () => NoteCategory(
+        id: 0,
+        name: '',
+        notesCount: 0,
+        orderIndex: 0,
+      ),
+    )
+        : null;
+
+    final noteColor = _getNoteColor(note.color ?? '#B794F6');
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            noteColor.withOpacity(0.12),
+            noteColor.withOpacity(0.04),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: noteColor.withOpacity(0.4),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: noteColor.withOpacity(0.12),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+            spreadRadius: -2,
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+        // Dekoratif background circles
+        Positioned(
+        top: -30,
+        right: -30,
+        child: Container(
+          width: 100,
+          height: 100,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: noteColor.withOpacity(0.06),
+          ),
+        ),
+      ),
+      Positioned(
+        bottom: -20,
+        left: -20,
+        child: Container(
+          width: 60,
+          height: 60,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: noteColor.withOpacity(0.04),
+          ),
+        ),
+      ),
+
+      // Ana içerik
+      Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            if (note.isLocked) {
+              _showUnlockDialog(context, note, viewModel, isDarkMode);
+            } else {
+              _showEditNoteDialog(context, note, viewModel, isDarkMode);
+            }
+          },
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+              // Sol taraf - İkon ve kategori
+              Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    noteColor.withOpacity(0.3),
+                    noteColor.withOpacity(0.12),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: noteColor.withOpacity(0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Stack(
+                children: [
+                  // Dekoratif pattern
+                  Positioned(
+                    top: -5,
+                    right: -5,
+                    child: Container(
+                      width: 25,
+                      height: 25,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: noteColor.withOpacity(0.12),
+                      ),
+                    ),
+                  ),
+                  // Ana ikon
+                  Center(
+                    child: note.isLocked
+                        ? Icon(
+                      Icons.lock_rounded,
+                      color: noteColor.withOpacity(0.9),
+                      size: 26,
+                    )
+                        : (category != null &&
+                        category.icon != null &&
+                        category.icon!.isNotEmpty)
+                        ? Text(
+                      category.icon!,
+                      style: const TextStyle(fontSize: 26),
+                    )
+                        : Icon(
+                      Icons.note_rounded,
+                      color: noteColor.withOpacity(0.9),
+                      size: 26,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 14),
+
+            // Orta - Başlık ve içerik
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Başlık satırı
+                  Row(
+                    children: [
+                      if (note.isPinned)
+                        Container(
+                          margin: const EdgeInsets.only(right: 6),
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: noteColor.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Icon(
+                            Icons.push_pin_rounded,
+                            size: 12,
+                            color: noteColor,
+                          ),
+                        ),
+                      Expanded(
+                        child: Text(
+                          note.title ?? '',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w900,
+                            color: isDarkMode
+                                ? ColorConstant.textPrimaryDark
+                                : ColorConstant.textPrimaryLight,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+
+                  // İçerik
+                  Text(
+                    note.isLocked ? 'Kilitli not' : (note.content ?? ''),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      height: 1.5,
+                      color: isDarkMode
+                          ? ColorConstant.textSecondaryDark
+                          : ColorConstant.textSecondaryLight,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Tarih ve badges
+                  Row(
+                    children: [
+                      Text(
+                        _formatDate(note.updatedAt),
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: isDarkMode
+                              ? ColorConstant.textMutedDark
+                              : ColorConstant.textMutedLight,
+                        ),
+                      ),
+                      if (note.isArchived) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isDarkMode
+                                ? ColorConstant.bgColorDark
+                                : ColorConstant.bgColorLight,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: isDarkMode
+                                  ? ColorConstant.textMutedDark.withOpacity(0.2)
+                                  : ColorConstant.textMutedLight.withOpacity(0.2),
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.archive_rounded,
+                                size: 11,
+                                color: isDarkMode
+                                    ? ColorConstant.textMutedDark
+                                    : ColorConstant.textMutedLight,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Arşiv',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDarkMode
+                                      ? ColorConstant.textMutedDark
+                                      : ColorConstant.textMutedLight,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            // Sağ taraf - Menu button
+            PopupMenuButton(
+              padding: EdgeInsets.zero,
+              icon: Icon(
+                Icons.more_vert_rounded,
+                size: 20,
+                color: isDarkMode
+                    ? ColorConstant.textMutedDark.withOpacity(0.7)
+                    : ColorConstant.textMutedLight.withOpacity(0.7),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  onTap: () {
+                    Future.delayed(
+                      const Duration(milliseconds: 100),
+                          () => viewModel.togglePin(note.id, context),
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      Icon(
+                        note.isPinned
+                            ? Icons.push_pin_outlined
+                            : Icons.push_pin_rounded,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(note.isPinned ? 'Sabitlemeyi Kaldır' : 'Sabitle'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  onTap: () {
+                    Future.delayed(
+                      const Duration(milliseconds: 100),
+                          () => viewModel.copyNoteToClipboard(note, context),
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.content_copy_rounded,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Text('Kopyala'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  onTap: () {
+                    Future.delayed(
+                      const Duration(milliseconds: 100),
+                          () {
+                        if (note.isLocked) {
+                          _showUnlockDialog(
+                              context, note, viewModel, isDarkMode);
+                        } else {
+                          _showLockDialog(
+                              context, note, viewModel, isDarkMode);
+                        }
+                      },
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      Icon(
+                        note.isLocked
+                            ? Icons.lock_open_rounded
+                            : Icons.lock_rounded,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(note.isLocked ? 'Kilidi Kaldır' : 'Kilitle'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  onTap: () {
+                    Future.delayed(
+                      const Duration(milliseconds: 100),
+                          () => viewModel.toggleArchive(note.id, context),
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      Icon(
+                        note.isArchived
+                            ? Icons.unarchive_rounded
+                            : Icons.archive_rounded,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(note.isArchived ? 'Arşivden Çıkar' : 'Arşivle'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  onTap: () {
+                    Future.delayed(
+                      const Duration(milliseconds: 100),
+                          () => _showDeleteNoteDialog(context, note.id, viewModel),
+                    );
+                  },
+                  child: Row(
+                    children: const [
+                      Icon(
+                        Icons.delete_rounded,
+                        size: 20,
+                        color: Colors.red,
+                      ),
+                      SizedBox(width: 12),
+                      Text(
+                        'Sil',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ),
+    ),
+
+    // Lock indicator badge (if locked)
+    if (note.isLocked)
+    Positioned(
+    top: 10,
+    right: 10,
+    child: Container(
+    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+    decoration: BoxDecoration(
+    gradient: LinearGradient(
+    colors: [
+    noteColor,
+    noteColor.withOpacity(0.8),
+    ],
+    ),
+    borderRadius: BorderRadius.circular(6),
+    boxShadow: [
+    BoxShadow(
+    color: noteColor.withOpacity(0.3),
+    blurRadius: 6,
+    offset: const Offset(0, 2),
+    ),
+    ],
+    ),
+    child: Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+    Icon(
+    Icons.lock_rounded,
+    size: 10,
+    color: Colors.white,
+    ),
+    const SizedBox(width: 3),
+    Text(
+    'Kilitli',
+    style: TextStyle(
+    fontSize: 9,
+    fontWeight: FontWeight.w700,
+    color: Colors.white,
+    ),
+    ),
+    ],
+    ),
+    ),
+    ),
+    ],
+    ),
+    );
+  }
+
   Widget _buildNoteCard(
       BuildContext context,
       Note note,
@@ -2029,7 +2504,7 @@ class _NotesContent extends StatelessWidget {
               noteColor.withOpacity(0.08),
             ],
           ),
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: noteColor.withOpacity(0.6),
             width: 2,
@@ -2061,100 +2536,34 @@ class _NotesContent extends StatelessWidget {
 
             // Ana içerik
             Padding(
-              padding: const EdgeInsets.all(18),
+              padding: const EdgeInsets.all(14),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Üst bar: Kategori + Badges + Menu
+                  // Üst bar: Kategori emoji (sol üst) + Menu (sağ üst)
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Kategori badge
+                      // Kategori emoji - sadece emoji
                       if (category != null &&
                           category.icon != null &&
                           category.icon!.isNotEmpty)
-                        Flexible(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 7,
-                            ),
-                            decoration: BoxDecoration(
-                              color: noteColor.withOpacity(0.25),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: noteColor.withOpacity(0.4),
-                                width: 1.5,
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  category.icon!,
-                                  style: const TextStyle(fontSize: 14),
-                                ),
-                                const SizedBox(width: 5),
-                                Flexible(
-                                  child: Text(
-                                    category.name,
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w800,
-                                      color: noteColor,
-                                      letterSpacing: 0.3,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                      // Pin badge
-                      if (note.isPinned) ...[
-                        if (category != null &&
-                            category.icon != null &&
-                            category.icon!.isNotEmpty)
-                          const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.all(7),
-                          decoration: BoxDecoration(
-                            color: ColorConstant.accentYellow.withOpacity(0.25),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: ColorConstant.accentYellow.withOpacity(0.5),
-                              width: 1.5,
-                            ),
-                          ),
-                          child: Icon(
-                            Icons.push_pin_rounded,
-                            size: 14,
-                            color: ColorConstant.accentYellow.withOpacity(0.9),
-                          ),
-                        ),
-                      ],
-
-                      const Spacer(),
+                        Text(
+                          category.icon!,
+                          style: const TextStyle(fontSize: 20),
+                        )
+                      else
+                        const SizedBox(width: 20),
 
                       // Menu button
                       PopupMenuButton(
                         padding: EdgeInsets.zero,
-                        icon: Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: isDarkMode
-                                ? ColorConstant.white.withOpacity(0.1)
-                                : ColorConstant.black.withOpacity(0.05),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.more_horiz_rounded,
-                            size: 18,
-                            color: isDarkMode
-                                ? ColorConstant.textMutedDark
-                                : ColorConstant.textMutedLight,
-                          ),
+                        icon: Icon(
+                          Icons.more_vert_rounded,
+                          size: 18,
+                          color: isDarkMode
+                              ? ColorConstant.textMutedDark.withOpacity(0.6)
+                              : ColorConstant.textMutedLight.withOpacity(0.6),
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -2179,6 +2588,24 @@ class _NotesContent extends StatelessWidget {
                                 Text(note.isPinned
                                     ? 'Sabitlemeyi Kaldır'
                                     : 'Sabitle'),
+                              ],
+                            ),
+                          ),
+                          PopupMenuItem(
+                            onTap: () {
+                              Future.delayed(
+                                const Duration(milliseconds: 100),
+                                    () => viewModel.copyNoteToClipboard(note, context),
+                              );
+                            },
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.content_copy_rounded,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 12),
+                                Text('Kopyala'),
                               ],
                             ),
                           ),
@@ -2269,7 +2696,7 @@ class _NotesContent extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.w900,
                       color: isDarkMode
                           ? ColorConstant.textPrimaryDark
@@ -2278,7 +2705,7 @@ class _NotesContent extends StatelessWidget {
                       letterSpacing: -0.3,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
 
                   // İçerik (blurred if locked)
                   Expanded(
@@ -2314,90 +2741,16 @@ class _NotesContent extends StatelessWidget {
                     )
                         : Text(
                       note.content ?? '',
-                      maxLines: 4,
+                      maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 13,
-                        height: 1.6,
+                        fontSize: 12,
+                        height: 1.5,
                         color: isDarkMode
                             ? ColorConstant.textSecondaryDark
                             : ColorConstant.textSecondaryLight,
                       ),
                     ),
-                  ),
-
-                  // Alt bar: Tarih + Arşiv badge
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      // Tarih
-                      Expanded(
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.access_time_rounded,
-                              size: 12,
-                              color: isDarkMode
-                                  ? ColorConstant.textMutedDark
-                                  : ColorConstant.textMutedLight,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              _formatDate(note.createdAt),
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: isDarkMode
-                                    ? ColorConstant.textMutedDark
-                                    : ColorConstant.textMutedLight,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Arşiv badge
-                      if (note.isArchived)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 5,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                ColorConstant.accentOrange.withOpacity(0.3),
-                                ColorConstant.accentOrange.withOpacity(0.15),
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: ColorConstant.accentOrange.withOpacity(0.5),
-                              width: 1,
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.archive_rounded,
-                                size: 11,
-                                color: ColorConstant.accentOrange,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Arşiv',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w800,
-                                  color: ColorConstant.accentOrange,
-                                  letterSpacing: 0.3,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
                   ),
                 ],
               ),
@@ -2441,7 +2794,6 @@ class _NotesContent extends StatelessWidget {
       ),
     );
   }
-
 
   void _showLockDialog(
       BuildContext context,
@@ -2621,15 +2973,13 @@ class _NotesContent extends StatelessWidget {
             onPressed: () {
               if (pinController.text.length == 4) {
                 final pin = pinController.text;
-                Navigator.pop(context); // Önce dialogu kapat
+                Navigator.pop(context);
 
-                // Unlock işlemini başlat
                 viewModel.unlockNote(
                   note.id,
                   pin,
                   context,
                       () {
-                    // Başarılı olursa edit dialog'unu aç
                     Future.delayed(
                       const Duration(milliseconds: 300),
                           () {
