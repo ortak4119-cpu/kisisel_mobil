@@ -98,15 +98,6 @@ class _FinanceViewState extends State<FinanceView> {
                                   ),
                                 ),
                                 IconButton(
-                                  onPressed: () {},
-                                  icon: Icon(
-                                    Icons.notifications_outlined,
-                                    color: isDarkMode
-                                        ? ColorConstant.textSecondaryDark
-                                        : ColorConstant.textSecondaryLight,
-                                  ),
-                                ),
-                                IconButton(
                                   onPressed: () {
                                     viewModel.budgetAmountController.text =
                                         viewModel.budgetStats?.monthlyBudget
@@ -161,24 +152,39 @@ class _FinanceViewState extends State<FinanceView> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Icon(
-                                  Icons.calendar_month_rounded,
-                                  size: 20,
-                                  color: isDarkMode
-                                      ? ColorConstant.textSecondaryDark
-                                      : ColorConstant.textSecondaryLight,
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.calendar_month_rounded,
+                                      size: 20,
+                                      color: isDarkMode
+                                          ? ColorConstant.textSecondaryDark
+                                          : ColorConstant.textSecondaryLight,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Bu Ay',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w700,
+                                        color: isDarkMode
+                                            ? ColorConstant.textPrimaryDark
+                                            : ColorConstant.textPrimaryLight,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Bu Ay',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w700,
-                                    color: isDarkMode
-                                        ? ColorConstant.textPrimaryDark
-                                        : ColorConstant.textPrimaryLight,
+                                IconButton(
+                                  onPressed: () => _showMonthlyStatisticsDialog(
+                                      context, viewModel, isDarkMode),
+                                  icon: Icon(
+                                    Icons.bar_chart_rounded,
+                                    color: ColorConstant.accentBlue,
+                                    size: 24,
                                   ),
+                                  tooltip: 'Aylık İstatistikler',
                                 ),
                               ],
                             ),
@@ -907,6 +913,7 @@ class _FinanceViewState extends State<FinanceView> {
       bool isDarkMode,
       ) {
     return FloatingActionButton(
+      heroTag: 'finance_fab',
       onPressed: () {
         showModalBottomSheet(
           context: context,
@@ -1140,6 +1147,22 @@ class _FinanceViewState extends State<FinanceView> {
     showDialog(
       context: context,
       builder: (context) => _ExpenseFilterDialog(
+        viewModel: viewModel,
+        isDarkMode: isDarkMode,
+      ),
+    );
+  }
+
+  void _showMonthlyStatisticsDialog(
+      BuildContext context,
+      FinanceViewModel viewModel,
+      bool isDarkMode,
+      ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _MonthlyStatisticsBottomSheet(
         viewModel: viewModel,
         isDarkMode: isDarkMode,
       ),
@@ -1854,6 +1877,433 @@ class _BudgetSettingsBottomSheet extends StatelessWidget {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _MonthlyStatisticsBottomSheet extends StatefulWidget {
+  final FinanceViewModel viewModel;
+  final bool isDarkMode;
+
+  const _MonthlyStatisticsBottomSheet({
+    required this.viewModel,
+    required this.isDarkMode,
+  });
+
+  @override
+  State<_MonthlyStatisticsBottomSheet> createState() =>
+      _MonthlyStatisticsBottomSheetState();
+}
+
+class _MonthlyStatisticsBottomSheetState
+    extends State<_MonthlyStatisticsBottomSheet> {
+  final PageController _pageController = PageController(
+    initialPage: DateTime.now().month - 1,
+  );
+  int _currentPage = DateTime.now().month - 1;
+
+  @override
+  void initState() {
+    super.initState();
+    // Load statistics after the first frame to avoid setState during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.viewModel.loadMonthlyStatistics();
+    });
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider.value(
+      value: widget.viewModel,
+      child: Consumer<FinanceViewModel>(
+        builder: (context, vm, _) {
+          if (vm.isLoadingStatistics) {
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.7,
+              decoration: BoxDecoration(
+                color: widget.isDarkMode
+                    ? ColorConstant.cardColorDark
+                    : ColorConstant.white,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(28),
+                  topRight: Radius.circular(28),
+                ),
+              ),
+              child: Center(
+                child: CircularProgressIndicator(
+                  color: ColorConstant.accentBlue,
+                ),
+              ),
+            );
+          }
+
+          if (vm.monthlyStatistics == null) {
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.7,
+              decoration: BoxDecoration(
+                color: widget.isDarkMode
+                    ? ColorConstant.cardColorDark
+                    : ColorConstant.white,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(28),
+                  topRight: Radius.circular(28),
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  'Veri bulunamadı',
+                  style: TextStyle(
+                    color: widget.isDarkMode
+                        ? ColorConstant.textSecondaryDark
+                        : ColorConstant.textSecondaryLight,
+                  ),
+                ),
+              ),
+            );
+          }
+
+          final monthlyStats =
+              vm.monthlyStatistics!['monthly_statistics'] as List<dynamic>;
+          final totalYearSpending =
+              vm.monthlyStatistics!['total_year_spending'] as num;
+
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.7,
+            decoration: BoxDecoration(
+              color: widget.isDarkMode
+                  ? ColorConstant.cardColorDark
+                  : ColorConstant.white,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(28),
+                topRight: Radius.circular(28),
+              ),
+            ),
+            child: Column(
+              children: [
+                const SizedBox(height: 12),
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: widget.isDarkMode
+                        ? ColorConstant.borderColorDark
+                        : ColorConstant.borderColorLight,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Aylık İstatistikler',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: widget.isDarkMode
+                              ? ColorConstant.textPrimaryDark
+                              : ColorConstant.textPrimaryLight,
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: ColorConstant.accentBlue.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '₺${totalYearSpending.toStringAsFixed(0)}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: ColorConstant.accentBlue,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: PageView.builder(
+                    controller: _pageController,
+                    onPageChanged: (index) {
+                      setState(() {
+                        _currentPage = index;
+                      });
+                    },
+                    itemCount: monthlyStats.length,
+                    itemBuilder: (context, index) {
+                      final monthData = monthlyStats[index];
+                      return _buildMonthPage(monthData);
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                    monthlyStats.length,
+                    (index) => Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      width: _currentPage == index ? 24 : 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: _currentPage == index
+                            ? ColorConstant.accentBlue
+                            : (widget.isDarkMode
+                                ? ColorConstant.borderColorDark
+                                : ColorConstant.borderColorLight),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildMonthPage(Map<String, dynamic> monthData) {
+    final monthName = monthData['month_name'] as String;
+    final total = monthData['total'] as num;
+    final categories = monthData['categories'] as List<dynamic>;
+    final expenseCount = monthData['expense_count'] as int;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  ColorConstant.accentBlue,
+                  const Color(0xFF667EEA),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: ColorConstant.accentBlue.withOpacity(0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  monthName,
+                  style: TextStyle(
+                    color: ColorConstant.white.withOpacity(0.9),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '₺${total.toStringAsFixed(2)}',
+                  style: TextStyle(
+                    color: ColorConstant.white,
+                    fontSize: 36,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: ColorConstant.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Toplam Harcama',
+                        style: TextStyle(
+                          color: ColorConstant.white.withOpacity(0.9),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        '$expenseCount işlem',
+                        style: TextStyle(
+                          color: ColorConstant.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          if (categories.isNotEmpty) ...[
+            Text(
+              'Kategori Dağılımı',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: widget.isDarkMode
+                    ? ColorConstant.textPrimaryDark
+                    : ColorConstant.textPrimaryLight,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ...categories.map((category) {
+              final categoryName = category['category'] as String;
+              final categoryTotal = category['total'] as num;
+              final percentage = category['percentage'] as num;
+              final count = category['count'] as int;
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: widget.isDarkMode
+                      ? ColorConstant.bgColorDark
+                      : ColorConstant.bgColorLight,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: widget.isDarkMode
+                        ? ColorConstant.borderColorDark
+                        : ColorConstant.borderColorLight,
+                    width: 1,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: widget.viewModel
+                                .getCategoryColor(categoryName)
+                                .withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Center(
+                            child: Text(
+                              widget.viewModel.getCategoryEmoji(categoryName),
+                              style: const TextStyle(fontSize: 20),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.viewModel.getCategoryLabel(categoryName),
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: widget.isDarkMode
+                                      ? ColorConstant.textPrimaryDark
+                                      : ColorConstant.textPrimaryLight,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '$count işlem',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: widget.isDarkMode
+                                      ? ColorConstant.textSecondaryDark
+                                      : ColorConstant.textSecondaryLight,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              '₺${categoryTotal.toStringAsFixed(0)}',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: widget.isDarkMode
+                                    ? ColorConstant.textPrimaryDark
+                                    : ColorConstant.textPrimaryLight,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '%${percentage.toStringAsFixed(1)}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: ColorConstant.accentBlue,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: LinearProgressIndicator(
+                        value: percentage / 100,
+                        backgroundColor: widget.isDarkMode
+                            ? ColorConstant.borderColorDark
+                            : ColorConstant.borderColorLight,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          widget.viewModel.getCategoryColor(categoryName),
+                        ),
+                        minHeight: 6,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ] else
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(40),
+                child: Text(
+                  'Bu ayda harcama bulunmuyor',
+                  style: TextStyle(
+                    color: widget.isDarkMode
+                        ? ColorConstant.textSecondaryDark
+                        : ColorConstant.textSecondaryLight,
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

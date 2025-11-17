@@ -16,6 +16,7 @@ import '../../service/diary/diary_service.dart';
 import '../../service/gamification/gamification_service.dart';
 import '../../service/notification/notification_service.dart';
 import '../../service/utility/utility_feedback_service.dart';
+import '../../service/firebase/fcm_service.dart';
 
 final GetIt locator = GetIt.instance;
 
@@ -45,6 +46,9 @@ void setupLocator() {
   // Utility Services
   locator.registerLazySingleton<IUtilityService>(() => UtilityService());
   locator.registerLazySingleton<IFeedbackService>(() => FeedbackService());
+
+  // Firebase Services
+  locator.registerLazySingleton<FCMService>(() => FCMService());
 }
 
 // Helper getters for easy access (optional)
@@ -63,3 +67,4 @@ IGamificationService get gamificationService => locator<IGamificationService>();
 INotificationService get notificationService => locator<INotificationService>();
 IUtilityService get utilityService => locator<IUtilityService>();
 IFeedbackService get feedbackService => locator<IFeedbackService>();
+FCMService get fcmService => locator<FCMService>();

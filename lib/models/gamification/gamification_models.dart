@@ -137,7 +137,7 @@ class Achievement {
       requirementType: json['requirement_type'] as String,
       requirementValue: json['requirement_value'] as int,
       isCompleted: json['is_completed'] as bool? ?? false,
-      currentProgress: json['current_progress'] as int? ?? 0,
+      currentProgress: (json['current_progress'] as num?)?.toInt() ?? 0,
       progressPercentage: (json['progress_percentage'] as num?)?.toDouble() ?? 0.0,
       unlockedAt: json['unlocked_at'] != null
           ? DateTime.parse(json['unlocked_at'] as String)

@@ -64,6 +64,12 @@ class TasksHabitsViewModel extends ChangeNotifier {
   String get taskType => _taskType;
   String _taskRecurrence = 'none';
   String get taskRecurrence => _taskRecurrence;
+  bool _reminderEnabled = false;
+  bool get reminderEnabled => _reminderEnabled;
+  int _reminderBeforeMinutes = 30;
+  int get reminderBeforeMinutes => _reminderBeforeMinutes;
+  TimeOfDay? _reminderTime;
+  TimeOfDay? get reminderTime => _reminderTime;
 
   void setTaskPriority(int priority) {
     _taskPriority = priority;
@@ -77,6 +83,21 @@ class TasksHabitsViewModel extends ChangeNotifier {
 
   void setTaskRecurrence(String recurrence) {
     _taskRecurrence = recurrence;
+    notifyListeners();
+  }
+
+  void setReminderEnabled(bool enabled) {
+    _reminderEnabled = enabled;
+    notifyListeners();
+  }
+
+  void setReminderBeforeMinutes(int minutes) {
+    _reminderBeforeMinutes = minutes;
+    notifyListeners();
+  }
+
+  void setReminderTime(TimeOfDay? time) {
+    _reminderTime = time;
     notifyListeners();
   }
 
@@ -111,6 +132,9 @@ class TasksHabitsViewModel extends ChangeNotifier {
     _taskPriority = 1;
     _taskType = 'daily';
     _taskRecurrence = 'none';
+    _reminderEnabled = false;
+    _reminderBeforeMinutes = 30;
+    _reminderTime = null;
     _editingTaskId = null;
     notifyListeners();
   }
@@ -134,6 +158,26 @@ class TasksHabitsViewModel extends ChangeNotifier {
     _taskPriority = task.priority;
     _taskType = task.taskType;
     _taskRecurrence = task.recurringPattern ?? 'none';
+    _reminderEnabled = task.reminderEnabled ?? false;
+    _reminderBeforeMinutes = task.reminderBeforeMinutes ?? 30;
+
+    // Parse reminder_time if exists (format: "HH:mm:ss" or "HH:mm")
+    if (task.reminderTime != null) {
+      try {
+        final parts = task.reminderTime!.split(':');
+        if (parts.length >= 2) {
+          _reminderTime = TimeOfDay(
+            hour: int.parse(parts[0]),
+            minute: int.parse(parts[1]),
+          );
+        }
+      } catch (e) {
+        _reminderTime = null;
+      }
+    } else {
+      _reminderTime = null;
+    }
+
     notifyListeners();
   }
 
@@ -152,6 +196,14 @@ class TasksHabitsViewModel extends ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
+      // Convert TimeOfDay to HH:mm format
+      String? reminderTimeString;
+      if (_reminderEnabled && _reminderTime != null) {
+        final hour = _reminderTime!.hour.toString().padLeft(2, '0');
+        final minute = _reminderTime!.minute.toString().padLeft(2, '0');
+        reminderTimeString = '$hour:$minute';
+      }
+
       final request = TaskRequest(
         title: taskTitleController.text.trim(),
         description: taskDescriptionController.text.trim().isEmpty
@@ -159,12 +211,13 @@ class TasksHabitsViewModel extends ChangeNotifier {
             : taskDescriptionController.text.trim(),
         taskType: _taskType,
         priority: _taskPriority,
-        reminderEnabled: false,
+        reminderEnabled: _reminderEnabled,
         isRecurring: _taskRecurrence != 'none',
         recurringPattern: _taskRecurrence != 'none' ? _taskRecurrence : null,
         dueDate: null,
         dueTime: null,
-        reminderBeforeMinutes: null,
+        reminderBeforeMinutes: _reminderEnabled && _reminderTime == null ? _reminderBeforeMinutes : null,
+        reminderTime: reminderTimeString,
         estimatedDurationMinutes: null,
         parentTaskId: null,
       );
@@ -322,6 +375,14 @@ class TasksHabitsViewModel extends ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
+      // Convert TimeOfDay to HH:mm format
+      String? reminderTimeString;
+      if (_reminderEnabled && _reminderTime != null) {
+        final hour = _reminderTime!.hour.toString().padLeft(2, '0');
+        final minute = _reminderTime!.minute.toString().padLeft(2, '0');
+        reminderTimeString = '$hour:$minute';
+      }
+
       final request = TaskRequest(
         title: taskTitleController.text.trim(),
         description: taskDescriptionController.text.trim().isEmpty
@@ -329,12 +390,13 @@ class TasksHabitsViewModel extends ChangeNotifier {
             : taskDescriptionController.text.trim(),
         taskType: _taskType,
         priority: _taskPriority,
-        reminderEnabled: false,
+        reminderEnabled: _reminderEnabled,
         isRecurring: _taskRecurrence != 'none',
         recurringPattern: _taskRecurrence != 'none' ? _taskRecurrence : null,
         dueDate: null,
         dueTime: null,
-        reminderBeforeMinutes: null,
+        reminderBeforeMinutes: _reminderEnabled && _reminderTime == null ? _reminderBeforeMinutes : null,
+        reminderTime: reminderTimeString,
         estimatedDurationMinutes: null,
         parentTaskId: null,
       );
@@ -373,7 +435,15 @@ class TasksHabitsViewModel extends ChangeNotifier {
       if (task.isCompleted) {
         final response = await _taskService.markIncomplete(task.id);
         if (response.isSuccess) {
-          await loadTasks();
+          // Update only this task in the list
+          final index = _tasks.indexWhere((t) => t.id == task.id);
+          if (index != -1) {
+            _tasks[index] = _tasks[index].copyWith(
+              isCompleted: false,
+              completedAt: null,
+            );
+            notifyListeners();
+          }
           if (context.mounted) {
             CustomSnackBar.showInfo(context, 'Görev tamamlanmadı olarak işaretlendi');
           }
@@ -381,7 +451,15 @@ class TasksHabitsViewModel extends ChangeNotifier {
       } else {
         final response = await _taskService.markComplete(task.id);
         if (response.isSuccess) {
-          await loadTasks();
+          // Update only this task in the list
+          final index = _tasks.indexWhere((t) => t.id == task.id);
+          if (index != -1) {
+            _tasks[index] = _tasks[index].copyWith(
+              isCompleted: true,
+              completedAt: DateTime.now(),
+            );
+            notifyListeners();
+          }
           if (context.mounted) {
             CustomSnackBar.showSuccess(context, 'Görev tamamlandı! 🎉');
           }

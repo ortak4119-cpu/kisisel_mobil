@@ -301,6 +301,7 @@ class _NotesDiaryViewState extends State<NotesDiaryView> {
               ),
             ),
             floatingActionButton: FloatingActionButton(
+              heroTag: 'notes_diary_fab',
               onPressed: () {
                 if (_isNotesView) {
                   _showAddNoteDialog(context, viewModel, isDarkMode);

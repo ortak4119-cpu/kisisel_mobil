@@ -39,6 +39,7 @@ class _HomeViewState extends State<HomeView> {
           : ColorConstant.bgColorLight,
       body: _pages[_selectedIndex],
       floatingActionButton: FloatingActionButton(
+        heroTag: 'home_fab',
         onPressed: () {
           setState(() {
             _selectedIndex = 2; // Takvim sayfasına git

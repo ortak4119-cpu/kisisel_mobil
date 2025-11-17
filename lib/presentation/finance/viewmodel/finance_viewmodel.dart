@@ -31,6 +31,12 @@ class FinanceViewModel extends ChangeNotifier {
   List<Expense> _expenses = [];
   List<Expense> get expenses => _expenses;
 
+  // Monthly Statistics
+  Map<String, dynamic>? _monthlyStatistics;
+  Map<String, dynamic>? get monthlyStatistics => _monthlyStatistics;
+  bool _isLoadingStatistics = false;
+  bool get isLoadingStatistics => _isLoadingStatistics;
+
   // Subscription Form State
   final TextEditingController subscriptionNameController = TextEditingController();
   final TextEditingController subscriptionAmountController = TextEditingController();
@@ -530,6 +536,49 @@ class FinanceViewModel extends ChangeNotifier {
         return const Color(0xFF7EC8F5);
       default:
         return const Color(0xFF7EC8F5);
+    }
+  }
+
+  // ==================== MONTHLY STATISTICS ====================
+
+  Future<void> loadMonthlyStatistics({int? year}) async {
+    final requestYear = year ?? DateTime.now().year;
+    debugPrint('📊 [Finance] Loading monthly statistics for year: $requestYear');
+
+    try {
+      _isLoadingStatistics = true;
+      notifyListeners();
+
+      debugPrint('📡 [Finance] Sending request to backend...');
+      final response = await _expenseService.getMonthlyStatistics(
+        year: requestYear,
+      );
+
+      debugPrint('📥 [Finance] Response received - Success: ${response.isSuccess}');
+
+      if (response.isSuccess && response.data != null) {
+        _monthlyStatistics = response.data!;
+        debugPrint('✅ [Finance] Monthly statistics loaded successfully');
+        debugPrint('📈 [Finance] Data: ${response.data}');
+
+        // Monthly statistics array'ini de logla
+        if (response.data!['monthly_statistics'] != null) {
+          final monthlyStats = response.data!['monthly_statistics'] as List;
+          debugPrint('📊 [Finance] Total months: ${monthlyStats.length}');
+          debugPrint('💰 [Finance] Year total: ${response.data!['total_year_spending']}');
+        }
+      } else {
+        debugPrint('❌ [Finance] Failed to load statistics');
+        debugPrint('❌ [Finance] Error message: ${response.message}');
+        debugPrint('❌ [Finance] Status code: ${response.statusCode}');
+      }
+    } catch (e, stackTrace) {
+      debugPrint('❌ [Finance] Exception loading monthly statistics: $e');
+      debugPrint('❌ [Finance] Stack trace: $stackTrace');
+    } finally {
+      _isLoadingStatistics = false;
+      notifyListeners();
+      debugPrint('🏁 [Finance] Loading completed');
     }
   }
 

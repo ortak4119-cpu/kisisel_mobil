@@ -285,6 +285,7 @@ class _TasksHabitsViewState extends State<TasksHabitsView>
               ),
             ),
             floatingActionButton: FloatingActionButton(
+              heroTag: 'tasks_habits_fab',
               onPressed: () {
                 if (_tabController.index == 0) {
                   _showAddHabitDialog(context, viewModel, isDarkMode);
@@ -1744,6 +1745,156 @@ class _AddTaskBottomSheet extends StatelessWidget {
                             ),
                           ],
                         ),
+                        const SizedBox(height: 20),
+
+                        // Reminder Section
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: isDarkMode
+                                ? ColorConstant.bgColorDark
+                                : ColorConstant.bgColorLight,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: vm.reminderEnabled
+                                  ? ColorConstant.accentBlue
+                                  : (isDarkMode
+                                      ? ColorConstant.borderColorDark
+                                      : ColorConstant.borderColorLight),
+                              width: vm.reminderEnabled ? 2 : 1,
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.notifications_active_rounded,
+                                    color: vm.reminderEnabled
+                                        ? ColorConstant.accentBlue
+                                        : (isDarkMode
+                                            ? ColorConstant.textSecondaryDark
+                                            : ColorConstant.textSecondaryLight),
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'Hatırlatıcı',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: vm.reminderEnabled
+                                            ? ColorConstant.accentBlue
+                                            : (isDarkMode
+                                                ? ColorConstant.textSecondaryDark
+                                                : ColorConstant.textSecondaryLight),
+                                      ),
+                                    ),
+                                  ),
+                                  Switch(
+                                    value: vm.reminderEnabled,
+                                    onChanged: (value) => vm.setReminderEnabled(value),
+                                    activeColor: ColorConstant.accentBlue,
+                                  ),
+                                ],
+                              ),
+                              if (vm.reminderEnabled) ...[
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Hatırlatma Zamanı',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: isDarkMode
+                                        ? ColorConstant.textSecondaryDark
+                                        : ColorConstant.textSecondaryLight,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                GestureDetector(
+                                  onTap: () async {
+                                    final TimeOfDay? pickedTime = await showTimePicker(
+                                      context: context,
+                                      initialTime: vm.reminderTime ?? TimeOfDay.now(),
+                                      builder: (context, child) {
+                                        return Theme(
+                                          data: Theme.of(context).copyWith(
+                                            colorScheme: ColorScheme.light(
+                                              primary: ColorConstant.accentBlue,
+                                            ),
+                                          ),
+                                          child: child!,
+                                        );
+                                      },
+                                    );
+                                    if (pickedTime != null) {
+                                      vm.setReminderTime(pickedTime);
+                                    }
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: isDarkMode
+                                          ? ColorConstant.borderColorDark
+                                          : ColorConstant.borderColorLight,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: vm.reminderTime != null
+                                            ? ColorConstant.accentBlue
+                                            : (isDarkMode
+                                                ? ColorConstant.borderColorDark
+                                                : ColorConstant.borderColorLight),
+                                        width: vm.reminderTime != null ? 2 : 1,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.access_time_rounded,
+                                          color: vm.reminderTime != null
+                                              ? ColorConstant.accentBlue
+                                              : (isDarkMode
+                                                  ? ColorConstant.textSecondaryDark
+                                                  : ColorConstant.textSecondaryLight),
+                                          size: 20,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Text(
+                                            vm.reminderTime != null
+                                                ? '${vm.reminderTime!.hour.toString().padLeft(2, '0')}:${vm.reminderTime!.minute.toString().padLeft(2, '0')}'
+                                                : 'Saat seçin (örn: 10:00)',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                              color: vm.reminderTime != null
+                                                  ? ColorConstant.accentBlue
+                                                  : (isDarkMode
+                                                      ? ColorConstant.textSecondaryDark
+                                                      : ColorConstant.textSecondaryLight),
+                                            ),
+                                          ),
+                                        ),
+                                        if (vm.reminderTime != null)
+                                          IconButton(
+                                            onPressed: () => vm.setReminderTime(null),
+                                            icon: Icon(
+                                              Icons.close_rounded,
+                                              color: ColorConstant.textSecondaryDark,
+                                              size: 18,
+                                            ),
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
                         const SizedBox(height: 24),
 
                         // Buttons
@@ -2389,3 +2540,4 @@ Widget _buildRecurrenceBadge(String recurringPattern, bool isDarkMode) {
     ),
   );
 }
+

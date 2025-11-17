@@ -10,6 +10,7 @@ class Task {
   final DateTime? completedAt;
   final bool reminderEnabled;
   final int? reminderBeforeMinutes;
+  final String? reminderTime;
   final int priority;
   final bool isRecurring;
   final String? recurringPattern;
@@ -30,6 +31,7 @@ class Task {
     this.completedAt,
     required this.reminderEnabled,
     this.reminderBeforeMinutes,
+    this.reminderTime,
     required this.priority,
     required this.isRecurring,
     this.recurringPattern,
@@ -54,6 +56,7 @@ class Task {
           : null,
       reminderEnabled: json['reminder_enabled'] == true || json['reminder_enabled'] == 1, // ← Null-safe
       reminderBeforeMinutes: json['reminder_before_minutes'] as int?,
+      reminderTime: json['reminder_time'] as String?,
       priority: json['priority'] as int? ?? 1, // ← Default değer
       isRecurring: json['is_recurring'] == true || json['is_recurring'] == 1, // ← Null-safe
       recurringPattern: json['recurring_pattern'] as String?,
@@ -77,6 +80,7 @@ class Task {
       'completed_at': completedAt?.toIso8601String(),
       'reminder_enabled': reminderEnabled,
       'reminder_before_minutes': reminderBeforeMinutes,
+      'reminder_time': reminderTime,
       'priority': priority,
       'is_recurring': isRecurring,
       'recurring_pattern': recurringPattern,
@@ -100,6 +104,50 @@ class Task {
         return 'Medium';
     }
   }
+
+  Task copyWith({
+    int? id,
+    String? title,
+    String? description,
+    String? taskType,
+    String? dueDate,
+    String? dueTime,
+    bool? isCompleted,
+    DateTime? completedAt,
+    bool? reminderEnabled,
+    int? reminderBeforeMinutes,
+    String? reminderTime,
+    int? priority,
+    bool? isRecurring,
+    String? recurringPattern,
+    int? estimatedDurationMinutes,
+    int? actualDurationMinutes,
+    bool? isOverdue,
+    int? parentTaskId,
+    DateTime? createdAt,
+  }) {
+    return Task(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      taskType: taskType ?? this.taskType,
+      dueDate: dueDate ?? this.dueDate,
+      dueTime: dueTime ?? this.dueTime,
+      isCompleted: isCompleted ?? this.isCompleted,
+      completedAt: completedAt ?? this.completedAt,
+      reminderEnabled: reminderEnabled ?? this.reminderEnabled,
+      reminderBeforeMinutes: reminderBeforeMinutes ?? this.reminderBeforeMinutes,
+      reminderTime: reminderTime ?? this.reminderTime,
+      priority: priority ?? this.priority,
+      isRecurring: isRecurring ?? this.isRecurring,
+      recurringPattern: recurringPattern ?? this.recurringPattern,
+      estimatedDurationMinutes: estimatedDurationMinutes ?? this.estimatedDurationMinutes,
+      actualDurationMinutes: actualDurationMinutes ?? this.actualDurationMinutes,
+      isOverdue: isOverdue ?? this.isOverdue,
+      parentTaskId: parentTaskId ?? this.parentTaskId,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
 }
 
 // Task Request
@@ -111,6 +159,7 @@ class TaskRequest {
   final String? dueTime;
   final bool reminderEnabled;
   final int? reminderBeforeMinutes;
+  final String? reminderTime;
   final int priority;
   final bool isRecurring;
   final String? recurringPattern;
@@ -125,6 +174,7 @@ class TaskRequest {
     this.dueTime,
     required this.reminderEnabled,
     this.reminderBeforeMinutes,
+    this.reminderTime,
     required this.priority,
     required this.isRecurring,
     this.recurringPattern,
@@ -141,6 +191,7 @@ class TaskRequest {
       'due_time': dueTime,
       'reminder_enabled': reminderEnabled,
       'reminder_before_minutes': reminderBeforeMinutes,
+      'reminder_time': reminderTime,
       'priority': priority,
       'is_recurring': isRecurring,
       'recurring_pattern': recurringPattern,

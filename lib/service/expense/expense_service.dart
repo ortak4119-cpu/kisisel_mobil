@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import '../../models/budget/buget_models.dart';
 import '../base/base_api_service.dart';
 import '../response/service_response.dart';
@@ -20,6 +21,7 @@ abstract class IExpenseService {
     int? year,
   });
   Future<ServiceResponse<Map<String, dynamic>>> getMonthlyExpenses({int? year});
+  Future<ServiceResponse<Map<String, dynamic>>> getMonthlyStatistics({int? year});
 }
 
 class ExpenseService implements IExpenseService {
@@ -136,5 +138,31 @@ class ExpenseService implements IExpenseService {
       queryParameters: queryParams,
       requiresAuth: true,
     );
+  }
+
+  @override
+  Future<ServiceResponse<Map<String, dynamic>>> getMonthlyStatistics({
+    int? year,
+  }) async {
+    final queryParams = <String, dynamic>{};
+    if (year != null) queryParams['year'] = year;
+
+    debugPrint('🌐 [ExpenseService] GET /expenses/monthly-statistics');
+    debugPrint('🌐 [ExpenseService] Query params: $queryParams');
+
+    final response = await BaseApiService.get<Map<String, dynamic>>(
+      '/expenses/monthly-statistics',
+      queryParameters: queryParams,
+      requiresAuth: true,
+    );
+
+    debugPrint('🌐 [ExpenseService] Response status: ${response.statusCode}');
+    debugPrint('🌐 [ExpenseService] Response success: ${response.isSuccess}');
+    if (!response.isSuccess) {
+      debugPrint('🌐 [ExpenseService] Error: ${response.message}');
+      debugPrint('🌐 [ExpenseService] Errors: ${response.errors}');
+    }
+
+    return response;
   }
 }

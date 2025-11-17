@@ -56,6 +56,7 @@ class _CalendarViewState extends State<CalendarView> {
               ),
             ),
             floatingActionButton: FloatingActionButton(
+              heroTag: 'calendar_fab',
               onPressed: () => _showAddEventDialog(context, viewModel, isDarkMode),
               backgroundColor: const Color(0xFFB794F6),
               child: const Icon(Icons.add, color: Colors.white),

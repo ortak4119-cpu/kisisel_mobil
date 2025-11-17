@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import '../../models/gamification/gamification_models.dart';
 import '../base/base_api_service.dart';
 import '../response/service_response.dart';
@@ -79,29 +80,63 @@ class GamificationService implements IGamificationService {
     if (rarity != null) queryParams['rarity'] = rarity;
     if (completed != null) queryParams['completed'] = completed;
 
-    final response = await BaseApiService.get<Map<String, dynamic>>(
-      '/gamification/achievements',
-      queryParameters: queryParams,
-      requiresAuth: true,
-    );
+    try {
+      debugPrint('🏆 [GamificationService] Fetching achievements...');
 
-    if (response.isSuccess && response.data != null) {
-      final achievements = (response.data!['achievements'] as List)
-          .map((json) => Achievement.fromJson(json as Map<String, dynamic>))
-          .toList();
+      final response = await BaseApiService.get<Map<String, dynamic>>(
+        '/gamification/achievements',
+        queryParameters: queryParams,
+        requiresAuth: true,
+      );
 
-      return ServiceResponse.success(
+      debugPrint('🏆 [GamificationService] Response received');
+      debugPrint('   - isSuccess: ${response.isSuccess}');
+      debugPrint('   - statusCode: ${response.statusCode}');
+
+      if (response.isSuccess && response.data != null) {
+        debugPrint('🏆 [GamificationService] Response data keys: ${response.data!.keys}');
+
+        final achievementsData = response.data!['achievements'];
+        debugPrint('🏆 [GamificationService] Achievements data type: ${achievementsData.runtimeType}');
+        debugPrint('🏆 [GamificationService] Achievements count: ${(achievementsData as List).length}');
+
+        final achievements = (achievementsData as List)
+            .map((json) {
+              try {
+                return Achievement.fromJson(json as Map<String, dynamic>);
+              } catch (e) {
+                debugPrint('❌ [GamificationService] Error parsing achievement: $e');
+                debugPrint('   JSON: $json');
+                return null;
+              }
+            })
+            .whereType<Achievement>() // Filter out null values
+            .toList();
+
+        debugPrint('✅ [GamificationService] Successfully parsed ${achievements.length} achievements');
+
+        return ServiceResponse.success(
+          statusCode: response.statusCode,
+          data: achievements,
+          message: response.message,
+        );
+      }
+
+      debugPrint('❌ [GamificationService] Response failed: ${response.message}');
+      return ServiceResponse.error(
         statusCode: response.statusCode,
-        data: achievements,
         message: response.message,
+        errors: response.errors,
+      );
+    } catch (e, stackTrace) {
+      debugPrint('❌ [GamificationService] Exception in getAchievements: $e');
+      debugPrint('Stack trace: $stackTrace');
+
+      return ServiceResponse.error(
+        statusCode: 500,
+        message: 'Error loading achievements: $e',
       );
     }
-
-    return ServiceResponse.error(
-      statusCode: response.statusCode,
-      message: response.message,
-      errors: response.errors,
-    );
   }
 
   @override

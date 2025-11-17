@@ -8,6 +8,7 @@ import 'dart:io';
 import '../../firebase_options.dart';
 import '../constant/constants.dart';
 import 'locator.dart';
+import '../../service/firebase/fcm_service.dart';
 
 class AppInitializer {
   static Future<void> init() async {
@@ -31,6 +32,9 @@ class AppInitializer {
 
     // RevenueCat'i başlat
     await _initRevenueCat();
+
+    // FCM'i başlat
+    await _initFCM();
   }
 
   static Future<void> _initFirebase() async {
@@ -47,5 +51,15 @@ class AppInitializer {
     }
 
     await Purchases.setDebugLogsEnabled(true);
+  }
+
+  static Future<void> _initFCM() async {
+    try {
+      final fcmService = locator<FCMService>();
+      await fcmService.initialize();
+    } catch (e) {
+      // FCM hatası uygulamayı crash etmemeli
+      print('FCM initialization error: $e');
+    }
   }
 }
