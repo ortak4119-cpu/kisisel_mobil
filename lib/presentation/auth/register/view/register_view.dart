@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:base/core/route/app_router.gr.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/utils/color_constant.dart';
 import '../viewmodel/register_viewmodel.dart';
 
@@ -82,7 +83,7 @@ class _RegisterViewState extends State<RegisterView> {
                             ),
                             const SizedBox(height: 20),
                             Text(
-                              'LifeSync',
+                              'app.name'.tr(),
                               style: Theme.of(context)
                                   .textTheme
                                   .headlineLarge
@@ -101,7 +102,7 @@ class _RegisterViewState extends State<RegisterView> {
 
                       // Header
                       Text(
-                        'Hesap Oluştur 🎉',
+                        'auth.createAccount'.tr(),
                         style:
                         Theme.of(context).textTheme.headlineMedium?.copyWith(
                           color: isDarkMode
@@ -112,7 +113,7 @@ class _RegisterViewState extends State<RegisterView> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Hayatınızı senkronize etmeye başlayın',
+                        'auth.createAccountSubtitle'.tr(),
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           color: isDarkMode
                               ? ColorConstant.textSecondaryDark
@@ -125,16 +126,16 @@ class _RegisterViewState extends State<RegisterView> {
                       // Username Field
                       _buildTextField(
                         controller: _usernameController,
-                        label: 'Kullanıcı Adı',
-                        hint: 'kullaniciadi',
+                        label: 'auth.username'.tr(),
+                        hint: 'auth.usernameHint'.tr(),
                         icon: Icons.person_outline_rounded,
                         isDarkMode: isDarkMode,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Kullanıcı adı gerekli';
+                            return 'auth.usernameRequired'.tr();
                           }
                           if (value.length < 3) {
-                            return 'Kullanıcı adı en az 3 karakter olmalı';
+                            return 'auth.usernameMinLength'.tr();
                           }
                           return null;
                         },
@@ -145,17 +146,17 @@ class _RegisterViewState extends State<RegisterView> {
                       // Email Field
                       _buildTextField(
                         controller: _emailController,
-                        label: 'Email',
-                        hint: 'ornek@email.com',
+                        label: 'auth.email'.tr(),
+                        hint: 'auth.emailHint'.tr(),
                         icon: Icons.email_outlined,
                         isDarkMode: isDarkMode,
                         keyboardType: TextInputType.emailAddress,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Email adresi gerekli';
+                            return 'auth.emailRequired'.tr();
                           }
                           if (!value.contains('@')) {
-                            return 'Geçerli bir email adresi girin';
+                            return 'auth.emailInvalid'.tr();
                           }
                           return null;
                         },
@@ -166,8 +167,8 @@ class _RegisterViewState extends State<RegisterView> {
                       // Password Field
                       _buildTextField(
                         controller: _passwordController,
-                        label: 'Şifre',
-                        hint: 'En az 8 karakter',
+                        label: 'auth.password'.tr(),
+                        hint: 'auth.passwordHintRegister'.tr(),
                         icon: Icons.lock_outline_rounded,
                         isDarkMode: isDarkMode,
                         obscureText: _obscurePassword,
@@ -188,10 +189,10 @@ class _RegisterViewState extends State<RegisterView> {
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Şifre gerekli';
+                            return 'auth.passwordRequired'.tr();
                           }
                           if (value.length < 8) {
-                            return 'Şifre en az 8 karakter olmalı';
+                            return 'auth.passwordMinLengthRegister'.tr();
                           }
                           return null;
                         },
@@ -202,8 +203,8 @@ class _RegisterViewState extends State<RegisterView> {
                       // Confirm Password Field
                       _buildTextField(
                         controller: _confirmPasswordController,
-                        label: 'Şifre Tekrar',
-                        hint: 'Şifrenizi tekrar girin',
+                        label: 'auth.passwordConfirm'.tr(),
+                        hint: 'auth.passwordConfirmHint'.tr(),
                         icon: Icons.lock_outline_rounded,
                         isDarkMode: isDarkMode,
                         obscureText: _obscureConfirmPassword,
@@ -225,10 +226,10 @@ class _RegisterViewState extends State<RegisterView> {
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Şifre tekrarı gerekli';
+                            return 'auth.passwordConfirmRequired'.tr();
                           }
                           if (value != _passwordController.text) {
-                            return 'Şifreler eşleşmiyor';
+                            return 'auth.passwordMismatch'.tr();
                           }
                           return null;
                         },
@@ -291,17 +292,17 @@ class _RegisterViewState extends State<RegisterView> {
                                           : ColorConstant.textSecondaryLight,
                                     ),
                                     children: [
-                                      const TextSpan(text: 'Kabul ediyorum '),
+                                      TextSpan(text: 'auth.agreeToTerms'.tr()),
                                       TextSpan(
-                                        text: 'Kullanım Koşulları',
+                                        text: 'auth.termsOfService'.tr(),
                                         style: TextStyle(
                                           color: ColorConstant.primaryPurple,
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
-                                      const TextSpan(text: ' ve '),
+                                      TextSpan(text: 'auth.and'.tr()),
                                       TextSpan(
-                                        text: 'Gizlilik Politikası',
+                                        text: 'auth.privacyPolicy'.tr(),
                                         style: TextStyle(
                                           color: ColorConstant.primaryPurple,
                                           fontWeight: FontWeight.w600,
@@ -362,7 +363,7 @@ class _RegisterViewState extends State<RegisterView> {
                             ),
                           )
                               : Text(
-                            'Kayıt Ol',
+                            'auth.register'.tr(),
                             style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w600,
@@ -387,7 +388,7 @@ class _RegisterViewState extends State<RegisterView> {
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Text(
-                              'veya',
+                              'common.or'.tr(),
                               style: TextStyle(
                                 color: isDarkMode
                                     ? ColorConstant.textMutedDark
@@ -410,7 +411,7 @@ class _RegisterViewState extends State<RegisterView> {
 
                       // Social Login Buttons
                       _buildSocialButton(
-                        label: 'Google ile Kayıt Ol',
+                        label: 'auth.registerWithGoogle'.tr(),
                         icon: Icons.g_mobiledata_rounded,
                         isDarkMode: isDarkMode,
                         onPressed: () => viewModel.registerWithGoogle(context),
@@ -419,7 +420,7 @@ class _RegisterViewState extends State<RegisterView> {
                       const SizedBox(height: 12),
 
                       _buildSocialButton(
-                        label: 'Apple ile Kayıt Ol',
+                        label: 'auth.registerWithApple'.tr(),
                         icon: Icons.apple_rounded,
                         isDarkMode: isDarkMode,
                         onPressed: () => viewModel.registerWithApple(context),
@@ -433,7 +434,7 @@ class _RegisterViewState extends State<RegisterView> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              'Zaten hesabınız var mı?',
+                              'auth.haveAccount'.tr(),
                               style: TextStyle(
                                 color: isDarkMode
                                     ? ColorConstant.textSecondaryDark
@@ -445,7 +446,7 @@ class _RegisterViewState extends State<RegisterView> {
                                 context.router.push(LoginRoute());
                               },
                               child: Text(
-                                'Giriş Yap',
+                                'auth.login'.tr(),
                                 style: TextStyle(
                                   color: ColorConstant.primaryPurple,
                                   fontWeight: FontWeight.w700,

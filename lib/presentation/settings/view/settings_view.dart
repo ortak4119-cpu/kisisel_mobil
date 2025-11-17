@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../viewmodel/settings_viewmodel.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/utils/theme_provider.dart';
@@ -41,7 +42,7 @@ class SettingsView extends StatelessWidget {
                   ),
                   flexibleSpace: FlexibleSpaceBar(
                     title: Text(
-                      'Ayarlar',
+                      'settings.title'.tr(),
                       style: TextStyle(
                         color: isDarkMode
                             ? ColorConstant.textPrimaryDark
@@ -82,7 +83,7 @@ class SettingsView extends StatelessWidget {
 
                         // Premium Bölümü
                         _buildSection(
-                          title: 'Premium',
+                          title: 'settings.sections.premium'.tr(),
                           isDarkMode: isDarkMode,
                           children: [
                             _buildPremiumCard(
@@ -97,12 +98,12 @@ class SettingsView extends StatelessWidget {
 
                         // Bildirimler Bölümü
                         _buildSection(
-                          title: 'Bildirimler',
+                          title: 'settings.sections.notifications'.tr(),
                           isDarkMode: isDarkMode,
                           children: [
                             _buildSwitchTile(
-                              title: 'Tüm Bildirimler',
-                              subtitle: 'Ana bildirim anahtarı',
+                              title: 'settings.notifications.all'.tr(),
+                              subtitle: 'settings.notifications.allSubtitle'.tr(),
                               icon: Icons.notifications_rounded,
                               isDarkMode: isDarkMode,
                               value: viewModel.settings?.notificationsEnabled ?? true,
@@ -118,8 +119,8 @@ class SettingsView extends StatelessWidget {
                             ),
                             _buildDivider(isDarkMode),
                             _buildSwitchTile(
-                              title: 'Görev Bildirimleri',
-                              subtitle: 'Görev hatırlatmaları',
+                              title: 'settings.notifications.tasks'.tr(),
+                              subtitle: 'settings.notifications.tasksSubtitle'.tr(),
                               icon: Icons.task_rounded,
                               isDarkMode: isDarkMode,
                               value: viewModel.settings?.taskNotifications ?? true,
@@ -135,8 +136,8 @@ class SettingsView extends StatelessWidget {
                             ),
                             _buildDivider(isDarkMode),
                             _buildSwitchTile(
-                              title: 'Alışkanlık Bildirimleri',
-                              subtitle: 'Günlük alışkanlık hatırlatmaları',
+                              title: 'settings.notifications.habits'.tr(),
+                              subtitle: 'settings.notifications.habitsSubtitle'.tr(),
                               icon: Icons.emoji_events_rounded,
                               isDarkMode: isDarkMode,
                               value: viewModel.settings?.habitNotifications ?? true,
@@ -152,8 +153,8 @@ class SettingsView extends StatelessWidget {
                             ),
                             _buildDivider(isDarkMode),
                             _buildSwitchTile(
-                              title: 'Günlük Hatırlatıcıları',
-                              subtitle: 'Günlük yazma hatırlatmaları',
+                              title: 'settings.notifications.diary'.tr(),
+                              subtitle: 'settings.notifications.diarySubtitle'.tr(),
                               icon: Icons.book_rounded,
                               isDarkMode: isDarkMode,
                               value: viewModel.settings?.diaryReminders ?? true,
@@ -174,13 +175,13 @@ class SettingsView extends StatelessWidget {
 
                         // Görünüm Bölümü
                         _buildSection(
-                          title: 'Görünüm',
+                          title: 'settings.sections.appearance'.tr(),
                           isDarkMode: isDarkMode,
                           children: [
                             _buildThemeTile(
                               context: context,
-                              title: 'Tema',
-                              subtitle: 'Görünüm tercihlerinizi ayarlayın',
+                              title: 'settings.appearance.theme'.tr(),
+                              subtitle: 'settings.appearance.themeSubtitle'.tr(),
                               icon: Icons.palette_rounded,
                               isDarkMode: isDarkMode,
                               themeProvider: themeProvider,
@@ -221,12 +222,12 @@ class SettingsView extends StatelessWidget {
 
                         // Hesap İşlemleri Bölümü
                         _buildSection(
-                          title: 'Hesap İşlemleri',
+                          title: 'settings.sections.account'.tr(),
                           isDarkMode: isDarkMode,
                           children: [
                             _buildListTile(
-                              title: 'Çıkış Yap',
-                              subtitle: 'Bu cihazdan güvenli şekilde çıkın',
+                              title: 'settings.account.logout'.tr(),
+                              subtitle: 'settings.account.logoutSubtitle'.tr(),
                               icon: Icons.logout_rounded,
                               isDarkMode: isDarkMode,
                               iconColor: ColorConstant.accentBlue,
@@ -237,8 +238,8 @@ class SettingsView extends StatelessWidget {
                             ),
                             _buildDivider(isDarkMode),
                             _buildListTile(
-                              title: 'Tüm Cihazlardan Çıkış Yap',
-                              subtitle: 'Hesabınızı tüm cihazlardan çıkışa zorlayın',
+                              title: 'settings.account.logoutAll'.tr(),
+                              subtitle: 'settings.account.logoutAllSubtitle'.tr(),
                               icon: Icons.devices_other_rounded,
                               isDarkMode: isDarkMode,
                               iconColor: ColorConstant.accentOrange,
@@ -254,12 +255,12 @@ class SettingsView extends StatelessWidget {
 
                         // Yasal Bölüm
                         _buildSection(
-                          title: 'Yasal',
+                          title: 'settings.sections.legal'.tr(),
                           isDarkMode: isDarkMode,
                           children: [
                             _buildListTile(
-                              title: 'Gizlilik Sözleşmesi',
-                              subtitle: 'Verilerinizi nasıl koruduğumuzu öğrenin',
+                              title: 'settings.legal.privacy'.tr(),
+                              subtitle: 'settings.legal.privacySubtitle'.tr(),
                               icon: Icons.privacy_tip_rounded,
                               isDarkMode: isDarkMode,
                               iconColor: ColorConstant.accentGreen,
@@ -270,8 +271,8 @@ class SettingsView extends StatelessWidget {
                             ),
                             _buildDivider(isDarkMode),
                             _buildListTile(
-                              title: 'Kullanım Koşulları',
-                              subtitle: 'Hizmet şartlarımızı inceleyin',
+                              title: 'settings.legal.terms'.tr(),
+                              subtitle: 'settings.legal.termsSubtitle'.tr(),
                               icon: Icons.description_rounded,
                               isDarkMode: isDarkMode,
                               iconColor: ColorConstant.primaryPurple,
@@ -287,12 +288,12 @@ class SettingsView extends StatelessWidget {
 
                         // Destek Bölümü
                         _buildSection(
-                          title: 'Destek',
+                          title: 'settings.sections.support'.tr(),
                           isDarkMode: isDarkMode,
                           children: [
                             _buildListTile(
-                              title: 'Bize Ulaşın',
-                              subtitle: 'Sorularınız için bizimle iletişime geçin',
+                              title: 'settings.support.contact'.tr(),
+                              subtitle: 'settings.support.contactSubtitle'.tr(),
                               icon: Icons.mail_rounded,
                               isDarkMode: isDarkMode,
                               iconColor: ColorConstant.accentBlue,
@@ -303,8 +304,8 @@ class SettingsView extends StatelessWidget {
                             ),
                             _buildDivider(isDarkMode),
                             _buildListTile(
-                              title: 'Uygulamayı Değerlendir',
-                              subtitle: 'Geri bildiriminiz bizim için değerli',
+                              title: 'settings.support.rate'.tr(),
+                              subtitle: 'settings.support.rateSubtitle'.tr(),
                               icon: Icons.star_rounded,
                               isDarkMode: isDarkMode,
                               iconColor: ColorConstant.accentYellow,
@@ -932,7 +933,7 @@ class SettingsView extends StatelessWidget {
             children: [
               _buildThemeOption(
                 context: dialogContext,
-                title: 'Sistem',
+                title: 'settings.appearance.themeSystem'.tr(),
                 subtitle: 'Cihaz ayarlarını takip et',
                 icon: Icons.brightness_auto_rounded,
                 value: ThemeMode.system,
@@ -948,7 +949,7 @@ class SettingsView extends StatelessWidget {
               const SizedBox(height: 8),
               _buildThemeOption(
                 context: dialogContext,
-                title: 'Açık',
+                title: 'settings.appearance.themeLight'.tr(),
                 subtitle: 'Her zaman açık tema',
                 icon: Icons.light_mode_rounded,
                 value: ThemeMode.light,
@@ -964,7 +965,7 @@ class SettingsView extends StatelessWidget {
               const SizedBox(height: 8),
               _buildThemeOption(
                 context: dialogContext,
-                title: 'Koyu',
+                title: 'settings.appearance.themeDark'.tr(),
                 subtitle: 'Her zaman koyu tema',
                 icon: Icons.dark_mode_rounded,
                 value: ThemeMode.dark,

@@ -27,6 +27,9 @@ class CalendarViewModel extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  bool _isInitialized = false;
+  bool get isInitialized => _isInitialized;
+
   DateTime _selectedDate = DateTime.now();
   DateTime get selectedDate => _selectedDate;
 
@@ -559,7 +562,12 @@ class CalendarViewModel extends ChangeNotifier {
 
   Future<void> refreshData() async {
     debugPrint('🔄 Calendar: Refreshing all data');
-    await _loadCalendarViewType();
+    // İlk yüklemede view type'ı önce yükle
+    if (!_isInitialized) {
+      await _loadCalendarViewType();
+      _isInitialized = true;
+      notifyListeners();
+    }
     await loadDataForMonth(_focusedMonth.year, _focusedMonth.month);
   }
 

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:auto_route/auto_route.dart';
 import '../../../core/utils/color_constant.dart';
+import '../../../core/route/app_router.gr.dart';
 import '../viewmodel/tasks_habits_viewmodel.dart';
 
 class TasksHabitsView extends StatefulWidget {
@@ -53,15 +56,52 @@ class _TasksHabitsViewState extends State<TasksHabitsView>
                         // Title with emoji
                         Row(
                           children: [
-                            Text(
-                              'Görevler',
-                              style: TextStyle(
-                                color: isDarkMode
-                                    ? ColorConstant.textPrimaryDark
-                                    : ColorConstant.textPrimaryLight,
-                                fontSize: 32,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: -0.5,
+                            Expanded(
+                              child: Text(
+                                'tasks.title'.tr(),
+                                style: TextStyle(
+                                  color: isDarkMode
+                                      ? ColorConstant.textPrimaryDark
+                                      : ColorConstant.textPrimaryLight,
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
+                            ),
+                            // Premium Button
+                            Container(
+                              margin: const EdgeInsets.only(right: 4),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    ColorConstant.accentYellow,
+                                    ColorConstant.accentOrange,
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: ColorConstant.accentYellow.withOpacity(0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () => context.router.push(const PaywallRoute()),
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8),
+                                    child: Icon(
+                                      Icons.workspace_premium_rounded,
+                                      color: ColorConstant.white,
+                                      size: 20,
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                           ],
@@ -119,7 +159,7 @@ class _TasksHabitsViewState extends State<TasksHabitsView>
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
-                                        'Alışkanlıklar',
+                                        'habits.title'.tr(),
                                         style: TextStyle(
                                           fontSize: 15,
                                           fontWeight: FontWeight.w700,
@@ -184,7 +224,7 @@ class _TasksHabitsViewState extends State<TasksHabitsView>
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
-                                        'Görevler',
+                                        'tasks.title'.tr(),
                                         style: TextStyle(
                                           fontSize: 15,
                                           fontWeight: FontWeight.w700,
@@ -763,6 +803,8 @@ class _HabitsTab extends StatelessWidget {
 
 // ==================== GÖREVLER TAB ====================
 
+// ==================== GÖREVLER TAB ====================
+
 class _TasksTab extends StatelessWidget {
   final TasksHabitsViewModel viewModel;
 
@@ -780,61 +822,226 @@ class _TasksTab extends StatelessWidget {
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: () => viewModel.loadTasks(),
-      color: ColorConstant.accentBlue,
-      child: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          // Fun İstatistikler
-          Row(
+    return Column(
+      children: [
+        // Filter Tabs
+        Container(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+          child: Row(
             children: [
-              _buildFunMiniStat(
-                '${viewModel.pendingCount}',
-                'Bekleyen',
-                '⏳',
-                ColorConstant.accentBlue,
+              _buildFilterTab(
+                context,
+                viewModel,
+                TaskFilter.all,
+                'Tümü',
+                '📋',
                 isDarkMode,
               ),
-              const SizedBox(width: 12),
-              _buildFunMiniStat(
-                '${viewModel.completedCount}',
+              const SizedBox(width: 8),
+              _buildFilterTab(
+                context,
+                viewModel,
+                TaskFilter.pending,
+                'Bekleyen',
+                '⏳',
+                isDarkMode,
+              ),
+              const SizedBox(width: 8),
+              _buildFilterTab(
+                context,
+                viewModel,
+                TaskFilter.completed,
                 'Bitti',
-                '🎉',
-                ColorConstant.accentGreen,
+                '✅',
                 isDarkMode,
               ),
             ],
           ),
-          const SizedBox(height: 20),
+        ),
 
-          // Bekleyen Görevler
-          if (viewModel.pendingTasks.isNotEmpty)
-            ...viewModel.pendingTasks.map(
-                  (task) => _buildTaskCard(context, task, viewModel, isDarkMode),
-            ),
+        // Task List
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: () => viewModel.loadTasks(),
+            color: ColorConstant.accentBlue,
+            child: ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
+                // Filtered Tasks
+                if (viewModel.filteredTasks.isNotEmpty)
+                  ...viewModel.filteredTasks.map(
+                        (task) => _buildTaskCard(context, task, viewModel, isDarkMode),
+                  ),
 
-          // Tamamlanan Görevler
-          if (viewModel.completedTasks.isNotEmpty) ...[
-            if (viewModel.pendingTasks.isNotEmpty) const SizedBox(height: 20),
-            ...viewModel.completedTasks.map(
-                  (task) => _buildTaskCard(context, task, viewModel, isDarkMode),
+                // Boş durum
+                if (viewModel.filteredTasks.isEmpty)
+                  _buildEmptyState(
+                    icon: Icons.task_rounded,
+                    emoji: _getEmptyStateEmoji(viewModel.currentTaskFilter),
+                    message: _getEmptyStateMessage(viewModel.currentTaskFilter),
+                    subtitle: _getEmptyStateSubtitle(viewModel.currentTaskFilter),
+                    color: ColorConstant.accentBlue,
+                    isDarkMode: isDarkMode,
+                  ),
+              ],
             ),
-          ],
+          ),
+        ),
+      ],
+    );
+  }
 
-          // Boş durum
-          if (viewModel.tasks.isEmpty)
-            _buildEmptyState(
-              icon: Icons.task_rounded,
-              emoji: '📝',
-              message: 'Henüz görev yok',
-              subtitle: 'İlk görevini ekleyerek başla!',
-              color: ColorConstant.accentBlue,
-              isDarkMode: isDarkMode,
+  Widget _buildFilterTab(
+      BuildContext context,
+      TasksHabitsViewModel vm,
+      TaskFilter filter,
+      String label,
+      String emoji,
+      bool isDarkMode,
+      ) {
+    final isSelected = vm.currentTaskFilter == filter;
+
+    Color getFilterColor() {
+      switch (filter) {
+        case TaskFilter.all:
+          return ColorConstant.accentBlue;
+        case TaskFilter.pending:
+          return ColorConstant.accentYellow;
+        case TaskFilter.completed:
+          return ColorConstant.accentGreen;
+      }
+    }
+
+    int getCount() {
+      switch (filter) {
+        case TaskFilter.all:
+          return vm.tasks.length;
+        case TaskFilter.pending:
+          return vm.pendingCount;
+        case TaskFilter.completed:
+          return vm.completedCount;
+      }
+    }
+
+    final color = getFilterColor();
+    final count = getCount();
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => vm.setTaskFilter(filter),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            gradient: isSelected
+                ? LinearGradient(
+              colors: [
+                color.withOpacity(0.2),
+                color.withOpacity(0.1),
+              ],
+            )
+                : null,
+            color: isSelected
+                ? null
+                : (isDarkMode
+                ? ColorConstant.cardColorDark.withOpacity(0.3)
+                : ColorConstant.bgColorLight),
+            border: Border.all(
+              color: isSelected
+                  ? color
+                  : (isDarkMode
+                  ? ColorConstant.borderColorDark
+                  : ColorConstant.borderColorLight),
+              width: isSelected ? 2 : 1,
             ),
-        ],
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: isSelected
+                ? [
+              BoxShadow(
+                color: color.withOpacity(0.2),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ]
+                : null,
+          ),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    emoji,
+                    style: TextStyle(
+                      fontSize: isSelected ? 16 : 14,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      color: isSelected
+                          ? color
+                          : (isDarkMode
+                          ? ColorConstant.textSecondaryDark
+                          : ColorConstant.textSecondaryLight),
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '$count',
+                style: TextStyle(
+                  color: isSelected
+                      ? color
+                      : (isDarkMode
+                      ? ColorConstant.textMutedDark
+                      : ColorConstant.textMutedLight),
+                  fontWeight: FontWeight.w900,
+                  fontSize: isSelected ? 18 : 16,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
+  }
+
+  String _getEmptyStateEmoji(TaskFilter filter) {
+    switch (filter) {
+      case TaskFilter.all:
+        return '📝';
+      case TaskFilter.pending:
+        return '⏳';
+      case TaskFilter.completed:
+        return '🎉';
+    }
+  }
+
+  String _getEmptyStateMessage(TaskFilter filter) {
+    switch (filter) {
+      case TaskFilter.all:
+        return 'Henüz görev yok';
+      case TaskFilter.pending:
+        return 'Bekleyen görev yok';
+      case TaskFilter.completed:
+        return 'Tamamlanan görev yok';
+    }
+  }
+
+  String _getEmptyStateSubtitle(TaskFilter filter) {
+    switch (filter) {
+      case TaskFilter.all:
+        return 'İlk görevini ekleyerek başla!';
+      case TaskFilter.pending:
+        return 'Harika! Tüm görevler tamamlanmış';
+      case TaskFilter.completed:
+        return 'Görevlerini tamamlamaya başla!';
+    }
   }
 
   Widget _buildTaskCard(
@@ -1000,9 +1207,7 @@ class _TasksTab extends StatelessWidget {
                             ],
                           )
                               : null,
-                          color: task.isCompleted
-                              ? null
-                              : Colors.transparent,
+                          color: task.isCompleted ? null : Colors.transparent,
                           border: Border.all(
                             color: task.isCompleted
                                 ? ColorConstant.accentGreen
@@ -1015,7 +1220,8 @@ class _TasksTab extends StatelessWidget {
                           boxShadow: task.isCompleted
                               ? [
                             BoxShadow(
-                              color: ColorConstant.accentGreen.withOpacity(0.3),
+                              color: ColorConstant.accentGreen
+                                  .withOpacity(0.3),
                               blurRadius: 6,
                               offset: const Offset(0, 2),
                             ),
@@ -1085,7 +1291,8 @@ class _TasksTab extends StatelessWidget {
                               if (task.isRecurring &&
                                   task.recurringPattern != null &&
                                   task.recurringPattern != 'none')
-                                _buildRecurrenceBadge(task.recurringPattern!, isDarkMode),
+                                _buildRecurrenceBadge(
+                                    task.recurringPattern!, isDarkMode),
                               if (task.dueDate != null)
                                 _buildInfoChip(
                                   '📅 ${task.dueDate}',
@@ -1188,7 +1395,6 @@ class _TasksTab extends StatelessWidget {
     );
   }
 }
-
 // ==================== YARDIMCI WIDGET'LAR ====================
 
 Widget _buildFunMiniStat(String value, String label, String emoji, Color color, bool isDarkMode) {

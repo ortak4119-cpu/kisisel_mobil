@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/utils/custom_snackbar.dart';
+import '../../../core/utils/subscription_icons.dart';
+import '../../../core/route/app_router.gr.dart';
 import '../../../models/calender/calendar_models.dart';
 import '../../../models/note/note_models.dart';
 import '../../../models/diary/diary_models.dart';
@@ -77,7 +81,7 @@ class _CalendarViewState extends State<CalendarView> {
             children: [
               Expanded(
                 child: Text(
-                  'Takvim',
+                  'calendar.title'.tr(),
                   style: TextStyle(
                     color: isDarkMode
                         ? ColorConstant.textPrimaryDark
@@ -85,6 +89,41 @@ class _CalendarViewState extends State<CalendarView> {
                     fontSize: 32,
                     fontWeight: FontWeight.w900,
                     letterSpacing: -0.5,
+                  ),
+                ),
+              ),
+              // Premium Button
+              Container(
+                margin: const EdgeInsets.only(right: 4),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      ColorConstant.accentYellow,
+                      ColorConstant.accentOrange,
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: ColorConstant.accentYellow.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => context.router.push(const PaywallRoute()),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Icon(
+                        Icons.workspace_premium_rounded,
+                        color: ColorConstant.white,
+                        size: 20,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -111,6 +150,23 @@ class _CalendarViewState extends State<CalendarView> {
   }
 
   Widget _buildCalendar(CalendarViewModel viewModel, bool isDarkMode) {
+    // View type yüklenene kadar placeholder göster
+    if (!viewModel.isInitialized) {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 20),
+        height: 350,
+        decoration: BoxDecoration(
+          color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Center(
+          child: CircularProgressIndicator(
+            color: ColorConstant.primaryPurple,
+          ),
+        ),
+      );
+    }
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
@@ -2370,6 +2426,46 @@ class _CalendarViewState extends State<CalendarView> {
                 ),
                 child: Row(
                   children: [
+                    // Subscription Logo
+                    Builder(
+                      builder: (context) {
+                        final iconData = SubscriptionIcons.getIcon(subscription.name) ??
+                            SubscriptionIcons.getDefaultIcon();
+
+                        return Container(
+                          width: 48,
+                          height: 48,
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: isDarkMode ? ColorConstant.bgColorDark : ColorConstant.bgColorLight,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: iconData.color.withOpacity(0.3),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: iconData.logoUrl != null
+                              ? SvgPicture.network(
+                                  iconData.logoUrl!,
+                                  colorFilter: ColorFilter.mode(
+                                    iconData.color,
+                                    BlendMode.srcIn,
+                                  ),
+                                  placeholderBuilder: (context) => Icon(
+                                    iconData.icon,
+                                    color: iconData.color,
+                                    size: 24,
+                                  ),
+                                )
+                              : Icon(
+                                  iconData.icon,
+                                  color: iconData.color,
+                                  size: 24,
+                                ),
+                        );
+                      },
+                    ),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:base/core/route/app_router.gr.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/utils/color_constant.dart';
 import '../viewmodel/login_viewmodel.dart';
 
@@ -76,7 +77,7 @@ class _LoginViewState extends State<LoginView> {
                             ),
                             const SizedBox(height: 24),
                             Text(
-                              'LifeSync',
+                              'app.name'.tr(),
                               style: Theme.of(context)
                                   .textTheme
                                   .displayMedium
@@ -89,7 +90,7 @@ class _LoginViewState extends State<LoginView> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Hayatınızı Senkronize Edin',
+                              'app.tagline'.tr(),
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyMedium
@@ -107,7 +108,7 @@ class _LoginViewState extends State<LoginView> {
 
                       // Welcome Back
                       Text(
-                        'Tekrar Hoş Geldiniz! 👋',
+                        'auth.welcomeBack'.tr(),
                         style:
                         Theme.of(context).textTheme.headlineMedium?.copyWith(
                           color: isDarkMode
@@ -117,7 +118,7 @@ class _LoginViewState extends State<LoginView> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Hesabınıza giriş yaparak devam edin',
+                        'auth.signInInstruction'.tr(),
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           color: isDarkMode
                               ? ColorConstant.textSecondaryDark
@@ -130,17 +131,17 @@ class _LoginViewState extends State<LoginView> {
                       // Email Field
                       _buildTextField(
                         controller: _emailController,
-                        label: 'Email',
-                        hint: 'ornek@email.com',
+                        label: 'auth.email'.tr(),
+                        hint: 'auth.emailHint'.tr(),
                         icon: Icons.email_outlined,
                         isDarkMode: isDarkMode,
                         keyboardType: TextInputType.emailAddress,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Email adresi gerekli';
+                            return 'auth.emailRequired'.tr();
                           }
                           if (!value.contains('@')) {
-                            return 'Geçerli bir email adresi girin';
+                            return 'auth.emailInvalid'.tr();
                           }
                           return null;
                         },
@@ -151,8 +152,8 @@ class _LoginViewState extends State<LoginView> {
                       // Password Field
                       _buildTextField(
                         controller: _passwordController,
-                        label: 'Şifre',
-                        hint: '••••••••',
+                        label: 'auth.password'.tr(),
+                        hint: 'auth.passwordHint'.tr(),
                         icon: Icons.lock_outline_rounded,
                         isDarkMode: isDarkMode,
                         obscureText: _obscurePassword,
@@ -173,10 +174,10 @@ class _LoginViewState extends State<LoginView> {
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Şifre gerekli';
+                            return 'auth.passwordRequired'.tr();
                           }
                           if (value.length < 6) {
-                            return 'Şifre en az 6 karakter olmalı';
+                            return 'auth.passwordMinLength'.tr();
                           }
                           return null;
                         },
@@ -192,7 +193,7 @@ class _LoginViewState extends State<LoginView> {
                             // TODO: Forgot password
                           },
                           child: Text(
-                            'Şifremi Unuttum?',
+                            'auth.forgotPassword'.tr(),
                             style: TextStyle(
                               color: ColorConstant.primaryPurple,
                               fontWeight: FontWeight.w600,
@@ -241,7 +242,7 @@ class _LoginViewState extends State<LoginView> {
                             ),
                           )
                               : Text(
-                            'Giriş Yap',
+                            'auth.login'.tr(),
                             style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w600,
@@ -266,7 +267,7 @@ class _LoginViewState extends State<LoginView> {
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Text(
-                              'veya',
+                              'common.or'.tr(),
                               style: TextStyle(
                                 color: isDarkMode
                                     ? ColorConstant.textMutedDark
@@ -289,7 +290,7 @@ class _LoginViewState extends State<LoginView> {
 
                       // Social Login Buttons
                       _buildSocialButton(
-                        label: 'Google ile Devam Et',
+                        label: 'auth.continueWithGoogle'.tr(),
                         icon: Icons.g_mobiledata_rounded,
                         isDarkMode: isDarkMode,
                         onPressed: () => viewModel.loginWithGoogle(context),
@@ -298,7 +299,7 @@ class _LoginViewState extends State<LoginView> {
                       const SizedBox(height: 12),
 
                       _buildSocialButton(
-                        label: 'Apple ile Devam Et',
+                        label: 'auth.continueWithApple'.tr(),
                         icon: Icons.apple_rounded,
                         isDarkMode: isDarkMode,
                         onPressed: () => viewModel.loginWithApple(context),
@@ -314,7 +315,7 @@ class _LoginViewState extends State<LoginView> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                'Misafir Olarak Devam Et',
+                                'auth.continueAsGuest'.tr(),
                                 style: TextStyle(
                                   color: isDarkMode
                                       ? ColorConstant.textSecondaryDark
@@ -343,7 +344,7 @@ class _LoginViewState extends State<LoginView> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              'Hesabınız yok mu?',
+                              'auth.noAccount'.tr(),
                               style: TextStyle(
                                 color: isDarkMode
                                     ? ColorConstant.textSecondaryDark
@@ -352,10 +353,10 @@ class _LoginViewState extends State<LoginView> {
                             ),
                             TextButton(
                               onPressed: () {
-                                context.router.push(LoginRoute());
+                                context.router.push(RegisterRoute());
                               },
                               child: Text(
-                                'Kayıt Ol',
+                                'auth.register'.tr(),
                                 style: TextStyle(
                                   color: ColorConstant.primaryPurple,
                                   fontWeight: FontWeight.w700,

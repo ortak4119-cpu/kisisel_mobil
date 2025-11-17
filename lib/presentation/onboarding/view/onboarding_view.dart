@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'dart:math' as math;
 import '../../../core/utils/color_constant.dart';
 import '../viewmodel/onboarding_viewmodel.dart';
@@ -144,7 +145,7 @@ class _OnboardingViewState extends State<OnboardingView> with TickerProviderStat
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Atla',
+                  'onboarding.skip'.tr(),
                   style: TextStyle(
                     color: isDarkMode
                         ? ColorConstant.textPrimaryDark
@@ -197,6 +198,31 @@ class _OnboardingViewState extends State<OnboardingView> with TickerProviderStat
         );
       case 3:
         return _GamificationAnimation(
+          mainController: _mainAnimationController,
+          secondaryController: _secondaryAnimationController,
+        );
+      case 4:
+        return _SubscriptionAnimation(
+          mainController: _mainAnimationController,
+          secondaryController: _secondaryAnimationController,
+        );
+      case 5:
+        return _PasswordAnimation(
+          mainController: _mainAnimationController,
+          secondaryController: _secondaryAnimationController,
+        );
+      case 6:
+        return _MedicineAnimation(
+          mainController: _mainAnimationController,
+          secondaryController: _secondaryAnimationController,
+        );
+      case 7:
+        return _FileSecurityAnimation(
+          mainController: _mainAnimationController,
+          secondaryController: _secondaryAnimationController,
+        );
+      case 8:
+        return _NotificationAnimation(
           mainController: _mainAnimationController,
           secondaryController: _secondaryAnimationController,
         );
@@ -918,6 +944,455 @@ class _GamificationAnimation extends StatelessWidget {
                     style: const TextStyle(fontSize: 20),
                   ),
                 ),
+              ),
+            ),
+          );
+        },
+      );
+    }).toList();
+  }
+}
+
+// ==================== SUBSCRIPTION ANIMATION ====================
+class _SubscriptionAnimation extends StatelessWidget {
+  final AnimationController mainController;
+  final AnimationController secondaryController;
+
+  const _SubscriptionAnimation({
+    required this.mainController,
+    required this.secondaryController,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return Center(
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Center Card
+          AnimatedBuilder(
+            animation: secondaryController,
+            builder: (context, child) {
+              return Transform.scale(
+                scale: 1.0 + (secondaryController.value * 0.08),
+                child: Container(
+                  width: 120,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [ColorConstant.primaryPurple, ColorConstant.accentBlue],
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(
+                    Icons.subscriptions_rounded,
+                    color: ColorConstant.white,
+                    size: 50,
+                  ),
+                ),
+              );
+            },
+          ),
+          // Floating subscription icons
+          ..._buildFloatingIcons(isDarkMode),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildFloatingIcons(bool isDarkMode) {
+    final icons = [
+      {'icon': Icons.tv, 'angle': 0.0},
+      {'icon': Icons.music_note, 'angle': math.pi / 2},
+      {'icon': Icons.play_circle_outline, 'angle': math.pi},
+      {'icon': Icons.cloud_outlined, 'angle': 3 * math.pi / 2},
+    ];
+
+    return icons.map((item) {
+      return AnimatedBuilder(
+        animation: mainController,
+        builder: (context, child) {
+          final angle = (item['angle'] as double) + (mainController.value * 2 * math.pi);
+          final radius = 85.0;
+          final x = math.cos(angle) * radius;
+          final y = math.sin(angle) * radius;
+
+          return Transform.translate(
+            offset: Offset(x, y),
+            child: Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: ColorConstant.primaryPurple.withOpacity(0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Icon(
+                item['icon'] as IconData,
+                color: ColorConstant.primaryPurple,
+                size: 26,
+              ),
+            ),
+          );
+        },
+      );
+    }).toList();
+  }
+}
+
+// ==================== PASSWORD ANIMATION ====================
+class _PasswordAnimation extends StatelessWidget {
+  final AnimationController mainController;
+  final AnimationController secondaryController;
+
+  const _PasswordAnimation({
+    required this.mainController,
+    required this.secondaryController,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Lock
+          AnimatedBuilder(
+            animation: mainController,
+            builder: (context, child) {
+              final isOpen = math.sin(mainController.value * 2 * math.pi) > 0.5;
+
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Lock Shackle
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    width: 40,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: isOpen ? ColorConstant.accentGreen : ColorConstant.accentOrange,
+                        width: 8,
+                      ),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20),
+                      ),
+                    ),
+                    transform: isOpen ? Matrix4.translationValues(-15, 0, 0) : Matrix4.identity(),
+                  ),
+                  // Lock Body
+                  Container(
+                    width: 80,
+                    height: 90,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          isOpen ? ColorConstant.accentGreen : ColorConstant.accentOrange,
+                          isOpen ? ColorConstant.accentGreen.withOpacity(0.8) : ColorConstant.accentYellow,
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      isOpen ? Icons.lock_open_rounded : Icons.lock_rounded,
+                      color: ColorConstant.white,
+                      size: 40,
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ==================== MEDICINE ANIMATION ====================
+class _MedicineAnimation extends StatelessWidget {
+  final AnimationController mainController;
+  final AnimationController secondaryController;
+
+  const _MedicineAnimation({
+    required this.mainController,
+    required this.secondaryController,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return Center(
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Medicine Bottle
+          AnimatedBuilder(
+            animation: secondaryController,
+            builder: (context, child) {
+              return Transform.scale(
+                scale: 1.0 + (secondaryController.value * 0.08),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Cap
+                    Container(
+                      width: 50,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: ColorConstant.errorRed,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(8),
+                          topRight: Radius.circular(8),
+                        ),
+                      ),
+                    ),
+                    // Bottle
+                    Container(
+                      width: 70,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [ColorConstant.accentBlue, const Color(0xFF667EEA)],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Center(
+                        child: Icon(
+                          Icons.medication_rounded,
+                          color: ColorConstant.white,
+                          size: 40,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          // Floating Pills
+          ..._buildPills(),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildPills() {
+    return [0.0, 0.4, 0.8].map((delay) {
+      return AnimatedBuilder(
+        animation: mainController,
+        builder: (context, child) {
+          final progress = ((mainController.value - delay) % 1.0).clamp(0.0, 1.0);
+          final x = (delay - 0.4) * 100;
+          final y = -60 + (progress * 120);
+
+          return Transform.translate(
+            offset: Offset(x, y),
+            child: Opacity(
+              opacity: 1.0 - progress,
+              child: Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [ColorConstant.errorRed, ColorConstant.accentOrange],
+                  ),
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Center(
+                  child: Text(
+                    '💊',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    }).toList();
+  }
+}
+
+// ==================== FILE SECURITY ANIMATION ====================
+class _FileSecurityAnimation extends StatelessWidget {
+  final AnimationController mainController;
+  final AnimationController secondaryController;
+
+  const _FileSecurityAnimation({
+    required this.mainController,
+    required this.secondaryController,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return Center(
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // File Icon
+          AnimatedBuilder(
+            animation: secondaryController,
+            builder: (context, child) {
+              return Transform.scale(
+                scale: 1.0 + (secondaryController.value * 0.08),
+                child: Container(
+                  width: 100,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: ColorConstant.primaryPurple.withOpacity(0.3),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    Icons.folder_rounded,
+                    size: 60,
+                    color: ColorConstant.accentYellow,
+                  ),
+                ),
+              );
+            },
+          ),
+          // Shield/Lock Overlay
+          AnimatedBuilder(
+            animation: mainController,
+            builder: (context, child) {
+              final scale = 1.0 + (math.sin(mainController.value * 2 * math.pi) * 0.1);
+
+              return Transform.scale(
+                scale: scale,
+                child: Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [ColorConstant.accentGreen, const Color(0xFF48BB78)],
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.shield_rounded,
+                    color: ColorConstant.white,
+                    size: 32,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ==================== NOTIFICATION ANIMATION ====================
+class _NotificationAnimation extends StatelessWidget {
+  final AnimationController mainController;
+  final AnimationController secondaryController;
+
+  const _NotificationAnimation({
+    required this.mainController,
+    required this.secondaryController,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return Center(
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Central Bell
+          AnimatedBuilder(
+            animation: secondaryController,
+            builder: (context, child) {
+              final rotation = math.sin(secondaryController.value * 2 * math.pi) * 0.3;
+
+              return Transform.rotate(
+                angle: rotation,
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [ColorConstant.primaryPurple, ColorConstant.accentBlue],
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.notifications_active_rounded,
+                    color: ColorConstant.white,
+                    size: 40,
+                  ),
+                ),
+              );
+            },
+          ),
+          // Notification Cards
+          ..._buildNotificationCards(isDarkMode),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildNotificationCards(bool isDarkMode) {
+    final notifications = [
+      {'icon': Icons.task_rounded, 'color': ColorConstant.accentBlue, 'angle': 0.0},
+      {'icon': Icons.emoji_events_rounded, 'color': ColorConstant.accentYellow, 'angle': math.pi * 2 / 3},
+      {'icon': Icons.attach_money, 'color': ColorConstant.accentGreen, 'angle': math.pi * 4 / 3},
+    ];
+
+    return notifications.map((notif) {
+      return AnimatedBuilder(
+        animation: mainController,
+        builder: (context, child) {
+          final angle = (notif['angle'] as double) + (mainController.value * 2 * math.pi);
+          final radius = 90.0;
+          final x = math.cos(angle) * radius;
+          final y = math.sin(angle) * radius;
+
+          return Transform.translate(
+            offset: Offset(x, y),
+            child: Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: notif['color'] as Color,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: (notif['color'] as Color).withOpacity(0.4),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Icon(
+                notif['icon'] as IconData,
+                color: ColorConstant.white,
+                size: 24,
               ),
             ),
           );

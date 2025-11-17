@@ -5,6 +5,7 @@ import 'package:base/presentation/notes_diary/view/notes_diary_view.dart';
 import 'package:base/presentation/profile/view/profile_view.dart';
 import 'package:base/presentation/tasks_habits/view/tasks_habits_view.dart';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/route/app_router.gr.dart';
 
@@ -72,26 +73,26 @@ class _HomeViewState extends State<HomeView> {
             children: [
               _buildNavItem(
                 icon: Icons.home_rounded,
-                label: 'Ana Sayfa',
+                label: 'navigation.home'.tr(),
                 index: 0,
                 isDarkMode: isDarkMode,
               ),
               _buildNavItem(
                 icon: Icons.task_rounded,
-                label: 'Görevler',
+                label: 'navigation.tasks'.tr(),
                 index: 1,
                 isDarkMode: isDarkMode,
               ),
               const SizedBox(width: 40), // Ortadaki FAB için boşluk
               _buildNavItem(
                 icon: Icons.attach_money,
-                label: 'Finans',
+                label: 'navigation.finance'.tr(),
                 index: 3,
                 isDarkMode: isDarkMode,
               ),
               _buildNavItem(
                 icon: Icons.person_rounded,
-                label: 'Profil',
+                label: 'navigation.profile'.tr(),
                 index: 4,
                 isDarkMode: isDarkMode,
               ),
@@ -190,7 +191,7 @@ class _HomeViewState extends State<HomeView> {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'Yeni Ekle',
+                  'home.addNew'.tr(),
                   style: TextStyle(
                     color: isDarkMode
                         ? ColorConstant.textPrimaryDark
@@ -203,8 +204,8 @@ class _HomeViewState extends State<HomeView> {
                 _buildAddOption(
                   context,
                   icon: Icons.task_rounded,
-                  title: 'Görev Ekle',
-                  subtitle: 'Yeni bir görev oluştur',
+                  title: 'home.addTask'.tr(),
+                  subtitle: 'home.addTaskSubtitle'.tr(),
                   color: ColorConstant.accentBlue,
                   isDarkMode: isDarkMode,
                   onTap: () {
@@ -216,8 +217,8 @@ class _HomeViewState extends State<HomeView> {
                 _buildAddOption(
                   context,
                   icon: Icons.emoji_events_rounded,
-                  title: 'Alışkanlık Ekle',
-                  subtitle: 'Yeni bir alışkanlık oluştur',
+                  title: 'home.addHabit'.tr(),
+                  subtitle: 'home.addHabitSubtitle'.tr(),
                   color: ColorConstant.accentYellow,
                   isDarkMode: isDarkMode,
                   onTap: () {
@@ -229,8 +230,8 @@ class _HomeViewState extends State<HomeView> {
                 _buildAddOption(
                   context,
                   icon: Icons.note_add_rounded,
-                  title: 'Not Ekle',
-                  subtitle: 'Yeni bir not oluştur',
+                  title: 'home.addNote'.tr(),
+                  subtitle: 'home.addNoteSubtitle'.tr(),
                   color: ColorConstant.accentGreen,
                   isDarkMode: isDarkMode,
                   onTap: () {
@@ -242,8 +243,8 @@ class _HomeViewState extends State<HomeView> {
                 _buildAddOption(
                   context,
                   icon: Icons.book_rounded,
-                  title: 'Günlük Girişi',
-                  subtitle: 'Günlüğüne yeni bir giriş ekle',
+                  title: 'home.addDiaryEntry'.tr(),
+                  subtitle: 'home.addDiaryEntrySubtitle'.tr(),
                   color: ColorConstant.accentOrange,
                   isDarkMode: isDarkMode,
                   onTap: () {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:auto_route/auto_route.dart';
 import '../../../core/utils/color_constant.dart';
+import '../../../core/route/app_router.gr.dart';
 import '../../../models/diary/diary_models.dart';
 import '../../../models/note/note_models.dart';
 import '../viewmodel/notes_diary_viewmodel.dart';
@@ -51,6 +52,41 @@ class _NotesDiaryViewState extends State<NotesDiaryView> {
                                   fontSize: 32,
                                   fontWeight: FontWeight.w900,
                                   letterSpacing: -0.5,
+                                ),
+                              ),
+                            ),
+                            // Premium Button
+                            Container(
+                              margin: const EdgeInsets.only(right: 4),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    ColorConstant.accentYellow,
+                                    ColorConstant.accentOrange,
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: ColorConstant.accentYellow.withOpacity(0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () => context.router.push(const PaywallRoute()),
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8),
+                                    child: Icon(
+                                      Icons.workspace_premium_rounded,
+                                      color: ColorConstant.white,
+                                      size: 20,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
@@ -2288,15 +2324,24 @@ class _NotesContent extends StatelessWidget {
             ),
 
             // Sağ taraf - Menu button
-            PopupMenuButton(
-              padding: EdgeInsets.zero,
-              icon: Icon(
-                Icons.more_vert_rounded,
-                size: 20,
-                color: isDarkMode
-                    ? ColorConstant.textMutedDark.withOpacity(0.7)
-                    : ColorConstant.textMutedLight.withOpacity(0.7),
+            // Sağ taraf - Menu button
+            Container(
+              margin: const EdgeInsets.only(left: 8),
+              decoration: BoxDecoration(
+                color: noteColor.withOpacity(0.20),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: noteColor.withOpacity(0.3),
+                  width: 1,
+                ),
               ),
+              child: PopupMenuButton(
+                padding: EdgeInsets.zero,
+                icon: Icon(
+                  Icons.more_vert_rounded,
+                  size: 20,
+                  color: noteColor.withOpacity(0.9),
+                ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -2411,7 +2456,7 @@ class _NotesContent extends StatelessWidget {
                 ),
               ],
             ),
-          ],
+            )],
         ),
       ),
     ),
@@ -2556,14 +2601,20 @@ class _NotesContent extends StatelessWidget {
                         const SizedBox(width: 20),
 
                       // Menu button
+                      // Menu button
                       PopupMenuButton(
                         padding: EdgeInsets.zero,
-                        icon: Icon(
-                          Icons.more_vert_rounded,
-                          size: 18,
-                          color: isDarkMode
-                              ? ColorConstant.textMutedDark.withOpacity(0.6)
-                              : ColorConstant.textMutedLight.withOpacity(0.6),
+                        icon: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: noteColor.withOpacity(0.25),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            Icons.more_vert_rounded,
+                            size: 18,
+                            color: noteColor.withOpacity(0.9),
+                          ),
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),

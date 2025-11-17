@@ -6,12 +6,23 @@ import '../../../models/task/task_models.dart';
 import '../../../models/habit/habit_models.dart';
 import '../../../core/utils/custom_snackbar.dart';
 
+enum TaskFilter { all, pending, completed }
+
 class TasksHabitsViewModel extends ChangeNotifier {
   final ITaskService _taskService = locator.get<ITaskService>();
   final IHabitService _habitService = locator.get<IHabitService>();
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
+
+  // Task Filter
+  TaskFilter _currentTaskFilter = TaskFilter.all;
+  TaskFilter get currentTaskFilter => _currentTaskFilter;
+
+  void setTaskFilter(TaskFilter filter) {
+    _currentTaskFilter = filter;
+    notifyListeners();
+  }
 
   // Tasks
   List<Task> _tasks = [];
@@ -20,6 +31,17 @@ class TasksHabitsViewModel extends ChangeNotifier {
   List<Task> get completedTasks => _tasks.where((t) => t.isCompleted).toList();
   int get completedCount => completedTasks.length;
   int get pendingCount => pendingTasks.length;
+
+  List<Task> get filteredTasks {
+    switch (_currentTaskFilter) {
+      case TaskFilter.all:
+        return _tasks;
+      case TaskFilter.pending:
+        return pendingTasks;
+      case TaskFilter.completed:
+        return completedTasks;
+    }
+  }
 
   // Habits
   List<Habit> _habits = [];

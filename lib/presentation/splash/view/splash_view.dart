@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../core/route/app_router.gr.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../service/base/base_api_service.dart';
@@ -164,7 +165,7 @@ class _SplashViewState extends State<SplashView> with SingleTickerProviderStateM
                         child: Column(
                           children: [
                             Text(
-                              'LifeSync',
+                              'app.name'.tr(),
                               style: Theme.of(context)
                                   .textTheme
                                   .displayMedium
@@ -178,7 +179,7 @@ class _SplashViewState extends State<SplashView> with SingleTickerProviderStateM
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              'Hayatınızı Senkronize Edin',
+                              'app.tagline'.tr(),
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyLarge
@@ -220,7 +221,7 @@ class _SplashViewState extends State<SplashView> with SingleTickerProviderStateM
                           ),
                           const SizedBox(height: 24),
                           Text(
-                            'Yükleniyor...',
+                            'app.loading'.tr(),
                             style: Theme.of(context)
                                 .textTheme
                                 .bodyMedium

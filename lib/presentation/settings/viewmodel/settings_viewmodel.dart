@@ -153,17 +153,13 @@ class SettingsViewModel extends ChangeNotifier {
   }
 
   Future<void> purchasePremium(BuildContext context) async {
-    CustomSnackBar.showInfo(
-      context,
-      'Premium satın alma özelliği yakında eklenecek',
-    );
+    // Paywall ekranına git
+    context.router.push(const PaywallRoute());
   }
 
   Future<void> restorePurchases(BuildContext context) async {
-    CustomSnackBar.showInfo(
-      context,
-      'Satın alımları geri yükleme özelliği yakında eklenecek',
-    );
+    // Paywall ekranına git (restore için)
+    context.router.push(const PaywallRoute());
   }
 
   Future<void> logout(BuildContext context) async {

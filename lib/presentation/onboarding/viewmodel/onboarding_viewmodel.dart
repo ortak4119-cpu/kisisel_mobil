@@ -23,26 +23,51 @@ class OnboardingViewModel extends ChangeNotifier {
   int get currentPage => _currentPage;
   bool get isInitialized => _isInitialized;
 
-  final List<OnboardingPage> pages = [
+  List<OnboardingPage> get pages => [
     OnboardingPage(
       image: 'assets/images/onboarding1.png',
-      title: 'Alışkanlıklarını Yönet',
-      description: 'Günlük alışkanlıklarını takip et, hedeflerine ulaş ve başarılarını kutla!',
+      title: 'onboarding.title1'.tr(),
+      description: 'onboarding.description1'.tr(),
     ),
     OnboardingPage(
       image: 'assets/images/onboarding2.png',
-      title: 'Finanslarını Kontrol Et',
-      description: 'Harcamalarını takip et, bütçeni yönet ve mali hedeflerine ulaş.',
+      title: 'onboarding.title2'.tr(),
+      description: 'onboarding.description2'.tr(),
     ),
     OnboardingPage(
       image: 'assets/images/onboarding3.png',
-      title: 'Günlük Tut',
-      description: 'Düşüncelerini kaydet, anılarını sakla ve gelişimini izle.',
+      title: 'onboarding.title3'.tr(),
+      description: 'onboarding.description3'.tr(),
     ),
     OnboardingPage(
       image: 'assets/images/onboarding4.png',
-      title: 'Seviye Atla',
-      description: 'Görevleri tamamla, rozet kazan ve arkadaşlarınla yarış!',
+      title: 'onboarding.title4'.tr(),
+      description: 'onboarding.description4'.tr(),
+    ),
+    OnboardingPage(
+      image: 'assets/images/onboarding5.png',
+      title: 'onboarding.title5'.tr(),
+      description: 'onboarding.description5'.tr(),
+    ),
+    OnboardingPage(
+      image: 'assets/images/onboarding6.png',
+      title: 'onboarding.title6'.tr(),
+      description: 'onboarding.description6'.tr(),
+    ),
+    OnboardingPage(
+      image: 'assets/images/onboarding7.png',
+      title: 'onboarding.title7'.tr(),
+      description: 'onboarding.description7'.tr(),
+    ),
+    OnboardingPage(
+      image: 'assets/images/onboarding8.png',
+      title: 'onboarding.title8'.tr(),
+      description: 'onboarding.description8'.tr(),
+    ),
+    OnboardingPage(
+      image: 'assets/images/onboarding9.png',
+      title: 'onboarding.title9'.tr(),
+      description: 'onboarding.description9'.tr(),
     ),
   ];
 

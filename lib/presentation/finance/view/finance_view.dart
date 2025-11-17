@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../core/utils/color_constant.dart';
+import '../../../core/utils/subscription_icons.dart';
+import '../../../core/route/app_router.gr.dart';
 import '../viewmodel/finance_viewmodel.dart';
 
 class FinanceView extends StatefulWidget {
@@ -42,19 +47,56 @@ class _FinanceViewState extends State<FinanceView> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              'Finans',
-                              style: TextStyle(
-                                color: isDarkMode
-                                    ? ColorConstant.textPrimaryDark
-                                    : ColorConstant.textPrimaryLight,
-                                fontSize: 32,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: -0.5,
+                            Expanded(
+                              child: Text(
+                                'finance.title'.tr(),
+                                style: TextStyle(
+                                  color: isDarkMode
+                                      ? ColorConstant.textPrimaryDark
+                                      : ColorConstant.textPrimaryLight,
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: -0.5,
+                                ),
                               ),
                             ),
                             Row(
                               children: [
+                                // Premium Button
+                                Container(
+                                  margin: const EdgeInsets.only(right: 4),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        ColorConstant.accentYellow,
+                                        ColorConstant.accentOrange,
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: ColorConstant.accentYellow.withOpacity(0.3),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      onTap: () => context.router.push(const PaywallRoute()),
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8),
+                                        child: Icon(
+                                          Icons.workspace_premium_rounded,
+                                          color: ColorConstant.white,
+                                          size: 20,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
                                 IconButton(
                                   onPressed: () {},
                                   icon: Icon(
@@ -285,7 +327,7 @@ class _FinanceViewState extends State<FinanceView> {
                       SliverToBoxAdapter(
                         child: _buildEmptyState(
                           icon: Icons.receipt_long_rounded,
-                          message: 'Henüz harcama yok',
+                          message: 'finance.emptyState'.tr(),
                           color: ColorConstant.accentGreen,
                           isDarkMode: isDarkMode,
                         ),
@@ -555,7 +597,20 @@ class _FinanceViewState extends State<FinanceView> {
       FinanceViewModel viewModel,
       bool isDarkMode,
       ) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    // Sadece bugün ve gelecekteki ödemeleri filtrele
     final upcoming = List<dynamic>.from(viewModel.activeSubscriptions)
+        .where((sub) {
+      final billingDate = DateTime(
+        sub.nextBillingDate.year,
+        sub.nextBillingDate.month,
+        sub.nextBillingDate.day,
+      );
+      return billingDate.isAtSameMomentAs(today) || billingDate.isAfter(today);
+    })
+        .toList()
       ..sort((a, b) => a.nextBillingDate.compareTo(b.nextBillingDate));
 
     return upcoming.take(3).map((sub) {
@@ -579,19 +634,43 @@ class _FinanceViewState extends State<FinanceView> {
         ),
         child: Row(
           children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: ColorConstant.accentBlue.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Center(
-                child: Text(
-                  _getPlatformEmoji(sub.platform),
-                  style: const TextStyle(fontSize: 24),
-                ),
-              ),
+            Builder(
+              builder: (context) {
+                final iconData = SubscriptionIcons.getIcon(sub.name) ??
+                    SubscriptionIcons.getDefaultIcon();
+
+                return Container(
+                  width: 48,
+                  height: 48,
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: isDarkMode ? ColorConstant.bgColorDark : ColorConstant.bgColorLight,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: iconData.color.withOpacity(0.3),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: iconData.logoUrl != null
+                      ? SvgPicture.network(
+                          iconData.logoUrl!,
+                          colorFilter: ColorFilter.mode(
+                            iconData.color,
+                            BlendMode.srcIn,
+                          ),
+                          placeholderBuilder: (context) => Icon(
+                            iconData.icon,
+                            color: iconData.color,
+                            size: 24,
+                          ),
+                        )
+                      : Icon(
+                          iconData.icon,
+                          color: iconData.color,
+                          size: 24,
+                        ),
+                );
+              },
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -1132,6 +1211,56 @@ class _AddSubscriptionBottomSheet extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 24),
+                        // Logo Preview
+                        ValueListenableBuilder<TextEditingValue>(
+                          valueListenable: vm.subscriptionNameController,
+                          builder: (context, value, child) {
+                            final iconData = SubscriptionIcons.getIcon(value.text) ??
+                                SubscriptionIcons.getDefaultIcon();
+
+                            return Center(
+                              child: Container(
+                                width: 80,
+                                height: 80,
+                                padding: const EdgeInsets.all(18),
+                                decoration: BoxDecoration(
+                                  color: isDarkMode ? ColorConstant.bgColorDark : ColorConstant.bgColorLight,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: iconData.color.withOpacity(0.3),
+                                    width: 2,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: iconData.color.withOpacity(0.2),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: iconData.logoUrl != null
+                                    ? SvgPicture.network(
+                                        iconData.logoUrl!,
+                                        colorFilter: ColorFilter.mode(
+                                          iconData.color,
+                                          BlendMode.srcIn,
+                                        ),
+                                        placeholderBuilder: (context) => Icon(
+                                          iconData.icon,
+                                          color: iconData.color,
+                                          size: 40,
+                                        ),
+                                      )
+                                    : Icon(
+                                        iconData.icon,
+                                        color: iconData.color,
+                                        size: 40,
+                                      ),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 20),
                         TextField(
                           controller: vm.subscriptionNameController,
                           style: TextStyle(
@@ -1140,7 +1269,7 @@ class _AddSubscriptionBottomSheet extends StatelessWidget {
                                 : ColorConstant.textPrimaryLight,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Abonelik adı (örn: Netflix)',
+                            hintText: 'Abonelik adı (örn: Netflix, Spotify)',
                             hintStyle: TextStyle(
                               color: isDarkMode
                                   ? ColorConstant.textMutedDark

@@ -114,6 +114,43 @@ class _ProfileViewState extends State<ProfileView>
                       background: _buildHeader(context, viewModel, isDarkMode),
                     ),
                     actions: [
+                      // Premium Button
+                      Padding(
+                        padding: const EdgeInsets.only(right: 4),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                ColorConstant.accentYellow,
+                                ColorConstant.accentOrange,
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: ColorConstant.accentYellow.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () => context.router.push(const PaywallRoute()),
+                              borderRadius: BorderRadius.circular(12),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8),
+                                child: Icon(
+                                  Icons.workspace_premium_rounded,
+                                  color: ColorConstant.white,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                       Padding(
                         padding: const EdgeInsets.only(right: 8),
                         child: IconButton(

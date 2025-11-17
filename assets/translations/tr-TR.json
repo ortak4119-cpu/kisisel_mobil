@@ -1,8 +1,372 @@
 {
-  "welcome": "Hoş Geldiniz",
-  "login": "Giriş Yap",
-  "register": "Kayıt Ol",
-  "email": "E-posta",
-  "password": "Şifre",
-  "forgotPassword": "Şifremi Unuttum"
+  "app": {
+    "name": "LifeSync",
+    "tagline": "Hayatınızı Senkronize Edin",
+    "loading": "Yükleniyor..."
+  },
+  "common": {
+    "or": "veya",
+    "cancel": "İptal",
+    "delete": "Sil",
+    "edit": "Düzenle",
+    "copy": "Kopyala",
+    "save": "Kaydet",
+    "create": "✨ Oluştur",
+    "update": "💾 Güncelle",
+    "skip": "Atla",
+    "confirm": "Onayla",
+    "close": "Kapat",
+    "search": "Ara",
+    "filter": "Filtrele",
+    "today": "Bugün",
+    "yesterday": "Dün",
+    "daysAgo": "{{count}} gün önce",
+    "total": "Toplam",
+    "active": "Aktif",
+    "pending": "Bekleyen",
+    "completed": "Tamamlanan",
+    "optional": "opsiyonel"
+  },
+  "auth": {
+    "welcomeBack": "Tekrar Hoş Geldiniz! 👋",
+    "signInInstruction": "Hesabınıza giriş yaparak devam edin",
+    "createAccount": "Hesap Oluştur 🎉",
+    "createAccountSubtitle": "Hayatınızı senkronize etmeye başlayın",
+    "email": "Email",
+    "emailHint": "ornek@email.com",
+    "emailRequired": "Email adresi gerekli",
+    "emailInvalid": "Geçerli bir email adresi girin",
+    "password": "Şifre",
+    "passwordHint": "••••••••",
+    "passwordRequired": "Şifre gerekli",
+    "passwordMinLength": "Şifre en az 6 karakter olmalı",
+    "passwordMinLengthRegister": "Şifre en az 8 karakter olmalı",
+    "passwordConfirm": "Şifre Tekrar",
+    "passwordConfirmHint": "Şifrenizi tekrar girin",
+    "passwordConfirmRequired": "Şifre tekrarı gerekli",
+    "passwordMismatch": "Şifreler eşleşmiyor",
+    "forgotPassword": "Şifremi Unuttum?",
+    "login": "Giriş Yap",
+    "register": "Kayıt Ol",
+    "continueWithGoogle": "Google ile Devam Et",
+    "continueWithApple": "Apple ile Devam Et",
+    "continueAsGuest": "Misafir Olarak Devam Et",
+    "registerWithGoogle": "Google ile Kayıt Ol",
+    "registerWithApple": "Apple ile Kayıt Ol",
+    "noAccount": "Hesabınız yok mu?",
+    "haveAccount": "Zaten hesabınız var mı?",
+    "username": "Kullanıcı Adı",
+    "usernameHint": "kullaniciadi",
+    "usernameRequired": "Kullanıcı adı gerekli",
+    "usernameMinLength": "Kullanıcı adı en az 3 karakter olmalı",
+    "passwordHintRegister": "En az 8 karakter",
+    "agreeToTerms": "Kabul ediyorum ",
+    "termsOfService": "Kullanım Koşulları",
+    "and": " ve ",
+    "privacyPolicy": "Gizlilik Politikası"
+  },
+  "onboarding": {
+    "skip": "Atla",
+    "title1": "Alışkanlıklarını Yönet",
+    "description1": "Günlük alışkanlıklarını takip et ve hedeflerine ulaş",
+    "title2": "Finanslarını Kontrol Et",
+    "description2": "Gelir ve giderlerini kolayca yönet",
+    "title3": "Günlük Tut",
+    "description3": "Anılarını kaydet ve düşüncelerini paylaş",
+    "title4": "Seviye Atla",
+    "description4": "Görevleri tamamla, XP kazan ve seviye atla",
+    "title5": "Abonelikleri Yönet",
+    "description5": "Tüm aboneliklerini tek yerden takip et ve kontrol altına al",
+    "title6": "Şifrelerini Yönet",
+    "description6": "Tüm şifrelerini güvenle sakla ve kolayca yönet",
+    "title7": "İlaçlarını Takip Et",
+    "description7": "İlaç kullanım saatlerini hatırlat ve takip et",
+    "title8": "Dosyalarını Şifrele",
+    "description8": "İstediğin dosyayı PIN ile şifrele ve arşivle",
+    "title9": "Özel Bildirimler",
+    "description9": "Her kategori için ayrı bildirim al ve kontrol et"
+  },
+  "navigation": {
+    "home": "Ana Sayfa",
+    "tasks": "Görevler",
+    "finance": "Finans",
+    "profile": "Profil",
+    "calendar": "Takvim",
+    "notes": "Notlarım",
+    "diary": "Günlüğüm",
+    "settings": "Ayarlar"
+  },
+  "home": {
+    "title": "Ana Sayfa",
+    "welcome": "Hoş geldiniz!",
+    "addNew": "Yeni Ekle",
+    "addTask": "Görev Ekle",
+    "addTaskSubtitle": "Yeni bir görev oluştur",
+    "addHabit": "Alışkanlık Ekle",
+    "addHabitSubtitle": "Yeni bir alışkanlık oluştur",
+    "addNote": "Not Ekle",
+    "addNoteSubtitle": "Yeni bir not oluştur",
+    "addDiaryEntry": "Günlük Girişi",
+    "addDiaryEntrySubtitle": "Günlüğüne yeni bir giriş ekle",
+    "emptyTasks": "Henüz görev eklenmemiş",
+    "emptyHabits": "Henüz alışkanlık eklenmemiş",
+    "emptyProfile": "Profilinizi görüntüleyin"
+  },
+  "tasks": {
+    "title": "Görevler",
+    "emptyState": "Henüz görev yok",
+    "emptyStateSubtitle": "İlk görevini ekleyerek başla!",
+    "deleteTask": "Görevi Sil",
+    "deleteConfirm": "Bu görevi silmek istediğinizden emin misiniz?",
+    "editTask": "Görevi Düzenle",
+    "newTask": "Yeni Görev",
+    "taskTitle": "Görev başlığı",
+    "description": "Açıklama (opsiyonel)",
+    "priorityLevel": "Öncelik Seviyesi",
+    "recurrenceFrequency": "Tekrar Sıklığı",
+    "priority": {
+      "low": "Düşük",
+      "medium": "Orta",
+      "high": "Yüksek",
+      "normal": "Normal"
+    },
+    "recurrence": {
+      "once": "Tek Seferlik",
+      "daily": "Günlük",
+      "weekly": "Haftalık",
+      "monthly": "Aylık"
+    },
+    "stats": {
+      "pending": "Bekleyen",
+      "completed": "Bitti",
+      "overdue": "Geciken"
+    }
+  },
+  "habits": {
+    "title": "Alışkanlıklar",
+    "emptyState": "Henüz alışkanlık yok",
+    "emptyStateSubtitle": "Hadi ilk alışkanlığını ekle!",
+    "deleteHabit": "Alışkanlığı Sil",
+    "deleteConfirm": "Bu alışkanlığı silmek istediğinizden emin misiniz?",
+    "editHabit": "Alışkanlığı Düzenle",
+    "newHabit": "Yeni Alışkanlık",
+    "habitTitle": "Alışkanlık başlığı",
+    "selectIcon": "İkon Seç",
+    "difficultyLevel": "Zorluk Seviyesi",
+    "difficulty": {
+      "easy": "Kolay",
+      "medium": "Orta",
+      "hard": "Zor"
+    },
+    "stats": {
+      "today": "Bugün",
+      "streak": "Streak",
+      "total": "Toplam",
+      "active": "Aktif"
+    }
+  },
+  "profile": {
+    "title": "Profil",
+    "loading": "✨ Profil yükleniyor...",
+    "userNotFound": "Kullanıcı bulunamadı",
+    "tabs": {
+      "statistics": "İstatistik",
+      "friends": "Arkadaş",
+      "achievements": "Başarı"
+    },
+    "photoSelect": {
+      "coverTitle": "📸 Kapak Fotoğrafı Seç",
+      "profileTitle": "👤 Profil Fotoğrafı Seç",
+      "fromGallery": "Galeriden Seç",
+      "fromGallerySubtitle": "Mevcut fotoğraflarından seç",
+      "takePhoto": "Fotoğraf Çek",
+      "takePhotoSubtitle": "Yeni bir fotoğraf çek"
+    },
+    "stats": {
+      "habits": "Alışkanlıklar",
+      "tasks": "Görevler",
+      "notesDiary": "Notlar & Günlük",
+      "finance": "Finans",
+      "level": "Level {{level}}",
+      "xp": "{{xp}} XP",
+      "achievements": "{{count}}",
+      "total": "Toplam",
+      "active": "Aktif",
+      "today": "Bugün",
+      "streak": "Streak",
+      "completed": "Tamamlanan",
+      "pending": "Bekleyen",
+      "overdue": "Geciken",
+      "notes": "Notlar",
+      "categories": "Kategori",
+      "diary": "Günlük",
+      "thisMonth": "Bu Ay",
+      "budget": "Bütçe",
+      "spending": "Harcama",
+      "subscriptions": "Abonelik",
+      "monthly": "Aylık"
+    },
+    "friends": {
+      "searchTitle": "Arkadaş Ara",
+      "searchSubtitle": "Yeni arkadaşlar bul! 🚀",
+      "requests": "Arkadaşlık İstekleri",
+      "myFriends": "Arkadaşlarım",
+      "emptyState": "Henüz arkadaşın yok",
+      "emptyStateSubtitle": "Hemen yeni arkadaşlar ekle!",
+      "searchHint": "Kullanıcı ara...",
+      "searchEmpty": "Kullanıcı ara...",
+      "notFound": "Kullanıcı bulunamadı",
+      "addFriend": "Arkadaş Ekle"
+    },
+    "achievements": {
+      "unlocked": "Başarı Açıldı! 🎉",
+      "emptyState": "Henüz başarı yok",
+      "emptyStateSubtitle": "Hemen görevlere başla!",
+      "defaultTitle": "Başarı",
+      "progress": "İlerleme: {{current}}/{{total}}",
+      "stats": {
+        "unlocked": "Açıldı",
+        "inProgress": "Devam Ediyor",
+        "locked": "Kilitli"
+      }
+    }
+  },
+  "calendar": {
+    "title": "Takvim",
+    "noEvents": "Henüz etkinlik yok",
+    "addEvent": "Etkinlik Ekle",
+    "eventTitle": "Etkinlik başlığı",
+    "eventDescription": "Açıklama"
+  },
+  "finance": {
+    "title": "Finans",
+    "today": "Bugün",
+    "emptyState": "Henüz harcama yok",
+    "addExpense": "Harcama Ekle",
+    "addSubscription": "Abonelik Ekle",
+    "amount": "Tutar",
+    "category": "Kategori",
+    "description": "Açıklama",
+    "date": "Tarih"
+  },
+  "notes": {
+    "title": "Notlarım",
+    "emptyState": "Henüz not yok",
+    "listView": "Liste görünümü",
+    "cardView": "Kart görünümü",
+    "pinned": "Sabitlenmiş",
+    "locked": "Kilitli",
+    "archived": "Arşivlenmiş",
+    "noteTitle": "Başlık",
+    "noteContent": "Not içeriği...",
+    "categoryName": "Kategori adı",
+    "newNote": "Yeni Not",
+    "editNote": "Not Düzenle"
+  },
+  "diary": {
+    "title": "Günlüğüm",
+    "emptyState": "Henüz günlük girişi yok",
+    "newEntry": "Yeni Giriş",
+    "entryContent": "Bugün neler oldu?",
+    "mood": "Ruh Hali"
+  },
+  "settings": {
+    "title": "Ayarlar",
+    "sections": {
+      "premium": "Premium",
+      "notifications": "Bildirimler",
+      "appearance": "Görünüm",
+      "security": "Güvenlik",
+      "account": "Hesap İşlemleri",
+      "legal": "Yasal",
+      "support": "Destek"
+    },
+    "notifications": {
+      "all": "Tüm Bildirimler",
+      "allSubtitle": "Ana bildirim anahtarı",
+      "tasks": "Görev Bildirimleri",
+      "tasksSubtitle": "Görev hatırlatmaları",
+      "habits": "Alışkanlık Bildirimleri",
+      "habitsSubtitle": "Günlük alışkanlık hatırlatmaları",
+      "diary": "Günlük Hatırlatıcıları",
+      "diarySubtitle": "Günlük yazma hatırlatmaları"
+    },
+    "appearance": {
+      "theme": "Tema",
+      "themeSubtitle": "Görünüm tercihlerinizi ayarlayın",
+      "themeSystem": "Sistem",
+      "themeLight": "Açık",
+      "themeDark": "Koyu"
+    },
+    "security": {
+      "biometric": "Biyometrik Doğrulama",
+      "biometricSubtitle": "Touch ID / Face ID ile giriş"
+    },
+    "account": {
+      "logout": "Çıkış Yap",
+      "logoutSubtitle": "Bu cihazdan güvenli şekilde çıkın",
+      "logoutAll": "Tüm Cihazlardan Çıkış Yap",
+      "logoutAllSubtitle": "Hesabınızı tüm cihazlardan çıkışa zorlayın"
+    },
+    "legal": {
+      "privacy": "Gizlilik Sözleşmesi",
+      "privacySubtitle": "Verilerinizi nasıl koruduğumuzu öğrenin",
+      "terms": "Kullanım Koşulları",
+      "termsSubtitle": "Hizmet şartlarımızı inceleyin"
+    },
+    "support": {
+      "contact": "Bize Ulaşın",
+      "contactSubtitle": "Sorularınız için bizimle iletişime geçin",
+      "rate": "Uygulamayı Değerlendir",
+      "rateSubtitle": "Geri bildiriminiz bizim için değerli"
+    }
+  },
+  "validation": {
+    "required": "Bu alan zorunludur",
+    "emailInvalid": "Geçerli bir email adresi girin",
+    "passwordMinLength": "Şifre en az {{length}} karakter olmalı",
+    "passwordMismatch": "Şifreler eşleşmiyor",
+    "usernameMinLength": "Kullanıcı adı en az {{length}} karakter olmalı"
+  },
+  "errors": {
+    "general": "Bir hata oluştu",
+    "networkError": "İnternet bağlantınızı kontrol edin",
+    "serverError": "Sunucu hatası",
+    "notFound": "Bulunamadı",
+    "unauthorized": "Yetkiniz yok",
+    "tryAgain": "Tekrar deneyin"
+  },
+  "success": {
+    "saved": "Kaydedildi",
+    "created": "Oluşturuldu",
+    "updated": "Güncellendi",
+    "deleted": "Silindi"
+  },
+  "paywall": {
+    "loading": "Paketler yükleniyor...",
+    "title": "Premium'a Yükselt",
+    "subtitle": "Tüm özelliklerin kilidini aç ve hayatını tam kontrole al",
+    "feature1_title": "Sınırsız Task",
+    "feature1_subtitle": "İstediğin kadar görev ve alışkanlık ekle",
+    "feature2_title": "Gelişmiş Hatırlatıcılar",
+    "feature2_subtitle": "Özelleştirilebilir hatırlatıcılar ve bildirimler",
+    "feature3_title": "Tüm Senkronizasyon",
+    "feature3_subtitle": "Tüm cihazlarında verilerine anında erişim",
+    "feature4_title": "Ayrıntılı Raporlar",
+    "feature4_subtitle": "Detaylı analiz ve ilerleme raporları",
+    "feature5_title": "Kategori Bildirimleri",
+    "feature5_subtitle": "Her kategori için özel bildirim ayarları",
+    "choose_plan": "Planını Seç",
+    "monthly": "Aylık",
+    "annual": "Yıllık",
+    "lifetime": "Sınırsız Erişim",
+    "free_trial": "{{duration}} Ücretsiz",
+    "save": "%{{percent}} Tasarruf",
+    "best_value": "En İyi Fiyat",
+    "continue": "Premium'a Geç",
+    "restore": "Satın Alımları Geri Yükle",
+    "terms": "Kullanım Koşulları",
+    "privacy": "Gizlilik Politikası",
+    "most_popular": "En Popüler"
+  }
 }
