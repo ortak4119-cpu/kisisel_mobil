@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import '../../../service/revenue_cat/revenue_cat_service.dart';
@@ -56,7 +57,7 @@ class PaywallViewModel extends ChangeNotifier {
       // Paketleri al
       await loadOfferings();
     } catch (e) {
-      _errorMessage = 'Başlatma hatası: $e';
+      _errorMessage = '${'paywall.errors.initFailed'.tr()}: $e';
       debugPrint('❌ PaywallViewModel initialization error: $e');
     } finally {
       _isLoading = false;
@@ -104,11 +105,11 @@ class PaywallViewModel extends ChangeNotifier {
         debugPrint('Annual: ${_annualPackage?.storeProduct.priceString}');
         debugPrint('Lifetime: ${_lifetimePackage?.storeProduct.priceString}');
       } else {
-        _errorMessage = 'Paket bulunamadı';
+        _errorMessage = 'paywall.errors.noPackages'.tr();
         debugPrint('⚠️ No current offering available');
       }
     } catch (e) {
-      _errorMessage = 'Paketler yüklenemedi: $e';
+      _errorMessage = '${'paywall.errors.loadFailed'.tr()}: $e';
       debugPrint('❌ Error loading offerings: $e');
     }
 
@@ -124,7 +125,7 @@ class PaywallViewModel extends ChangeNotifier {
   /// Satın alma işlemi
   Future<bool> purchaseSelectedPackage() async {
     if (selectedPackage == null) {
-      _errorMessage = 'Lütfen bir paket seçin';
+      _errorMessage = 'paywall.errors.selectPackage'.tr();
       notifyListeners();
       return false;
     }
@@ -150,7 +151,7 @@ class PaywallViewModel extends ChangeNotifier {
 
       return false;
     } catch (e) {
-      _errorMessage = 'Satın alma başarısız: $e';
+      _errorMessage = '${'paywall.purchaseFailed'.tr()}: $e';
       debugPrint('❌ Purchase error: $e');
       return false;
     } finally {
@@ -175,16 +176,16 @@ class PaywallViewModel extends ChangeNotifier {
           debugPrint('✅ Purchases restored - User is premium');
           return true;
         } else {
-          _errorMessage = 'Aktif abonelik bulunamadı';
+          _errorMessage = 'paywall.errors.noActiveSubscription'.tr();
           debugPrint('⚠️ No active subscription found');
           return false;
         }
       }
 
-      _errorMessage = 'Geri yükleme başarısız';
+      _errorMessage = 'paywall.errors.restoreFailed'.tr();
       return false;
     } catch (e) {
-      _errorMessage = 'Geri yükleme hatası: $e';
+      _errorMessage = '${'paywall.errors.restoreError'.tr()}: $e';
       debugPrint('❌ Restore error: $e');
       return false;
     } finally {
@@ -259,7 +260,7 @@ class PaywallViewModel extends ChangeNotifier {
 
     if (period.endsWith('D')) {
       final days = int.tryParse(period.replaceAll('D', '')) ?? 0;
-      return '$days gün';
+      return '$days ${'paywall.duration.days'.tr()}';
     } else if (period.endsWith('W')) {
       final weeks = int.tryParse(period.replaceAll('W', '')) ?? 0;
       return '$weeks hafta';
@@ -268,7 +269,7 @@ class PaywallViewModel extends ChangeNotifier {
       return '$months ay';
     } else if (period.endsWith('Y')) {
       final years = int.tryParse(period.replaceAll('Y', '')) ?? 0;
-      return '$years yıl';
+      return '$years ${'paywall.duration.years'.tr()}';
     }
 
     return '';

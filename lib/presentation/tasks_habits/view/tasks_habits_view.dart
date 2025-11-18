@@ -400,7 +400,7 @@ class _HabitsTab extends StatelessWidget {
             children: [
               _buildFunMiniStat(
                 '${viewModel.completedTodayCount}/${viewModel.habits.length}',
-                'Bugün',
+                'common.today'.tr(),
                 '🎯',
                 ColorConstant.accentYellow,
                 isDarkMode,
@@ -408,7 +408,7 @@ class _HabitsTab extends StatelessWidget {
               const SizedBox(width: 12),
               _buildFunMiniStat(
                 '${viewModel.longestStreak}',
-                'Streak',
+                'habits.stats.streak'.tr(),
                 '🔥',
                 ColorConstant.accentOrange,
                 isDarkMode,
@@ -426,8 +426,8 @@ class _HabitsTab extends StatelessWidget {
             _buildEmptyState(
               icon: Icons.emoji_events_rounded,
               emoji: '🌱',
-              message: 'Henüz alışkanlık yok',
-              subtitle: 'Hadi ilk alışkanlığını ekle!',
+              message: 'habits.emptyState'.tr(),
+              subtitle: 'habits.emptyStateSubtitle'.tr(),
               color: ColorConstant.accentYellow,
               isDarkMode: isDarkMode,
             ),
@@ -468,7 +468,7 @@ class _HabitsTab extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              'Sil',
+              'common.delete'.tr(),
               style: TextStyle(
                 color: ColorConstant.white,
                 fontSize: 12,
@@ -493,7 +493,7 @@ class _HabitsTab extends StatelessWidget {
                 const Text('🗑️ ', style: TextStyle(fontSize: 24)),
                 Expanded(
                   child: Text(
-                    'Alışkanlığı Sil',
+                    'habits.deleteHabit'.tr(),
                     style: TextStyle(
                       color: isDarkMode
                           ? ColorConstant.textPrimaryDark
@@ -504,7 +504,7 @@ class _HabitsTab extends StatelessWidget {
               ],
             ),
             content: Text(
-              'Bu alışkanlığı silmek istediğinizden emin misiniz?',
+              'habits.deleteConfirm'.tr(),
               style: TextStyle(
                 color: isDarkMode
                     ? ColorConstant.textSecondaryDark
@@ -515,7 +515,7 @@ class _HabitsTab extends StatelessWidget {
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
                 child: Text(
-                  'İptal',
+                  'common.cancel'.tr(),
                   style: TextStyle(
                     color: isDarkMode
                         ? ColorConstant.textSecondaryDark
@@ -526,7 +526,7 @@ class _HabitsTab extends StatelessWidget {
               TextButton(
                 onPressed: () => Navigator.pop(context, true),
                 child: Text(
-                  'Sil',
+                  'common.delete'.tr(),
                   style: TextStyle(color: ColorConstant.errorRed),
                 ),
               ),
@@ -730,22 +730,22 @@ class _HabitsTab extends StatelessWidget {
     switch (difficulty) {
       case 'beginner':
         color = ColorConstant.accentGreen;
-        label = 'Kolay';
+        label = 'habits.difficulty.easy'.tr();
         emoji = '🌱';
         break;
       case 'intermediate':
         color = ColorConstant.accentYellow;
-        label = 'Orta';
+        label = 'habits.difficulty.medium'.tr();
         emoji = '💪';
         break;
       case 'advanced':
         color = ColorConstant.errorRed;
-        label = 'Zor';
+        label = 'habits.difficulty.hard'.tr();
         emoji = '🚀';
         break;
       default:
         color = ColorConstant.accentGreen;
-        label = 'Kolay';
+        label = 'habits.difficulty.easy'.tr();
         emoji = '🌱';
     }
 
@@ -834,7 +834,7 @@ class _TasksTab extends StatelessWidget {
                 context,
                 viewModel,
                 TaskFilter.all,
-                'Tümü',
+                'tasks.stats.all'.tr(),
                 '📋',
                 isDarkMode,
               ),
@@ -843,7 +843,7 @@ class _TasksTab extends StatelessWidget {
                 context,
                 viewModel,
                 TaskFilter.pending,
-                'Bekleyen',
+                'tasks.stats.pending'.tr(),
                 '⏳',
                 isDarkMode,
               ),
@@ -852,7 +852,7 @@ class _TasksTab extends StatelessWidget {
                 context,
                 viewModel,
                 TaskFilter.completed,
-                'Bitti',
+                'tasks.stats.completed'.tr(),
                 '✅',
                 isDarkMode,
               ),
@@ -1026,22 +1026,22 @@ class _TasksTab extends StatelessWidget {
   String _getEmptyStateMessage(TaskFilter filter) {
     switch (filter) {
       case TaskFilter.all:
-        return 'Henüz görev yok';
+        return 'tasks.emptyState'.tr();
       case TaskFilter.pending:
-        return 'Bekleyen görev yok';
+        return 'tasks.emptyPending'.tr();
       case TaskFilter.completed:
-        return 'Tamamlanan görev yok';
+        return 'tasks.emptyCompleted'.tr();
     }
   }
 
   String _getEmptyStateSubtitle(TaskFilter filter) {
     switch (filter) {
       case TaskFilter.all:
-        return 'İlk görevini ekleyerek başla!';
+        return 'tasks.emptyStateSubtitle'.tr();
       case TaskFilter.pending:
-        return 'Harika! Tüm görevler tamamlanmış';
+        return 'tasks.emptyPendingSubtitle'.tr();
       case TaskFilter.completed:
-        return 'Görevlerini tamamlamaya başla!';
+        return 'tasks.emptyCompletedSubtitle'.tr();
     }
   }
 
@@ -1077,7 +1077,7 @@ class _TasksTab extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              'Sil',
+              'common.delete'.tr(),
               style: TextStyle(
                 color: ColorConstant.white,
                 fontSize: 12,
@@ -1102,7 +1102,7 @@ class _TasksTab extends StatelessWidget {
                 const Text('🗑️ ', style: TextStyle(fontSize: 24)),
                 Expanded(
                   child: Text(
-                    'Görevi Sil',
+                    'tasks.deleteTask'.tr(),
                     style: TextStyle(
                       color: isDarkMode
                           ? ColorConstant.textPrimaryDark
@@ -1113,7 +1113,7 @@ class _TasksTab extends StatelessWidget {
               ],
             ),
             content: Text(
-              'Bu görevi silmek istediğinizden emin misiniz?',
+              'tasks.deleteConfirm'.tr(),
               style: TextStyle(
                 color: isDarkMode
                     ? ColorConstant.textSecondaryDark
@@ -1124,7 +1124,7 @@ class _TasksTab extends StatelessWidget {
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
                 child: Text(
-                  'İptal',
+                  'common.cancel'.tr(),
                   style: TextStyle(
                     color: isDarkMode
                         ? ColorConstant.textSecondaryDark
@@ -1135,7 +1135,7 @@ class _TasksTab extends StatelessWidget {
               TextButton(
                 onPressed: () => Navigator.pop(context, true),
                 child: Text(
-                  'Sil',
+                  'common.delete'.tr(),
                   style: TextStyle(color: ColorConstant.errorRed),
                 ),
               ),
@@ -1325,22 +1325,22 @@ class _TasksTab extends StatelessWidget {
     switch (priority) {
       case 0:
         color = ColorConstant.accentGreen;
-        label = 'Düşük';
+        label = 'tasks.priority.low'.tr();
         emoji = '😌';
         break;
       case 1:
         color = ColorConstant.accentYellow;
-        label = 'Orta';
+        label = 'tasks.priority.medium'.tr();
         emoji = '👀';
         break;
       case 2:
         color = ColorConstant.errorRed;
-        label = 'Yüksek';
+        label = 'tasks.priority.high'.tr();
         emoji = '🔥';
         break;
       default:
         color = ColorConstant.accentBlue;
-        label = 'Normal';
+        label = 'tasks.priority.normal'.tr();
         emoji = '📌';
     }
 
@@ -1575,7 +1575,7 @@ class _AddTaskBottomSheet extends StatelessWidget {
                             ),
                             const SizedBox(width: 12),
                             Text(
-                              isEditing ? 'Görevi Düzenle' : 'Yeni Görev',
+                              isEditing ? 'tasks.editTask'.tr() : 'tasks.newTask'.tr(),
                               style: TextStyle(
                                 color: isDarkMode
                                     ? ColorConstant.textPrimaryDark
@@ -1597,7 +1597,7 @@ class _AddTaskBottomSheet extends StatelessWidget {
                                 : ColorConstant.textPrimaryLight,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Görev başlığı',
+                            hintText: 'tasks.taskTitle'.tr(),
                             hintStyle: TextStyle(
                               color: isDarkMode
                                   ? ColorConstant.textMutedDark
@@ -1625,7 +1625,7 @@ class _AddTaskBottomSheet extends StatelessWidget {
                                 : ColorConstant.textPrimaryLight,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Açıklama (opsiyonel)',
+                            hintText: 'tasks.description'.tr(),
                             hintStyle: TextStyle(
                               color: isDarkMode
                                   ? ColorConstant.textMutedDark
@@ -1645,7 +1645,7 @@ class _AddTaskBottomSheet extends StatelessWidget {
 
                         // Priority
                         Text(
-                          'Öncelik Seviyesi',
+                          'tasks.priorityLevel'.tr(),
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -1661,7 +1661,7 @@ class _AddTaskBottomSheet extends StatelessWidget {
                               context,
                               vm,
                               0,
-                              'Düşük',
+                              'tasks.priority.low'.tr(),
                               '😌',
                               ColorConstant.accentGreen,
                               isDarkMode,
@@ -1671,7 +1671,7 @@ class _AddTaskBottomSheet extends StatelessWidget {
                               context,
                               vm,
                               1,
-                              'Orta',
+                              'tasks.priority.medium'.tr(),
                               '👀',
                               ColorConstant.accentYellow,
                               isDarkMode,
@@ -1681,7 +1681,7 @@ class _AddTaskBottomSheet extends StatelessWidget {
                               context,
                               vm,
                               2,
-                              'Yüksek',
+                              'tasks.priority.high'.tr(),
                               '🔥',
                               ColorConstant.errorRed,
                               isDarkMode,
@@ -1692,7 +1692,7 @@ class _AddTaskBottomSheet extends StatelessWidget {
 
                         // Recurrence Type
                         Text(
-                          'Tekrar Sıklığı',
+                          'tasks.recurrenceFrequency'.tr(),
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -1708,7 +1708,7 @@ class _AddTaskBottomSheet extends StatelessWidget {
                               context,
                               vm,
                               'none',
-                              'Tek Seferlik',
+                              'tasks.recurrence.once'.tr(),
                               '📌',
                               ColorConstant.accentBlue,
                               isDarkMode,
@@ -1718,7 +1718,7 @@ class _AddTaskBottomSheet extends StatelessWidget {
                               context,
                               vm,
                               'daily',
-                              'Günlük',
+                              'tasks.recurrence.daily'.tr(),
                               '📅',
                               Colors.blue,
                               isDarkMode,
@@ -1728,7 +1728,7 @@ class _AddTaskBottomSheet extends StatelessWidget {
                               context,
                               vm,
                               'weekly',
-                              'Haftalık',
+                              'tasks.recurrence.weekly'.tr(),
                               '🗓️',
                               Colors.purple,
                               isDarkMode,
@@ -1738,7 +1738,7 @@ class _AddTaskBottomSheet extends StatelessWidget {
                               context,
                               vm,
                               'monthly',
-                              'Aylık',
+                              'tasks.recurrence.monthly'.tr(),
                               '📆',
                               Colors.orange,
                               isDarkMode,
@@ -1781,7 +1781,7 @@ class _AddTaskBottomSheet extends StatelessWidget {
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
-                                      'Hatırlatıcı',
+                                      'tasks.reminder'.tr(),
                                       style: TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w600,
@@ -1803,7 +1803,7 @@ class _AddTaskBottomSheet extends StatelessWidget {
                               if (vm.reminderEnabled) ...[
                                 const SizedBox(height: 16),
                                 Text(
-                                  'Hatırlatma Zamanı',
+                                  'tasks.reminderTime'.tr(),
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: isDarkMode
@@ -1864,7 +1864,7 @@ class _AddTaskBottomSheet extends StatelessWidget {
                                           child: Text(
                                             vm.reminderTime != null
                                                 ? '${vm.reminderTime!.hour.toString().padLeft(2, '0')}:${vm.reminderTime!.minute.toString().padLeft(2, '0')}'
-                                                : 'Saat seçin (örn: 10:00)',
+                                                : 'tasks.hints.selectTime'.tr(),
                                             style: TextStyle(
                                               fontSize: 14,
                                               fontWeight: FontWeight.w600,
@@ -1919,7 +1919,7 @@ class _AddTaskBottomSheet extends StatelessWidget {
                                   ),
                                 ),
                                 child: Text(
-                                  'İptal',
+                                  'common.cancel'.tr(),
                                   style: TextStyle(
                                     color: isDarkMode
                                         ? ColorConstant.textSecondaryDark
@@ -1944,7 +1944,7 @@ class _AddTaskBottomSheet extends StatelessWidget {
                                   ),
                                 ),
                                 child: Text(
-                                  isEditing ? '💾 Güncelle' : '✨ Oluştur',
+                                  isEditing ? 'common.update'.tr() : 'common.create'.tr(),
                                   style: TextStyle(
                                     color: ColorConstant.white,
                                     fontWeight: FontWeight.w700,
@@ -2115,8 +2115,8 @@ class _AddHabitBottomSheet extends StatelessWidget {
                             const SizedBox(width: 12),
                             Text(
                               isEditing
-                                  ? 'Alışkanlığı Düzenle'
-                                  : 'Yeni Alışkanlık',
+                                  ? 'habits.editHabit'.tr()
+                                  : 'habits.newHabit'.tr(),
                               style: TextStyle(
                                 color: isDarkMode
                                     ? ColorConstant.textPrimaryDark
@@ -2131,7 +2131,7 @@ class _AddHabitBottomSheet extends StatelessWidget {
 
                         // Icon Selection
                         Text(
-                          'İkon Seç',
+                          'habits.selectIcon'.tr(),
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -2205,7 +2205,7 @@ class _AddHabitBottomSheet extends StatelessWidget {
                                 : ColorConstant.textPrimaryLight,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Alışkanlık başlığı',
+                            hintText: 'habits.habitTitle'.tr(),
                             hintStyle: TextStyle(
                               color: isDarkMode
                                   ? ColorConstant.textMutedDark
@@ -2233,7 +2233,7 @@ class _AddHabitBottomSheet extends StatelessWidget {
                                 : ColorConstant.textPrimaryLight,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Açıklama (opsiyonel)',
+                            hintText: 'tasks.description'.tr(),
                             hintStyle: TextStyle(
                               color: isDarkMode
                                   ? ColorConstant.textMutedDark
@@ -2253,7 +2253,7 @@ class _AddHabitBottomSheet extends StatelessWidget {
 
                         // Difficulty
                         Text(
-                          'Zorluk Seviyesi',
+                          'habits.difficultyLevel'.tr(),
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -2269,7 +2269,7 @@ class _AddHabitBottomSheet extends StatelessWidget {
                               context,
                               vm,
                               'beginner',
-                              'Kolay',
+                              'habits.difficulty.easy'.tr(),
                               '🌱',
                               ColorConstant.accentGreen,
                               isDarkMode,
@@ -2279,7 +2279,7 @@ class _AddHabitBottomSheet extends StatelessWidget {
                               context,
                               vm,
                               'intermediate',
-                              'Orta',
+                              'habits.difficulty.medium'.tr(),
                               '💪',
                               ColorConstant.accentYellow,
                               isDarkMode,
@@ -2289,7 +2289,7 @@ class _AddHabitBottomSheet extends StatelessWidget {
                               context,
                               vm,
                               'advanced',
-                              'Zor',
+                              'habits.difficulty.hard'.tr(),
                               '🚀',
                               ColorConstant.errorRed,
                               isDarkMode,
@@ -2320,7 +2320,7 @@ class _AddHabitBottomSheet extends StatelessWidget {
                                   ),
                                 ),
                                 child: Text(
-                                  'İptal',
+                                  'common.cancel'.tr(),
                                   style: TextStyle(
                                     color: isDarkMode
                                         ? ColorConstant.textSecondaryDark
@@ -2346,7 +2346,7 @@ class _AddHabitBottomSheet extends StatelessWidget {
                                   ),
                                 ),
                                 child: Text(
-                                  isEditing ? '💾 Güncelle' : '✨ Oluştur',
+                                  isEditing ? 'common.update'.tr() : 'common.create'.tr(),
                                   style: TextStyle(
                                     color: ColorConstant.white,
                                     fontWeight: FontWeight.w700,
@@ -2494,17 +2494,17 @@ Widget _buildRecurrenceBadge(String recurringPattern, bool isDarkMode) {
   switch (recurringPattern) {
     case 'daily':
       color = Colors.blue;
-      label = 'Günlük';
+      label = 'tasks.recurrence.daily'.tr();
       emoji = '📅';
       break;
     case 'weekly':
       color = Colors.purple;
-      label = 'Haftalık';
+      label = 'tasks.recurrence.weekly'.tr();
       emoji = '🗓️';
       break;
     case 'monthly':
       color = Colors.orange;
-      label = 'Aylık';
+      label = 'tasks.recurrence.monthly'.tr();
       emoji = '📆';
       break;
     default:

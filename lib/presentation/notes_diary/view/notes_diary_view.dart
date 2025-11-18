@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/route/app_router.gr.dart';
 import '../../../models/diary/diary_models.dart';
@@ -44,7 +45,7 @@ class _NotesDiaryViewState extends State<NotesDiaryView> {
                           children: [
                             Expanded(
                               child: Text(
-                                _isNotesView ? 'Notlarım' : 'Günlüğüm',
+                                _isNotesView ? 'notes.title'.tr() : 'diary.title'.tr(),
                                 style: TextStyle(
                                   color: isDarkMode
                                       ? ColorConstant.textPrimaryDark
@@ -102,8 +103,8 @@ class _NotesDiaryViewState extends State<NotesDiaryView> {
                                       : ColorConstant.textSecondaryLight,
                                 ),
                                 tooltip: viewModel.notesViewMode == NotesViewMode.grid
-                                    ? 'Liste görünümü'
-                                    : 'Kart görünümü',
+                                    ? 'notes.listView'.tr()
+                                    : 'notes.cardView'.tr(),
                               ),
                             // Filter/Options button
                             if (_isNotesView)
@@ -181,7 +182,7 @@ class _NotesDiaryViewState extends State<NotesDiaryView> {
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
-                                        'Notlar',
+                                        'notes.notes'.tr(),
                                         style: TextStyle(
                                           fontSize: 15,
                                           fontWeight: FontWeight.w700,
@@ -246,7 +247,7 @@ class _NotesDiaryViewState extends State<NotesDiaryView> {
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
-                                        'Günlük',
+                                        'diary.title'.tr(),
                                         style: TextStyle(
                                           fontSize: 15,
                                           fontWeight: FontWeight.w700,
@@ -473,7 +474,7 @@ class _NotesFilterSheet extends StatelessWidget {
                       Row(
                         children: [
                           Text(
-                            'Filtreler',
+                            'notes.filters'.tr(),
                             style: TextStyle(
                               color: isDarkMode
                                   ? ColorConstant.textPrimaryDark
@@ -486,7 +487,7 @@ class _NotesFilterSheet extends StatelessWidget {
                           TextButton(
                             onPressed: () => vm.clearFilters(),
                             child: Text(
-                              'Temizle',
+                              'notes.clear'.tr(),
                               style: TextStyle(
                                 color: const Color(0xFFB794F6),
                                 fontWeight: FontWeight.w600,
@@ -501,7 +502,7 @@ class _NotesFilterSheet extends StatelessWidget {
                       _buildFilterChip(
                         context,
                         icon: Icons.push_pin_rounded,
-                        label: 'Sabitlenmiş',
+                        label: 'notes.pinned'.tr(),
                         isSelected: vm.filterPinned == true,
                         onTap: () {
                           vm.setFilterPinned(vm.filterPinned == true ? null : true);
@@ -511,7 +512,7 @@ class _NotesFilterSheet extends StatelessWidget {
                       _buildFilterChip(
                         context,
                         icon: Icons.lock_rounded,
-                        label: 'Kilitli',
+                        label: 'notes.locked'.tr(),
                         isSelected: vm.filterLocked == true,
                         onTap: () {
                           vm.setFilterLocked(vm.filterLocked == true ? null : true);
@@ -521,7 +522,7 @@ class _NotesFilterSheet extends StatelessWidget {
                       _buildFilterChip(
                         context,
                         icon: Icons.archive_rounded,
-                        label: 'Arşivlenmiş',
+                        label: 'notes.archived'.tr(),
                         isSelected: vm.filterArchived == true,
                         onTap: () {
                           vm.setFilterArchived(vm.filterArchived == true ? null : true);
@@ -532,7 +533,7 @@ class _NotesFilterSheet extends StatelessWidget {
                       // Categories
                       if (vm.categories.isNotEmpty) ...[
                         Text(
-                          'Kategoriler',
+                          'notes.categories'.tr(),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
@@ -640,7 +641,7 @@ class _NotesFilterSheet extends StatelessWidget {
                           size: 20,
                         ),
                         label: Text(
-                          'Kategorileri Yönet',
+                          'notes.manageCategories'.tr(),
                           style: TextStyle(
                             color: isDarkMode
                                 ? ColorConstant.textSecondaryDark
@@ -793,7 +794,7 @@ class _CategoryManagerSheet extends StatelessWidget {
                         Row(
                           children: [
                             Text(
-                              'Kategoriler',
+                              'notes.categories'.tr(),
                               style: TextStyle(
                                 color: isDarkMode
                                     ? ColorConstant.textPrimaryDark
@@ -833,7 +834,7 @@ class _CategoryManagerSheet extends StatelessWidget {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            'Henüz kategori yok',
+                            'notes.noCategories'.tr(),
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -935,7 +936,7 @@ class _CategoryManagerSheet extends StatelessWidget {
                                             : ColorConstant.textSecondaryLight,
                                       ),
                                       const SizedBox(width: 12),
-                                      Text('Düzenle'),
+                                      Text('common.edit'.tr()),
                                     ],
                                   ),
                                 ),
@@ -952,7 +953,7 @@ class _CategoryManagerSheet extends StatelessWidget {
                                     );
                                   },
                                   child: Row(
-                                    children: const [
+                                    children:  [
                                       Icon(
                                         Icons.delete_rounded,
                                         size: 20,
@@ -960,7 +961,7 @@ class _CategoryManagerSheet extends StatelessWidget {
                                       ),
                                       SizedBox(width: 12),
                                       Text(
-                                        'Sil',
+                                        'common.delete'.tr(),
                                         style: TextStyle(color: Colors.red),
                                       ),
                                     ],
@@ -1009,7 +1010,7 @@ class _CategoryManagerSheet extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
           ),
           title: Text(
-            'Yeni Kategori',
+            'notes.newCategory'.tr(),
             style: TextStyle(
               color: isDarkMode
                   ? ColorConstant.textPrimaryDark
@@ -1028,7 +1029,7 @@ class _CategoryManagerSheet extends StatelessWidget {
                       : ColorConstant.textPrimaryLight,
                 ),
                 decoration: InputDecoration(
-                  hintText: 'Kategori adı',
+                  hintText: 'notes.categoryName'.tr(),
                   hintStyle: TextStyle(
                     color: isDarkMode
                         ? ColorConstant.textMutedDark
@@ -1086,7 +1087,7 @@ class _CategoryManagerSheet extends StatelessWidget {
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text(
-                'İptal',
+                'common.cancel'.tr(),
                 style: TextStyle(
                   color: isDarkMode
                       ? ColorConstant.textSecondaryDark
@@ -1106,8 +1107,8 @@ class _CategoryManagerSheet extends StatelessWidget {
                   Navigator.pop(context);
                 }
               },
-              child: const Text(
-                'Oluştur',
+              child:  Text(
+                'notes.create'.tr(),
                 style: TextStyle(
                   color: Color(0xFFB794F6),
                   fontWeight: FontWeight.w700,
@@ -1140,7 +1141,7 @@ class _CategoryManagerSheet extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
           ),
           title: Text(
-            'Kategoriyi Düzenle',
+            'notes.editCategory'.tr(),
             style: TextStyle(
               color: isDarkMode
                   ? ColorConstant.textPrimaryDark
@@ -1159,7 +1160,7 @@ class _CategoryManagerSheet extends StatelessWidget {
                       : ColorConstant.textPrimaryLight,
                 ),
                 decoration: InputDecoration(
-                  hintText: 'Kategori adı',
+                  hintText: 'notes.categoryName'.tr(),
                   hintStyle: TextStyle(
                     color: isDarkMode
                         ? ColorConstant.textMutedDark
@@ -1217,7 +1218,7 @@ class _CategoryManagerSheet extends StatelessWidget {
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text(
-                'İptal',
+                'common.cancel'.tr(),
                 style: TextStyle(
                   color: isDarkMode
                       ? ColorConstant.textSecondaryDark
@@ -1238,8 +1239,8 @@ class _CategoryManagerSheet extends StatelessWidget {
                   Navigator.pop(context);
                 }
               },
-              child: const Text(
-                'Güncelle',
+              child:  Text(
+                'common.update'.tr(),
                 style: TextStyle(
                   color: Color(0xFFB794F6),
                   fontWeight: FontWeight.w700,
@@ -1266,7 +1267,7 @@ class _CategoryManagerSheet extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
         ),
         title: Text(
-          'Kategoriyi Sil',
+          'notes.deleteCategory'.tr(),
           style: TextStyle(
             color: isDarkMode
                 ? ColorConstant.textPrimaryDark
@@ -1275,7 +1276,7 @@ class _CategoryManagerSheet extends StatelessWidget {
           ),
         ),
         content: Text(
-          'Bu kategoriyi silmek istediğinizden emin misiniz? Kategorideki notlar silinmeyecek.',
+          'notes.deleteCategoryConfirm'.tr(),
           style: TextStyle(
             color: isDarkMode
                 ? ColorConstant.textSecondaryDark
@@ -1286,7 +1287,7 @@ class _CategoryManagerSheet extends StatelessWidget {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
-              'İptal',
+              'common.cancel'.tr(),
               style: TextStyle(
                 color: isDarkMode
                     ? ColorConstant.textSecondaryDark
@@ -1522,13 +1523,13 @@ class _DiaryCalendarSheetState extends State<_DiaryCalendarSheet> {
                         _buildLegendItem(
                           context,
                           const Color(0xFFFFA07A),
-                          'Günlük var',
+                          'diary.hasEntry'.tr(),
                         ),
                         const SizedBox(width: 24),
                         _buildLegendItem(
                           context,
                           const Color(0xFFB794F6),
-                          'Bugün',
+                          'common.today'.tr(),
                         ),
                       ],
                     ),
@@ -1570,21 +1571,34 @@ class _DiaryCalendarSheetState extends State<_DiaryCalendarSheet> {
   }
 
   String _getMonthName(int month) {
-    const months = [
-      'Ocak',
-      'Şubat',
-      'Mart',
-      'Nisan',
-      'Mayıs',
-      'Haziran',
-      'Temmuz',
-      'Ağustos',
-      'Eylül',
-      'Ekim',
-      'Kasım',
-      'Aralık'
-    ];
-    return months[month - 1];
+    switch (month) {
+      case 1:
+        return 'common.months.january'.tr();
+      case 2:
+        return 'common.months.february'.tr();
+      case 3:
+        return 'common.months.march'.tr();
+      case 4:
+        return 'common.months.april'.tr();
+      case 5:
+        return 'common.months.may'.tr();
+      case 6:
+        return 'common.months.june'.tr();
+      case 7:
+        return 'common.months.july'.tr();
+      case 8:
+        return 'common.months.august'.tr();
+      case 9:
+        return 'common.months.september'.tr();
+      case 10:
+        return 'common.months.october'.tr();
+      case 11:
+        return 'common.months.november'.tr();
+      case 12:
+        return 'common.months.december'.tr();
+      default:
+        return '';
+    }
   }
 
   int _getDaysInMonth(DateTime date) {
@@ -1728,7 +1742,7 @@ class _DiaryDetailSheet extends StatelessWidget {
                                       : ColorConstant.textSecondaryLight,
                                 ),
                                 const SizedBox(width: 12),
-                                Text('Düzenle'),
+                                Text('common.edit'.tr()),
                               ],
                             ),
                           ),
@@ -1749,7 +1763,7 @@ class _DiaryDetailSheet extends StatelessWidget {
                               );
                             },
                             child: Row(
-                              children: const [
+                              children:  [
                                 Icon(
                                   Icons.delete_rounded,
                                   size: 20,
@@ -1757,7 +1771,7 @@ class _DiaryDetailSheet extends StatelessWidget {
                                 ),
                                 SizedBox(width: 12),
                                 Text(
-                                  'Sil',
+                                  'common.delete'.tr(),
                                   style: TextStyle(color: Colors.red),
                                 ),
                               ],
@@ -1857,22 +1871,39 @@ class _DiaryDetailSheet extends StatelessWidget {
   }
 
   String _formatFullDate(DateTime date) {
-    const months = [
-      'Ocak',
-      'Şubat',
-      'Mart',
-      'Nisan',
-      'Mayıs',
-      'Haziran',
-      'Temmuz',
-      'Ağustos',
-      'Eylül',
-      'Ekim',
-      'Kasım',
-      'Aralık'
-    ];
-    return '${date.day} ${months[date.month - 1]} ${date.year}';
+    return '${date.day} ${_getMonthName(date.month)} ${date.year}';
   }
+  String _getMonthName(int month) {
+    switch (month) {
+      case 1:
+        return 'common.monthsShort.january'.tr();
+      case 2:
+        return 'common.monthsShort.february'.tr();
+      case 3:
+        return 'common.monthsShort.march'.tr();
+      case 4:
+        return 'common.monthsShort.april'.tr();
+      case 5:
+        return 'common.monthsShort.may'.tr();
+      case 6:
+        return 'common.monthsShort.june'.tr();
+      case 7:
+        return 'common.monthsShort.july'.tr();
+      case 8:
+        return 'common.monthsShort.august'.tr();
+      case 9:
+        return 'common.monthsShort.september'.tr();
+      case 10:
+        return 'common.monthsShort.october'.tr();
+      case 11:
+        return 'common.monthsShort.november'.tr();
+      case 12:
+        return 'common.monthsShort.december'.tr();
+      default:
+        return '';
+    }
+  }
+
 
   IconData _getWeatherIcon(String weather) {
     switch (weather.toLowerCase()) {
@@ -1892,13 +1923,13 @@ class _DiaryDetailSheet extends StatelessWidget {
   String _getWeatherLabel(String weather) {
     switch (weather.toLowerCase()) {
       case 'sunny':
-        return 'Güneşli';
+        return 'common.weather.sunny'.tr();
       case 'cloudy':
-        return 'Bulutlu';
+        return 'common.weather.cloudy'.tr();
       case 'rainy':
-        return 'Yağmurlu';
+        return 'common.weather.rainy'.tr();
       case 'snowy':
-        return 'Karlı';
+        return 'common.weather.snowy'.tr();
       default:
         return weather;
     }
@@ -1934,7 +1965,7 @@ class _DiaryDetailSheet extends StatelessWidget {
         isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
-          'Günlüğü Sil',
+          'diary.deleteDiary'.tr(),
           style: TextStyle(
             color: isDarkMode
                 ? ColorConstant.textPrimaryDark
@@ -1943,7 +1974,7 @@ class _DiaryDetailSheet extends StatelessWidget {
           ),
         ),
         content: Text(
-          'Bu günlük girişini silmek istediğinizden emin misiniz?',
+          'diary.deleteConfirm'.tr(),
           style: TextStyle(
             color: isDarkMode
                 ? ColorConstant.textSecondaryDark
@@ -1954,7 +1985,7 @@ class _DiaryDetailSheet extends StatelessWidget {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
-              'İptal',
+              'common.cancel'.tr(),
               style: TextStyle(
                 color: isDarkMode
                     ? ColorConstant.textSecondaryDark
@@ -2018,7 +2049,7 @@ class _NotesContent extends StatelessWidget {
           : _buildListView(context, filteredNotes, isDarkMode))
           : _buildEmptyState(
         icon: Icons.note_add_rounded,
-        message: 'Henüz not yok',
+        message: 'notes.emptyState'.tr(),
         color: const Color(0xFFB794F6),
         isDarkMode: isDarkMode,
       ),
@@ -2248,7 +2279,7 @@ class _NotesContent extends StatelessWidget {
 
                   // İçerik
                   Text(
-                    note.isLocked ? 'Kilitli not' : (note.content ?? ''),
+                    note.isLocked ? 'notes.lockedNote'.tr() : (note.content ?? ''),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -2305,7 +2336,7 @@ class _NotesContent extends StatelessWidget {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                'Arşiv',
+                                'notes.archive'.tr(),
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w600,
@@ -2363,7 +2394,7 @@ class _NotesContent extends StatelessWidget {
                         size: 20,
                       ),
                       const SizedBox(width: 12),
-                      Text(note.isPinned ? 'Sabitlemeyi Kaldır' : 'Sabitle'),
+                      Text(note.isPinned ? 'notes.unpinNote'.tr() : 'notes.pinNote'.tr()),
                     ],
                   ),
                 ),
@@ -2381,7 +2412,7 @@ class _NotesContent extends StatelessWidget {
                         size: 20,
                       ),
                       const SizedBox(width: 12),
-                      Text('Kopyala'),
+                      Text('common.copy'.tr()),
                     ],
                   ),
                 ),
@@ -2409,7 +2440,7 @@ class _NotesContent extends StatelessWidget {
                         size: 20,
                       ),
                       const SizedBox(width: 12),
-                      Text(note.isLocked ? 'Kilidi Kaldır' : 'Kilitle'),
+                      Text(note.isLocked ? 'notes.unlockNote'.tr() : 'notes.lockNote'.tr()),
                     ],
                   ),
                 ),
@@ -2429,7 +2460,7 @@ class _NotesContent extends StatelessWidget {
                         size: 20,
                       ),
                       const SizedBox(width: 12),
-                      Text(note.isArchived ? 'Arşivden Çıkar' : 'Arşivle'),
+                      Text(note.isArchived ? 'notes.unarchiveNote'.tr() : 'notes.archiveNote'.tr()),
                     ],
                   ),
                 ),
@@ -2496,7 +2527,7 @@ class _NotesContent extends StatelessWidget {
     ),
     const SizedBox(width: 3),
     Text(
-    'Kilitli',
+    'notes.locked'.tr(),
     style: TextStyle(
     fontSize: 9,
     fontWeight: FontWeight.w700,
@@ -2638,8 +2669,8 @@ class _NotesContent extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 12),
                                 Text(note.isPinned
-                                    ? 'Sabitlemeyi Kaldır'
-                                    : 'Sabitle'),
+                                    ? 'notes.unpinNote'.tr()
+                                    : 'notes.pinNote'.tr()),
                               ],
                             ),
                           ),
@@ -2657,7 +2688,7 @@ class _NotesContent extends StatelessWidget {
                                   size: 20,
                                 ),
                                 const SizedBox(width: 12),
-                                Text('Kopyala'),
+                                Text('common.copy'.tr()),
                               ],
                             ),
                           ),
@@ -2686,8 +2717,8 @@ class _NotesContent extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 12),
                                 Text(note.isLocked
-                                    ? 'Kilidi Kaldır'
-                                    : 'Kilitle'),
+                                    ? 'notes.unlockNote'.tr()
+                                    : 'notes.lockNote'.tr()),
                               ],
                             ),
                           ),
@@ -2708,8 +2739,8 @@ class _NotesContent extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 12),
                                 Text(note.isArchived
-                                    ? 'Arşivden Çıkar'
-                                    : 'Arşivle'),
+                                    ? 'notes.unarchiveNote'.tr()
+                                    : 'notes.archiveNote'.tr()),
                               ],
                             ),
                           ),
@@ -2722,7 +2753,7 @@ class _NotesContent extends StatelessWidget {
                               );
                             },
                             child: Row(
-                              children: const [
+                              children:  [
                                 Icon(
                                   Icons.delete_rounded,
                                   size: 20,
@@ -2730,7 +2761,7 @@ class _NotesContent extends StatelessWidget {
                                 ),
                                 SizedBox(width: 12),
                                 Text(
-                                  'Sil',
+                                  'common.delete'.tr(),
                                   style: TextStyle(color: Colors.red),
                                 ),
                               ],
@@ -2781,7 +2812,7 @@ class _NotesContent extends StatelessWidget {
                           ),
                           const SizedBox(height: 10),
                           Text(
-                            'Kilitli Not',
+                            'notes.lockedNoteDialog'.tr(),
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
@@ -2864,7 +2895,7 @@ class _NotesContent extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
         ),
         title: Text(
-          'Notu Kilitle',
+          'notes.lockNote'.tr(),
           style: TextStyle(
             color: isDarkMode
                 ? ColorConstant.textPrimaryDark
@@ -2916,7 +2947,7 @@ class _NotesContent extends StatelessWidget {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
-              'İptal',
+              'common.cancel'.tr(),
               style: TextStyle(
                 color: isDarkMode
                     ? ColorConstant.textSecondaryDark
@@ -2931,8 +2962,8 @@ class _NotesContent extends StatelessWidget {
                 viewModel.lockNote(note.id, pinController.text, context);
               }
             },
-            child: const Text(
-              'Kilitle',
+            child:  Text(
+              'common.lock'.tr(),
               style: TextStyle(
                 color: Color(0xFFB794F6),
                 fontWeight: FontWeight.w700,
@@ -2961,7 +2992,7 @@ class _NotesContent extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
         ),
         title: Text(
-          'Notu Aç',
+          'notes.unlockNote'.tr(),
           style: TextStyle(
             color: isDarkMode
                 ? ColorConstant.textPrimaryDark
@@ -2973,7 +3004,7 @@ class _NotesContent extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'PIN kodunu girin',
+              'notes.enterPin'.tr(),
               style: TextStyle(
                 color: isDarkMode
                     ? ColorConstant.textSecondaryDark
@@ -3013,7 +3044,7 @@ class _NotesContent extends StatelessWidget {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
-              'İptal',
+              'common.cancel'.tr(),
               style: TextStyle(
                 color: isDarkMode
                     ? ColorConstant.textSecondaryDark
@@ -3044,9 +3075,9 @@ class _NotesContent extends StatelessWidget {
                 );
               }
             },
-            child: const Text(
-              'Aç',
-              style: TextStyle(
+            child: Text(
+              'common.open'.tr(),
+              style: const TextStyle(
                 color: Color(0xFFB794F6),
                 fontWeight: FontWeight.w700,
               ),
@@ -3089,7 +3120,7 @@ class _NotesContent extends StatelessWidget {
         isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
-          'Notu Sil',
+          'notes.deleteNote'.tr(),
           style: TextStyle(
             color: isDarkMode
                 ? ColorConstant.textPrimaryDark
@@ -3098,7 +3129,7 @@ class _NotesContent extends StatelessWidget {
           ),
         ),
         content: Text(
-          'Bu notu silmek istediğinizden emin misiniz?',
+          'notes.deleteNoteConfirm'.tr(),
           style: TextStyle(
             color: isDarkMode
                 ? ColorConstant.textSecondaryDark
@@ -3109,7 +3140,7 @@ class _NotesContent extends StatelessWidget {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
-              'İptal',
+              'common.cancel'.tr(),
               style: TextStyle(
                 color: isDarkMode
                     ? ColorConstant.textSecondaryDark
@@ -3148,11 +3179,11 @@ class _NotesContent extends StatelessWidget {
     final difference = now.difference(date);
 
     if (difference.inDays == 0) {
-      return 'Bugün';
+      return 'common.today'.tr();
     } else if (difference.inDays == 1) {
-      return 'Dün';
+      return 'common.yesterday'.tr();
     } else if (difference.inDays < 7) {
-      return '${difference.inDays} gün önce';
+      return 'common.daysAgo'.tr(namedArgs: {'count': '${difference.inDays}'});
     } else {
       return '${date.day}.${date.month}.${date.year}';
     }
@@ -3192,7 +3223,7 @@ class _DiaryContent extends StatelessWidget {
       )
           : _buildEmptyState(
         icon: Icons.menu_book_rounded,
-        message: 'Henüz günlük girişi yok',
+        message: 'diary.emptyState'.tr(),
         color: const Color(0xFFFFA07A),
         isDarkMode: isDarkMode,
       ),
@@ -3394,31 +3425,44 @@ class _DiaryContent extends StatelessWidget {
     if (date.year == now.year &&
         date.month == now.month &&
         date.day == now.day) {
-      return 'Bugün';
+      return 'common.today'.tr();
     } else if (date.year == now.year &&
         date.month == now.month &&
         date.day == now.day - 1) {
-      return 'Dün';
+      return 'common.yesterday'.tr();
     }
     return '${date.day} ${_getMonthName(date.month)}';
   }
 
   String _getMonthName(int month) {
-    const months = [
-      'Oca',
-      'Şub',
-      'Mar',
-      'Nis',
-      'May',
-      'Haz',
-      'Tem',
-      'Ağu',
-      'Eyl',
-      'Eki',
-      'Kas',
-      'Ara'
-    ];
-    return months[month - 1];
+    switch (month) {
+      case 1:
+        return 'common.monthsShort.january'.tr();
+      case 2:
+        return 'common.monthsShort.february'.tr();
+      case 3:
+        return 'common.monthsShort.march'.tr();
+      case 4:
+        return 'common.monthsShort.april'.tr();
+      case 5:
+        return 'common.monthsShort.may'.tr();
+      case 6:
+        return 'common.monthsShort.june'.tr();
+      case 7:
+        return 'common.monthsShort.july'.tr();
+      case 8:
+        return 'common.monthsShort.august'.tr();
+      case 9:
+        return 'common.monthsShort.september'.tr();
+      case 10:
+        return 'common.monthsShort.october'.tr();
+      case 11:
+        return 'common.monthsShort.november'.tr();
+      case 12:
+        return 'common.monthsShort.december'.tr();
+      default:
+        return '';
+    }
   }
 
   IconData _getWeatherIcon(String weather) {
@@ -3439,13 +3483,13 @@ class _DiaryContent extends StatelessWidget {
   String _getWeatherLabel(String weather) {
     switch (weather.toLowerCase()) {
       case 'sunny':
-        return 'Güneşli';
+        return 'common.weather.sunny'.tr();
       case 'cloudy':
-        return 'Bulutlu';
+        return 'common.weather.cloudy'.tr();
       case 'rainy':
-        return 'Yağmurlu';
+        return 'common.weather.rainy'.tr();
       case 'snowy':
-        return 'Karlı';
+        return 'common.weather.snowy'.tr();
       default:
         return weather;
     }
@@ -3508,7 +3552,7 @@ class _AddNoteBottomSheet extends StatelessWidget {
 
                         // Title
                         Text(
-                          'Yeni Not',
+                          'notes.newNote'.tr(),
                           style: TextStyle(
                             color: isDarkMode
                                 ? ColorConstant.textPrimaryDark
@@ -3530,7 +3574,7 @@ class _AddNoteBottomSheet extends StatelessWidget {
                         // Category Selection
                         if (vm.categories.isNotEmpty) ...[
                           Text(
-                            'Kategori',
+                            'notes.category'.tr(),
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
@@ -3580,7 +3624,7 @@ class _AddNoteBottomSheet extends StatelessWidget {
                                           ),
                                           const SizedBox(width: 8),
                                           Text(
-                                            'Genel',
+                                            'notes.general'.tr(),
                                             style: TextStyle(
                                               fontSize: 14,
                                               fontWeight: FontWeight.w600,
@@ -3663,7 +3707,7 @@ class _AddNoteBottomSheet extends StatelessWidget {
                                 : ColorConstant.textPrimaryLight,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Başlık',
+                            hintText: 'notes.noteTitle'.tr(),
                             hintStyle: TextStyle(
                               color: isDarkMode
                                   ? ColorConstant.textMutedDark
@@ -3691,7 +3735,7 @@ class _AddNoteBottomSheet extends StatelessWidget {
                                 : ColorConstant.textPrimaryLight,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Not içeriği...',
+                            hintText: 'notes.noteContent'.tr(),
                             hintStyle: TextStyle(
                               color: isDarkMode
                                   ? ColorConstant.textMutedDark
@@ -3730,7 +3774,7 @@ class _AddNoteBottomSheet extends StatelessWidget {
                                   ),
                                 ),
                                 child: Text(
-                                  'İptal',
+                                  'common.cancel'.tr(),
                                   style: TextStyle(
                                     color: isDarkMode
                                         ? ColorConstant.textSecondaryDark
@@ -3752,7 +3796,7 @@ class _AddNoteBottomSheet extends StatelessWidget {
                                   ),
                                 ),
                                 child: Text(
-                                  'Kaydet',
+                                  'common.save'.tr(),
                                   style: TextStyle(
                                     color: ColorConstant.white,
                                     fontWeight: FontWeight.w700,
@@ -3848,7 +3892,7 @@ class _EditNoteBottomSheetState extends State<_EditNoteBottomSheet> {
 
                         // Title
                         Text(
-                          'Notu Düzenle',
+                          'notes.editNote'.tr(),
                           style: TextStyle(
                             color: widget.isDarkMode
                                 ? ColorConstant.textPrimaryDark
@@ -3870,7 +3914,7 @@ class _EditNoteBottomSheetState extends State<_EditNoteBottomSheet> {
                         // Category Selection
                         if (vm.categories.isNotEmpty) ...[
                           Text(
-                            'Kategori',
+                            'notes.category'.tr(),
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
@@ -3920,7 +3964,7 @@ class _EditNoteBottomSheetState extends State<_EditNoteBottomSheet> {
                                           ),
                                           const SizedBox(width: 8),
                                           Text(
-                                            'Genel',
+                                            'notes.general'.tr(),
                                             style: TextStyle(
                                               fontSize: 14,
                                               fontWeight: FontWeight.w600,
@@ -4003,7 +4047,7 @@ class _EditNoteBottomSheetState extends State<_EditNoteBottomSheet> {
                                 : ColorConstant.textPrimaryLight,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Başlık',
+                            hintText: 'notes.noteTitle'.tr(),
                             hintStyle: TextStyle(
                               color: widget.isDarkMode
                                   ? ColorConstant.textMutedDark
@@ -4031,7 +4075,7 @@ class _EditNoteBottomSheetState extends State<_EditNoteBottomSheet> {
                                 : ColorConstant.textPrimaryLight,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Not içeriği...',
+                            hintText: 'notes.noteContent'.tr(),
                             hintStyle: TextStyle(
                               color: widget.isDarkMode
                                   ? ColorConstant.textMutedDark
@@ -4070,7 +4114,7 @@ class _EditNoteBottomSheetState extends State<_EditNoteBottomSheet> {
                                   ),
                                 ),
                                 child: Text(
-                                  'İptal',
+                                  'common.cancel'.tr(),
                                   style: TextStyle(
                                     color: widget.isDarkMode
                                         ? ColorConstant.textSecondaryDark
@@ -4092,7 +4136,7 @@ class _EditNoteBottomSheetState extends State<_EditNoteBottomSheet> {
                                   ),
                                 ),
                                 child: Text(
-                                  'Güncelle',
+                                  'common.update'.tr(),
                                   style: TextStyle(
                                     color: ColorConstant.white,
                                     fontWeight: FontWeight.w700,
@@ -4126,13 +4170,13 @@ class _AddDiaryBottomSheet extends StatelessWidget {
     required this.isDarkMode,
   });
 
-  final List<Map<String, String>> _moods = const [
-    {'emoji': '😊', 'label': 'Mutlu'},
-    {'emoji': '😔', 'label': 'Üzgün'},
-    {'emoji': '😌', 'label': 'Sakin'},
-    {'emoji': '😍', 'label': 'Aşık'},
-    {'emoji': '😡', 'label': 'Kızgın'},
-    {'emoji': '😴', 'label': 'Yorgun'},
+  List<Map<String, String>> get _moods => [
+    {'emoji': '😊', 'label': 'common.moods.happy'.tr()},
+    {'emoji': '😔', 'label': 'common.moods.sad'.tr()},
+    {'emoji': '😌', 'label': 'common.moods.calm'.tr()},
+    {'emoji': '😍', 'label': 'common.moods.inLove'.tr()},
+    {'emoji': '😡', 'label': 'common.moods.angry'.tr()},
+    {'emoji': '😴', 'label': 'common.moods.tired'.tr()},
   ];
 
   @override
@@ -4181,7 +4225,7 @@ class _AddDiaryBottomSheet extends StatelessWidget {
 
                         // Title
                         Text(
-                          'Bugünün Günlüğü',
+                          'diary.todayDiary'.tr(),
                           style: TextStyle(
                             color: isDarkMode
                                 ? ColorConstant.textPrimaryDark
@@ -4194,7 +4238,7 @@ class _AddDiaryBottomSheet extends StatelessWidget {
 
                         // Mood Selection
                         Text(
-                          'Bugün nasıl hissediyorsun?',
+                          'diary.howDoYouFeel'.tr(),
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -4274,7 +4318,7 @@ class _AddDiaryBottomSheet extends StatelessWidget {
                                 : ColorConstant.textPrimaryLight,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Başlık (opsiyonel)',
+                            hintText: 'diary.titleOptional'.tr(),
                             hintStyle: TextStyle(
                               color: isDarkMode
                                   ? ColorConstant.textMutedDark
@@ -4302,7 +4346,7 @@ class _AddDiaryBottomSheet extends StatelessWidget {
                                 : ColorConstant.textPrimaryLight,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Bugün neler oldu?',
+                            hintText: 'diary.hints.todayContent'.tr(),
                             hintStyle: TextStyle(
                               color: isDarkMode
                                   ? ColorConstant.textMutedDark
@@ -4342,7 +4386,7 @@ class _AddDiaryBottomSheet extends StatelessWidget {
                                   ),
                                 ),
                                 child: Text(
-                                  'İptal',
+                                  'common.cancel'.tr(),
                                   style: TextStyle(
                                     color: isDarkMode
                                         ? ColorConstant.textSecondaryDark
@@ -4365,7 +4409,7 @@ class _AddDiaryBottomSheet extends StatelessWidget {
                                   ),
                                 ),
                                 child: Text(
-                                  'Kaydet',
+                                  'common.save'.tr(),
                                   style: TextStyle(
                                     color: ColorConstant.white,
                                     fontWeight: FontWeight.w700,
@@ -4406,13 +4450,13 @@ class _EditDiaryBottomSheet extends StatefulWidget {
 }
 
 class _EditDiaryBottomSheetState extends State<_EditDiaryBottomSheet> {
-  final List<Map<String, String>> _moods = const [
-    {'emoji': '😊', 'label': 'Mutlu'},
-    {'emoji': '😔', 'label': 'Üzgün'},
-    {'emoji': '😌', 'label': 'Sakin'},
-    {'emoji': '😍', 'label': 'Aşık'},
-    {'emoji': '😡', 'label': 'Kızgın'},
-    {'emoji': '😴', 'label': 'Yorgun'},
+  List<Map<String, String>> get _moods => [
+    {'emoji': '😊', 'label': 'common.moods.happy'.tr()},
+    {'emoji': '😔', 'label': 'common.moods.sad'.tr()},
+    {'emoji': '😌', 'label': 'common.moods.calm'.tr()},
+    {'emoji': '😍', 'label': 'common.moods.inLove'.tr()},
+    {'emoji': '😡', 'label': 'common.moods.angry'.tr()},
+    {'emoji': '😴', 'label': 'common.moods.tired'.tr()},
   ];
 
   @override
@@ -4467,7 +4511,7 @@ class _EditDiaryBottomSheetState extends State<_EditDiaryBottomSheet> {
 
                         // Title
                         Text(
-                          'Günlüğü Düzenle',
+                          'diary.editDiary'.tr(),
                           style: TextStyle(
                             color: widget.isDarkMode
                                 ? ColorConstant.textPrimaryDark
@@ -4480,7 +4524,7 @@ class _EditDiaryBottomSheetState extends State<_EditDiaryBottomSheet> {
 
                         // Mood Selection
                         Text(
-                          'Ruh halin nasıldı?',
+                          'diary.moodQuestion'.tr(),
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -4560,7 +4604,7 @@ class _EditDiaryBottomSheetState extends State<_EditDiaryBottomSheet> {
                                 : ColorConstant.textPrimaryLight,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Başlık (opsiyonel)',
+                            hintText: 'diary.titleOptional'.tr(),
                             hintStyle: TextStyle(
                               color: widget.isDarkMode
                                   ? ColorConstant.textMutedDark
@@ -4588,7 +4632,7 @@ class _EditDiaryBottomSheetState extends State<_EditDiaryBottomSheet> {
                                 : ColorConstant.textPrimaryLight,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'O gün neler oldu?',
+                            hintText: 'diary.hints.thatDayContent'.tr(),
                             hintStyle: TextStyle(
                               color: widget.isDarkMode
                                   ? ColorConstant.textMutedDark
@@ -4628,7 +4672,7 @@ class _EditDiaryBottomSheetState extends State<_EditDiaryBottomSheet> {
                                   ),
                                 ),
                                 child: Text(
-                                  'İptal',
+                                  'common.cancel'.tr(),
                                   style: TextStyle(
                                     color: widget.isDarkMode
                                         ? ColorConstant.textSecondaryDark
@@ -4651,7 +4695,7 @@ class _EditDiaryBottomSheetState extends State<_EditDiaryBottomSheet> {
                                   ),
                                 ),
                                 child: Text(
-                                  'Güncelle',
+                                  'common.update'.tr(),
                                   style: TextStyle(
                                     color: ColorConstant.white,
                                     fontWeight: FontWeight.w700,
@@ -4721,15 +4765,15 @@ class _ColorPicker extends StatelessWidget {
   });
 
   // Renk paleti
-  static final List<Map<String, dynamic>> noteColors = [
-    {'color': '#B794F6', 'name': 'Mor'},
-    {'color': '#E4B4E8', 'name': 'Pembe'},
-    {'color': '#7EC8F5', 'name': 'Mavi'},
-    {'color': '#81C784', 'name': 'Yeşil'},
-    {'color': '#FFD54F', 'name': 'Sarı'},
-    {'color': '#FFB74D', 'name': 'Turuncu'},
-    {'color': '#FF7676', 'name': 'Kırmızı'},
-    {'color': '#A0AEC0', 'name': 'Gri'},
+  static List<Map<String, dynamic>> get noteColors => [
+    {'color': '#B794F6', 'name': 'notes.colors.purple'.tr()},
+    {'color': '#E4B4E8', 'name': 'notes.colors.pink'.tr()},
+    {'color': '#7EC8F5', 'name': 'notes.colors.blue'.tr()},
+    {'color': '#81C784', 'name': 'notes.colors.green'.tr()},
+    {'color': '#FFD54F', 'name': 'notes.colors.yellow'.tr()},
+    {'color': '#FFB74D', 'name': 'notes.colors.orange'.tr()},
+    {'color': '#FF7676', 'name': 'notes.colors.red'.tr()},
+    {'color': '#A0AEC0', 'name': 'notes.colors.gray'.tr()},
   ];
 
   @override

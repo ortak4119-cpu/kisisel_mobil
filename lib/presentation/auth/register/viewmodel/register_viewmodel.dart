@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/init/locator.dart';
 import '../../../../core/utils/custom_snackbar.dart';
 import '../../../../models/auth/auth_models.dart';
@@ -47,7 +48,7 @@ class RegisterViewModel extends ChangeNotifier {
         if (context.mounted) {
           CustomSnackBar.showSuccess(
             context,
-            'Kayıt başarılı! LifeSync\'e hoş geldiniz 🎉',
+            'auth.success.registerSuccess'.tr(),
           );
         }
         return true;
@@ -67,7 +68,7 @@ class RegisterViewModel extends ChangeNotifier {
       if (context.mounted) {
         CustomSnackBar.showError(
           context,
-          'Beklenmeyen bir hata oluştu',
+          'errors.general'.tr(),
         );
       }
       return false;
@@ -105,7 +106,7 @@ class RegisterViewModel extends ChangeNotifier {
         if (context.mounted) {
           CustomSnackBar.showSuccess(
             context,
-            'Google ile kayıt başarılı! 🎉',
+            'auth.success.googleRegisterSuccess'.tr(),
           );
         }
         return true;
@@ -125,7 +126,7 @@ class RegisterViewModel extends ChangeNotifier {
       if (context.mounted) {
         CustomSnackBar.showError(
           context,
-          'Google ile kayıt başarısız oldu',
+          'errors.general'.tr(),
         );
       }
       return false;
@@ -164,7 +165,7 @@ class RegisterViewModel extends ChangeNotifier {
         if (context.mounted) {
           CustomSnackBar.showSuccess(
             context,
-            'Apple ile kayıt başarılı! 🎉',
+            'auth.success.appleRegisterSuccess'.tr(),
           );
         }
         return true;
@@ -184,7 +185,7 @@ class RegisterViewModel extends ChangeNotifier {
       if (context.mounted) {
         CustomSnackBar.showError(
           context,
-          'Apple ile kayıt başarısız oldu',
+          'errors.general'.tr(),
         );
       }
       return false;

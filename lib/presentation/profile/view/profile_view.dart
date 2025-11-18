@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../core/route/app_router.gr.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/utils/custom_snackbar.dart';
@@ -54,7 +55,7 @@ class _ProfileViewState extends State<ProfileView>
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      '✨ Profil yükleniyor...',
+                      'profile.loading'.tr(),
                       style: TextStyle(
                         color: isDarkMode
                             ? ColorConstant.textSecondaryDark
@@ -80,7 +81,7 @@ class _ProfileViewState extends State<ProfileView>
                     const Text('🤔', style: TextStyle(fontSize: 64)),
                     const SizedBox(height: 16),
                     Text(
-                      'Kullanıcı bulunamadı',
+                      'profile.userNotFound'.tr(),
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -220,30 +221,30 @@ class _ProfileViewState extends State<ProfileView>
                         Tab(
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Text('📊'),
-                              SizedBox(width: 4),
-                              Flexible(child: Text('İstatistik', overflow: TextOverflow.ellipsis)),
+                            children: [
+                              const Text('📊'),
+                              const SizedBox(width: 4),
+                              Flexible(child: Text('profile.tabs.statistics'.tr(), overflow: TextOverflow.ellipsis)),
                             ],
                           ),
                         ),
                         Tab(
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Text('👥'),
-                              SizedBox(width: 4),
-                              Flexible(child: Text('Arkadaş', overflow: TextOverflow.ellipsis)),
+                            children: [
+                              const Text('👥'),
+                              const SizedBox(width: 4),
+                              Flexible(child: Text('profile.tabs.friends'.tr(), overflow: TextOverflow.ellipsis)),
                             ],
                           ),
                         ),
                         Tab(
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Text('🏆'),
-                              SizedBox(width: 4),
-                              Flexible(child: Text('Başarı', overflow: TextOverflow.ellipsis)),
+                            children: [
+                              const Text('🏆'),
+                              const SizedBox(width: 4),
+                              Flexible(child: Text('profile.tabs.achievements'.tr(), overflow: TextOverflow.ellipsis)),
                             ],
                           ),
                         ),
@@ -544,7 +545,7 @@ class _ProfileViewState extends State<ProfileView>
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
-                  isCover ? '📸 Kapak Fotoğrafı Seç' : '👤 Profil Fotoğrafı Seç',
+                  isCover ? 'profile.photoSelect.coverTitle'.tr() : 'profile.photoSelect.profileTitle'.tr(),
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
@@ -571,7 +572,7 @@ class _ProfileViewState extends State<ProfileView>
                   child: Icon(Icons.photo_library_rounded, color: ColorConstant.white),
                 ),
                 title: Text(
-                  'Galeriden Seç',
+                  'profile.photoSelect.fromGallery'.tr(),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
@@ -581,7 +582,7 @@ class _ProfileViewState extends State<ProfileView>
                   ),
                 ),
                 subtitle: Text(
-                  'Mevcut fotoğraflarından seç',
+                  'profile.photoSelect.fromGallerySubtitle'.tr(),
                   style: TextStyle(
                     fontSize: 13,
                     color: isDarkMode
@@ -614,7 +615,7 @@ class _ProfileViewState extends State<ProfileView>
                   child: Icon(Icons.camera_alt_rounded, color: ColorConstant.white),
                 ),
                 title: Text(
-                  'Fotoğraf Çek',
+                  'profile.photoSelect.takePhoto'.tr(),
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
@@ -624,7 +625,7 @@ class _ProfileViewState extends State<ProfileView>
                   ),
                 ),
                 subtitle: Text(
-                  'Yeni bir fotoğraf çek',
+                  'profile.photoSelect.takePhotoSubtitle'.tr(),
                   style: TextStyle(
                     fontSize: 13,
                     color: isDarkMode
@@ -689,60 +690,60 @@ class _StatsTab extends StatelessWidget {
           const SizedBox(height: 20),
 
           _buildStatCard(
-            title: 'Alışkanlıklar',
+            title: 'profile.stats.habits'.tr(),
             icon: Icons.emoji_events_rounded,
             emoji: '🏆',
             color: ColorConstant.accentYellow,
             stats: [
-              _StatItem('Toplam', '${stats.habits.total}', '📊'),
-              _StatItem('Aktif', '${stats.habits.active}', '✅'),
-              _StatItem('Bugün', '${stats.habits.completedToday}', '🎯'),
-              _StatItem('Streak', '${stats.habits.currentStreak}', '🔥'),
+              _StatItem('profile.stats.total'.tr(), '${stats.habits.total}', '📊'),
+              _StatItem('profile.stats.active'.tr(), '${stats.habits.active}', '✅'),
+              _StatItem('profile.stats.today'.tr(), '${stats.habits.completedToday}', '🎯'),
+              _StatItem('profile.stats.streak'.tr(), '${stats.habits.currentStreak}', '🔥'),
             ],
             isDarkMode: isDarkMode,
           ),
           const SizedBox(height: 12),
 
           _buildStatCard(
-            title: 'Görevler',
+            title: 'profile.stats.tasks'.tr(),
             icon: Icons.task_rounded,
             emoji: '📝',
             color: ColorConstant.accentBlue,
             stats: [
-              _StatItem('Toplam', '${stats.tasks.total}', '📊'),
-              _StatItem('Tamamlanan', '${stats.tasks.completed}', '✅'),
-              _StatItem('Bekleyen', '${stats.tasks.pending}', '⏳'),
-              _StatItem('Geciken', '${stats.tasks.overdue}', '⚠️'),
+              _StatItem('profile.stats.total'.tr(), '${stats.tasks.total}', '📊'),
+              _StatItem('profile.stats.completed'.tr(), '${stats.tasks.completed}', '✅'),
+              _StatItem('profile.stats.pending'.tr(), '${stats.tasks.pending}', '⏳'),
+              _StatItem('profile.stats.overdue'.tr(), '${stats.tasks.overdue}', '⚠️'),
             ],
             isDarkMode: isDarkMode,
           ),
           const SizedBox(height: 12),
 
           _buildStatCard(
-            title: 'Notlar & Günlük',
+            title: 'profile.stats.notesDiary'.tr(),
             icon: Icons.note_rounded,
             emoji: '📔',
             color: const Color(0xFFB794F6),
             stats: [
-              _StatItem('Notlar', '${stats.notes.total}', '📝'),
-              _StatItem('Kategori', '${stats.notes.categories}', '📁'),
-              _StatItem('Günlük', '${stats.diary.totalEntries}', '📖'),
-              _StatItem('Bu Ay', '${stats.diary.thisMonth}', '📅'),
+              _StatItem('profile.stats.notes'.tr(), '${stats.notes.total}', '📝'),
+              _StatItem('profile.stats.categories'.tr(), '${stats.notes.categories}', '📁'),
+              _StatItem('profile.stats.diary'.tr(), '${stats.diary.totalEntries}', '📖'),
+              _StatItem('profile.stats.thisMonth'.tr(), '${stats.diary.thisMonth}', '📅'),
             ],
             isDarkMode: isDarkMode,
           ),
           const SizedBox(height: 12),
 
           _buildStatCard(
-            title: 'Finans',
+            title: 'profile.stats.finance'.tr(),
             icon: Icons.account_balance_wallet_rounded,
             emoji: '💰',
             color: ColorConstant.accentGreen,
             stats: [
-              _StatItem('Bütçe', '₺${stats.budget.monthlyBudget.toStringAsFixed(0)}', '💵'),
-              _StatItem('Harcama', '₺${stats.budget.thisMonthExpenses.toStringAsFixed(0)}', '💸'),
-              _StatItem('Abonelik', '${stats.subscriptions.total}', '📱'),
-              _StatItem('Aylık', '₺${stats.subscriptions.monthlyCost.toStringAsFixed(0)}', '💳'),
+              _StatItem('profile.stats.budget'.tr(), '₺${stats.budget.monthlyBudget.toStringAsFixed(0)}', '💵'),
+              _StatItem('profile.stats.spending'.tr(), '₺${stats.budget.thisMonthExpenses.toStringAsFixed(0)}', '💸'),
+              _StatItem('profile.stats.subscriptions'.tr(), '${stats.subscriptions.total}', '📱'),
+              _StatItem('profile.stats.monthly'.tr(), '₺${stats.subscriptions.monthlyCost.toStringAsFixed(0)}', '💳'),
             ],
             isDarkMode: isDarkMode,
           ),
@@ -973,7 +974,7 @@ class _FriendsTab extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Arkadaş Ara',
+                          'profile.friends.searchTitle'.tr(),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
@@ -982,7 +983,7 @@ class _FriendsTab extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Yeni arkadaşlar bul! 🚀',
+                          'profile.friends.searchSubtitle'.tr(),
                           style: TextStyle(
                             fontSize: 12,
                             color: isDarkMode ? ColorConstant.textSecondaryDark : ColorConstant.textSecondaryLight,
@@ -1015,7 +1016,7 @@ class _FriendsTab extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  'Arkadaşlık İstekleri',
+                  'profile.friends.requests'.tr(),
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
@@ -1053,7 +1054,7 @@ class _FriendsTab extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Text(
-                'Arkadaşlarım',
+                'profile.friends.myFriends'.tr(),
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
@@ -1079,7 +1080,7 @@ class _FriendsTab extends StatelessWidget {
           if (viewModel.friends.isNotEmpty)
             ...viewModel.friends.map((f) => _buildFriendCard(context, f, viewModel, isDarkMode))
           else
-            _buildEmptyState(emoji: '🤝', message: 'Henüz arkadaşın yok', subtitle: 'Hemen yeni arkadaşlar ekle!', isDarkMode: isDarkMode),
+            _buildEmptyState(emoji: '🤝', message: 'profile.friends.emptyState'.tr(), subtitle: 'profile.friends.emptyStateSubtitle'.tr(), isDarkMode: isDarkMode),
         ],
       ),
     );
@@ -1231,7 +1232,7 @@ class _FriendsTab extends StatelessWidget {
             children: [
               CircularProgressIndicator(color: ColorConstant.accentBlue),
               const SizedBox(height: 16),
-              Text('✨ Profil yükleniyor...', style: TextStyle(color: isDarkMode ? ColorConstant.textPrimaryDark : ColorConstant.textPrimaryLight)),
+              Text('profile.loading'.tr(), style: TextStyle(color: isDarkMode ? ColorConstant.textPrimaryDark : ColorConstant.textPrimaryLight)),
             ],
           ),
         ),
@@ -1243,7 +1244,7 @@ class _FriendsTab extends StatelessWidget {
     Navigator.pop(context);
 
     if (userProfile == null) {
-      if (context.mounted) CustomSnackBar.showError(context, 'Profil yüklenemedi');
+      if (context.mounted) CustomSnackBar.showError(context, 'profile.errors.profileLoadFailed'.tr());
       return;
     }
 
@@ -1311,7 +1312,7 @@ class _AchievementsTab extends StatelessWidget {
                   style: TextStyle(fontSize: 42, fontWeight: FontWeight.w900, color: ColorConstant.white, letterSpacing: -1),
                 ),
                 const SizedBox(height: 8),
-                Text('Başarı Açıldı! 🎉', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: ColorConstant.white.withOpacity(0.95))),
+                Text('profile.achievements.unlocked'.tr(), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: ColorConstant.white.withOpacity(0.95))),
                 const SizedBox(height: 20),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
@@ -1324,7 +1325,7 @@ class _AchievementsTab extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '${viewModel.achievements.isEmpty ? 0 : ((viewModel.achievements.where((a) => a.isCompleted).length / viewModel.achievements.length) * 100).toStringAsFixed(0)}% Tamamlandı',
+                  '${viewModel.achievements.isEmpty ? 0 : ((viewModel.achievements.where((a) => a.isCompleted).length / viewModel.achievements.length) * 100).toStringAsFixed(0)}${'profile.achievements.completed'.tr()}',
                   style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: ColorConstant.white.withOpacity(0.9)),
                 ),
               ],
@@ -1337,7 +1338,7 @@ class _AchievementsTab extends StatelessWidget {
               Expanded(
                 child: _buildStatBox(
                   emoji: '✅',
-                  label: 'Açıldı',
+                  label: 'profile.achievements.stats.unlocked'.tr(),
                   value: '${viewModel.achievements.where((a) => a.isCompleted).length}',
                   color: ColorConstant.accentGreen,
                   isDarkMode: isDarkMode,
@@ -1347,7 +1348,7 @@ class _AchievementsTab extends StatelessWidget {
               Expanded(
                 child: _buildStatBox(
                   emoji: '⏳',
-                  label: 'Devam Ediyor',
+                  label: 'profile.achievements.stats.inProgress'.tr(),
                   value: '${viewModel.achievements.where((a) => !a.isCompleted && a.currentProgress > 0).length}',
                   color: ColorConstant.accentBlue,
                   isDarkMode: isDarkMode,
@@ -1357,7 +1358,7 @@ class _AchievementsTab extends StatelessWidget {
               Expanded(
                 child: _buildStatBox(
                   emoji: '🔒',
-                  label: 'Kilitli',
+                  label: 'profile.achievements.stats.locked'.tr(),
                   value: '${viewModel.achievements.where((a) => !a.isCompleted && a.currentProgress == 0).length}',
                   color: ColorConstant.textMutedDark,
                   isDarkMode: isDarkMode,
@@ -1370,7 +1371,7 @@ class _AchievementsTab extends StatelessWidget {
           if (viewModel.achievements.isNotEmpty)
             ...viewModel.achievements.map((a) => _buildAchievementCard(a, isDarkMode))
           else
-            _buildEmptyState(emoji: '🎯', message: 'Henüz başarı yok', subtitle: 'Hemen görevlere başla!', isDarkMode: isDarkMode),
+            _buildEmptyState(emoji: '🎯', message: 'profile.achievements.emptyState'.tr(), subtitle: 'profile.achievements.emptyStateSubtitle'.tr(), isDarkMode: isDarkMode),
         ],
       ),
     );
@@ -1443,7 +1444,7 @@ class _AchievementsTab extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      achievement.titleKey ?? 'Başarı',
+                      achievement.titleKey ?? 'profile.achievements.defaultTitle'.tr(),
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w800,
@@ -1484,7 +1485,7 @@ class _AchievementsTab extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'İlerleme: ${achievement.currentProgress}/${achievement.requirementValue}',
+                      'profile.achievements.progress'.tr(namedArgs: {'current': '${achievement.currentProgress}', 'total': '${achievement.requirementValue}'}),
                       style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: isDarkMode ? ColorConstant.textSecondaryDark : ColorConstant.textSecondaryLight),
                     ),
                     Text(
@@ -1513,7 +1514,7 @@ class _AchievementsTab extends StatelessWidget {
                 Icon(Icons.check_circle, size: 16, color: ColorConstant.accentGreen),
                 const SizedBox(width: 6),
                 Text(
-                  'Açıldı: ${_formatDate(achievement.unlockedAt!)}',
+                  '${'profile.achievements.unlockedOn'.tr()} ${_formatDate(achievement.unlockedAt!)}',
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: ColorConstant.accentGreen),
                 ),
               ],
@@ -1527,10 +1528,10 @@ class _AchievementsTab extends StatelessWidget {
   String _formatDate(DateTime date) {
     final now = DateTime.now();
     final diff = now.difference(date);
-    if (diff.inDays == 0) return 'Bugün';
-    if (diff.inDays == 1) return 'Dün';
-    if (diff.inDays < 7) return '${diff.inDays} gün önce';
-    if (diff.inDays < 30) return '${(diff.inDays / 7).floor()} hafta önce';
+    if (diff.inDays == 0) return 'common.today'.tr();
+    if (diff.inDays == 1) return 'common.yesterday'.tr();
+    if (diff.inDays < 7) return 'common.daysAgo'.tr(namedArgs: {'count': '${diff.inDays}'});
+    if (diff.inDays < 30) return 'common.weeksAgo'.tr(namedArgs: {'count': '${(diff.inDays / 7).floor()}'});
     return '${date.day}/${date.month}/${date.year}';
   }
 }
@@ -1590,7 +1591,7 @@ class _FriendSearchBottomSheetState extends State<_FriendSearchBottomSheet> {
                 },
                 style: TextStyle(color: widget.isDarkMode ? ColorConstant.textPrimaryDark : ColorConstant.textPrimaryLight),
                 decoration: InputDecoration(
-                  hintText: 'Kullanıcı ara...',
+                  hintText: 'profile.friends.searchHint'.tr(),
                   hintStyle: TextStyle(color: widget.isDarkMode ? ColorConstant.textMutedDark : ColorConstant.textMutedLight),
                   prefixIcon: Icon(Icons.search_rounded, color: widget.isDarkMode ? ColorConstant.textMutedDark : ColorConstant.textMutedLight),
                   filled: true,
@@ -1616,7 +1617,7 @@ class _FriendSearchBottomSheetState extends State<_FriendSearchBottomSheet> {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            _searchController.text.isEmpty ? 'Kullanıcı ara...' : 'Kullanıcı bulunamadı',
+                            _searchController.text.isEmpty ? 'profile.friends.searchEmpty'.tr() : 'profile.friends.notFound'.tr(),
                             style: TextStyle(fontSize: 16, color: widget.isDarkMode ? ColorConstant.textMutedDark : ColorConstant.textMutedLight),
                           ),
                         ],
@@ -1676,7 +1677,7 @@ class _FriendSearchBottomSheetState extends State<_FriendSearchBottomSheet> {
                                   widget.viewModel.sendFriendRequest(user.id, context);
                                 },
                                 icon: Icon(Icons.person_add_rounded, color: ColorConstant.accentBlue),
-                                tooltip: 'Arkadaş Ekle',
+                                tooltip: 'profile.friends.addFriend'.tr(),
                               ),
                             ],
                           ),
@@ -1706,7 +1707,7 @@ class _FriendSearchBottomSheetState extends State<_FriendSearchBottomSheet> {
             children: [
               CircularProgressIndicator(color: ColorConstant.accentBlue),
               const SizedBox(height: 16),
-              Text('Profil yükleniyor...', style: TextStyle(color: isDarkMode ? ColorConstant.textPrimaryDark : ColorConstant.textPrimaryLight)),
+              Text('profile.loading'.tr(), style: TextStyle(color: isDarkMode ? ColorConstant.textPrimaryDark : ColorConstant.textPrimaryLight)),
             ],
           ),
         ),
@@ -1718,7 +1719,7 @@ class _FriendSearchBottomSheetState extends State<_FriendSearchBottomSheet> {
     Navigator.pop(context);
 
     if (userProfile == null) {
-      if (context.mounted) CustomSnackBar.showError(context, 'Profil yüklenemedi');
+      if (context.mounted) CustomSnackBar.showError(context, 'profile.errors.profileLoadFailed'.tr());
       return;
     }
 

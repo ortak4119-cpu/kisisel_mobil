@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../core/init/locator.dart';
 import '../../../service/subscription/subscription_service.dart';
 import '../../../service/budget/budget_service.dart';
@@ -111,12 +112,12 @@ class FinanceViewModel extends ChangeNotifier {
         notifyListeners();
 
         if (context.mounted) {
-          CustomSnackBar.showSuccess(context, 'Filtre uygulandı');
+          CustomSnackBar.showSuccess(context, 'success.filterApplied'.tr());
         }
       }
     } catch (e) {
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'Filtreleme başarısız');
+        CustomSnackBar.showError(context, 'errors.filterFailed'.tr());
       }
     }
     // finally bloğu kaldırıldı - loading flag'i kullanmıyoruz
@@ -160,24 +161,24 @@ class FinanceViewModel extends ChangeNotifier {
 
   Future<void> createSubscription(BuildContext context) async {
     if (subscriptionNameController.text.trim().isEmpty) {
-      CustomSnackBar.showError(context, 'Abonelik adı boş olamaz');
+      CustomSnackBar.showError(context, 'errors.subscriptionNameEmpty'.tr());
       return;
     }
 
     if (subscriptionAmountController.text.trim().isEmpty) {
-      CustomSnackBar.showError(context, 'Tutar boş olamaz');
+      CustomSnackBar.showError(context, 'errors.amountEmpty'.tr());
       return;
     }
 
     final amount = double.tryParse(subscriptionAmountController.text.trim());
     if (amount == null || amount <= 0) {
-      CustomSnackBar.showError(context, 'Geçerli bir tutar girin');
+      CustomSnackBar.showError(context, 'errors.invalidAmount'.tr());
       return;
     }
 
     final billingDate = int.tryParse(subscriptionBillingDateController.text.trim());
     if (billingDate == null || billingDate < 1 || billingDate > 31) {
-      CustomSnackBar.showError(context, 'Geçerli bir ödeme günü girin (1-31)');
+      CustomSnackBar.showError(context, 'errors.invalidPaymentDay'.tr());
       return;
     }
 
@@ -213,20 +214,20 @@ class FinanceViewModel extends ChangeNotifier {
         resetSubscriptionForm();
         await loadSubscriptions(); // Refresh stats
         if (context.mounted) {
-          CustomSnackBar.showSuccess(context, 'Abonelik başarıyla eklendi');
+          CustomSnackBar.showSuccess(context, 'success.subscriptionAdded'.tr());
           Navigator.pop(context);
         }
       } else {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'Bilinmeyen hata',
+            response.errorMessage ?? 'errors.unknownError'.tr(),
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'Abonelik eklenirken hata oluştu');
+        CustomSnackBar.showError(context, 'errors.subscriptionAddFailed'.tr());
       }
       debugPrint('Subscription creation exception: $e');
     } finally {
@@ -242,19 +243,19 @@ class FinanceViewModel extends ChangeNotifier {
       if (response.isSuccess) {
         await loadSubscriptions();
         if (context.mounted) {
-          CustomSnackBar.showSuccess(context, 'Abonelik durumu güncellendi');
+          CustomSnackBar.showSuccess(context, 'success.subscriptionUpdated'.tr());
         }
       } else {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'Hata oluştu',
+            response.errorMessage ?? 'errors.general'.tr(),
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'İşlem başarısız oldu');
+        CustomSnackBar.showError(context, 'errors.subscriptionUpdateFailed'.tr());
       }
     }
   }
@@ -270,19 +271,19 @@ class FinanceViewModel extends ChangeNotifier {
         _subscriptions.removeWhere((s) => s.id == id);
         await loadSubscriptions(); // Refresh stats
         if (context.mounted) {
-          CustomSnackBar.showSuccess(context, 'Abonelik silindi');
+          CustomSnackBar.showSuccess(context, 'success.subscriptionDeleted'.tr());
         }
       } else {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'Hata oluştu',
+            response.errorMessage ?? 'errors.general'.tr(),
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'Abonelik silinirken hata oluştu');
+        CustomSnackBar.showError(context, 'errors.subscriptionDeleteFailed'.tr());
       }
     } finally {
       _isLoading = false;
@@ -315,13 +316,13 @@ class FinanceViewModel extends ChangeNotifier {
 
   Future<void> updateBudget(BuildContext context) async {
     if (budgetAmountController.text.trim().isEmpty) {
-      CustomSnackBar.showError(context, 'Bütçe tutarı boş olamaz');
+      CustomSnackBar.showError(context, 'errors.budgetEmpty'.tr());
       return;
     }
 
     final amount = double.tryParse(budgetAmountController.text.trim());
     if (amount == null || amount <= 0) {
-      CustomSnackBar.showError(context, 'Geçerli bir tutar girin');
+      CustomSnackBar.showError(context, 'errors.invalidAmount'.tr());
       return;
     }
 
@@ -340,20 +341,20 @@ class FinanceViewModel extends ChangeNotifier {
         await loadBudgetStats();
         resetBudgetForm();
         if (context.mounted) {
-          CustomSnackBar.showSuccess(context, 'Bütçe güncellendi');
+          CustomSnackBar.showSuccess(context, 'success.budgetUpdated'.tr());
           Navigator.pop(context);
         }
       } else {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'Bilinmeyen hata',
+            response.errorMessage ?? 'errors.unknownError'.tr(),
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'Bütçe güncellenirken hata oluştu');
+        CustomSnackBar.showError(context, 'errors.budgetUpdateFailed'.tr());
       }
       debugPrint('Budget update exception: $e');
     } finally {
@@ -378,13 +379,13 @@ class FinanceViewModel extends ChangeNotifier {
 
   Future<void> createExpense(BuildContext context) async {
     if (expenseAmountController.text.trim().isEmpty) {
-      CustomSnackBar.showError(context, 'Tutar boş olamaz');
+      CustomSnackBar.showError(context, 'errors.amountEmpty'.tr());
       return;
     }
 
     final amount = double.tryParse(expenseAmountController.text.trim());
     if (amount == null || amount <= 0) {
-      CustomSnackBar.showError(context, 'Geçerli bir tutar girin');
+      CustomSnackBar.showError(context, 'errors.invalidAmount'.tr());
       return;
     }
 
@@ -415,20 +416,20 @@ class FinanceViewModel extends ChangeNotifier {
         resetExpenseForm();
         await loadBudgetStats(); // Refresh budget stats
         if (context.mounted) {
-          CustomSnackBar.showSuccess(context, 'Harcama başarıyla eklendi');
+          CustomSnackBar.showSuccess(context, 'success.expenseAdded'.tr());
           Navigator.pop(context);
         }
       } else {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'Bilinmeyen hata',
+            response.errorMessage ?? 'errors.unknownError'.tr(),
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'Harcama eklenirken hata oluştu');
+        CustomSnackBar.showError(context, 'errors.expenseAddFailed'.tr());
       }
       debugPrint('Expense creation exception: $e');
     } finally {
@@ -448,19 +449,19 @@ class FinanceViewModel extends ChangeNotifier {
         _expenses.removeWhere((e) => e.id == id);
         await loadBudgetStats(); // Refresh budget stats
         if (context.mounted) {
-          CustomSnackBar.showSuccess(context, 'Harcama silindi');
+          CustomSnackBar.showSuccess(context, 'success.expenseDeleted'.tr());
         }
       } else {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'Hata oluştu',
+            response.errorMessage ?? 'errors.general'.tr(),
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'Harcama silinirken hata oluştu');
+        CustomSnackBar.showError(context, 'errors.expenseDeleteFailed'.tr());
       }
     } finally {
       _isLoading = false;
@@ -473,21 +474,21 @@ class FinanceViewModel extends ChangeNotifier {
   String getCategoryLabel(String category) {
     switch (category) {
       case 'food':
-        return 'Yemek';
+        return 'finance.categories.food'.tr();
       case 'transportation':
-        return 'Ulaşım';
+        return 'finance.categories.transportation'.tr();
       case 'entertainment':
-        return 'Eğlence';
+        return 'finance.categories.entertainment'.tr();
       case 'shopping':
-        return 'Alışveriş';
+        return 'finance.categories.shopping'.tr();
       case 'bills':
-        return 'Faturalar';
+        return 'finance.categories.bills'.tr();
       case 'health':
-        return 'Sağlık';
+        return 'finance.categories.health'.tr();
       case 'education':
-        return 'Eğitim';
+        return 'finance.categories.education'.tr();
       case 'other':
-        return 'Diğer';
+        return 'finance.categories.other'.tr();
       default:
         return category;
     }

@@ -4,7 +4,7 @@ class Constants {
   static const String xApiKey = 'your-api-key';
 
   // RevenueCat keys
-  static const String revenueCatApiKeyIOS = 'appl_xxxxxxxxxxxxxxxxxxxxx';
+  static const String revenueCatApiKeyIOS = 'appl_AqSfLLdHoJylyNSYFEutttWrDgn';
   static const String revenueCatApiKeyAndroid = 'goog_xxxxxxxxxxxxxxxxxxxxx';
 
   // App configurations

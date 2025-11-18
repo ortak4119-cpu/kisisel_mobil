@@ -194,12 +194,12 @@ class SettingsView extends StatelessWidget {
 
                         // Güvenlik Bölümü
                         _buildSection(
-                          title: 'Güvenlik',
+                          title: 'settings.sections.security'.tr(),
                           isDarkMode: isDarkMode,
                           children: [
                             _buildSwitchTile(
-                              title: 'Biyometrik Doğrulama',
-                              subtitle: 'Touch ID / Face ID ile giriş',
+                              title: 'settings.security.biometric'.tr(),
+                              subtitle: 'settings.security.biometricSubtitle'.tr(),
                               icon: Icons.fingerprint_rounded,
                               isDarkMode: isDarkMode,
                               value: viewModel.settings?.requireBiometric ?? false,
@@ -493,7 +493,7 @@ class SettingsView extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Premium\'a Yükselt',
+                      'paywall.title'.tr(),
                       style: TextStyle(
                         color: ColorConstant.white,
                         fontSize: 20,
@@ -502,7 +502,7 @@ class SettingsView extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Tüm özelliklerin kilidini aç',
+                      'paywall.unlockFeatures'.tr(),
                       style: TextStyle(
                         color: ColorConstant.white.withOpacity(0.9),
                         fontSize: 14,
@@ -517,17 +517,17 @@ class SettingsView extends StatelessWidget {
           const SizedBox(height: 20),
           _buildFeatureRow(
             icon: Icons.check_circle_rounded,
-            text: 'Sınırsız alışkanlık takibi',
+            text: 'paywall.unlimitedHabits'.tr(),
           ),
           const SizedBox(height: 8),
           _buildFeatureRow(
             icon: Icons.check_circle_rounded,
-            text: 'Gelişmiş analitik ve raporlar',
+            text: 'paywall.advancedAnalytics'.tr(),
           ),
           const SizedBox(height: 8),
           _buildFeatureRow(
             icon: Icons.check_circle_rounded,
-            text: 'Reklamsız deneyim',
+            text: 'paywall.adFree'.tr(),
           ),
           const SizedBox(height: 20),
           Row(
@@ -544,8 +544,8 @@ class SettingsView extends StatelessWidget {
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  child: const Text(
-                    'Hemen Satın Al',
+                  child:  Text(
+                    'paywall.buyNow'.tr(),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -770,15 +770,15 @@ class SettingsView extends StatelessWidget {
     IconData themeModeIcon;
     switch (themeProvider.themeMode) {
       case ThemeMode.light:
-        themeModeText = 'Açık';
+        themeModeText = 'settings.appearance.themeLight'.tr();
         themeModeIcon = Icons.light_mode_rounded;
         break;
       case ThemeMode.dark:
-        themeModeText = 'Koyu';
+        themeModeText = 'settings.appearance.themeDark'.tr();
         themeModeIcon = Icons.dark_mode_rounded;
         break;
       default:
-        themeModeText = 'Sistem';
+        themeModeText = 'settings.appearance.themeSystem'.tr();
         themeModeIcon = Icons.brightness_auto_rounded;
     }
 
@@ -919,7 +919,7 @@ class SettingsView extends StatelessWidget {
             borderRadius: BorderRadius.circular(24),
           ),
           title: Text(
-            'Tema Seçin',
+            'settings.appearance.themeSelect'.tr(),
             style: TextStyle(
               color: isDarkMode
                   ? ColorConstant.textPrimaryDark
@@ -934,7 +934,7 @@ class SettingsView extends StatelessWidget {
               _buildThemeOption(
                 context: dialogContext,
                 title: 'settings.appearance.themeSystem'.tr(),
-                subtitle: 'Cihaz ayarlarını takip et',
+                subtitle: 'settings.appearance.themeSystemSubtitle'.tr(),
                 icon: Icons.brightness_auto_rounded,
                 value: ThemeMode.system,
                 groupValue: themeProvider.themeMode,
@@ -950,7 +950,7 @@ class SettingsView extends StatelessWidget {
               _buildThemeOption(
                 context: dialogContext,
                 title: 'settings.appearance.themeLight'.tr(),
-                subtitle: 'Her zaman açık tema',
+                subtitle: 'settings.appearance.themeLightSubtitle'.tr(),
                 icon: Icons.light_mode_rounded,
                 value: ThemeMode.light,
                 groupValue: themeProvider.themeMode,
@@ -966,7 +966,7 @@ class SettingsView extends StatelessWidget {
               _buildThemeOption(
                 context: dialogContext,
                 title: 'settings.appearance.themeDark'.tr(),
-                subtitle: 'Her zaman koyu tema',
+                subtitle: 'settings.appearance.themeDarkSubtitle'.tr(),
                 icon: Icons.dark_mode_rounded,
                 value: ThemeMode.dark,
                 groupValue: themeProvider.themeMode,

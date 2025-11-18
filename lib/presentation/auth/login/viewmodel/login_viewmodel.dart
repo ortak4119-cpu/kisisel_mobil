@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/init/locator.dart';
 import '../../../../core/utils/custom_snackbar.dart';
 import '../../../../models/auth/auth_models.dart';
@@ -41,7 +42,7 @@ class LoginViewModel extends ChangeNotifier {
         if (context.mounted) {
           CustomSnackBar.showSuccess(
             context,
-            response.message ?? 'Giriş başarılı! Hoş geldiniz 🎉',
+            response.message ?? 'auth.success.loginSuccess'.tr(),
           );
         }
         return true;
@@ -61,7 +62,7 @@ class LoginViewModel extends ChangeNotifier {
       if (context.mounted) {
         CustomSnackBar.showError(
           context,
-          'Beklenmeyen bir hata oluştu',
+          'errors.general'.tr(),
         );
       }
       return false;
@@ -98,7 +99,7 @@ class LoginViewModel extends ChangeNotifier {
         if (context.mounted) {
           CustomSnackBar.showSuccess(
             context,
-            'Google girişi başarılı! 🎉',
+            'auth.success.googleLoginSuccess'.tr(),
           );
         }
         return true;
@@ -118,7 +119,7 @@ class LoginViewModel extends ChangeNotifier {
       if (context.mounted) {
         CustomSnackBar.showError(
           context,
-          'Google girişi başarısız oldu',
+          'errors.general'.tr(),
         );
       }
       return false;
@@ -152,7 +153,7 @@ class LoginViewModel extends ChangeNotifier {
         if (context.mounted) {
           CustomSnackBar.showSuccess(
             context,
-            'Apple girişi başarılı! 🎉',
+            'auth.success.appleLoginSuccess'.tr(),
           );
         }
         return true;
@@ -172,7 +173,7 @@ class LoginViewModel extends ChangeNotifier {
       if (context.mounted) {
         CustomSnackBar.showError(
           context,
-          'Apple girişi başarısız oldu',
+          'errors.general'.tr(),
         );
       }
       return false;
@@ -198,7 +199,7 @@ class LoginViewModel extends ChangeNotifier {
         if (context.mounted) {
           CustomSnackBar.showInfo(
             context,
-            'Misafir olarak giriş yapıldı',
+            'auth.success.guestLoginSuccess'.tr(),
           );
         }
         return true;
@@ -218,7 +219,7 @@ class LoginViewModel extends ChangeNotifier {
       if (context.mounted) {
         CustomSnackBar.showError(
           context,
-          'Misafir girişi başarısız oldu',
+          'errors.general'.tr(),
         );
       }
       return false;

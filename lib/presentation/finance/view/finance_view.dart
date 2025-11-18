@@ -128,7 +128,7 @@ class _FinanceViewState extends State<FinanceView> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Bugün',
+                              'finance.today'.tr(),
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w700,
@@ -165,7 +165,7 @@ class _FinanceViewState extends State<FinanceView> {
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
-                                      'Bu Ay',
+                                      'finance.thisMonth'.tr(),
                                       style: TextStyle(
                                         fontSize: 20,
                                         fontWeight: FontWeight.w700,
@@ -184,7 +184,7 @@ class _FinanceViewState extends State<FinanceView> {
                                     color: ColorConstant.accentBlue,
                                     size: 24,
                                   ),
-                                  tooltip: 'Aylık İstatistikler',
+                                  tooltip: 'finance.monthlyStats'.tr(),
                                 ),
                               ],
                             ),
@@ -220,7 +220,7 @@ class _FinanceViewState extends State<FinanceView> {
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
-                                        'Yaklaşan Ödemeler',
+                                        'finance.upcomingPayments'.tr(),
                                         style: TextStyle(
                                           fontSize: 20,
                                           fontWeight: FontWeight.w700,
@@ -279,7 +279,7 @@ class _FinanceViewState extends State<FinanceView> {
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'Son Aktiviteler',
+                                  'finance.recentActivities'.tr(),
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.w700,
@@ -299,7 +299,7 @@ class _FinanceViewState extends State<FinanceView> {
                                 color: ColorConstant.accentBlue,
                               ),
                               label: Text(
-                                'Filtre',
+                                'finance.filter'.tr(),
                                 style: TextStyle(
                                   color: ColorConstant.accentBlue,
                                   fontWeight: FontWeight.w600,
@@ -381,7 +381,7 @@ class _FinanceViewState extends State<FinanceView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Bugünkü Harcama',
+            'finance.todayExpense'.tr(),
             style: TextStyle(
               color: ColorConstant.white.withOpacity(0.9),
               fontSize: 14,
@@ -413,7 +413,7 @@ class _FinanceViewState extends State<FinanceView> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Günlük ortalama',
+                  'finance.dailyAverage'.tr(),
                   style: TextStyle(
                     color: ColorConstant.white.withOpacity(0.9),
                     fontSize: 12,
@@ -474,7 +474,7 @@ class _FinanceViewState extends State<FinanceView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Aylık Bütçe',
+                    'finance.monthlyBudget'.tr(),
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -485,7 +485,7 @@ class _FinanceViewState extends State<FinanceView> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '₺${stats.remaining.toStringAsFixed(0)} kaldı',
+                    '₺${stats.remaining.toStringAsFixed(0)} ${'finance.remaining'.tr()}',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w900,
@@ -542,7 +542,7 @@ class _FinanceViewState extends State<FinanceView> {
             children: [
               Expanded(
                 child: _buildBudgetDetail(
-                  'Harcanan',
+                  'finance.spent'.tr(),
                   stats.totalSpent,
                   ColorConstant.errorRed,
                   isDarkMode,
@@ -551,7 +551,7 @@ class _FinanceViewState extends State<FinanceView> {
               const SizedBox(width: 12),
               Expanded(
                 child: _buildBudgetDetail(
-                  'Bütçe',
+                  'finance.monthlyBudget'.tr(),
                   stats.monthlyBudget,
                   ColorConstant.accentBlue,
                   isDarkMode,
@@ -710,10 +710,10 @@ class _FinanceViewState extends State<FinanceView> {
                       const SizedBox(width: 4),
                       Text(
                         daysUntil == 0
-                            ? 'Bugün'
+                            ? 'common.today'.tr()
                             : daysUntil == 1
-                            ? 'Yarın'
-                            : '$daysUntil gün sonra',
+                            ? 'finance.tomorrow'.tr()
+                            : 'common.daysLater'.tr(namedArgs: {'count': '$daysUntil'}),
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: isUrgent ? FontWeight.w600 : FontWeight.w500,
@@ -775,7 +775,7 @@ class _FinanceViewState extends State<FinanceView> {
             backgroundColor:
             isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
             title: Text(
-              'Harcamayı Sil',
+              'finance.deleteExpense'.tr(),
               style: TextStyle(
                 color: isDarkMode
                     ? ColorConstant.textPrimaryDark
@@ -783,7 +783,7 @@ class _FinanceViewState extends State<FinanceView> {
               ),
             ),
             content: Text(
-              'Bu harcamayı silmek istediğinizden emin misiniz?',
+              'finance.deleteConfirm'.tr(),
               style: TextStyle(
                 color: isDarkMode
                     ? ColorConstant.textSecondaryDark
@@ -793,12 +793,12 @@ class _FinanceViewState extends State<FinanceView> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('İptal'),
+                child: Text('common.cancel'.tr()),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context, true),
                 child: Text(
-                  'Sil',
+                  'common.delete'.tr(),
                   style: TextStyle(color: ColorConstant.errorRed),
                 ),
               ),
@@ -946,7 +946,7 @@ class _FinanceViewState extends State<FinanceView> {
                   const SizedBox(height: 24),
                   _buildActionTile(
                     icon: Icons.shopping_bag_rounded,
-                    title: 'Harcama Ekle',
+                    title: 'finance.addExpense'.tr(),
                     color: ColorConstant.accentGreen,
                     onTap: () {
                       Navigator.pop(context);
@@ -956,7 +956,7 @@ class _FinanceViewState extends State<FinanceView> {
                   ),
                   _buildActionTile(
                     icon: Icons.subscriptions_rounded,
-                    title: 'Abonelik Ekle',
+                    title: 'finance.addSubscription'.tr(),
                     color: ColorConstant.accentBlue,
                     onTap: () {
                       Navigator.pop(context);
@@ -1053,8 +1053,8 @@ class _FinanceViewState extends State<FinanceView> {
     final yesterday = today.subtract(const Duration(days: 1));
     final dateOnly = DateTime(date.year, date.month, date.day);
 
-    if (dateOnly == today) return 'Bugün';
-    if (dateOnly == yesterday) return 'Dün';
+    if (dateOnly == today) return 'common.today'.tr();
+    if (dateOnly == yesterday) return 'common.yesterday'.tr();
     return '${date.day}.${date.month}.${date.year}';
   }
 
@@ -1224,7 +1224,7 @@ class _AddSubscriptionBottomSheet extends StatelessWidget {
                         ),
                         const SizedBox(height: 24),
                         Text(
-                          'Yeni Abonelik',
+                          'finance.newSubscription'.tr(),
                           style: TextStyle(
                             color: isDarkMode
                                 ? ColorConstant.textPrimaryDark
@@ -1292,7 +1292,7 @@ class _AddSubscriptionBottomSheet extends StatelessWidget {
                                 : ColorConstant.textPrimaryLight,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Abonelik adı (örn: Netflix, Spotify)',
+                            hintText: 'finance.hints.subscriptionName'.tr(),
                             hintStyle: TextStyle(
                               color: isDarkMode
                                   ? ColorConstant.textMutedDark
@@ -1318,7 +1318,7 @@ class _AddSubscriptionBottomSheet extends StatelessWidget {
                                 : ColorConstant.textPrimaryLight,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Aylık tutar (₺)',
+                            hintText: 'finance.hints.monthlyAmount'.tr(),
                             hintStyle: TextStyle(
                               color: isDarkMode
                                   ? ColorConstant.textMutedDark
@@ -1344,7 +1344,7 @@ class _AddSubscriptionBottomSheet extends StatelessWidget {
                                 : ColorConstant.textPrimaryLight,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Ödeme günü (1-31)',
+                            hintText: 'finance.hints.paymentDay'.tr(),
                             hintStyle: TextStyle(
                               color: isDarkMode
                                   ? ColorConstant.textMutedDark
@@ -1381,7 +1381,7 @@ class _AddSubscriptionBottomSheet extends StatelessWidget {
                                   ),
                                 ),
                                 child: Text(
-                                  'İptal',
+                                  'common.cancel'.tr(),
                                   style: TextStyle(
                                     color: isDarkMode
                                         ? ColorConstant.textSecondaryDark
@@ -1403,7 +1403,7 @@ class _AddSubscriptionBottomSheet extends StatelessWidget {
                                   ),
                                 ),
                                 child: Text(
-                                  'Ekle',
+                                  'finance.add'.tr(),
                                   style: TextStyle(
                                     color: ColorConstant.white,
                                     fontWeight: FontWeight.w700,
@@ -1480,15 +1480,15 @@ class _AddExpenseBottomSheet extends StatelessWidget {
     required this.isDarkMode,
   });
 
-  final List<Map<String, dynamic>> _categories = const [
-    {'value': 'food', 'label': 'Yemek', 'emoji': '🍔'},
-    {'value': 'transportation', 'label': 'Ulaşım', 'emoji': '🚗'},
-    {'value': 'entertainment', 'label': 'Eğlence', 'emoji': '🎬'},
-    {'value': 'shopping', 'label': 'Alışveriş', 'emoji': '🛍️'},
-    {'value': 'bills', 'label': 'Faturalar', 'emoji': '📄'},
-    {'value': 'health', 'label': 'Sağlık', 'emoji': '💊'},
-    {'value': 'education', 'label': 'Eğitim', 'emoji': '📚'},
-    {'value': 'other', 'label': 'Diğer', 'emoji': '💰'},
+  List<Map<String, dynamic>> get _categories => [
+    {'value': 'food', 'label': 'finance.categories.food'.tr(), 'emoji': '🍔'},
+    {'value': 'transportation', 'label': 'finance.categories.transportation'.tr(), 'emoji': '🚗'},
+    {'value': 'entertainment', 'label': 'finance.categories.entertainment'.tr(), 'emoji': '🎬'},
+    {'value': 'shopping', 'label': 'finance.categories.shopping'.tr(), 'emoji': '🛍️'},
+    {'value': 'bills', 'label': 'finance.categories.bills'.tr(), 'emoji': '📄'},
+    {'value': 'health', 'label': 'finance.categories.health'.tr(), 'emoji': '💊'},
+    {'value': 'education', 'label': 'finance.categories.education'.tr(), 'emoji': '📚'},
+    {'value': 'other', 'label': 'finance.categories.other'.tr(), 'emoji': '💰'},
   ];
 
   @override
@@ -1533,7 +1533,7 @@ class _AddExpenseBottomSheet extends StatelessWidget {
                         ),
                         const SizedBox(height: 24),
                         Text(
-                          'Yeni Harcama',
+                          'finance.newExpense'.tr(),
                           style: TextStyle(
                             color: isDarkMode
                                 ? ColorConstant.textPrimaryDark
@@ -1544,7 +1544,7 @@ class _AddExpenseBottomSheet extends StatelessWidget {
                         ),
                         const SizedBox(height: 24),
                         Text(
-                          'Kategori Seç',
+                          'finance.selectCategory'.tr(),
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -1620,7 +1620,7 @@ class _AddExpenseBottomSheet extends StatelessWidget {
                                 : ColorConstant.textPrimaryLight,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Tutar (₺)',
+                            hintText: 'finance.hints.amount'.tr(),
                             hintStyle: TextStyle(
                               color: isDarkMode
                                   ? ColorConstant.textMutedDark
@@ -1646,7 +1646,7 @@ class _AddExpenseBottomSheet extends StatelessWidget {
                                 : ColorConstant.textPrimaryLight,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Açıklama (opsiyonel)',
+                            hintText: 'finance.hints.description'.tr(),
                             hintStyle: TextStyle(
                               color: isDarkMode
                                   ? ColorConstant.textMutedDark
@@ -1683,7 +1683,7 @@ class _AddExpenseBottomSheet extends StatelessWidget {
                                   ),
                                 ),
                                 child: Text(
-                                  'İptal',
+                                  'common.cancel'.tr(),
                                   style: TextStyle(
                                     color: isDarkMode
                                         ? ColorConstant.textSecondaryDark
@@ -1705,7 +1705,7 @@ class _AddExpenseBottomSheet extends StatelessWidget {
                                   ),
                                 ),
                                 child: Text(
-                                  'Ekle',
+                                  'finance.add'.tr(),
                                   style: TextStyle(
                                     color: ColorConstant.white,
                                     fontWeight: FontWeight.w700,
@@ -1779,7 +1779,7 @@ class _BudgetSettingsBottomSheet extends StatelessWidget {
                         ),
                         const SizedBox(height: 24),
                         Text(
-                          'Bütçe Ayarları',
+                          'finance.budgetSettings'.tr(),
                           style: TextStyle(
                             color: isDarkMode
                                 ? ColorConstant.textPrimaryDark
@@ -1798,8 +1798,8 @@ class _BudgetSettingsBottomSheet extends StatelessWidget {
                                 : ColorConstant.textPrimaryLight,
                           ),
                           decoration: InputDecoration(
-                            labelText: 'Aylık Bütçe',
-                            hintText: 'Örn: 10000',
+                            labelText: 'finance.monthlyBudget'.tr(),
+                            hintText: 'finance.hints.budgetExample'.tr(),
                             prefixText: '₺ ',
                             hintStyle: TextStyle(
                               color: isDarkMode
@@ -1837,7 +1837,7 @@ class _BudgetSettingsBottomSheet extends StatelessWidget {
                                   ),
                                 ),
                                 child: Text(
-                                  'İptal',
+                                  'common.cancel'.tr(),
                                   style: TextStyle(
                                     color: isDarkMode
                                         ? ColorConstant.textSecondaryDark
@@ -1958,7 +1958,7 @@ class _MonthlyStatisticsBottomSheetState
               ),
               child: Center(
                 child: Text(
-                  'Veri bulunamadı',
+                  'finance.noData'.tr(),
                   style: TextStyle(
                     color: widget.isDarkMode
                         ? ColorConstant.textSecondaryDark
@@ -2005,7 +2005,7 @@ class _MonthlyStatisticsBottomSheetState
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Aylık İstatistikler',
+                        'finance.monthlyStats'.tr(),
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w800,
@@ -2142,7 +2142,7 @@ class _MonthlyStatisticsBottomSheetState
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Toplam Harcama',
+                        'finance.totalExpense'.tr(),
                         style: TextStyle(
                           color: ColorConstant.white.withOpacity(0.9),
                           fontSize: 12,
@@ -2150,7 +2150,7 @@ class _MonthlyStatisticsBottomSheetState
                         ),
                       ),
                       Text(
-                        '$expenseCount işlem',
+                        '$expenseCount ${'finance.transactions'.tr()}',
                         style: TextStyle(
                           color: ColorConstant.white,
                           fontSize: 14,
@@ -2166,7 +2166,7 @@ class _MonthlyStatisticsBottomSheetState
           const SizedBox(height: 20),
           if (categories.isNotEmpty) ...[
             Text(
-              'Kategori Dağılımı',
+              'finance.categoryDistribution'.tr(),
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -2234,7 +2234,7 @@ class _MonthlyStatisticsBottomSheetState
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                '$count işlem',
+                                '$count ${'finance.transactions'.tr()}',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: widget.isDarkMode
@@ -2294,7 +2294,7 @@ class _MonthlyStatisticsBottomSheetState
               child: Padding(
                 padding: const EdgeInsets.all(40),
                 child: Text(
-                  'Bu ayda harcama bulunmuyor',
+                  'finance.noExpenses'.tr(),
                   style: TextStyle(
                     color: widget.isDarkMode
                         ? ColorConstant.textSecondaryDark
@@ -2318,16 +2318,16 @@ class _ExpenseFilterDialog extends StatelessWidget {
     required this.isDarkMode,
   });
 
-  final List<Map<String, dynamic>> _categories = const [
-    {'value': 'all', 'label': 'Tümü', 'emoji': '📊'},
-    {'value': 'food', 'label': 'Yemek', 'emoji': '🍔'},
-    {'value': 'transportation', 'label': 'Ulaşım', 'emoji': '🚗'},
-    {'value': 'entertainment', 'label': 'Eğlence', 'emoji': '🎬'},
-    {'value': 'shopping', 'label': 'Alışveriş', 'emoji': '🛍️'},
-    {'value': 'bills', 'label': 'Faturalar', 'emoji': '📄'},
-    {'value': 'health', 'label': 'Sağlık', 'emoji': '💊'},
-    {'value': 'education', 'label': 'Eğitim', 'emoji': '📚'},
-    {'value': 'other', 'label': 'Diğer', 'emoji': '💰'},
+  List<Map<String, dynamic>> get _categories => [
+    {'value': 'all', 'label': 'finance.categories.all'.tr(), 'emoji': '📊'},
+    {'value': 'food', 'label': 'finance.categories.food'.tr(), 'emoji': '🍔'},
+    {'value': 'transportation', 'label': 'finance.categories.transportation'.tr(), 'emoji': '🚗'},
+    {'value': 'entertainment', 'label': 'finance.categories.entertainment'.tr(), 'emoji': '🎬'},
+    {'value': 'shopping', 'label': 'finance.categories.shopping'.tr(), 'emoji': '🛍️'},
+    {'value': 'bills', 'label': 'finance.categories.bills'.tr(), 'emoji': '📄'},
+    {'value': 'health', 'label': 'finance.categories.health'.tr(), 'emoji': '💊'},
+    {'value': 'education', 'label': 'finance.categories.education'.tr(), 'emoji': '📚'},
+    {'value': 'other', 'label': 'finance.categories.other'.tr(), 'emoji': '💰'},
   ];
 
   @override
@@ -2344,7 +2344,7 @@ class _ExpenseFilterDialog extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
             ),
             title: Text(
-              'Harcamaları Filtrele',
+              'finance.filterExpenses'.tr(),
               style: TextStyle(
                 color: isDarkMode
                     ? ColorConstant.textPrimaryDark
@@ -2358,7 +2358,7 @@ class _ExpenseFilterDialog extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Kategori',
+                    'finance.category'.tr(),
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -2432,7 +2432,7 @@ class _ExpenseFilterDialog extends StatelessWidget {
                   Navigator.pop(context);
                 },
                 child: Text(
-                  'Temizle',
+                  'finance.clear'.tr(),
                   style: TextStyle(
                     color: isDarkMode
                         ? ColorConstant.textSecondaryDark
@@ -2453,7 +2453,7 @@ class _ExpenseFilterDialog extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  'Uygula',
+                  'finance.apply'.tr(),
                   style: TextStyle(
                     color: ColorConstant.white,
                     fontWeight: FontWeight.w700,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../core/init/locator.dart';
 import '../../../service/note/note_service.dart';
 import '../../../service/diary/diary_service.dart';
@@ -218,7 +219,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
 
   Future<void> createNote(BuildContext context) async {
     if (noteTitleController.text.trim().isEmpty) {
-      CustomSnackBar.showError(context, 'Not başlığı boş olamaz');
+      CustomSnackBar.showError(context, 'errors.noteTitleEmpty'.tr());
       return;
     }
 
@@ -246,7 +247,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
           final cleanMsg = _cleanMessage(response.message);
           CustomSnackBar.showSuccess(
             context,
-            cleanMsg.isNotEmpty ? cleanMsg : 'Not başarıyla eklendi',
+            cleanMsg.isNotEmpty ? cleanMsg : 'success.noteAdded'.tr(),
           );
           Navigator.pop(context);
         }
@@ -255,13 +256,13 @@ class NotesDiaryViewModel extends ChangeNotifier {
           final cleanMsg = _cleanMessage(response.message);
           CustomSnackBar.showError(
             context,
-            cleanMsg.isNotEmpty ? cleanMsg : 'Not eklenemedi',
+            cleanMsg.isNotEmpty ? cleanMsg : 'errors.noteAddFailed'.tr(),
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'Not eklenirken hata oluştu');
+        CustomSnackBar.showError(context, 'errors.noteAddFailed'.tr());
       }
       debugPrint('Note creation exception: $e');
     } finally {
@@ -272,12 +273,12 @@ class NotesDiaryViewModel extends ChangeNotifier {
 
   Future<void> updateNote(BuildContext context) async {
     if (_editingNoteId == null) {
-      CustomSnackBar.showError(context, 'Düzenlenecek not bulunamadı');
+      CustomSnackBar.showError(context, 'errors.noteNotFound'.tr());
       return;
     }
 
     if (noteTitleController.text.trim().isEmpty) {
-      CustomSnackBar.showError(context, 'Not başlığı boş olamaz');
+      CustomSnackBar.showError(context, 'errors.noteTitleEmpty'.tr());
       return;
     }
 
@@ -311,7 +312,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
           final cleanMsg = _cleanMessage(response.message);
           CustomSnackBar.showSuccess(
             context,
-            cleanMsg.isNotEmpty ? cleanMsg : 'Not güncellendi',
+            cleanMsg.isNotEmpty ? cleanMsg : 'success.noteUpdated'.tr(),
           );
           Navigator.pop(context);
         }
@@ -320,13 +321,13 @@ class NotesDiaryViewModel extends ChangeNotifier {
           final cleanMsg = _cleanMessage(response.message);
           CustomSnackBar.showError(
             context,
-            cleanMsg.isNotEmpty ? cleanMsg : 'Not güncellenemedi',
+            cleanMsg.isNotEmpty ? cleanMsg : 'errors.noteUpdateFailed'.tr(),
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'Not güncellenirken hata oluştu');
+        CustomSnackBar.showError(context, 'errors.noteUpdateFailed'.tr());
       }
       debugPrint('Note update exception: $e');
     } finally {
@@ -348,7 +349,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
           final cleanMsg = _cleanMessage(response.message);
           CustomSnackBar.showSuccess(
             context,
-            cleanMsg.isNotEmpty ? cleanMsg : 'Not silindi',
+            cleanMsg.isNotEmpty ? cleanMsg : 'success.noteDeleted'.tr(),
           );
         }
       } else {
@@ -356,13 +357,13 @@ class NotesDiaryViewModel extends ChangeNotifier {
           final cleanMsg = _cleanMessage(response.message);
           CustomSnackBar.showError(
             context,
-            cleanMsg.isNotEmpty ? cleanMsg : 'Not silinemedi',
+            cleanMsg.isNotEmpty ? cleanMsg : 'errors.noteDeleteFailed'.tr(),
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'Not silinirken hata oluştu');
+        CustomSnackBar.showError(context, 'errors.noteDeleteFailed'.tr());
       }
       debugPrint('Note deletion exception: $e');
     } finally {
@@ -408,14 +409,14 @@ class NotesDiaryViewModel extends ChangeNotifier {
               context,
               cleanMsg.isNotEmpty
                   ? cleanMsg
-                  : (note.isPinned ? 'Sabitleme kaldırıldı' : 'Not sabitlendi'),
+                  : (note.isPinned ? 'success.noteUnpinned'.tr() : 'success.notePinned'.tr()),
             );
           }
         }
       }
     } catch (e) {
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'İşlem başarısız');
+        CustomSnackBar.showError(context, 'errors.general'.tr());
       }
       debugPrint('Toggle pin exception: $e');
     }
@@ -485,7 +486,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
             final cleanMsg = _cleanMessage(response.message);
             CustomSnackBar.showSuccess(
               context,
-              cleanMsg.isNotEmpty ? cleanMsg : 'Not kilitlendi',
+              cleanMsg.isNotEmpty ? cleanMsg : 'success.noteLocked'.tr(),
             );
           }
         }
@@ -494,13 +495,13 @@ class NotesDiaryViewModel extends ChangeNotifier {
           final cleanMsg = _cleanMessage(response.message);
           CustomSnackBar.showError(
             context,
-            cleanMsg.isNotEmpty ? cleanMsg : 'Not kilitlenemedi',
+            cleanMsg.isNotEmpty ? cleanMsg : 'errors.noteLockFailed'.tr(),
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'İşlem başarısız');
+        CustomSnackBar.showError(context, 'errors.general'.tr());
       }
       debugPrint('Lock note exception: $e');
     }
@@ -525,7 +526,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
           if (context.mounted) {
             CustomSnackBar.showError(
               context,
-              'Yanlış PIN kodu',
+              'errors.invalidPin'.tr(),
             );
           }
           return;
@@ -541,7 +542,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
             final cleanMsg = _cleanMessage(response.message);
             CustomSnackBar.showSuccess(
               context,
-              cleanMsg.isNotEmpty ? cleanMsg : 'Not kilidi açıldı',
+              cleanMsg.isNotEmpty ? cleanMsg : 'success.noteUnlocked'.tr(),
             );
           }
 
@@ -555,13 +556,13 @@ class NotesDiaryViewModel extends ChangeNotifier {
           final cleanMsg = _cleanMessage(response.message);
           CustomSnackBar.showError(
             context,
-            cleanMsg.isNotEmpty ? cleanMsg : 'Yanlış PIN kodu',
+            cleanMsg.isNotEmpty ? cleanMsg : 'errors.invalidPin'.tr(),
           );
         }
       }
     } catch (e, stackTrace) {
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'İşlem başarısız: $e');
+        CustomSnackBar.showError(context, '${'errors.general'.tr()}: $e');
       }
       debugPrint('❌ Unlock note exception: $e');
       debugPrint('❌ StackTrace: $stackTrace');
@@ -606,15 +607,15 @@ class NotesDiaryViewModel extends ChangeNotifier {
               cleanMsg.isNotEmpty
                   ? cleanMsg
                   : (note.isArchived
-                  ? 'Arşivden çıkarıldı'
-                  : 'Arşivlendi'),
+                  ? 'success.noteUnarchived'.tr()
+                  : 'success.noteArchived'.tr()),
             );
           }
         }
       }
     } catch (e) {
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'İşlem başarısız');
+        CustomSnackBar.showError(context, 'errors.general'.tr());
       }
       debugPrint('Toggle archive exception: $e');
     }
@@ -678,7 +679,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
           final cleanMsg = _cleanMessage(response.message);
           CustomSnackBar.showSuccess(
             context,
-            cleanMsg.isNotEmpty ? cleanMsg : 'Kategori oluşturuldu',
+            cleanMsg.isNotEmpty ? cleanMsg : 'success.categoryCreated'.tr(),
           );
         }
       } else {
@@ -687,7 +688,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
     } catch (e) {
       debugPrint('➕ ❌ Create category exception: $e');
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'Kategori oluşturulamadı');
+        CustomSnackBar.showError(context, 'errors.categoryCreateFailed'.tr());
       }
     }
   }
@@ -722,7 +723,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
           final cleanMsg = _cleanMessage(response.message);
           CustomSnackBar.showSuccess(
             context,
-            cleanMsg.isNotEmpty ? cleanMsg : 'Kategori güncellendi',
+            cleanMsg.isNotEmpty ? cleanMsg : 'success.categoryUpdated'.tr(),
           );
         }
       } else {
@@ -731,7 +732,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
     } catch (e) {
       debugPrint('✏️ ❌ Update category exception: $e');
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'Kategori güncellenemedi');
+        CustomSnackBar.showError(context, 'errors.categoryUpdateFailed'.tr());
       }
     }
   }
@@ -754,7 +755,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
           final cleanMsg = _cleanMessage(response.message);
           CustomSnackBar.showSuccess(
             context,
-            cleanMsg.isNotEmpty ? cleanMsg : 'Kategori silindi',
+            cleanMsg.isNotEmpty ? cleanMsg : 'success.categoryDeleted'.tr(),
           );
         }
       } else {
@@ -763,7 +764,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
     } catch (e) {
       debugPrint('🗑️ ❌ Delete category exception: $e');
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'Kategori silinemedi');
+        CustomSnackBar.showError(context, 'errors.categoryDeleteFailed'.tr());
       }
     }
   }
@@ -798,7 +799,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
 
       if (textToCopy.isEmpty) {
         if (context.mounted) {
-          CustomSnackBar.showError(context, 'Not içeriği boş');
+          CustomSnackBar.showError(context, 'errors.noteContentEmpty'.tr());
         }
         return;
       }
@@ -809,12 +810,12 @@ class NotesDiaryViewModel extends ChangeNotifier {
       if (context.mounted) {
         CustomSnackBar.showSuccess(
           context,
-          'Not içeriği kopyalandı',
+          'success.noteCopied'.tr(),
         );
       }
     } catch (e) {
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'Kopyalama başarısız');
+        CustomSnackBar.showError(context, 'errors.copyFailed'.tr());
       }
       debugPrint('Copy to clipboard exception: $e');
     }
@@ -842,7 +843,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
 
   Future<void> createDiary(BuildContext context) async {
     if (diaryContentController.text.trim().isEmpty) {
-      CustomSnackBar.showError(context, 'Günlük içeriği boş olamaz');
+      CustomSnackBar.showError(context, 'errors.diaryContentEmpty'.tr());
       return;
     }
 
@@ -871,7 +872,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
           final cleanMsg = _cleanMessage(response.message);
           CustomSnackBar.showSuccess(
             context,
-            cleanMsg.isNotEmpty ? cleanMsg : 'Günlük başarıyla eklendi',
+            cleanMsg.isNotEmpty ? cleanMsg : 'success.diaryAdded'.tr(),
           );
           Navigator.pop(context);
         }
@@ -880,13 +881,13 @@ class NotesDiaryViewModel extends ChangeNotifier {
           final cleanMsg = _cleanMessage(response.message);
           CustomSnackBar.showError(
             context,
-            cleanMsg.isNotEmpty ? cleanMsg : 'Günlük eklenemedi',
+            cleanMsg.isNotEmpty ? cleanMsg : 'errors.diaryAddFailed'.tr(),
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'Günlük eklenirken hata oluştu');
+        CustomSnackBar.showError(context, 'errors.diaryAddFailed'.tr());
       }
       debugPrint('Diary creation exception: $e');
     } finally {
@@ -897,12 +898,12 @@ class NotesDiaryViewModel extends ChangeNotifier {
 
   Future<void> updateDiary(BuildContext context) async {
     if (_editingDiaryDate == null) {
-      CustomSnackBar.showError(context, 'Düzenlenecek günlük bulunamadı');
+      CustomSnackBar.showError(context, 'errors.diaryNotFound'.tr());
       return;
     }
 
     if (diaryContentController.text.trim().isEmpty) {
-      CustomSnackBar.showError(context, 'Günlük içeriği boş olamaz');
+      CustomSnackBar.showError(context, 'errors.diaryContentEmpty'.tr());
       return;
     }
 
@@ -938,7 +939,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
           final cleanMsg = _cleanMessage(response.message);
           CustomSnackBar.showSuccess(
             context,
-            cleanMsg.isNotEmpty ? cleanMsg : 'Günlük güncellendi',
+            cleanMsg.isNotEmpty ? cleanMsg : 'success.diaryUpdated'.tr(),
           );
           Navigator.pop(context);
         }
@@ -947,13 +948,13 @@ class NotesDiaryViewModel extends ChangeNotifier {
           final cleanMsg = _cleanMessage(response.message);
           CustomSnackBar.showError(
             context,
-            cleanMsg.isNotEmpty ? cleanMsg : 'Günlük güncellenemedi',
+            cleanMsg.isNotEmpty ? cleanMsg : 'errors.diaryUpdateFailed'.tr(),
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'Günlük güncellenirken hata oluştu');
+        CustomSnackBar.showError(context, 'errors.diaryUpdateFailed'.tr());
       }
       debugPrint('Diary update exception: $e');
     } finally {
@@ -977,7 +978,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
           final cleanMsg = _cleanMessage(response.message);
           CustomSnackBar.showSuccess(
             context,
-            cleanMsg.isNotEmpty ? cleanMsg : 'Günlük silindi',
+            cleanMsg.isNotEmpty ? cleanMsg : 'success.diaryDeleted'.tr(),
           );
         }
       } else {
@@ -985,13 +986,13 @@ class NotesDiaryViewModel extends ChangeNotifier {
           final cleanMsg = _cleanMessage(response.message);
           CustomSnackBar.showError(
             context,
-            cleanMsg.isNotEmpty ? cleanMsg : 'Günlük silinemedi',
+            cleanMsg.isNotEmpty ? cleanMsg : 'errors.diaryDeleteFailed'.tr(),
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'Günlük silinirken hata oluştu');
+        CustomSnackBar.showError(context, 'errors.diaryDeleteFailed'.tr());
       }
       debugPrint('Diary deletion exception: $e');
     } finally {

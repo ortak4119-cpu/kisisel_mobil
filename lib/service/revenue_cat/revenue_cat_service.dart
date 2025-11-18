@@ -8,7 +8,7 @@ class RevenueCatService {
   RevenueCatService._internal();
 
   // RevenueCat API Keys - Bunları kendi anahtarlarınızla değiştirin
-  static const String _apiKeyIOS = 'YOUR_IOS_API_KEY';
+  static const String _apiKeyIOS = 'appl_AqSfLLdHoJylyNSYFEutttWrDgn';
   static const String _apiKeyAndroid = 'YOUR_ANDROID_API_KEY';
 
   bool _isInitialized = false;

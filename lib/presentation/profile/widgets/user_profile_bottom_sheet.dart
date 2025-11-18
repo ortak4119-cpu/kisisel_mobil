@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../models/social/social_model.dart';
 import '../../../models/settings/settings_models.dart';
@@ -335,7 +336,7 @@ class UserProfileBottomSheet extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        isFriend ? 'Arkadaşlıktan Çıkar' : 'Arkadaş Ekle',
+                        isFriend ? 'profile.friends.unfriend'.tr() : 'profile.friends.addFriend'.tr(),
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
@@ -380,7 +381,7 @@ class UserProfileBottomSheet extends StatelessWidget {
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    isFollowing ? 'Takipten Çık' : 'Takip Et',
+                    isFollowing ? 'profile.friends.unfollow'.tr() : 'profile.friends.follow'.tr(),
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
@@ -404,7 +405,7 @@ class UserProfileBottomSheet extends StatelessWidget {
             const Text('🔒', style: TextStyle(fontSize: 64)),
             const SizedBox(height: 16),
             Text(
-              'İstatistikler gizli',
+              'profile.stats.statsPrivate'.tr(),
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -440,7 +441,7 @@ class UserProfileBottomSheet extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Text(
-              'İstatistikler',
+              'profile.tabs.statistics'.tr(),
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
@@ -456,15 +457,15 @@ class UserProfileBottomSheet extends StatelessWidget {
         // Habits
         if (userProfile.showHabits)
           _buildStatCard(
-            title: 'Alışkanlıklar',
+            title: 'profile.stats.habits'.tr(),
             icon: Icons.emoji_events_rounded,
             emoji: '🏆',
             color: ColorConstant.accentYellow,
             stats: [
-              _StatItem('Toplam', '${stats.habits.total}', '📊'),
-              _StatItem('Aktif', '${stats.habits.active}', '✅'),
-              _StatItem('Bugün', '${stats.habits.completedToday}', '🎯'),
-              _StatItem('Streak', '${stats.habits.currentStreak}', '🔥'),
+              _StatItem('profile.stats.total'.tr(), '${stats.habits.total}', '📊'),
+              _StatItem('profile.stats.active'.tr(), '${stats.habits.active}', '✅'),
+              _StatItem('profile.stats.today'.tr(), '${stats.habits.completedToday}', '🎯'),
+              _StatItem('profile.stats.streak'.tr(), '${stats.habits.currentStreak}', '🔥'),
             ],
           ),
 
@@ -472,15 +473,15 @@ class UserProfileBottomSheet extends StatelessWidget {
 
         // Tasks
         _buildStatCard(
-          title: 'Görevler',
+          title: 'profile.stats.tasks'.tr(),
           icon: Icons.task_rounded,
           emoji: '📝',
           color: ColorConstant.accentBlue,
           stats: [
-            _StatItem('Toplam', '${stats.tasks.total}', '📊'),
-            _StatItem('Tamamlanan', '${stats.tasks.completed}', '✅'),
-            _StatItem('Bekleyen', '${stats.tasks.pending}', '⏳'),
-            _StatItem('Geciken', '${stats.tasks.overdue}', '⚠️'),
+            _StatItem('profile.stats.total'.tr(), '${stats.tasks.total}', '📊'),
+            _StatItem('profile.stats.completed'.tr(), '${stats.tasks.completed}', '✅'),
+            _StatItem('profile.stats.pending'.tr(), '${stats.tasks.pending}', '⏳'),
+            _StatItem('profile.stats.overdue'.tr(), '${stats.tasks.overdue}', '⚠️'),
           ],
         ),
 
@@ -488,14 +489,14 @@ class UserProfileBottomSheet extends StatelessWidget {
 
         // Social
         _buildStatCard(
-          title: 'Sosyal',
+          title: 'profile.stats.social'.tr(),
           icon: Icons.people_rounded,
           emoji: '👥',
           color: const Color(0xFFB794F6),
           stats: [
-            _StatItem('Arkadaş', '${stats.social.friends}', '🤝'),
-            _StatItem('Takipçi', '${stats.social.followers}', '👀'),
-            _StatItem('Takip', '${stats.social.following}', '⭐'),
+            _StatItem('profile.stats.friends'.tr(), '${stats.social.friends}', '🤝'),
+            _StatItem('profile.stats.followers'.tr(), '${stats.social.followers}', '👀'),
+            _StatItem('profile.stats.following'.tr(), '${stats.social.following}', '⭐'),
           ],
         ),
 

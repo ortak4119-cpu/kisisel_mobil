@@ -140,8 +140,8 @@ class _CalendarViewState extends State<CalendarView> {
                       : ColorConstant.textSecondaryLight,
                 ),
                 tooltip: viewModel.calendarViewType == CalendarViewType.month
-                    ? 'Haftalık Görünüm'
-                    : 'Aylık Görünüm',
+                    ? 'calendar.weeklyView'.tr()
+                    : 'calendar.monthlyView'.tr(),
               ),
             ],
           ),
@@ -367,7 +367,7 @@ class _CalendarViewState extends State<CalendarView> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Yükleniyor...',
+            'calendar.loading'.tr(),
             style: TextStyle(
               color: isDarkMode
                   ? ColorConstant.textSecondaryDark
@@ -445,7 +445,7 @@ class _CalendarViewState extends State<CalendarView> {
           ),
           const SizedBox(height: 24),
           Text(
-            'Bu gün için etkinlik yok',
+            'calendar.noEventsForDay'.tr(),
             style: TextStyle(
               color: isDarkMode
                   ? ColorConstant.textPrimaryDark
@@ -456,7 +456,7 @@ class _CalendarViewState extends State<CalendarView> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Yeni bir etkinlik eklemek için + butonuna tıklayın',
+            'calendar.addEventHint'.tr(),
             style: TextStyle(
               color: isDarkMode
                   ? ColorConstant.textSecondaryDark
@@ -505,7 +505,7 @@ class _CalendarViewState extends State<CalendarView> {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  'Etkinlikler',
+                  'calendar.events'.tr(),
                   style: TextStyle(
                     color: isDarkMode
                         ? ColorConstant.textPrimaryDark
@@ -709,19 +709,19 @@ class _CalendarViewState extends State<CalendarView> {
   String _getEventTypeLabel(String eventType) {
     switch (eventType) {
       case 'habit':
-        return 'Alışkanlık';
+        return 'habits.title'.tr();
       case 'task':
-        return 'Görev';
+        return 'tasks.title'.tr();
       case 'subscription':
-        return 'Abonelik';
+        return 'finance.addSubscription'.tr();
       case 'diary':
-        return 'Günlük';
+        return 'diary.title'.tr();
       case 'reminder':
-        return 'Hatırlatma';
+        return 'calendar.reminder'.tr();
       case 'custom':
-        return 'Özel';
+        return 'calendar.custom'.tr();
       default:
-        return 'Etkinlik';
+        return 'calendar.event'.tr();
     }
   }
 
@@ -768,7 +768,7 @@ class _CalendarViewState extends State<CalendarView> {
                   children: [
                     Expanded(
                       child: Text(
-                        'Etkinlik Detayı',
+                        'calendar.eventDetail'.tr(),
                         style: TextStyle(
                           color: isDarkMode
                               ? ColorConstant.textPrimaryDark
@@ -818,14 +818,14 @@ class _CalendarViewState extends State<CalendarView> {
                       _buildInfoRow(
                         isDarkMode,
                         Icons.calendar_today_rounded,
-                        'Tarih',
+                        'calendar.date'.tr(),
                         _formatEventDate(event.eventDate),
                       ),
                       if (event.eventTime != null)
                         _buildInfoRow(
                           isDarkMode,
                           Icons.access_time_rounded,
-                          'Saat',
+                          'calendar.time'.tr(),
                           event.eventTime!,
                         ),
 
@@ -834,7 +834,7 @@ class _CalendarViewState extends State<CalendarView> {
                       if (event.description != null) ...[
                         const SizedBox(height: 24),
                         Text(
-                          'Açıklama',
+                          'calendar.description'.tr(),
                           style: TextStyle(
                             color: isDarkMode
                                 ? ColorConstant.textPrimaryDark
@@ -878,8 +878,8 @@ class _CalendarViewState extends State<CalendarView> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
-                              child: const Text(
-                                'Düzenle',
+                              child:  Text(
+                                'common.edit'.tr(),
                                 style: TextStyle(
                                   color: Color(0xFFB794F6),
                                   fontSize: 16,
@@ -908,9 +908,9 @@ class _CalendarViewState extends State<CalendarView> {
                                     if (context.mounted) {
                                       Navigator.pop(context);
                                       if (success) {
-                                        CustomSnackBar.showSuccess(context, 'Etkinlik silindi');
+                                        CustomSnackBar.showSuccess(context, 'success.eventDeleted'.tr());
                                       } else {
-                                        CustomSnackBar.showError(context, 'Etkinlik silinemedi');
+                                        CustomSnackBar.showError(context, 'errors.eventDeleteFailed'.tr());
                                       }
                                     }
                                   }
@@ -923,9 +923,9 @@ class _CalendarViewState extends State<CalendarView> {
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                 ),
-                                child: const Text(
-                                  'Sil',
-                                  style: TextStyle(
+                                child:  Text(
+                                  'common.delete'.tr(),
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 16,
                                     fontWeight: FontWeight.w700,
@@ -1002,21 +1002,21 @@ class _CalendarViewState extends State<CalendarView> {
   String _formatEventDate(String dateStr) {
     try {
       final date = DateTime.parse(dateStr);
-      final months = [
-        'Ocak',
-        'Şubat',
-        'Mart',
-        'Nisan',
-        'Mayıs',
-        'Haziran',
-        'Temmuz',
-        'Ağustos',
-        'Eylül',
-        'Ekim',
-        'Kasım',
-        'Aralık'
-      ];
-      return '${date.day} ${months[date.month - 1]} ${date.year}';
+      final monthKey = [
+        'common.months.january',
+        'common.months.february',
+        'common.months.march',
+        'common.months.april',
+        'common.months.may',
+        'common.months.june',
+        'common.months.july',
+        'common.months.august',
+        'common.months.september',
+        'common.months.october',
+        'common.months.november',
+        'common.months.december'
+      ][date.month - 1];
+      return '${date.day} ${monthKey.tr()} ${date.year}';
     } catch (e) {
       return dateStr;
     }
@@ -1031,7 +1031,7 @@ class _CalendarViewState extends State<CalendarView> {
           borderRadius: BorderRadius.circular(20),
         ),
         title: Text(
-          'Etkinliği Sil',
+          'calendar.deleteEvent'.tr(),
           style: TextStyle(
             color: isDarkMode
                 ? ColorConstant.textPrimaryDark
@@ -1040,7 +1040,7 @@ class _CalendarViewState extends State<CalendarView> {
           ),
         ),
         content: Text(
-          'Bu etkinliği silmek istediğinizden emin misiniz?',
+          'calendar.deleteConfirm'.tr(),
           style: TextStyle(
             color: isDarkMode
                 ? ColorConstant.textSecondaryDark
@@ -1051,7 +1051,7 @@ class _CalendarViewState extends State<CalendarView> {
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: Text(
-              'İptal',
+              'common.cancel'.tr(),
               style: TextStyle(
                 color: isDarkMode
                     ? ColorConstant.textSecondaryDark
@@ -1069,8 +1069,8 @@ class _CalendarViewState extends State<CalendarView> {
             ),
             child: TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text(
-                'Sil',
+              child:  Text(
+                'common.delete'.tr(),
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
@@ -1104,7 +1104,7 @@ class _CalendarViewState extends State<CalendarView> {
             borderRadius: BorderRadius.circular(20),
           ),
           title: Text(
-            'Yeni Etkinlik',
+            'calendar.newEvent'.tr(),
             style: TextStyle(
               color: isDarkMode
                   ? ColorConstant.textPrimaryDark
@@ -1125,8 +1125,8 @@ class _CalendarViewState extends State<CalendarView> {
                         : ColorConstant.textPrimaryLight,
                   ),
                   decoration: InputDecoration(
-                    labelText: 'Başlık',
-                    hintText: 'Etkinlik başlığı',
+                    labelText: 'calendar.title'.tr(),
+                    hintText: 'calendar.eventTitle'.tr(),
                     labelStyle: TextStyle(
                       color: isDarkMode
                           ? ColorConstant.textSecondaryDark
@@ -1148,8 +1148,8 @@ class _CalendarViewState extends State<CalendarView> {
                         : ColorConstant.textPrimaryLight,
                   ),
                   decoration: InputDecoration(
-                    labelText: 'Açıklama',
-                    hintText: 'Etkinlik açıklaması (opsiyonel)',
+                    labelText: 'calendar.description'.tr(),
+                    hintText: 'calendar.eventDescriptionHint'.tr(),
                     labelStyle: TextStyle(
                       color: isDarkMode
                           ? ColorConstant.textSecondaryDark
@@ -1211,7 +1211,7 @@ class _CalendarViewState extends State<CalendarView> {
                   subtitle: Text(
                     selectedTime != null
                         ? '${selectedTime!.hour}:${selectedTime!.minute.toString().padLeft(2, '0')}'
-                        : 'Seçilmedi',
+                        : 'calendar.notSelected'.tr(),
                     style: TextStyle(
                       color: isDarkMode
                           ? ColorConstant.textPrimaryDark
@@ -1237,7 +1237,7 @@ class _CalendarViewState extends State<CalendarView> {
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text(
-                'İptal',
+                'common.cancel'.tr(),
                 style: TextStyle(
                   color: isDarkMode
                       ? ColorConstant.textSecondaryDark
@@ -1256,7 +1256,7 @@ class _CalendarViewState extends State<CalendarView> {
               child: TextButton(
                 onPressed: () async {
                   if (titleController.text.isEmpty) {
-                    CustomSnackBar.showError(context, 'Başlık boş olamaz');
+                    CustomSnackBar.showError(context, 'errors.titleEmpty'.tr());
                     return;
                   }
 
@@ -1279,14 +1279,14 @@ class _CalendarViewState extends State<CalendarView> {
                     Navigator.pop(context);
 
                     if (success) {
-                      CustomSnackBar.showSuccess(context, 'Etkinlik oluşturuldu');
+                      CustomSnackBar.showSuccess(context, 'success.eventCreated'.tr());
                     } else {
-                      CustomSnackBar.showError(context, 'Etkinlik oluşturulamadı');
+                      CustomSnackBar.showError(context, 'errors.eventCreateFailed'.tr());
                     }
                   }
                 },
-                child: const Text(
-                  'Kaydet',
+                child:  Text(
+                  'calendar.save'.tr(),
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
@@ -1337,7 +1337,7 @@ class _CalendarViewState extends State<CalendarView> {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  'Günlük',
+                  'calendar.diaryTitle'.tr(),
                   style: TextStyle(
                     color: isDarkMode
                         ? ColorConstant.textPrimaryDark
@@ -1442,7 +1442,7 @@ class _CalendarViewState extends State<CalendarView> {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  'Notlar',
+                  'calendar.notesTitle'.tr(),
                   style: TextStyle(
                     color: isDarkMode
                         ? ColorConstant.textPrimaryDark
@@ -1562,7 +1562,7 @@ class _CalendarViewState extends State<CalendarView> {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  'Kilitli Notlar',
+                  'calendar.lockedNotes'.tr(),
                   style: TextStyle(
                     color: isDarkMode
                         ? ColorConstant.textPrimaryDark
@@ -1655,7 +1655,7 @@ class _CalendarViewState extends State<CalendarView> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              note.title ?? 'Başlıksız Not',
+                              note.title ?? 'calendar.untitledNote'.tr(),
                               style: TextStyle(
                                 color: isDarkMode
                                     ? ColorConstant.textPrimaryDark
@@ -1668,7 +1668,7 @@ class _CalendarViewState extends State<CalendarView> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Görüntülemek için dokunun',
+                              'calendar.viewNote'.tr(),
                               style: TextStyle(
                                 color: isDarkMode
                                     ? ColorConstant.textMutedDark
@@ -1731,7 +1731,7 @@ class _CalendarViewState extends State<CalendarView> {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                'Kilitli Not',
+                'calendar.lockedNote'.tr(),
                 style: TextStyle(
                   color: isDarkMode
                       ? ColorConstant.textPrimaryDark
@@ -1747,7 +1747,7 @@ class _CalendarViewState extends State<CalendarView> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Bu notu görüntülemek için PIN kodunu girin',
+              'calendar.enterPin'.tr(),
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: isDarkMode
@@ -1814,7 +1814,7 @@ class _CalendarViewState extends State<CalendarView> {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
-              'İptal',
+              'common.cancel'.tr(),
               style: TextStyle(
                 color: isDarkMode
                     ? ColorConstant.textSecondaryDark
@@ -1855,7 +1855,7 @@ class _CalendarViewState extends State<CalendarView> {
                       }
                     } else {
                       // Hatalı PIN
-                      CustomSnackBar.showError(context, 'Hatalı PIN kodu');
+                      CustomSnackBar.showError(context, 'errors.invalidPin'.tr());
                     }
                   }
                 }
@@ -1866,8 +1866,8 @@ class _CalendarViewState extends State<CalendarView> {
                   vertical: 12,
                 ),
               ),
-              child: const Text(
-                'Aç',
+              child:  Text(
+                'common.open'.tr(),
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
@@ -2013,21 +2013,21 @@ class _CalendarViewState extends State<CalendarView> {
   }
 
   String _formatNoteDate(DateTime date) {
-    final months = [
-      'Ocak',
-      'Şubat',
-      'Mart',
-      'Nisan',
-      'Mayıs',
-      'Haziran',
-      'Temmuz',
-      'Ağustos',
-      'Eylül',
-      'Ekim',
-      'Kasım',
-      'Aralık'
-    ];
-    return '${date.day} ${months[date.month - 1]} ${date.year}';
+    final monthKey = [
+      'common.months.january',
+      'common.months.february',
+      'common.months.march',
+      'common.months.april',
+      'common.months.may',
+      'common.months.june',
+      'common.months.july',
+      'common.months.august',
+      'common.months.september',
+      'common.months.october',
+      'common.months.november',
+      'common.months.december'
+    ][date.month - 1];
+    return '${date.day} ${monthKey.tr()} ${date.year}';
   }
 
   Widget _buildTasksSection(
@@ -2063,7 +2063,7 @@ class _CalendarViewState extends State<CalendarView> {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  'Görevler',
+                  'calendar.tasksTitle'.tr(),
                   style: TextStyle(
                     color: isDarkMode
                         ? ColorConstant.textPrimaryDark
@@ -2182,7 +2182,7 @@ class _CalendarViewState extends State<CalendarView> {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  'Harcamalar',
+                  'calendar.expensesTitle'.tr(),
                   style: TextStyle(
                     color: isDarkMode
                         ? ColorConstant.textPrimaryDark
@@ -2302,21 +2302,21 @@ class _CalendarViewState extends State<CalendarView> {
   String _getExpenseCategoryLabel(String category) {
     switch (category) {
       case 'food':
-        return 'Yemek';
+        return 'finance.categories.food'.tr();
       case 'transportation':
-        return 'Ulaşım';
+        return 'finance.categories.transportation'.tr();
       case 'entertainment':
-        return 'Eğlence';
+        return 'finance.categories.entertainment'.tr();
       case 'shopping':
-        return 'Alışveriş';
+        return 'finance.categories.shopping'.tr();
       case 'bills':
-        return 'Faturalar';
+        return 'finance.categories.bills'.tr();
       case 'health':
-        return 'Sağlık';
+        return 'finance.categories.health'.tr();
       case 'education':
-        return 'Eğitim';
+        return 'finance.categories.education'.tr();
       case 'other':
-        return 'Diğer';
+        return 'finance.categories.other'.tr();
       default:
         return category;
     }
@@ -2378,7 +2378,7 @@ class _CalendarViewState extends State<CalendarView> {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  'Abonelikler',
+                  'calendar.subscriptionsTitle'.tr(),
                   style: TextStyle(
                     color: isDarkMode
                         ? ColorConstant.textPrimaryDark
@@ -2483,7 +2483,7 @@ class _CalendarViewState extends State<CalendarView> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Ödeme Günü',
+                            'calendar.paymentDay'.tr(),
                             style: TextStyle(
                               color: isDarkMode
                                   ? ColorConstant.textSecondaryDark
@@ -2534,17 +2534,17 @@ class _CalendarViewState extends State<CalendarView> {
   String _getMoodLabel(String mood) {
     switch (mood) {
       case 'very_happy':
-        return 'Çok Mutlu';
+        return 'common.moods.veryHappy'.tr();
       case 'happy':
-        return 'Mutlu';
+        return 'common.moods.happy'.tr();
       case 'neutral':
-        return 'Normal';
+        return 'common.moods.neutral'.tr();
       case 'sad':
-        return 'Üzgün';
+        return 'common.moods.sad'.tr();
       case 'very_sad':
-        return 'Çok Üzgün';
+        return 'common.moods.verySad'.tr();
       default:
-        return 'Bilinmiyor';
+        return 'calendar.unknown'.tr();
     }
   }
 
@@ -2578,7 +2578,7 @@ class _CalendarViewState extends State<CalendarView> {
             borderRadius: BorderRadius.circular(20),
           ),
           title: Text(
-            'Etkinliği Düzenle',
+            'calendar.editEvent'.tr(),
             style: TextStyle(
               color: isDarkMode
                   ? ColorConstant.textPrimaryDark
@@ -2599,8 +2599,8 @@ class _CalendarViewState extends State<CalendarView> {
                         : ColorConstant.textPrimaryLight,
                   ),
                   decoration: InputDecoration(
-                    labelText: 'Başlık',
-                    hintText: 'Etkinlik başlığı',
+                    labelText: 'calendar.title'.tr(),
+                    hintText: 'calendar.eventTitle'.tr(),
                     labelStyle: TextStyle(
                       color: isDarkMode
                           ? ColorConstant.textSecondaryDark
@@ -2622,8 +2622,8 @@ class _CalendarViewState extends State<CalendarView> {
                         : ColorConstant.textPrimaryLight,
                   ),
                   decoration: InputDecoration(
-                    labelText: 'Açıklama',
-                    hintText: 'Etkinlik açıklaması (opsiyonel)',
+                    labelText: 'calendar.description'.tr(),
+                    hintText: 'calendar.eventDescriptionHint'.tr(),
                     labelStyle: TextStyle(
                       color: isDarkMode
                           ? ColorConstant.textSecondaryDark
@@ -2683,7 +2683,7 @@ class _CalendarViewState extends State<CalendarView> {
                   subtitle: Text(
                     selectedTime != null
                         ? '${selectedTime!.hour}:${selectedTime!.minute.toString().padLeft(2, '0')}'
-                        : 'Seçilmedi',
+                        : 'calendar.notSelected'.tr(),
                     style: TextStyle(
                       color: isDarkMode
                           ? ColorConstant.textPrimaryDark
@@ -2721,7 +2721,7 @@ class _CalendarViewState extends State<CalendarView> {
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text(
-                'İptal',
+                'common.cancel'.tr(),
                 style: TextStyle(
                   color: isDarkMode
                       ? ColorConstant.textSecondaryDark
@@ -2740,7 +2740,7 @@ class _CalendarViewState extends State<CalendarView> {
               child: TextButton(
                 onPressed: () async {
                   if (titleController.text.isEmpty) {
-                    CustomSnackBar.showError(context, 'Başlık boş olamaz');
+                    CustomSnackBar.showError(context, 'errors.titleEmpty'.tr());
                     return;
                   }
 
@@ -2762,17 +2762,17 @@ class _CalendarViewState extends State<CalendarView> {
                     Navigator.pop(context);
 
                     if (success) {
-                      CustomSnackBar.showSuccess(context, 'Etkinlik güncellendi');
+                      CustomSnackBar.showSuccess(context, 'success.eventUpdated'.tr());
                     } else {
-                      CustomSnackBar.showError(context, 'Etkinlik güncellenemedi');
+                      CustomSnackBar.showError(context, 'errors.eventUpdateFailed'.tr());
                     }
                   }
                 },
                 style: TextButton.styleFrom(
                   foregroundColor: Colors.white,
                 ),
-                child: const Text(
-                  'Güncelle',
+                child:  Text(
+                  'calendar.update'.tr(),
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                   ),

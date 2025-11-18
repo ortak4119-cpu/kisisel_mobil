@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -173,7 +174,7 @@ class SettingsViewModel extends ChangeNotifier {
         if (context.mounted) {
           CustomSnackBar.showSuccess(
             context,
-            'Başarıyla çıkış yapıldı',
+            'settings.account.logoutSuccess'.tr(),
           );
           context.router.replaceAll([const SplashRoute()]);
         }
@@ -184,7 +185,7 @@ class SettingsViewModel extends ChangeNotifier {
       }
     } catch (e) {
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'Çıkış yapılırken bir hata oluştu');
+        CustomSnackBar.showError(context, 'errors.general'.tr());
       }
     } finally {
       _isLoading = false;
@@ -203,7 +204,7 @@ class SettingsViewModel extends ChangeNotifier {
         if (context.mounted) {
           CustomSnackBar.showSuccess(
             context,
-            'Tüm cihazlardan çıkış yapıldı',
+            'settings.account.logoutAllSuccess'.tr(),
           );
           context.router.replaceAll([const SplashRoute()]);
         }
@@ -216,7 +217,7 @@ class SettingsViewModel extends ChangeNotifier {
       if (context.mounted) {
         CustomSnackBar.showError(
           context,
-          'Tüm cihazlardan çıkış yapılırken bir hata oluştu',
+          'settings.account.logoutAllError'.tr(),
         );
       }
     } finally {
@@ -287,7 +288,7 @@ class SettingsViewModel extends ChangeNotifier {
             borderRadius: BorderRadius.circular(24),
           ),
           title: Text(
-            'Çıkış Yap',
+            'settings.account.logout'.tr(),
             style: TextStyle(
               color: isDarkMode
                   ? ColorConstant.textPrimaryDark
@@ -297,7 +298,7 @@ class SettingsViewModel extends ChangeNotifier {
             ),
           ),
           content: Text(
-            'Çıkış yapmak istediğinizden emin misiniz?',
+            'settings.account.logoutConfirm'.tr(),
             style: TextStyle(
               color: isDarkMode
                   ? ColorConstant.textSecondaryDark
@@ -313,8 +314,8 @@ class SettingsViewModel extends ChangeNotifier {
                     ? ColorConstant.textSecondaryDark
                     : ColorConstant.textSecondaryLight,
               ),
-              child: const Text(
-                'İptal',
+              child:  Text(
+                'common.cancel'.tr(),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -329,8 +330,8 @@ class SettingsViewModel extends ChangeNotifier {
               style: TextButton.styleFrom(
                 foregroundColor: ColorConstant.errorRed,
               ),
-              child: const Text(
-                'Çıkış Yap',
+              child:  Text(
+                'settings.account.logout'.tr(),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -357,7 +358,7 @@ class SettingsViewModel extends ChangeNotifier {
             borderRadius: BorderRadius.circular(24),
           ),
           title: Text(
-            'Tüm Cihazlardan Çıkış Yap',
+            'settings.account.logoutAll'.tr(),
             style: TextStyle(
               color: isDarkMode
                   ? ColorConstant.textPrimaryDark
@@ -367,7 +368,7 @@ class SettingsViewModel extends ChangeNotifier {
             ),
           ),
           content: Text(
-            'Tüm cihazlardan çıkış yapmak istediğinizden emin misiniz? Bu işlem sonrası tekrar giriş yapmanız gerekecektir.',
+            'settings.account.logoutAllConfirm'.tr(),
             style: TextStyle(
               color: isDarkMode
                   ? ColorConstant.textSecondaryDark
@@ -383,8 +384,8 @@ class SettingsViewModel extends ChangeNotifier {
                     ? ColorConstant.textSecondaryDark
                     : ColorConstant.textSecondaryLight,
               ),
-              child: const Text(
-                'İptal',
+              child:  Text(
+                'common.cancel'.tr(),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -399,8 +400,8 @@ class SettingsViewModel extends ChangeNotifier {
               style: TextButton.styleFrom(
                 foregroundColor: ColorConstant.errorRed,
               ),
-              child: const Text(
-                'Tümünden Çıkış Yap',
+              child:  Text(
+                'settings.account.logoutAll'.tr(),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,

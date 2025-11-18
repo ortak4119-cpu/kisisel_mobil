@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../core/init/locator.dart';
 import '../../../service/task/task_service.dart';
 import '../../../service/habit/habit_service.dart';
@@ -183,12 +184,12 @@ class TasksHabitsViewModel extends ChangeNotifier {
 
   Future<void> updateTask(BuildContext context) async {
     if (_editingTaskId == null) {
-      CustomSnackBar.showError(context, 'Düzenlenecek görev bulunamadı');
+      CustomSnackBar.showError(context, 'errors.taskNotFound'.tr());
       return;
     }
 
     if (taskTitleController.text.trim().isEmpty) {
-      CustomSnackBar.showError(context, 'Görev başlığı boş olamaz');
+      CustomSnackBar.showError(context, 'errors.taskTitleEmpty'.tr());
       return;
     }
 
@@ -231,20 +232,20 @@ class TasksHabitsViewModel extends ChangeNotifier {
         }
         resetTaskForm();
         if (context.mounted) {
-          CustomSnackBar.showSuccess(context, 'Görev güncellendi');
+          CustomSnackBar.showSuccess(context, 'success.taskUpdated'.tr());
           Navigator.pop(context);
         }
       } else {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'Güncelleme başarısız',
+            response.errorMessage ?? 'errors.updateFailed'.tr(),
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'Görev güncellenirken hata oluştu');
+        CustomSnackBar.showError(context, 'errors.taskUpdateFailed'.tr());
       }
       debugPrint('Task update exception: $e');
     } finally {
@@ -267,12 +268,12 @@ class TasksHabitsViewModel extends ChangeNotifier {
 
   Future<void> updateHabit(BuildContext context) async {
     if (_editingHabitId == null) {
-      CustomSnackBar.showError(context, 'Düzenlenecek alışkanlık bulunamadı');
+      CustomSnackBar.showError(context, 'errors.habitNotFound'.tr());
       return;
     }
 
     if (habitTitleController.text.trim().isEmpty) {
-      CustomSnackBar.showError(context, 'Alışkanlık başlığı boş olamaz');
+      CustomSnackBar.showError(context, 'errors.habitTitleEmpty'.tr());
       return;
     }
 
@@ -311,20 +312,20 @@ class TasksHabitsViewModel extends ChangeNotifier {
         }
         resetHabitForm();
         if (context.mounted) {
-          CustomSnackBar.showSuccess(context, 'Alışkanlık güncellendi');
+          CustomSnackBar.showSuccess(context, 'success.habitUpdated'.tr());
           Navigator.pop(context);
         }
       } else {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'Güncelleme başarısız',
+            response.errorMessage ?? 'errors.updateFailed'.tr(),
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'Alışkanlık güncellenirken hata oluştu');
+        CustomSnackBar.showError(context, 'errors.habitUpdateFailed'.tr());
       }
       debugPrint('Habit update exception: $e');
     } finally {
@@ -367,7 +368,7 @@ class TasksHabitsViewModel extends ChangeNotifier {
 
   Future<void> createTask(BuildContext context) async {
     if (taskTitleController.text.trim().isEmpty) {
-      CustomSnackBar.showError(context, 'Görev başlığı boş olamaz');
+      CustomSnackBar.showError(context, 'errors.taskTitleEmpty'.tr());
       return;
     }
 
@@ -407,21 +408,21 @@ class TasksHabitsViewModel extends ChangeNotifier {
         _tasks.insert(0, response.data!);
         resetTaskForm();
         if (context.mounted) {
-          CustomSnackBar.showSuccess(context, 'Görev başarıyla eklendi');
+          CustomSnackBar.showSuccess(context, 'success.taskAdded'.tr());
           Navigator.pop(context);
         }
       } else {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'Bilinmeyen hata',
+            response.errorMessage ?? 'errors.unknownError'.tr(),
           );
         }
         debugPrint('Task creation error: ${response.errors}');
       }
     } catch (e) {
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'Görev eklenirken hata oluştu');
+        CustomSnackBar.showError(context, 'errors.taskAddFailed'.tr());
       }
       debugPrint('Task creation exception: $e');
     } finally {
@@ -445,7 +446,7 @@ class TasksHabitsViewModel extends ChangeNotifier {
             notifyListeners();
           }
           if (context.mounted) {
-            CustomSnackBar.showInfo(context, 'Görev tamamlanmadı olarak işaretlendi');
+            CustomSnackBar.showInfo(context, 'success.taskMarkedIncomplete'.tr());
           }
         }
       } else {
@@ -461,13 +462,13 @@ class TasksHabitsViewModel extends ChangeNotifier {
             notifyListeners();
           }
           if (context.mounted) {
-            CustomSnackBar.showSuccess(context, 'Görev tamamlandı! 🎉');
+            CustomSnackBar.showSuccess(context, 'success.taskCompleted'.tr());
           }
         }
       }
     } catch (e) {
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'İşlem başarısız oldu');
+        CustomSnackBar.showError(context, 'errors.general'.tr());
       }
     }
   }
@@ -482,16 +483,16 @@ class TasksHabitsViewModel extends ChangeNotifier {
       if (response.isSuccess) {
         _tasks.removeWhere((t) => t.id == taskId);
         if (context.mounted) {
-          CustomSnackBar.showSuccess(context, 'Görev silindi');
+          CustomSnackBar.showSuccess(context, 'success.taskDeleted'.tr());
         }
       } else {
         if (context.mounted) {
-          CustomSnackBar.showError(context, response.errorMessage ?? 'Hata oluştu');
+          CustomSnackBar.showError(context, response.errorMessage ?? 'errors.general'.tr());
         }
       }
     } catch (e) {
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'Görev silinirken hata oluştu');
+        CustomSnackBar.showError(context, 'errors.taskDeleteFailed'.tr());
       }
     } finally {
       _isLoading = false;
@@ -536,7 +537,7 @@ class TasksHabitsViewModel extends ChangeNotifier {
 
   Future<void> createHabit(BuildContext context) async {
     if (habitTitleController.text.trim().isEmpty) {
-      CustomSnackBar.showError(context, 'Alışkanlık başlığı boş olamaz');
+      CustomSnackBar.showError(context, 'errors.habitTitleEmpty'.tr());
       return;
     }
 
@@ -572,21 +573,21 @@ class TasksHabitsViewModel extends ChangeNotifier {
         _habits.insert(0, response.data!);
         resetHabitForm();
         if (context.mounted) {
-          CustomSnackBar.showSuccess(context, 'Alışkanlık başarıyla eklendi');
+          CustomSnackBar.showSuccess(context, 'success.habitAdded'.tr());
           Navigator.pop(context);
         }
       } else {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'Bilinmeyen hata',
+            response.errorMessage ?? 'errors.unknownError'.tr(),
           );
         }
         debugPrint('Habit creation error: ${response.errors}');
       }
     } catch (e) {
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'Alışkanlık eklenirken hata oluştu');
+        CustomSnackBar.showError(context, 'errors.habitAddFailed'.tr());
       }
       debugPrint('Habit creation exception: $e');
     } finally {
@@ -612,21 +613,21 @@ class TasksHabitsViewModel extends ChangeNotifier {
           CustomSnackBar.showSuccess(
             context,
             habit.completedToday
-                ? 'Alışkanlık iptal edildi'
-                : 'Harika! Alışkanlık tamamlandı 🎉',
+                ? 'success.habitCancelled'.tr()
+                : 'success.habitCompleted'.tr(),
           );
         }
       } else {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'Hata oluştu',
+            response.errorMessage ?? 'errors.general'.tr(),
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'İşlem başarısız oldu');
+        CustomSnackBar.showError(context, 'errors.general'.tr());
       }
       debugPrint('Toggle habit exception: $e');
     }
@@ -642,19 +643,19 @@ class TasksHabitsViewModel extends ChangeNotifier {
       if (response.isSuccess) {
         _habits.removeWhere((h) => h.id == habitId);
         if (context.mounted) {
-          CustomSnackBar.showSuccess(context, 'Alışkanlık silindi');
+          CustomSnackBar.showSuccess(context, 'success.habitDeleted'.tr());
         }
       } else {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'Hata oluştu',
+            response.errorMessage ?? 'errors.general'.tr(),
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'Alışkanlık silinirken hata oluştu');
+        CustomSnackBar.showError(context, 'errors.habitDeleteFailed'.tr());
       }
     } finally {
       _isLoading = false;

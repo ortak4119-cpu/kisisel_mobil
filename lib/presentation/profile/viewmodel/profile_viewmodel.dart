@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/init/locator.dart';
 import '../../../models/settings/settings_models.dart';
@@ -173,20 +174,20 @@ class ProfileViewModel extends ChangeNotifier {
         }
 
         if (context.mounted) {
-          CustomSnackBar.showSuccess(context, 'Profil fotoğrafı güncellendi! 📸');
+          CustomSnackBar.showSuccess(context, 'profile.success.profilePictureUpdated'.tr());
         }
       } else {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'Fotoğraf yüklenemedi',
+            response.errorMessage ?? 'profile.errors.imageUploadFailed'.tr(),
           );
         }
       }
     } catch (e) {
       debugPrint('Error updating profile picture: $e');
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'Fotoğraf yüklenirken hata oluştu');
+        CustomSnackBar.showError(context, 'profile.errors.imageUploadError'.tr());
       }
     } finally {
       _isUploadingAvatar = false;
@@ -237,20 +238,20 @@ class ProfileViewModel extends ChangeNotifier {
         }
 
         if (context.mounted) {
-          CustomSnackBar.showSuccess(context, 'Kapak fotoğrafı güncellendi! 🎨');
+          CustomSnackBar.showSuccess(context, 'profile.success.coverImageUpdated'.tr());
         }
       } else {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'Fotoğraf yüklenemedi',
+            response.errorMessage ?? 'profile.errors.imageUploadFailed'.tr(),
           );
         }
       }
     } catch (e) {
       debugPrint('Error updating cover image: $e');
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'Fotoğraf yüklenirken hata oluştu');
+        CustomSnackBar.showError(context, 'profile.errors.imageUploadError'.tr());
       }
     } finally {
       _isUploadingCover = false;
@@ -337,20 +338,20 @@ class ProfileViewModel extends ChangeNotifier {
 
       if (response.isSuccess) {
         if (context.mounted) {
-          CustomSnackBar.showSuccess(context, 'Arkadaşlık isteği gönderildi');
+          CustomSnackBar.showSuccess(context, 'profile.friends.requestSent'.tr());
           Navigator.pop(context);
         }
       } else {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'İstek gönderilemedi',
+            response.errorMessage ?? 'errors.general'.tr(),
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'İstek gönderilemedi');
+        CustomSnackBar.showError(context, 'errors.general'.tr());
       }
       debugPrint('Error sending friend request: $e');
     }
@@ -364,19 +365,19 @@ class ProfileViewModel extends ChangeNotifier {
         _friendRequests.removeWhere((r) => r.id == requestId);
         await loadFriends();
         if (context.mounted) {
-          CustomSnackBar.showSuccess(context, 'Arkadaşlık kabul edildi 🎉');
+          CustomSnackBar.showSuccess(context, 'profile.friends.requestAccepted'.tr());
         }
       } else {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'İşlem başarısız',
+            response.errorMessage ?? 'errors.general'.tr(),
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'İşlem başarısız');
+        CustomSnackBar.showError(context, 'errors.general'.tr());
       }
       debugPrint('Error accepting friend request: $e');
     }
@@ -390,19 +391,19 @@ class ProfileViewModel extends ChangeNotifier {
         _friendRequests.removeWhere((r) => r.id == requestId);
         notifyListeners();
         if (context.mounted) {
-          CustomSnackBar.showInfo(context, 'Arkadaşlık isteği reddedildi');
+          CustomSnackBar.showInfo(context, 'profile.friends.requestRejected'.tr());
         }
       } else {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'İşlem başarısız',
+            response.errorMessage ?? 'errors.general'.tr(),
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'İşlem başarısız');
+        CustomSnackBar.showError(context, 'errors.general'.tr());
       }
       debugPrint('Error rejecting friend request: $e');
     }
@@ -416,19 +417,19 @@ class ProfileViewModel extends ChangeNotifier {
         _friends.removeWhere((f) => f.id == userId);
         notifyListeners();
         if (context.mounted) {
-          CustomSnackBar.showInfo(context, 'Arkadaşlıktan çıkarıldı');
+          CustomSnackBar.showInfo(context, 'profile.friends.unfriended'.tr());
         }
       } else {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'İşlem başarısız',
+            response.errorMessage ?? 'errors.general'.tr(),
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        CustomSnackBar.showError(context, 'İşlem başarısız');
+        CustomSnackBar.showError(context, 'errors.general'.tr());
       }
       debugPrint('Error unfriending: $e');
     }

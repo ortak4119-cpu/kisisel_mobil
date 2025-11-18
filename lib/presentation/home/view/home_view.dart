@@ -362,7 +362,7 @@ class HomePage extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
-          'Ana Sayfa',
+          'home.title'.tr(),
           style: TextStyle(
             color: isDarkMode
                 ? ColorConstant.textPrimaryDark
@@ -390,7 +390,7 @@ class HomePage extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'Ana Sayfa',
+              'home.title'.tr(),
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
@@ -401,7 +401,7 @@ class HomePage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Hoş geldiniz!',
+              'home.welcome'.tr(),
               style: TextStyle(
                 fontSize: 16,
                 color: isDarkMode
@@ -431,7 +431,7 @@ class TasksPage extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
-          'Görevler',
+          'tasks.title'.tr(),
           style: TextStyle(
             color: isDarkMode
                 ? ColorConstant.textPrimaryDark
@@ -459,7 +459,7 @@ class TasksPage extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'Görevler',
+              'tasks.title'.tr(),
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
@@ -470,7 +470,7 @@ class TasksPage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Henüz görev eklenmemiş',
+              'home.emptyTasks'.tr(),
               style: TextStyle(
                 fontSize: 16,
                 color: isDarkMode
@@ -500,7 +500,7 @@ class HabitsPage extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
-          'Alışkanlıklar',
+          'habits.title'.tr(),
           style: TextStyle(
             color: isDarkMode
                 ? ColorConstant.textPrimaryDark
@@ -528,7 +528,7 @@ class HabitsPage extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'Alışkanlıklar',
+              'habits.title'.tr(),
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
@@ -539,7 +539,7 @@ class HabitsPage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Henüz alışkanlık eklenmemiş',
+              'home.emptyHabits'.tr(),
               style: TextStyle(
                 fontSize: 16,
                 color: isDarkMode
@@ -569,7 +569,7 @@ class ProfilePage extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
-          'Profil',
+          'profile.title'.tr(),
           style: TextStyle(
             color: isDarkMode
                 ? ColorConstant.textPrimaryDark
@@ -610,7 +610,7 @@ class ProfilePage extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'Profil',
+              'profile.title'.tr(),
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
@@ -621,7 +621,7 @@ class ProfilePage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Profilinizi görüntüleyin',
+              'home.emptyProfile'.tr(),
               style: TextStyle(
                 fontSize: 16,
                 color: isDarkMode
