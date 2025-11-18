@@ -523,7 +523,12 @@
       "themeLight": "Açık",
       "themeLightSubtitle": "Her zaman açık tema",
       "themeDark": "Koyu",
-      "themeDarkSubtitle": "Her zaman koyu tema"
+      "themeDarkSubtitle": "Her zaman koyu tema",
+      "language": "Dil",
+      "languageSubtitle": "Uygulama dilini seçin",
+      "languageSelect": "Dil Seçin",
+      "turkish": "Türkçe",
+      "english": "English"
     },
     "security": {
       "biometric": "Biyometrik Doğrulama",

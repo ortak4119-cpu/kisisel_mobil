@@ -16,7 +16,6 @@ void main() async {
       supportedLocales: const [Locale('en', 'US'), Locale('tr', 'TR')],
       path: 'assets/translations',
       fallbackLocale: const Locale('en', 'US'),
-      startLocale: const Locale('tr', 'TR'),
       child: MultiProvider(
         providers: AppProviders.providers,
         child: MyApp(),

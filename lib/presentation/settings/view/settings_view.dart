@@ -186,6 +186,14 @@ class SettingsView extends StatelessWidget {
                               isDarkMode: isDarkMode,
                               themeProvider: themeProvider,
                             ),
+                            _buildDivider(isDarkMode),
+                            _buildLanguageTile(
+                              context: context,
+                              title: 'settings.appearance.language'.tr(),
+                              subtitle: 'settings.appearance.languageSubtitle'.tr(),
+                              icon: Icons.language_rounded,
+                              isDarkMode: isDarkMode,
+                            ),
                           ],
                         ),
 
@@ -890,6 +898,129 @@ class SettingsView extends StatelessWidget {
     );
   }
 
+  Widget _buildLanguageTile({
+    required BuildContext context,
+    required String title,
+    String? subtitle,
+    required IconData icon,
+    required bool isDarkMode,
+  }) {
+    final currentLocale = context.locale;
+    String languageText;
+
+    if (currentLocale.languageCode == 'tr') {
+      languageText = 'settings.appearance.turkish'.tr();
+    } else {
+      languageText = 'settings.appearance.english'.tr();
+    }
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _showLanguageDialog(
+          context: context,
+          isDarkMode: isDarkMode,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: isDarkMode
+                      ? ColorConstant.cardBlueDark
+                      : ColorConstant.cardBlueLight,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(
+                  icon,
+                  color: ColorConstant.accentBlue,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        color: isDarkMode
+                            ? ColorConstant.textPrimaryDark
+                            : ColorConstant.textPrimaryLight,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          color: isDarkMode
+                              ? ColorConstant.textSecondaryDark
+                              : ColorConstant.textSecondaryLight,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: isDarkMode
+                      ? ColorConstant.borderColorDark
+                      : ColorConstant.borderColorLight,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.language_rounded,
+                      size: 16,
+                      color: isDarkMode
+                          ? ColorConstant.textSecondaryDark
+                          : ColorConstant.textSecondaryLight,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      languageText,
+                      style: TextStyle(
+                        color: isDarkMode
+                            ? ColorConstant.textSecondaryDark
+                            : ColorConstant.textSecondaryLight,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 18,
+                color: isDarkMode
+                    ? ColorConstant.textMutedDark
+                    : ColorConstant.textMutedLight,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildDivider(bool isDarkMode) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -1000,6 +1131,82 @@ class SettingsView extends StatelessWidget {
     );
   }
 
+  void _showLanguageDialog({
+    required BuildContext context,
+    required bool isDarkMode,
+  }) {
+    final currentLocale = context.locale;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          backgroundColor: isDarkMode
+              ? ColorConstant.cardColorDark
+              : ColorConstant.cardColorLight,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          title: Text(
+            'settings.appearance.languageSelect'.tr(),
+            style: TextStyle(
+              color: isDarkMode
+                  ? ColorConstant.textPrimaryDark
+                  : ColorConstant.textPrimaryLight,
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildLanguageOption(
+                context: dialogContext,
+                title: 'Türkçe',
+                icon: Icons.flag_rounded,
+                locale: const Locale('tr', 'TR'),
+                currentLocale: currentLocale,
+                isDarkMode: isDarkMode,
+                onChanged: (locale) {
+                  context.setLocale(locale);
+                  Navigator.pop(dialogContext);
+                },
+              ),
+              const SizedBox(height: 8),
+              _buildLanguageOption(
+                context: dialogContext,
+                title: 'English',
+                icon: Icons.flag_rounded,
+                locale: const Locale('en', 'US'),
+                currentLocale: currentLocale,
+                isDarkMode: isDarkMode,
+                onChanged: (locale) {
+                  context.setLocale(locale);
+                  Navigator.pop(dialogContext);
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              style: TextButton.styleFrom(
+                foregroundColor: ColorConstant.accentBlue,
+              ),
+              child: Text(
+                'common.close'.tr(),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildThemeOption({
     required BuildContext context,
     required String title,
@@ -1092,6 +1299,85 @@ class SettingsView extends StatelessWidget {
                   color: isDarkMode
                       ? ColorConstant.primaryDarkModePurple
                       : ColorConstant.primaryPurple,
+                  size: 24,
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLanguageOption({
+    required BuildContext context,
+    required String title,
+    required IconData icon,
+    required Locale locale,
+    required Locale currentLocale,
+    required bool isDarkMode,
+    required Function(Locale) onChanged,
+  }) {
+    final isSelected = locale.languageCode == currentLocale.languageCode;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => onChanged(locale),
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? (isDarkMode
+                ? ColorConstant.accentBlue.withOpacity(0.2)
+                : ColorConstant.accentBlue.withOpacity(0.1))
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected
+                  ? ColorConstant.accentBlue
+                  : (isDarkMode
+                  ? ColorConstant.borderColorDark
+                  : ColorConstant.borderColorLight),
+              width: isSelected ? 2 : 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: isDarkMode
+                      ? ColorConstant.cardColorDark
+                      : ColorConstant.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  icon,
+                  color: isSelected
+                      ? ColorConstant.accentBlue
+                      : (isDarkMode
+                      ? ColorConstant.textSecondaryDark
+                      : ColorConstant.textSecondaryLight),
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    color: isDarkMode
+                        ? ColorConstant.textPrimaryDark
+                        : ColorConstant.textPrimaryLight,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              if (isSelected)
+                Icon(
+                  Icons.check_circle_rounded,
+                  color: ColorConstant.accentBlue,
                   size: 24,
                 ),
             ],

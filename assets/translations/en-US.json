@@ -531,7 +531,12 @@
       "themeLight": "Light",
       "themeLightSubtitle": "Always light theme",
       "themeDark": "Dark",
-      "themeDarkSubtitle": "Always dark theme"
+      "themeDarkSubtitle": "Always dark theme",
+      "language": "Language",
+      "languageSubtitle": "Select application language",
+      "languageSelect": "Select Language",
+      "turkish": "Türkçe",
+      "english": "English"
     },
     "security": {
       "biometric": "Biometric Authentication",
