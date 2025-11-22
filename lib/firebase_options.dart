@@ -64,6 +64,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '16046442525',
     projectId: 'nazar-d2761',
     storageBucket: 'nazar-d2761.firebasestorage.app',
+    iosClientId: '16046442525-d6toqc4i5omscec80bdp8qjdohblh5mt.apps.googleusercontent.com',
     iosBundleId: 'com.aedev.kisisel',
   );
 

@@ -70,63 +70,63 @@ class _PaywallViewState extends State<PaywallView>
                   child: viewModel.isLoading
                       ? _buildLoadingState()
                       : FadeTransition(
-                          opacity: _fadeAnimation,
-                          child: SlideTransition(
-                            position: _slideAnimation,
-                            child: Column(
-                              children: [
-                                // Close Button
-                                _buildCloseButton(context, isDarkMode),
+                    opacity: _fadeAnimation,
+                    child: SlideTransition(
+                      position: _slideAnimation,
+                      child: Column(
+                        children: [
+                          // Close Button
+                          _buildCloseButton(context, isDarkMode),
 
-                                Expanded(
-                                  child: SingleChildScrollView(
-                                    physics: const BouncingScrollPhysics(),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 24),
-                                    child: Column(
-                                      children: [
-                                        const SizedBox(height: 20),
+                          Expanded(
+                            child: SingleChildScrollView(
+                              physics: const BouncingScrollPhysics(),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 24),
+                              child: Column(
+                                children: [
+                                  const SizedBox(height: 20),
 
-                                        // Crown Icon & Title
-                                        _buildHeader(isDarkMode),
+                                  // Crown Icon & Title
+                                  _buildHeader(isDarkMode),
 
-                                        const SizedBox(height: 32),
+                                  const SizedBox(height: 32),
 
-                                        // Features List
-                                        _buildFeaturesList(isDarkMode),
+                                  // Features List
+                                  _buildFeaturesList(isDarkMode),
 
-                                        const SizedBox(height: 40),
+                                  const SizedBox(height: 40),
 
-                                        // Package Options
-                                        _buildPackageOptions(
-                                            context, viewModel, isDarkMode),
+                                  // Package Options
+                                  _buildPackageOptions(
+                                      context, viewModel, isDarkMode),
 
-                                        const SizedBox(height: 32),
+                                  const SizedBox(height: 32),
 
-                                        // Subscribe Button
-                                        _buildSubscribeButton(
-                                            context, viewModel, isDarkMode),
+                                  // Subscribe Button
+                                  _buildSubscribeButton(
+                                      context, viewModel, isDarkMode),
 
-                                        const SizedBox(height: 16),
+                                  const SizedBox(height: 16),
 
-                                        // Restore Purchases
-                                        _buildRestoreButton(
-                                            context, viewModel, isDarkMode),
+                                  // Restore Purchases
+                                  _buildRestoreButton(
+                                      context, viewModel, isDarkMode),
 
-                                        const SizedBox(height: 12),
+                                  const SizedBox(height: 12),
 
-                                        // Terms & Privacy
-                                        _buildLegalLinks(isDarkMode),
+                                  // Terms & Privacy
+                                  _buildLegalLinks(isDarkMode),
 
-                                        const SizedBox(height: 24),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
+                                  const SizedBox(height: 24),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -144,15 +144,15 @@ class _PaywallViewState extends State<PaywallView>
           end: Alignment.bottomRight,
           colors: isDarkMode
               ? [
-                  ColorConstant.primaryDarkModePurple.withOpacity(0.3),
-                  ColorConstant.primaryDarkModeBlue.withOpacity(0.2),
-                  ColorConstant.bgColorDark,
-                ]
+            ColorConstant.primaryDarkModePurple.withOpacity(0.3),
+            ColorConstant.primaryDarkModeBlue.withOpacity(0.2),
+            ColorConstant.bgColorDark,
+          ]
               : [
-                  ColorConstant.primaryPurple.withOpacity(0.1),
-                  ColorConstant.accentBlue.withOpacity(0.05),
-                  ColorConstant.bgColorLight,
-                ],
+            ColorConstant.primaryPurple.withOpacity(0.1),
+            ColorConstant.accentBlue.withOpacity(0.05),
+            ColorConstant.bgColorLight,
+          ],
         ),
       ),
     );
@@ -359,10 +359,10 @@ class _PaywallViewState extends State<PaywallView>
   }
 
   Widget _buildPackageOptions(
-    BuildContext context,
-    PaywallViewModel viewModel,
-    bool isDarkMode,
-  ) {
+      BuildContext context,
+      PaywallViewModel viewModel,
+      bool isDarkMode,
+      ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -386,13 +386,13 @@ class _PaywallViewState extends State<PaywallView>
             index: 0,
             package: viewModel.monthlyPackage!,
             title: 'paywall.monthly'.tr(),
-            badge: null,
+            badge: null, // Ücretsiz deneme badge'i artık inline gösteriliyor
             isDarkMode: isDarkMode,
           ),
 
         const SizedBox(height: 12),
 
-        // Annual Package (Most Popular + Free Trial)
+        // Annual Package (Most Popular)
         if (viewModel.annualPackage != null)
           _buildPackageCard(
             context: context,
@@ -400,12 +400,7 @@ class _PaywallViewState extends State<PaywallView>
             index: 1,
             package: viewModel.annualPackage!,
             title: 'paywall.annual'.tr(),
-            badge: viewModel.hasTrialPeriod(viewModel.annualPackage)
-                ? 'paywall.free_trial'
-                    .tr(namedArgs: {'duration': '1 hafta'})
-                : 'paywall.save'.tr(namedArgs: {
-                    'percent': viewModel.getSavingsPercentage()
-                  }),
+            badge: 'paywall.most_popular'.tr(),
             isPopular: true,
             isDarkMode: isDarkMode,
           ),
@@ -420,7 +415,8 @@ class _PaywallViewState extends State<PaywallView>
             index: 2,
             package: viewModel.lifetimePackage!,
             title: 'paywall.lifetime'.tr(),
-            badge: 'paywall.best_value'.tr(),
+            badge: 'paywall.one_time_payment'.tr(),
+            isLifetime: true,
             isDarkMode: isDarkMode,
           ),
       ],
@@ -435,171 +431,274 @@ class _PaywallViewState extends State<PaywallView>
     required String title,
     String? badge,
     bool isPopular = false,
+    bool isLifetime = false,
     required bool isDarkMode,
   }) {
     final isSelected = viewModel.selectedPackageIndex == index;
     final price = package.storeProduct.priceString;
+    final hasTrial = viewModel.hasTrialPeriod(package);
 
     return GestureDetector(
       onTap: () => viewModel.selectPackage(index),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? (isDarkMode
-                  ? ColorConstant.primaryDarkModePurple.withOpacity(0.2)
-                  : ColorConstant.primaryPurple.withOpacity(0.1))
-              : (isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected
-                ? (isDarkMode
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? (isDarkMode
+                  ? ColorConstant.primaryDarkModePurple.withOpacity(0.15)
+                  : ColorConstant.primaryPurple.withOpacity(0.08))
+                  : (isDarkMode
+                  ? ColorConstant.cardColorDark
+                  : ColorConstant.white),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isSelected
+                    ? (isDarkMode
                     ? ColorConstant.primaryDarkModePurple
                     : ColorConstant.primaryPurple)
-                : (isDarkMode
+                    : (isDarkMode
                     ? ColorConstant.borderColorDark
                     : ColorConstant.borderColorLight),
-            width: isSelected ? 2 : 1,
-          ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: (isDarkMode
-                            ? ColorConstant.primaryDarkModePurple
-                            : ColorConstant.primaryPurple)
-                        .withOpacity(0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          children: [
-            // Radio Button
-            Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isSelected
-                      ? (isDarkMode
-                          ? ColorConstant.primaryDarkModePurple
-                          : ColorConstant.primaryPurple)
-                      : (isDarkMode
-                          ? ColorConstant.borderColorDark
-                          : ColorConstant.borderColorLight),
-                  width: 2,
-                ),
+                width: isSelected ? 2 : 1,
               ),
-              child: isSelected
-                  ? Center(
-                      child: Container(
-                        width: 12,
-                        height: 12,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: isDarkMode
-                              ? ColorConstant.primaryDarkModePurple
-                              : ColorConstant.primaryPurple,
-                        ),
-                      ),
-                    )
+              boxShadow: isSelected
+                  ? [
+                BoxShadow(
+                  color: (isDarkMode
+                      ? ColorConstant.primaryDarkModePurple
+                      : ColorConstant.primaryPurple)
+                      .withOpacity(0.2),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ]
                   : null,
             ),
-
-            const SizedBox(width: 16),
-
-            // Package Info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          color: isDarkMode
-                              ? ColorConstant.textPrimaryDark
-                              : ColorConstant.textPrimaryLight,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    // Radio Button
+                    Container(
+                      width: 24,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isSelected
+                              ? (isDarkMode
+                              ? ColorConstant.primaryDarkModePurple
+                              : ColorConstant.primaryPurple)
+                              : (isDarkMode
+                              ? ColorConstant.borderColorDark
+                              : ColorConstant.borderColorLight),
+                          width: 2,
                         ),
                       ),
-                      if (badge != null) ...[
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
+                      child: isSelected
+                          ? Center(
+                        child: Container(
+                          width: 12,
+                          height: 12,
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: isPopular
-                                  ? [
-                                      ColorConstant.accentYellow,
-                                      ColorConstant.accentOrange,
-                                    ]
-                                  : [
-                                      ColorConstant.accentGreen,
-                                      ColorConstant.accentGreen
-                                          .withOpacity(0.8),
-                                    ],
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            badge,
-                            style: TextStyle(
-                              color: ColorConstant.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                            ),
+                            shape: BoxShape.circle,
+                            color: isDarkMode
+                                ? ColorConstant.primaryDarkModePurple
+                                : ColorConstant.primaryPurple,
                           ),
                         ),
-                      ],
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  if (index == 1 && viewModel.monthlyPackage != null)
-                    Text(
-                      '${viewModel.getMonthlyPriceForAnnual()}/ay',
-                      style: TextStyle(
-                        color: isDarkMode
-                            ? ColorConstant.textSecondaryDark
-                            : ColorConstant.textSecondaryLight,
-                        fontSize: 13,
+                      )
+                          : null,
+                    ),
+
+                    const SizedBox(width: 16),
+
+                    // Package Info
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                title,
+                                style: TextStyle(
+                                  color: isDarkMode
+                                      ? ColorConstant.textPrimaryDark
+                                      : ColorConstant.textPrimaryLight,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              // Ücretsiz deneme badge'i yanında göster
+                              if (hasTrial) ...[
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        ColorConstant.accentBlue,
+                                        ColorConstant.primaryPurple,
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    '${viewModel.getTrialDurationText(package)} ${'paywall.free_badge'.tr()}',
+                                    style: TextStyle(
+                                      color: ColorConstant.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          // Annual plan details
+                          if (isPopular) ...[
+                            Row(
+                              children: [
+                                Text(
+                                  '${viewModel.getMonthlyPriceForAnnual()}${'paywall.per_month'.tr()}',
+                                  style: TextStyle(
+                                    color: ColorConstant.primaryPurple,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: ColorConstant.accentBlue.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    '%${viewModel.getSavingsPercentage()} ${'paywall.savings'.tr()}',
+                                    style: TextStyle(
+                                      color: ColorConstant.accentBlue,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ] else if (index == 0)
+                            Text(
+                              'paywall.renews_monthly'.tr(),
+                              style: TextStyle(
+                                color: isDarkMode
+                                    ? ColorConstant.textSecondaryDark
+                                    : ColorConstant.textSecondaryLight,
+                                fontSize: 13,
+                              ),
+                            )
+                          else if (isLifetime)
+                              Text(
+                                'paywall.unlimited_access'.tr(),
+                                style: TextStyle(
+                                  color: isDarkMode
+                                      ? ColorConstant.textSecondaryDark
+                                      : ColorConstant.textSecondaryLight,
+                                  fontSize: 13,
+                                ),
+                              ),
+                        ],
                       ),
                     ),
-                ],
-              ),
-            ),
 
-            // Price
-            Text(
-              price,
-              style: TextStyle(
-                color: isDarkMode
-                    ? ColorConstant.textPrimaryDark
-                    : ColorConstant.textPrimaryLight,
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
+                    // Price
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          price,
+                          style: TextStyle(
+                            color: isDarkMode
+                                ? ColorConstant.textPrimaryDark
+                                : ColorConstant.textPrimaryLight,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        if (isPopular)
+                          Text(
+                            'paywall.per_year'.tr(),
+                            style: TextStyle(
+                              color: isDarkMode
+                                  ? ColorConstant.textSecondaryDark
+                                  : ColorConstant.textSecondaryLight,
+                              fontSize: 12,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // Corner Badge - Sadece badge varsa ve ücretsiz deneme badge'i değilse göster
+          if (badge != null && !hasTrial)
+            Positioned(
+              top: -8,
+              right: 12,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: isPopular
+                      ? ColorConstant.primaryPurple
+                      : isLifetime
+                      ? ColorConstant.accentBlue
+                      : ColorConstant.primaryPurple,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  badge,
+                  style: TextStyle(
+                    color: ColorConstant.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ),
-          ],
-        ),
+        ],
       ),
     );
   }
 
   Widget _buildSubscribeButton(
-    BuildContext context,
-    PaywallViewModel viewModel,
-    bool isDarkMode,
-  ) {
+      BuildContext context,
+      PaywallViewModel viewModel,
+      bool isDarkMode,
+      ) {
+    // Yıllık plan ve ücretsiz deneme varsa buton metnini değiştir
+    String buttonText = 'paywall.continue'.tr();
+    if (viewModel.selectedPackageIndex == 1 &&
+        viewModel.annualPackage != null &&
+        viewModel.hasTrialPeriod(viewModel.annualPackage)) {
+      buttonText = 'paywall.start_free_trial'.tr();
+    }
+
     return SizedBox(
       width: double.infinity,
       height: 56,
@@ -607,11 +706,11 @@ class _PaywallViewState extends State<PaywallView>
         onPressed: viewModel.isPurchasing
             ? null
             : () async {
-                final success = await viewModel.purchaseSelectedPackage();
-                if (success && mounted) {
-                  context.router.pop(true); // Premium oldu
-                }
-              },
+          final success = await viewModel.purchaseSelectedPackage();
+          if (success && mounted) {
+            context.router.pop(true); // Premium oldu
+          }
+        },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
@@ -634,23 +733,23 @@ class _PaywallViewState extends State<PaywallView>
             alignment: Alignment.center,
             child: viewModel.isPurchasing
                 ? SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        ColorConstant.white,
-                      ),
-                    ),
-                  )
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  ColorConstant.white,
+                ),
+              ),
+            )
                 : Text(
-                    'paywall.continue'.tr(),
-                    style: TextStyle(
-                      color: ColorConstant.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+              buttonText,
+              style: TextStyle(
+                color: ColorConstant.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
         ),
       ),
@@ -658,49 +757,49 @@ class _PaywallViewState extends State<PaywallView>
   }
 
   Widget _buildRestoreButton(
-    BuildContext context,
-    PaywallViewModel viewModel,
-    bool isDarkMode,
-  ) {
+      BuildContext context,
+      PaywallViewModel viewModel,
+      bool isDarkMode,
+      ) {
     return TextButton(
       onPressed: viewModel.isRestoring
           ? null
           : () async {
-              final success = await viewModel.restorePurchases();
-              if (success && mounted) {
-                context.router.pop(true); // Premium restore edildi
-              } else if (!success && viewModel.errorMessage != null && mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(viewModel.errorMessage!),
-                    backgroundColor: ColorConstant.errorRed,
-                  ),
-                );
-              }
-            },
+        final success = await viewModel.restorePurchases();
+        if (success && mounted) {
+          context.router.pop(true); // Premium restore edildi
+        } else if (!success && viewModel.errorMessage != null && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(viewModel.errorMessage!),
+              backgroundColor: ColorConstant.errorRed,
+            ),
+          );
+        }
+      },
       child: viewModel.isRestoring
           ? SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  isDarkMode
-                      ? ColorConstant.textSecondaryDark
-                      : ColorConstant.textSecondaryLight,
-                ),
-              ),
-            )
+        width: 16,
+        height: 16,
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          valueColor: AlwaysStoppedAnimation<Color>(
+            isDarkMode
+                ? ColorConstant.textSecondaryDark
+                : ColorConstant.textSecondaryLight,
+          ),
+        ),
+      )
           : Text(
-              'paywall.restore'.tr(),
-              style: TextStyle(
-                color: isDarkMode
-                    ? ColorConstant.textSecondaryDark
-                    : ColorConstant.textSecondaryLight,
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+        'paywall.restore'.tr(),
+        style: TextStyle(
+          color: isDarkMode
+              ? ColorConstant.textSecondaryDark
+              : ColorConstant.textSecondaryLight,
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     );
   }
 

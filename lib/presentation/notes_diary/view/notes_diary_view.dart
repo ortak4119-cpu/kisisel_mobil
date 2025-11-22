@@ -4782,7 +4782,7 @@ class _ColorPicker extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Not Rengi',
+          'notes.noteColor'.tr(),
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w700,

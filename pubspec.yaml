@@ -3,7 +3,7 @@ description: "A new Flutter project."
 publish_to: 'none'
 
 
-version: 1.0.0+3 #ios
+version: 1.0.0+6 #ios
 #version: 1.0.0+1 #android
 
 environment:
@@ -39,6 +39,8 @@ dependencies:
   google_nav_bar: ^5.0.7
   table_calendar: ^3.2.0
   image_picker: ^1.2.0
+  google_sign_in: ^6.2.1
+  sign_in_with_apple: ^6.1.0
 
 
 dev_dependencies:

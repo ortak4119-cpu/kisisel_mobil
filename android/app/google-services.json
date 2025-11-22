@@ -12,7 +12,12 @@
           "package_name": "com.aedev.kisisel"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "16046442525-qlm05rq5uhk6d3umlpsktjnii689un9v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDJbcpbVEq755zzpu8cGUL2zKVIsht05yM"
@@ -20,7 +25,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "16046442525-qlm05rq5uhk6d3umlpsktjnii689un9v.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "16046442525-5kf9hm5redi5rokqrsbe6fhknsmu44a3.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.aedev.kisiseltest"
+              }
+            }
+          ]
         }
       }
     }

@@ -9,5 +9,5 @@ class Constants {
 
   // App configurations
   static const String appName = 'Your App Name';
-  static const bool debugMode = true;
+  static const bool debugMode = false;
 }

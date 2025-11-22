@@ -227,14 +227,14 @@ class SettingsViewModel extends ChangeNotifier {
   }
 
   Future<void> openPrivacyPolicy() async {
-    final url = Uri.parse('https://yourapp.com/privacy-policy');
+    final url = Uri.parse('https://goodlifesync.com/privacy');
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     }
   }
 
   Future<void> openTermsOfService() async {
-    final url = Uri.parse('https://yourapp.com/terms-of-service');
+    final url = Uri.parse('https://goodlifesync.com/terms');
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     }
@@ -243,7 +243,7 @@ class SettingsViewModel extends ChangeNotifier {
   Future<void> contactUs() async {
     final email = Uri(
       scheme: 'mailto',
-      path: 'support@yourapp.com',
+      path: 'doseraliemre@gmail.com',
       query: 'subject=Destek Talebi',
     );
 
@@ -258,8 +258,8 @@ class SettingsViewModel extends ChangeNotifier {
         await _inAppReview.requestReview();
       } else {
         final appId = Platform.isIOS
-            ? 'your-ios-app-id'
-            : 'com.yourcompany.yourapp';
+            ? '6754823140'
+            : 'com.aedev.kisiseş';
         final url = Platform.isIOS
             ? 'https://apps.apple.com/app/id$appId?action=write-review'
             : 'https://play.google.com/store/apps/details?id=$appId';

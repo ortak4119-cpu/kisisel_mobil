@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../../../../core/init/locator.dart';
 import '../../../../core/utils/custom_snackbar.dart';
 import '../../../../models/auth/auth_models.dart';
@@ -81,22 +83,30 @@ class RegisterViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // TODO: Implement Google Sign-In
-      // final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      // if (googleUser == null) return false;
-
-      // final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-
-      await Future.delayed(const Duration(seconds: 1));
-
-      final request = GoogleLoginRequest(
-        googleId: 'google-user-id',
-        email: 'user@gmail.com',
-        displayName: 'Google User',
-        profilePictureUrl: null,
-        deviceId: 'device-unique-id',
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        scopes: ['email', 'profile'],
       );
 
+      // Google ile giriş yap
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+
+      if (googleUser == null) {
+        // Kullanıcı iptal etti
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+
+      // Google'dan bilgileri al
+      final request = GoogleLoginRequest(
+        googleId: googleUser.id,
+        email: googleUser.email,
+        displayName: googleUser.displayName ?? googleUser.email.split('@')[0],
+        profilePictureUrl: googleUser.photoUrl,
+        deviceId: 'device-unique-id', // TODO: Get from device_info_plus
+      );
+
+      // Backend'de login ve register aynı endpoint (otomatik kullanıcı oluşturur)
       final response = await _authService.loginWithGoogle(request);
 
       _isLoading = false;
@@ -126,7 +136,7 @@ class RegisterViewModel extends ChangeNotifier {
       if (context.mounted) {
         CustomSnackBar.showError(
           context,
-          'errors.general'.tr(),
+          'Google ile kayıt başarısız: ${e.toString()}',
         );
       }
       return false;
@@ -139,23 +149,28 @@ class RegisterViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // TODO: Implement Apple Sign-In
-      // final credential = await SignInWithApple.getAppleIDCredential(
-      //   scopes: [
-      //     AppleIDAuthorizationScopes.email,
-      //     AppleIDAuthorizationScopes.fullName,
-      //   ],
-      // );
-
-      await Future.delayed(const Duration(seconds: 1));
-
-      final request = AppleLoginRequest(
-        appleId: 'apple-user-id',
-        email: 'user@privaterelay.appleid.com',
-        displayName: 'Apple User',
-        deviceId: 'device-unique-id',
+      // Apple ile giriş yap
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
       );
 
+      // Apple'dan bilgileri al
+      String? displayName;
+      if (credential.givenName != null || credential.familyName != null) {
+        displayName = '${credential.givenName ?? ''} ${credential.familyName ?? ''}'.trim();
+      }
+
+      final request = AppleLoginRequest(
+        appleId: credential.userIdentifier??"credentialnotfound",
+        email: credential.email, // İlk girişte gelir, sonra null olabilir
+        displayName: displayName,
+        deviceId: 'device-unique-id', // TODO: Get from device_info_plus
+      );
+
+      // Backend'de login ve register aynı endpoint (otomatik kullanıcı oluşturur)
       final response = await _authService.loginWithApple(request);
 
       _isLoading = false;
@@ -185,7 +200,7 @@ class RegisterViewModel extends ChangeNotifier {
       if (context.mounted) {
         CustomSnackBar.showError(
           context,
-          'errors.general'.tr(),
+          'Apple ile kayıt başarısız: ${e.toString()}',
         );
       }
       return false;

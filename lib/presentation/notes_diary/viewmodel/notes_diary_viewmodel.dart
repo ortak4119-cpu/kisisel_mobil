@@ -4,15 +4,22 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../../core/init/locator.dart';
 import '../../../service/note/note_service.dart';
 import '../../../service/diary/diary_service.dart';
+import '../../../service/profile/profile_service.dart';
 import '../../../models/note/note_models.dart';
 import '../../../models/diary/diary_models.dart';
+import '../../../models/auth/auth_models.dart';
 import '../../../core/utils/custom_snackbar.dart';
+import '../../../core/utils/premium_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum NotesViewMode { grid, list }
 class NotesDiaryViewModel extends ChangeNotifier {
   final INoteService _noteService = locator.get<INoteService>();
   final IDiaryService _diaryService = locator.get<IDiaryService>();
+  final IProfileService _profileService = locator.get<IProfileService>();
+
+  User? _currentUser;
+  User? get currentUser => _currentUser;
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -197,12 +204,28 @@ class NotesDiaryViewModel extends ChangeNotifier {
     super.dispose();
   }
 
+  // ==================== USER & PREMIUM ====================
+
+  Future<void> _loadCurrentUser() async {
+    try {
+      final response = await _profileService.getProfile();
+      if (response.isSuccess && response.data != null) {
+        _currentUser = response.data;
+      }
+    } catch (e) {
+      debugPrint('Error loading current user: $e');
+    }
+  }
+
   // ==================== NOTES ====================
 
   Future<void> loadNotes() async {
     try {
       _isLoading = true;
       notifyListeners();
+
+      // User bilgisini çek (premium kontrolü için)
+      await _loadCurrentUser();
 
       final response = await _noteService.getAllNotes();
 
@@ -221,6 +244,17 @@ class NotesDiaryViewModel extends ChangeNotifier {
     if (noteTitleController.text.trim().isEmpty) {
       CustomSnackBar.showError(context, 'errors.noteTitleEmpty'.tr());
       return;
+    }
+
+    // Premium limit kontrolü
+    final canCreate = await PremiumHelper.checkNoteLimit(
+      context: context,
+      user: _currentUser,
+      currentNoteCount: _notes.where((note) => !note.isArchived).length,
+    );
+
+    if (!canCreate) {
+      return; // Limit aşıldı, paywall gösterildi
     }
 
     try {

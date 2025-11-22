@@ -3,15 +3,22 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../../core/init/locator.dart';
 import '../../../service/task/task_service.dart';
 import '../../../service/habit/habit_service.dart';
+import '../../../service/profile/profile_service.dart';
 import '../../../models/task/task_models.dart';
 import '../../../models/habit/habit_models.dart';
+import '../../../models/auth/auth_models.dart';
 import '../../../core/utils/custom_snackbar.dart';
+import '../../../core/utils/premium_helper.dart';
 
 enum TaskFilter { all, pending, completed }
 
 class TasksHabitsViewModel extends ChangeNotifier {
   final ITaskService _taskService = locator.get<ITaskService>();
   final IHabitService _habitService = locator.get<IHabitService>();
+  final IProfileService _profileService = locator.get<IProfileService>();
+
+  User? _currentUser;
+  User? get currentUser => _currentUser;
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -345,10 +352,24 @@ class TasksHabitsViewModel extends ChangeNotifier {
 
   // ==================== TASKS ====================
 
+  Future<void> _loadCurrentUser() async {
+    try {
+      final response = await _profileService.getProfile();
+      if (response.isSuccess && response.data != null) {
+        _currentUser = response.data;
+      }
+    } catch (e) {
+      debugPrint('Error loading current user: $e');
+    }
+  }
+
   Future<void> loadTasks() async {
     try {
       _isLoading = true;
       notifyListeners();
+
+      // User bilgisini çek (premium kontrolü için)
+      await _loadCurrentUser();
 
       final response = await _taskService.getAllTasks(
         sortBy: 'due_date',
@@ -370,6 +391,17 @@ class TasksHabitsViewModel extends ChangeNotifier {
     if (taskTitleController.text.trim().isEmpty) {
       CustomSnackBar.showError(context, 'errors.taskTitleEmpty'.tr());
       return;
+    }
+
+    // Premium limit kontrolü
+    final canCreate = await PremiumHelper.checkTaskLimit(
+      context: context,
+      user: _currentUser,
+      currentTaskCount: _tasks.length,
+    );
+
+    if (!canCreate) {
+      return; // Limit aşıldı, paywall gösterildi
     }
 
     try {
@@ -539,6 +571,17 @@ class TasksHabitsViewModel extends ChangeNotifier {
     if (habitTitleController.text.trim().isEmpty) {
       CustomSnackBar.showError(context, 'errors.habitTitleEmpty'.tr());
       return;
+    }
+
+    // Premium limit kontrolü
+    final canCreate = await PremiumHelper.checkHabitLimit(
+      context: context,
+      user: _currentUser,
+      currentHabitCount: _habits.length,
+    );
+
+    if (!canCreate) {
+      return; // Limit aşıldı, paywall gösterildi
     }
 
     try {

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../../../../core/init/locator.dart';
 import '../../../../core/utils/custom_snackbar.dart';
 import '../../../../models/auth/auth_models.dart';
@@ -75,19 +77,27 @@ class LoginViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // TODO: Implement Google Sign-In
-      // final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      // if (googleUser == null) return false;
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        scopes: ['email', 'profile'],
+      );
 
-      // Mock data for now
-      await Future.delayed(const Duration(seconds: 1));
+      // Google ile giriş yap
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
 
+      if (googleUser == null) {
+        // Kullanıcı iptal etti
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+
+      // Google'dan bilgileri al
       final request = GoogleLoginRequest(
-        googleId: 'google-user-id',
-        email: 'user@gmail.com',
-        displayName: 'Google User',
-        profilePictureUrl: null,
-        deviceId: 'device-unique-id',
+        googleId: googleUser.id,
+        email: googleUser.email,
+        displayName: googleUser.displayName ?? googleUser.email.split('@')[0],
+        profilePictureUrl: googleUser.photoUrl,
+        deviceId: 'device-unique-id', // TODO: Get from device_info_plus
       );
 
       final response = await _authService.loginWithGoogle(request);
@@ -119,7 +129,7 @@ class LoginViewModel extends ChangeNotifier {
       if (context.mounted) {
         CustomSnackBar.showError(
           context,
-          'errors.general'.tr(),
+          'Google ile giriş başarısız: ${e.toString()}',
         );
       }
       return false;
@@ -132,16 +142,25 @@ class LoginViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // TODO: Implement Apple Sign-In
-      // final credential = await SignInWithApple.getAppleIDCredential(...);
+      // Apple ile giriş yap
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
 
-      await Future.delayed(const Duration(seconds: 1));
+      // Apple'dan bilgileri al
+      String? displayName;
+      if (credential.givenName != null || credential.familyName != null) {
+        displayName = '${credential.givenName ?? ''} ${credential.familyName ?? ''}'.trim();
+      }
 
       final request = AppleLoginRequest(
-        appleId: 'apple-user-id',
-        email: 'user@privaterelay.appleid.com',
-        displayName: 'Apple User',
-        deviceId: 'device-unique-id',
+        appleId: credential.userIdentifier??"NotFound",
+        email: credential.email, // İlk girişte gelir, sonra null olabilir
+        displayName: displayName,
+        deviceId: 'device-unique-id', // TODO: Get from device_info_plus
       );
 
       final response = await _authService.loginWithApple(request);
@@ -173,7 +192,7 @@ class LoginViewModel extends ChangeNotifier {
       if (context.mounted) {
         CustomSnackBar.showError(
           context,
-          'errors.general'.tr(),
+          'Apple ile giriş başarısız: ${e.toString()}',
         );
       }
       return false;

@@ -293,7 +293,12 @@ class _LoginViewState extends State<LoginView> {
                         label: 'auth.continueWithGoogle'.tr(),
                         icon: Icons.g_mobiledata_rounded,
                         isDarkMode: isDarkMode,
-                        onPressed: () => viewModel.loginWithGoogle(context),
+                        onPressed: () async {
+                          final success = await viewModel.loginWithGoogle(context);
+                          if (success && mounted) {
+                            context.router.push(HomeRoute());
+                          }
+                        },
                       ),
 
                       const SizedBox(height: 12),
@@ -302,38 +307,12 @@ class _LoginViewState extends State<LoginView> {
                         label: 'auth.continueWithApple'.tr(),
                         icon: Icons.apple_rounded,
                         isDarkMode: isDarkMode,
-                        onPressed: () => viewModel.loginWithApple(context),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // Guest Login
-                      Center(
-                        child: TextButton(
-                          onPressed: () => viewModel.loginAsGuest(context),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'auth.continueAsGuest'.tr(),
-                                style: TextStyle(
-                                  color: isDarkMode
-                                      ? ColorConstant.textSecondaryDark
-                                      : ColorConstant.textSecondaryLight,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Icon(
-                                Icons.arrow_forward_rounded,
-                                size: 18,
-                                color: isDarkMode
-                                    ? ColorConstant.textSecondaryDark
-                                    : ColorConstant.textSecondaryLight,
-                              ),
-                            ],
-                          ),
-                        ),
+                        onPressed: () async {
+                          final success = await viewModel.loginWithApple(context);
+                          if (success && mounted) {
+                            context.router.push(HomeRoute());
+                          }
+                        },
                       ),
 
                       const SizedBox(height: 24),

@@ -13,7 +13,19 @@ void main() async {
 
   runApp(
     EasyLocalization(
-      supportedLocales: const [Locale('en', 'US'), Locale('tr', 'TR')],
+      supportedLocales: const [
+        Locale('en', 'US'),  // İngilizce
+        Locale('tr', 'TR'),  // Türkçe
+        Locale('zh', 'CN'),  // Çince (Basitleştirilmiş)
+        Locale('hi', 'IN'),  // Hintçe
+        Locale('es', 'ES'),  // İspanyolca
+        Locale('ar', 'SA'),  // Arapça
+        Locale('fr', 'FR'),  // Fransızca
+        Locale('ru', 'RU'),  // Rusça
+        Locale('pt', 'PT'),  // Portekizce
+        Locale('de', 'DE'),  // Almanca
+        Locale('ja', 'JP'),  // Japonca
+      ],
       path: 'assets/translations',
       fallbackLocale: const Locale('en', 'US'),
       child: MultiProvider(
@@ -35,7 +47,7 @@ class MyApp extends StatelessWidget {
       builder: (context, themeProvider, child) {
         return MaterialApp.router(
           title: Constants.appName,
-          debugShowCheckedModeBanner: Constants.debugMode,
+          debugShowCheckedModeBanner:false,
 
           // Theme configuration
           theme: AppTheme.lightTheme,

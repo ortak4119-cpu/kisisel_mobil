@@ -1157,35 +1157,154 @@ class SettingsView extends StatelessWidget {
               fontWeight: FontWeight.w700,
             ),
           ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildLanguageOption(
-                context: dialogContext,
-                title: 'Türkçe',
-                icon: Icons.flag_rounded,
-                locale: const Locale('tr', 'TR'),
-                currentLocale: currentLocale,
-                isDarkMode: isDarkMode,
-                onChanged: (locale) {
-                  context.setLocale(locale);
-                  Navigator.pop(dialogContext);
-                },
-              ),
-              const SizedBox(height: 8),
-              _buildLanguageOption(
-                context: dialogContext,
-                title: 'English',
-                icon: Icons.flag_rounded,
-                locale: const Locale('en', 'US'),
-                currentLocale: currentLocale,
-                isDarkMode: isDarkMode,
-                onChanged: (locale) {
-                  context.setLocale(locale);
-                  Navigator.pop(dialogContext);
-                },
-              ),
-            ],
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildLanguageOption(
+                  context: dialogContext,
+                  title: 'English',
+                  icon: Icons.flag_rounded,
+                  locale: const Locale('en', 'US'),
+                  currentLocale: currentLocale,
+                  isDarkMode: isDarkMode,
+                  onChanged: (locale) {
+                    context.setLocale(locale);
+                    Navigator.pop(dialogContext);
+                  },
+                ),
+                const SizedBox(height: 8),
+                _buildLanguageOption(
+                  context: dialogContext,
+                  title: 'Türkçe',
+                  icon: Icons.flag_rounded,
+                  locale: const Locale('tr', 'TR'),
+                  currentLocale: currentLocale,
+                  isDarkMode: isDarkMode,
+                  onChanged: (locale) {
+                    context.setLocale(locale);
+                    Navigator.pop(dialogContext);
+                  },
+                ),
+                const SizedBox(height: 8),
+                _buildLanguageOption(
+                  context: dialogContext,
+                  title: '中文 (简体)',
+                  icon: Icons.flag_rounded,
+                  locale: const Locale('zh', 'CN'),
+                  currentLocale: currentLocale,
+                  isDarkMode: isDarkMode,
+                  onChanged: (locale) {
+                    context.setLocale(locale);
+                    Navigator.pop(dialogContext);
+                  },
+                ),
+                const SizedBox(height: 8),
+                _buildLanguageOption(
+                  context: dialogContext,
+                  title: 'हिन्दी',
+                  icon: Icons.flag_rounded,
+                  locale: const Locale('hi', 'IN'),
+                  currentLocale: currentLocale,
+                  isDarkMode: isDarkMode,
+                  onChanged: (locale) {
+                    context.setLocale(locale);
+                    Navigator.pop(dialogContext);
+                  },
+                ),
+                const SizedBox(height: 8),
+                _buildLanguageOption(
+                  context: dialogContext,
+                  title: 'Español',
+                  icon: Icons.flag_rounded,
+                  locale: const Locale('es', 'ES'),
+                  currentLocale: currentLocale,
+                  isDarkMode: isDarkMode,
+                  onChanged: (locale) {
+                    context.setLocale(locale);
+                    Navigator.pop(dialogContext);
+                  },
+                ),
+                const SizedBox(height: 8),
+                _buildLanguageOption(
+                  context: dialogContext,
+                  title: 'العربية',
+                  icon: Icons.flag_rounded,
+                  locale: const Locale('ar', 'SA'),
+                  currentLocale: currentLocale,
+                  isDarkMode: isDarkMode,
+                  onChanged: (locale) {
+                    context.setLocale(locale);
+                    Navigator.pop(dialogContext);
+                  },
+                ),
+                const SizedBox(height: 8),
+                _buildLanguageOption(
+                  context: dialogContext,
+                  title: 'Français',
+                  icon: Icons.flag_rounded,
+                  locale: const Locale('fr', 'FR'),
+                  currentLocale: currentLocale,
+                  isDarkMode: isDarkMode,
+                  onChanged: (locale) {
+                    context.setLocale(locale);
+                    Navigator.pop(dialogContext);
+                  },
+                ),
+                const SizedBox(height: 8),
+                _buildLanguageOption(
+                  context: dialogContext,
+                  title: 'Русский',
+                  icon: Icons.flag_rounded,
+                  locale: const Locale('ru', 'RU'),
+                  currentLocale: currentLocale,
+                  isDarkMode: isDarkMode,
+                  onChanged: (locale) {
+                    context.setLocale(locale);
+                    Navigator.pop(dialogContext);
+                  },
+                ),
+                const SizedBox(height: 8),
+                _buildLanguageOption(
+                  context: dialogContext,
+                  title: 'Português',
+                  icon: Icons.flag_rounded,
+                  locale: const Locale('pt', 'PT'),
+                  currentLocale: currentLocale,
+                  isDarkMode: isDarkMode,
+                  onChanged: (locale) {
+                    context.setLocale(locale);
+                    Navigator.pop(dialogContext);
+                  },
+                ),
+                const SizedBox(height: 8),
+                _buildLanguageOption(
+                  context: dialogContext,
+                  title: 'Deutsch',
+                  icon: Icons.flag_rounded,
+                  locale: const Locale('de', 'DE'),
+                  currentLocale: currentLocale,
+                  isDarkMode: isDarkMode,
+                  onChanged: (locale) {
+                    context.setLocale(locale);
+                    Navigator.pop(dialogContext);
+                  },
+                ),
+                const SizedBox(height: 8),
+                _buildLanguageOption(
+                  context: dialogContext,
+                  title: '日本語',
+                  icon: Icons.flag_rounded,
+                  locale: const Locale('ja', 'JP'),
+                  currentLocale: currentLocale,
+                  isDarkMode: isDarkMode,
+                  onChanged: (locale) {
+                    context.setLocale(locale);
+                    Navigator.pop(dialogContext);
+                  },
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(

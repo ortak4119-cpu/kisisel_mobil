@@ -181,7 +181,48 @@ class _CalendarViewState extends State<CalendarView> {
           ),
         ],
       ),
-      child: TableCalendar(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Custom Header
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  icon: Icon(
+                    Icons.chevron_left,
+                    color: isDarkMode
+                        ? ColorConstant.textPrimaryDark
+                        : ColorConstant.textPrimaryLight,
+                  ),
+                  onPressed: () => viewModel.previousMonth(),
+                ),
+                Text(
+                  _getHeaderTitle(viewModel.focusedMonth),
+                  style: TextStyle(
+                    color: isDarkMode
+                        ? ColorConstant.textPrimaryDark
+                        : ColorConstant.textPrimaryLight,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(
+                    Icons.chevron_right,
+                    color: isDarkMode
+                        ? ColorConstant.textPrimaryDark
+                        : ColorConstant.textPrimaryLight,
+                  ),
+                  onPressed: () => viewModel.nextMonth(),
+                ),
+              ],
+            ),
+          ),
+          TableCalendar(
+        locale: context.locale.toString(),
         firstDay: DateTime.utc(2020, 1, 1),
         lastDay: DateTime.utc(2030, 12, 31),
         focusedDay: viewModel.focusedMonth,
@@ -251,10 +292,7 @@ class _CalendarViewState extends State<CalendarView> {
           markersMaxCount: 4,
           cellMargin: const EdgeInsets.all(4),
         ),
-        headerStyle: const HeaderStyle(
-          formatButtonVisible: false,
-          titleCentered: false,
-        ),
+        headerVisible: false,
         daysOfWeekStyle: DaysOfWeekStyle(
           weekdayStyle: TextStyle(
             color: isDarkMode
@@ -276,8 +314,28 @@ class _CalendarViewState extends State<CalendarView> {
             return _buildDayMarkers(date, viewModel);
           },
         ),
+          ),
+        ],
       ),
     );
+  }
+
+  String _getHeaderTitle(DateTime date) {
+    final monthKey = [
+      'common.months.january',
+      'common.months.february',
+      'common.months.march',
+      'common.months.april',
+      'common.months.may',
+      'common.months.june',
+      'common.months.july',
+      'common.months.august',
+      'common.months.september',
+      'common.months.october',
+      'common.months.november',
+      'common.months.december'
+    ][date.month - 1];
+    return '${monthKey.tr()} ${date.year}';
   }
 
   Widget _buildDayMarkers(DateTime date, CalendarViewModel viewModel) {
@@ -1168,7 +1226,7 @@ class _CalendarViewState extends State<CalendarView> {
                 // Tarih Seçimi
                 ListTile(
                   title: Text(
-                    'Tarih',
+                    'calendar.date'.tr(),
                     style: TextStyle(
                       color: isDarkMode
                           ? ColorConstant.textSecondaryDark
@@ -1201,7 +1259,7 @@ class _CalendarViewState extends State<CalendarView> {
                 // Saat Seçimi
                 ListTile(
                   title: Text(
-                    'Saat (Opsiyonel)',
+                    'calendar.timeOptional'.tr(),
                     style: TextStyle(
                       color: isDarkMode
                           ? ColorConstant.textSecondaryDark
@@ -2640,7 +2698,7 @@ class _CalendarViewState extends State<CalendarView> {
                 // Tarih Seçimi
                 ListTile(
                   title: Text(
-                    'Tarih',
+                    'calendar.date'.tr(),
                     style: TextStyle(
                       color: isDarkMode
                           ? ColorConstant.textSecondaryDark
@@ -2673,7 +2731,7 @@ class _CalendarViewState extends State<CalendarView> {
                 // Saat Seçimi
                 ListTile(
                   title: Text(
-                    'Saat (Opsiyonel)',
+                    'calendar.timeOptional'.tr(),
                     style: TextStyle(
                       color: isDarkMode
                           ? ColorConstant.textSecondaryDark

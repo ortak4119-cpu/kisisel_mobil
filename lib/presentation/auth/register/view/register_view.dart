@@ -414,7 +414,12 @@ class _RegisterViewState extends State<RegisterView> {
                         label: 'auth.registerWithGoogle'.tr(),
                         icon: Icons.g_mobiledata_rounded,
                         isDarkMode: isDarkMode,
-                        onPressed: () => viewModel.registerWithGoogle(context),
+                        onPressed: () async {
+                          final success = await viewModel.registerWithGoogle(context);
+                          if (success && mounted) {
+                            context.router.push(HomeRoute());
+                          }
+                        },
                       ),
 
                       const SizedBox(height: 12),
@@ -423,7 +428,12 @@ class _RegisterViewState extends State<RegisterView> {
                         label: 'auth.registerWithApple'.tr(),
                         icon: Icons.apple_rounded,
                         isDarkMode: isDarkMode,
-                        onPressed: () => viewModel.registerWithApple(context),
+                        onPressed: () async {
+                          final success = await viewModel.registerWithApple(context);
+                          if (success && mounted) {
+                            context.router.push(HomeRoute());
+                          }
+                        },
                       ),
 
                       const SizedBox(height: 32),
