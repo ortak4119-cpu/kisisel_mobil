@@ -565,7 +565,11 @@
             "logoutAllSubtitle": "Forçar o término de sessão em todos os dispositivos",
             "logoutAllConfirm": "Tem certeza de que deseja terminar a sessão em todos os dispositivos? Terá de iniciar sessão novamente após esta operação.",
             "logoutAllSuccess": "Sessão terminada em todos os dispositivos",
-            "logoutAllError": "Ocorreu um erro ao terminar a sessão em todos os dispositivos"
+            "logoutAllError": "Ocorreu um erro ao terminar a sessão em todos os dispositivos",
+            "deleteAccount": "Excluir conta",
+            "deleteAccountSubtitle": "Excluir permanentemente sua conta",
+            "deleteAccountConfirm": "Excluir conta?",
+            "deleteAccountWarning": "Se você excluir sua conta e não fizer login por 2 dias, todos os seus dados serão excluídos permanentemente. Esta ação não pode ser desfeita."
         },
         "legal": {
             "privacy": "Política de Privacidade",
@@ -734,6 +738,7 @@
         "duration": {
             "days": "dias",
             "years": "anos"
-        }
+        },
+        "trial_disclosure": "Grátis por {{duration}}, depois {{price}}/ano. Cancele a qualquer momento."
     }
 }

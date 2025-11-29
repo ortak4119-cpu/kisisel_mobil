@@ -256,6 +256,18 @@ class SettingsView extends StatelessWidget {
                                   : ColorConstant.cardYellowLight,
                               onTap: () => viewModel.showLogoutAllDevicesDialog(context),
                             ),
+                            _buildDivider(isDarkMode),
+                            _buildListTile(
+                              title: 'settings.account.deleteAccount'.tr(),
+                              subtitle: 'settings.account.deleteAccountSubtitle'.tr(),
+                              icon: Icons.delete_forever_rounded,
+                              isDarkMode: isDarkMode,
+                              iconColor: ColorConstant.errorRed,
+                              iconBgColor: isDarkMode
+                                  ? ColorConstant.errorRed.withOpacity(0.15)
+                                  : ColorConstant.errorRed.withOpacity(0.1),
+                              onTap: () => viewModel.showDeleteAccountDialog(context),
+                            ),
                           ],
                         ),
 

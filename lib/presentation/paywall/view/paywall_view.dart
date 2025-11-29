@@ -103,6 +103,13 @@ class _PaywallViewState extends State<PaywallView>
 
                                   const SizedBox(height: 32),
 
+                                  // Trial Disclosure (Apple gereksinimi)
+                                  if (viewModel.selectedPackage != null &&
+                                      viewModel.hasTrialPeriod(
+                                          viewModel.selectedPackage))
+                                    _buildTrialDisclosure(
+                                        context, viewModel, isDarkMode),
+
                                   // Subscribe Button
                                   _buildSubscribeButton(
                                       context, viewModel, isDarkMode),
@@ -681,6 +688,58 @@ class _PaywallViewState extends State<PaywallView>
                 ),
               ),
             ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTrialDisclosure(
+      BuildContext context,
+      PaywallViewModel viewModel,
+      bool isDarkMode,
+      ) {
+    final disclosure = viewModel.getTrialDisclosure(viewModel.selectedPackage);
+
+    if (disclosure.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDarkMode
+            ? ColorConstant.cardColorDark.withOpacity(0.5)
+            : ColorConstant.white.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDarkMode
+              ? ColorConstant.borderColorDark
+              : ColorConstant.borderColorLight,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.info_outline_rounded,
+            color: isDarkMode
+                ? ColorConstant.primaryDarkModePurple
+                : ColorConstant.primaryPurple,
+            size: 20,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              disclosure,
+              style: TextStyle(
+                color: isDarkMode
+                    ? ColorConstant.textSecondaryDark
+                    : ColorConstant.textSecondaryLight,
+                fontSize: 13,
+                height: 1.4,
+              ),
+              textAlign: TextAlign.left,
+            ),
+          ),
         ],
       ),
     );

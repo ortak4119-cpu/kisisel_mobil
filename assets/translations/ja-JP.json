@@ -565,7 +565,11 @@
             "logoutAllSubtitle": "すべてのデバイスから強制的にログアウトする",
             "logoutAllConfirm": "すべてのデバイスからログアウトしてもよろしいですか？この操作後、再度ログインする必要があります。",
             "logoutAllSuccess": "すべてのデバイスからログアウトしました",
-            "logoutAllError": "すべてのデバイスからログアウト中にエラーが発生しました"
+            "logoutAllError": "すべてのデバイスからログアウト中にエラーが発生しました",
+            "deleteAccount": "アカウントを削除",
+            "deleteAccountSubtitle": "アカウントを完全に削除します",
+            "deleteAccountConfirm": "アカウントを削除しますか？",
+            "deleteAccountWarning": "アカウントを削除し、2日間ログインしない場合、すべてのデータが完全に削除されます。この操作は元に戻せません。"
         },
         "legal": {
             "privacy": "プライバシーポリシー",
@@ -734,6 +738,7 @@
         "duration": {
             "days": "日",
             "years": "年"
-        }
+        },
+        "trial_disclosure": "{{duration}}無料、その後{{price}}/年。いつでもキャンセル可能。"
     }
 }

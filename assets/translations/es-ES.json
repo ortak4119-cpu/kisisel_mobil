@@ -565,7 +565,11 @@
             "logoutAllSubtitle": "Cierre de sesión forzado en todos los dispositivos",
             "logoutAllConfirm": "¿Está seguro de que desea cerrar sesión en todos los dispositivos? Deberá volver a iniciar sesión después de esta operación.",
             "logoutAllSuccess": "Sesión cerrada en todos los dispositivos",
-            "logoutAllError": "Se produjo un error al cerrar sesión en todos los dispositivos"
+            "logoutAllError": "Se produjo un error al cerrar sesión en todos los dispositivos",
+            "deleteAccount": "Eliminar cuenta",
+            "deleteAccountSubtitle": "Eliminar permanentemente tu cuenta",
+            "deleteAccountConfirm": "¿Eliminar cuenta?",
+            "deleteAccountWarning": "Si eliminas tu cuenta y no inicias sesión durante 2 días, todos tus datos se eliminarán permanentemente. Esta acción no se puede deshacer."
         },
         "legal": {
             "privacy": "Política de Privacidad",
@@ -734,6 +738,7 @@
         "duration": {
             "days": "días",
             "years": "años"
-        }
+        },
+        "trial_disclosure": "Gratis por {{duration}}, luego {{price}}/año. Cancela en cualquier momento."
     }
 }

@@ -90,6 +90,11 @@ class FCMService {
       _fcmToken = await _firebaseMessaging.getToken();
       if (_fcmToken != null) {
         debugPrint('📱 FCM Token: $_fcmToken');
+
+        // Otomatik olarak multiple topic'lere subscribe et
+        await subscribeToTopic('all_users');
+        await subscribeToTopic('test_notifications');
+        await subscribeToTopic('ios_users');
       } else {
         debugPrint('❌ FCM Token is null');
       }

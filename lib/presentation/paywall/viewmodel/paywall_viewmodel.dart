@@ -274,4 +274,17 @@ class PaywallViewModel extends ChangeNotifier {
 
     return '';
   }
+
+  /// Trial disclosure metnini al (Apple gereksinimleri için)
+  String getTrialDisclosure(Package? package) {
+    if (package == null || !hasTrialPeriod(package)) return '';
+
+    final duration = getTrialDurationText(package);
+    final price = package.storeProduct.priceString;
+
+    return 'paywall.trial_disclosure'.tr(namedArgs: {
+      'duration': duration,
+      'price': price,
+    });
+  }
 }

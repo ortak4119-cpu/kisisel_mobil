@@ -413,4 +413,77 @@ class SettingsViewModel extends ChangeNotifier {
       },
     );
   }
+
+  void showDeleteAccountDialog(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          backgroundColor: isDarkMode
+              ? ColorConstant.cardColorDark
+              : ColorConstant.cardColorLight,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          title: Text(
+            'settings.account.deleteAccountConfirm'.tr(),
+            style: TextStyle(
+              color: isDarkMode
+                  ? ColorConstant.textPrimaryDark
+                  : ColorConstant.textPrimaryLight,
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          content: Text(
+            'settings.account.deleteAccountWarning'.tr(),
+            style: TextStyle(
+              color: isDarkMode
+                  ? ColorConstant.textSecondaryDark
+                  : ColorConstant.textSecondaryLight,
+              fontSize: 15,
+              height: 1.5,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              style: TextButton.styleFrom(
+                foregroundColor: isDarkMode
+                    ? ColorConstant.textSecondaryDark
+                    : ColorConstant.textSecondaryLight,
+              ),
+              child:  Text(
+                'common.cancel'.tr(),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                // TODO: Hesap silme endpoint'i eklendiğinde burası güncellenecek
+                // Şimdilik sadece çıkış yap
+                logout(context);
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: ColorConstant.errorRed,
+              ),
+              child:  Text(
+                'common.delete'.tr(),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 }

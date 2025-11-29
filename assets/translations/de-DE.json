@@ -565,7 +565,11 @@
             "logoutAllSubtitle": "Erzwungenes Abmelden von allen Geräten",
             "logoutAllConfirm": "Bist du sicher, dass du dich von allen Geräten abmelden möchtest? Du musst dich nach diesem Vorgang erneut anmelden.",
             "logoutAllSuccess": "Von allen Geräten abgemeldet",
-            "logoutAllError": "Beim Abmelden von allen Geräten ist ein Fehler aufgetreten"
+            "logoutAllError": "Beim Abmelden von allen Geräten ist ein Fehler aufgetreten",
+            "deleteAccount": "Konto löschen",
+            "deleteAccountSubtitle": "Konto dauerhaft löschen",
+            "deleteAccountConfirm": "Konto löschen?",
+            "deleteAccountWarning": "Wenn Sie Ihr Konto löschen und sich 2 Tage lang nicht anmelden, werden alle Ihre Daten dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden."
         },
         "legal": {
             "privacy": "Datenschutzerklärung",
@@ -734,6 +738,7 @@
         "duration": {
             "days": "Tage",
             "years": "Jahre"
-        }
+        },
+        "trial_disclosure": "{{duration}} kostenlos, dann {{price}}/Jahr. Jederzeit kündbar."
     }
 }

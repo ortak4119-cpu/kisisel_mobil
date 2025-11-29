@@ -565,7 +565,11 @@
             "logoutAllSubtitle": "Déconnexion forcée de tous les appareils",
             "logoutAllConfirm": "Êtes-vous sûr de vouloir vous déconnecter de tous les appareils? Vous devrez vous reconnecter après cette opération.",
             "logoutAllSuccess": "Déconnecté de tous les appareils",
-            "logoutAllError": "Une erreur s'est produite lors de la déconnexion de tous les appareils"
+            "logoutAllError": "Une erreur s'est produite lors de la déconnexion de tous les appareils",
+            "deleteAccount": "Supprimer le compte",
+            "deleteAccountSubtitle": "Supprimer définitivement votre compte",
+            "deleteAccountConfirm": "Supprimer le compte ?",
+            "deleteAccountWarning": "Si vous supprimez votre compte et ne vous connectez pas pendant 2 jours, toutes vos données seront définitivement supprimées. Cette action est irréversible."
         },
         "legal": {
             "privacy": "Politique de Confidentialité",
@@ -734,6 +738,7 @@
         "duration": {
             "days": "jours",
             "years": "ans"
-        }
+        },
+        "trial_disclosure": "Gratuit pendant {{duration}}, puis {{price}}/an. Annulez à tout moment."
     }
 }

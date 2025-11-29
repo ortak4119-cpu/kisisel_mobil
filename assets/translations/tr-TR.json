@@ -565,7 +565,11 @@
             "logoutAllSubtitle": "Tüm cihazlardan zorla çıkış yapın",
             "logoutAllConfirm": "Tüm cihazlardan çıkış yapmak istediğinizden emin misiniz? Bu işlemden sonra tekrar giriş yapmanız gerekecektir.",
             "logoutAllSuccess": "Tüm cihazlardan çıkış yapıldı",
-            "logoutAllError": "Tüm cihazlardan çıkış yapılırken bir hata oluştu"
+            "logoutAllError": "Tüm cihazlardan çıkış yapılırken bir hata oluştu",
+            "deleteAccount": "Hesabı Sil",
+            "deleteAccountSubtitle": "Hesabınızı kalıcı olarak silin",
+            "deleteAccountConfirm": "Hesabı Silmek İstediğinizden Emin misiniz?",
+            "deleteAccountWarning": "Hesabınızı sil derseniz 2 gün giriş yapmadığınız taktirde tüm verileriniz kalıcı olarak silinecektir. Bu işlem geri alınamaz."
         },
         "legal": {
             "privacy": "Gizlilik Politikası",
@@ -734,6 +738,7 @@
         "duration": {
             "days": "gün",
             "years": "yıl"
-        }
+        },
+        "trial_disclosure": "{{duration}} ücretsiz, sonra {{price}}/yıl. İstediğiniz zaman iptal edebilirsiniz."
     }
 }
