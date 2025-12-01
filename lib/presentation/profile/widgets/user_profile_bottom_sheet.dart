@@ -4,7 +4,7 @@ import '../../../core/utils/color_constant.dart';
 import '../../../models/social/social_model.dart';
 import '../../../models/settings/settings_models.dart';
 
-class UserProfileBottomSheet extends StatelessWidget {
+class UserProfileBottomSheet extends StatefulWidget {
   final UserProfile userProfile;
   final VoidCallback? onSendFriendRequest;
   final VoidCallback? onUnfriend;
@@ -27,11 +27,18 @@ class UserProfileBottomSheet extends StatelessWidget {
   });
 
   @override
+  State<UserProfileBottomSheet> createState() => _UserProfileBottomSheetState();
+}
+
+class _UserProfileBottomSheetState extends State<UserProfileBottomSheet> {
+  bool _isProcessing = false;
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: BoxDecoration(
-        color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+        color: widget.isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(28),
           topRight: Radius.circular(28),
@@ -45,7 +52,7 @@ class UserProfileBottomSheet extends StatelessWidget {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: isDarkMode
+              color: widget.isDarkMode
                   ? ColorConstant.borderColorDark
                   : ColorConstant.borderColorLight,
               borderRadius: BorderRadius.circular(2),
@@ -99,12 +106,12 @@ class UserProfileBottomSheet extends StatelessWidget {
                   child: CircleAvatar(
                     radius: 54,
                     backgroundColor: ColorConstant.accentBlue.withOpacity(0.2),
-                    backgroundImage: userProfile.profilePictureUrl != null
-                        ? NetworkImage(userProfile.profilePictureUrl!)
+                    backgroundImage: widget.userProfile.profilePictureUrl != null
+                        ? NetworkImage(widget.userProfile.profilePictureUrl!)
                         : null,
-                    child: userProfile.profilePictureUrl == null
+                    child: widget.userProfile.profilePictureUrl == null
                         ? Text(
-                      userProfile.displayName[0].toUpperCase(),
+                      widget.userProfile.displayName[0].toUpperCase(),
                       style: TextStyle(
                         fontSize: 40,
                         fontWeight: FontWeight.w900,
@@ -124,11 +131,11 @@ class UserProfileBottomSheet extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                userProfile.displayName,
+                widget.userProfile.displayName,
                 style: TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.w900,
-                  color: isDarkMode
+                  color: widget.isDarkMode
                       ? ColorConstant.textPrimaryDark
                       : ColorConstant.textPrimaryLight,
                   letterSpacing: -0.5,
@@ -173,7 +180,7 @@ class UserProfileBottomSheet extends StatelessWidget {
                 const Text('👤', style: TextStyle(fontSize: 14)),
                 const SizedBox(width: 6),
                 Text(
-                  '@${userProfile.username}',
+                  '@${widget.userProfile.username}',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
@@ -185,7 +192,7 @@ class UserProfileBottomSheet extends StatelessWidget {
           ),
 
           // Level (if visible)
-          if (userProfile.showLevel) ...[
+          if (widget.userProfile.showLevel) ...[
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -211,7 +218,7 @@ class UserProfileBottomSheet extends StatelessWidget {
                   const Text('🏆', style: TextStyle(fontSize: 20)),
                   const SizedBox(width: 8),
                   Text(
-                    'Level ${userProfile.level}',
+                    'Level ${widget.userProfile.level}',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
@@ -231,7 +238,7 @@ class UserProfileBottomSheet extends StatelessWidget {
                         const Text('⚡', style: TextStyle(fontSize: 12)),
                         const SizedBox(width: 4),
                         Text(
-                          '${userProfile.totalXp} XP',
+                          '${widget.userProfile.totalXp} XP',
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
@@ -247,31 +254,31 @@ class UserProfileBottomSheet extends StatelessWidget {
           ],
 
           // Bio
-          if (userProfile.bio != null && userProfile.bio!.isNotEmpty) ...[
+          if (widget.userProfile.bio != null && widget.userProfile.bio!.isNotEmpty) ...[
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: isDarkMode
+                color: widget.isDarkMode
                     ? ColorConstant.bgColorDark
                     : ColorConstant.bgColorLight,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: isDarkMode
+                  color: widget.isDarkMode
                       ? ColorConstant.borderColorDark
                       : ColorConstant.borderColorLight,
                   width: 1,
                 ),
               ),
               child: Text(
-                userProfile.bio!,
+                widget.userProfile.bio!,
                 textAlign: TextAlign.center,
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: 14,
                   height: 1.5,
-                  color: isDarkMode
+                  color: widget.isDarkMode
                       ? ColorConstant.textSecondaryDark
                       : ColorConstant.textSecondaryLight,
                 ),
@@ -286,104 +293,80 @@ class UserProfileBottomSheet extends StatelessWidget {
   Widget _buildActionButtons(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        children: [
-          // Friend/Unfriend Button
-          Expanded(
-            flex: 2,
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                if (isFriend) {
-                  onUnfriend?.call();
-                } else {
-                  onSendFriendRequest?.call();
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                foregroundColor: ColorConstant.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-              child: Ink(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: isFriend
-                        ? [
-                      ColorConstant.errorRed,
-                      ColorConstant.errorRed.withOpacity(0.8),
-                    ]
-                        : [
-                      ColorConstant.accentBlue,
-                      ColorConstant.primaryPurple,
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  alignment: Alignment.center,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        isFriend ? Icons.person_remove : Icons.person_add,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        isFriend ? 'profile.friends.unfriend'.tr() : 'profile.friends.addFriend'.tr(),
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: _isProcessing ? null : () async {
+            setState(() => _isProcessing = true);
+
+            Navigator.pop(context);
+
+            if (widget.isFriend) {
+              widget.onUnfriend?.call();
+            } else {
+              widget.onSendFriendRequest?.call();
+            }
+
+            // Kısa bir delay ekle (isteğe bağlı)
+            await Future.delayed(const Duration(milliseconds: 300));
+
+            if (mounted) {
+              setState(() => _isProcessing = false);
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            foregroundColor: ColorConstant.white,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
             ),
           ),
-          const SizedBox(width: 12),
-
-          // Follow Button
-          Expanded(
-            child: OutlinedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                if (isFollowing) {
-                  onUnfollow?.call();
-                } else {
-                  onFollow?.call();
-                }
-              },
-              style: OutlinedButton.styleFrom(
-                foregroundColor: ColorConstant.accentOrange,
-                side: BorderSide(
-                  color: ColorConstant.accentOrange.withOpacity(0.5),
-                  width: 2,
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
+          child: Ink(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: _isProcessing
+                    ? [
+                  ColorConstant.textMutedDark,
+                  ColorConstant.textMutedDark.withOpacity(0.8),
+                ]
+                    : widget.isFriend
+                    ? [
+                  ColorConstant.errorRed,
+                  ColorConstant.errorRed.withOpacity(0.8),
+                ]
+                    : [
+                  ColorConstant.accentBlue,
+                  ColorConstant.primaryPurple,
+                ],
               ),
-              child: Row(
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              alignment: Alignment.center,
+              child: _isProcessing
+                  ? SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(ColorConstant.white),
+                ),
+              )
+                  : Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    isFollowing ? Icons.notifications_off : Icons.notifications,
-                    size: 18,
+                    widget.isFriend ? Icons.person_remove : Icons.person_add,
+                    size: 20,
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 8),
                   Text(
-                    isFollowing ? 'profile.friends.unfollow'.tr() : 'profile.friends.follow'.tr(),
+                    widget.isFriend ? 'profile.friends.unfriend'.tr() : 'profile.friends.addFriend'.tr(),
                     style: const TextStyle(
-                      fontSize: 13,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -391,13 +374,13 @@ class UserProfileBottomSheet extends StatelessWidget {
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildStats() {
-    if (userProfile.stats == null) {
+    if (widget.userProfile.stats == null) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -409,7 +392,7 @@ class UserProfileBottomSheet extends StatelessWidget {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: isDarkMode
+                color: widget.isDarkMode
                     ? ColorConstant.textMutedDark
                     : ColorConstant.textMutedLight,
               ),
@@ -419,7 +402,7 @@ class UserProfileBottomSheet extends StatelessWidget {
       );
     }
 
-    final stats = userProfile.stats!;
+    final stats = widget.userProfile.stats!;
 
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -445,7 +428,7 @@ class UserProfileBottomSheet extends StatelessWidget {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
-                color: isDarkMode
+                color: widget.isDarkMode
                     ? ColorConstant.textPrimaryDark
                     : ColorConstant.textPrimaryLight,
               ),
@@ -455,7 +438,7 @@ class UserProfileBottomSheet extends StatelessWidget {
         const SizedBox(height: 20),
 
         // Habits
-        if (userProfile.showHabits)
+        if (widget.userProfile.showHabits)
           _buildStatCard(
             title: 'profile.stats.habits'.tr(),
             icon: Icons.emoji_events_rounded,
@@ -515,7 +498,7 @@ class UserProfileBottomSheet extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+        color: widget.isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: color.withOpacity(0.3),
@@ -560,7 +543,7 @@ class UserProfileBottomSheet extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w800,
-                  color: isDarkMode
+                  color: widget.isDarkMode
                       ? ColorConstant.textPrimaryDark
                       : ColorConstant.textPrimaryLight,
                 ),
@@ -600,7 +583,7 @@ class UserProfileBottomSheet extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
-                            color: isDarkMode
+                            color: widget.isDarkMode
                                 ? ColorConstant.textSecondaryDark
                                 : ColorConstant.textSecondaryLight,
                           ),

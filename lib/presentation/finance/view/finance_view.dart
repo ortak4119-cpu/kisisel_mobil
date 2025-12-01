@@ -16,6 +16,22 @@ class FinanceView extends StatefulWidget {
 }
 
 class _FinanceViewState extends State<FinanceView> {
+  int _getUpcomingCount(FinanceViewModel viewModel) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    return viewModel.activeSubscriptions
+        .where((sub) {
+      final billingDate = DateTime(
+        sub.nextBillingDate.year,
+        sub.nextBillingDate.month,
+        sub.nextBillingDate.day,
+      );
+      return billingDate.isAtSameMomentAs(today) || billingDate.isAfter(today);
+    })
+        .length;
+  }
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -256,6 +272,32 @@ class _FinanceViewState extends State<FinanceView> {
                               const SizedBox(height: 16),
                               ..._buildUpcomingSubscriptions(
                                   context, viewModel, isDarkMode),
+                              // Show All / Show Less button
+                              if (_getUpcomingCount(viewModel) > 3)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8),
+                                  child: TextButton.icon(
+                                    onPressed: () => viewModel.toggleShowAllSubscriptions(),
+                                    icon: Icon(
+                                      viewModel.showAllSubscriptions
+                                          ? Icons.expand_less_rounded
+                                          : Icons.expand_more_rounded,
+                                      size: 20,
+                                    ),
+                                    label: Text(
+                                      viewModel.showAllSubscriptions
+                                          ? 'common.showLess'.tr()
+                                          : 'common.showAll'.tr(),
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: ColorConstant.accentBlue,
+                                    ),
+                                  ),
+                                ),
                             ],
                           ),
                         ),
@@ -312,7 +354,16 @@ class _FinanceViewState extends State<FinanceView> {
                     ),
 
                     // Activities List
-                    if (viewModel.expenses.isNotEmpty)
+                    if (viewModel.expenses.isNotEmpty && viewModel.filteredExpenses.isEmpty)
+                      SliverToBoxAdapter(
+                        child: _buildEmptyState(
+                          icon: Icons.filter_alt_off_rounded,
+                          message: 'finance.noExpensesInFilter'.tr(),
+                          color: ColorConstant.accentBlue,
+                          isDarkMode: isDarkMode,
+                        ),
+                      )
+                    else if (viewModel.filteredExpenses.isNotEmpty)
                       SliverPadding(
                         padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                         sliver: SliverList(
@@ -320,12 +371,12 @@ class _FinanceViewState extends State<FinanceView> {
                                 (context, index) {
                               return _buildExpenseCard(
                                 context,
-                                viewModel.expenses[index],
+                                viewModel.filteredExpenses[index],
                                 viewModel,
                                 isDarkMode,
                               );
                             },
-                            childCount: viewModel.expenses.length,
+                            childCount: viewModel.filteredExpenses.length,
                           ),
                         ),
                       )
@@ -619,27 +670,35 @@ class _FinanceViewState extends State<FinanceView> {
         .toList()
       ..sort((a, b) => a.nextBillingDate.compareTo(b.nextBillingDate));
 
-    return upcoming.take(3).map((sub) {
+    final subscriptionsToShow = viewModel.showAllSubscriptions
+        ? upcoming
+        : upcoming.take(3);
+
+    return subscriptionsToShow.map((sub) {
       final daysUntil = sub.nextBillingDate.difference(DateTime.now()).inDays;
       final isUrgent = daysUntil <= 5;
 
-      return Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isUrgent
-                ? ColorConstant.accentYellow.withOpacity(0.5)
-                : (isDarkMode
-                ? ColorConstant.borderColorDark
-                : ColorConstant.borderColorLight),
-            width: isUrgent ? 2 : 1,
+      return GestureDetector(
+        onTap: () {
+          _showEditSubscriptionSheet(context, viewModel, sub, isDarkMode);
+        },
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isUrgent
+                  ? ColorConstant.accentYellow.withOpacity(0.5)
+                  : (isDarkMode
+                  ? ColorConstant.borderColorDark
+                  : ColorConstant.borderColorLight),
+              width: isUrgent ? 2 : 1,
+            ),
           ),
-        ),
-        child: Row(
-          children: [
+          child: Row(
+            children: [
             Builder(
               builder: (context) {
                 final iconData = SubscriptionIcons.getIcon(sub.name) ??
@@ -741,6 +800,7 @@ class _FinanceViewState extends State<FinanceView> {
             ),
           ],
         ),
+        ),
       );
     }).toList();
   }
@@ -809,21 +869,25 @@ class _FinanceViewState extends State<FinanceView> {
       onDismissed: (direction) {
         viewModel.deleteExpense(expense.id, context);
       },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isDarkMode
-                ? ColorConstant.borderColorDark
-                : ColorConstant.borderColorLight,
-            width: 1,
+      child: GestureDetector(
+        onTap: () {
+          _showEditExpenseSheet(context, viewModel, expense, isDarkMode);
+        },
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isDarkMode
+                  ? ColorConstant.borderColorDark
+                  : ColorConstant.borderColorLight,
+              width: 1,
+            ),
           ),
-        ),
-        child: Row(
-          children: [
+          child: Row(
+            children: [
             Container(
               width: 48,
               height: 48,
@@ -902,6 +966,7 @@ class _FinanceViewState extends State<FinanceView> {
               ),
             ),
           ],
+        ),
         ),
       ),
     );
@@ -1118,6 +1183,53 @@ class _FinanceViewState extends State<FinanceView> {
       backgroundColor: Colors.transparent,
       builder: (context) => _AddExpenseBottomSheet(
         viewModel: viewModel,
+        isDarkMode: isDarkMode,
+      ),
+    );
+  }
+
+  void _showEditSubscriptionSheet(
+      BuildContext context,
+      FinanceViewModel viewModel,
+      dynamic subscription,
+      bool isDarkMode,
+      ) {
+    // Form alanlarını mevcut subscription verileriyle doldur
+    viewModel.subscriptionNameController.text = subscription.name;
+    viewModel.subscriptionAmountController.text = subscription.amount.toString();
+    viewModel.subscriptionBillingDateController.text = subscription.billingDate.toString();
+    viewModel.setSubscriptionBillingCycle(subscription.billingCycle);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _EditSubscriptionBottomSheet(
+        viewModel: viewModel,
+        subscription: subscription,
+        isDarkMode: isDarkMode,
+      ),
+    );
+  }
+
+  void _showEditExpenseSheet(
+      BuildContext context,
+      FinanceViewModel viewModel,
+      dynamic expense,
+      bool isDarkMode,
+      ) {
+    // Form alanlarını mevcut expense verileriyle doldur
+    viewModel.expenseAmountController.text = expense.amount.toString();
+    viewModel.expenseDescriptionController.text = expense.description ?? '';
+    viewModel.setExpenseCategory(expense.category);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _EditExpenseBottomSheet(
+        viewModel: viewModel,
+        expense: expense,
         isDarkMode: isDarkMode,
       ),
     );
@@ -2319,7 +2431,6 @@ class _ExpenseFilterDialog extends StatelessWidget {
   });
 
   List<Map<String, dynamic>> get _categories => [
-    {'value': 'all', 'label': 'finance.categories.all'.tr(), 'emoji': '📊'},
     {'value': 'food', 'label': 'finance.categories.food'.tr(), 'emoji': '🍔'},
     {'value': 'transportation', 'label': 'finance.categories.transportation'.tr(), 'emoji': '🚗'},
     {'value': 'entertainment', 'label': 'finance.categories.entertainment'.tr(), 'emoji': '🎬'},
@@ -2372,9 +2483,9 @@ class _ExpenseFilterDialog extends StatelessWidget {
                     spacing: 8,
                     runSpacing: 8,
                     children: _categories.map((category) {
-                      final isSelected = vm.filterCategory == category['value'];
+                      final isSelected = vm.isFilterActive(category['value']!);
                       return GestureDetector(
-                        onTap: () => vm.setFilterCategory(category['value']!),
+                        onTap: () => vm.toggleFilterCategory(category['value']!),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 12,
@@ -2464,6 +2575,559 @@ class _ExpenseFilterDialog extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+}
+
+// ==================== EDIT SUBSCRIPTION BOTTOM SHEET ====================
+class _EditSubscriptionBottomSheet extends StatelessWidget {
+  final FinanceViewModel viewModel;
+  final dynamic subscription;
+  final bool isDarkMode;
+
+  const _EditSubscriptionBottomSheet({
+    required this.viewModel,
+    required this.subscription,
+    required this.isDarkMode,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider.value(
+      value: viewModel,
+      child: Consumer<FinanceViewModel>(
+        builder: (context, vm, _) {
+          return Container(
+            decoration: BoxDecoration(
+              color: isDarkMode
+                  ? ColorConstant.cardColorDark
+                  : ColorConstant.white,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(28),
+                topRight: Radius.circular(28),
+              ),
+            ),
+            child: SafeArea(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                ),
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Center(
+                          child: Container(
+                            width: 40,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: isDarkMode
+                                  ? ColorConstant.borderColorDark
+                                  : ColorConstant.borderColorLight,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'finance.editSubscription'.tr(),
+                              style: TextStyle(
+                                color: isDarkMode
+                                    ? ColorConstant.textPrimaryDark
+                                    : ColorConstant.textPrimaryLight,
+                                fontSize: 24,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                Icons.delete_outline,
+                                color: ColorConstant.errorRed,
+                              ),
+                              onPressed: () {
+                                Navigator.pop(context);
+                                vm.deleteSubscription(subscription.id, context);
+                              },
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        _buildTextField(
+                          context,
+                          label: 'finance.subscriptionName'.tr(),
+                          controller: vm.subscriptionNameController,
+                          hint: 'Netflix, Spotify...',
+                          icon: Icons.label_outline,
+                        ),
+                        const SizedBox(height: 16),
+                        _buildTextField(
+                          context,
+                          label: 'finance.amount'.tr(),
+                          controller: vm.subscriptionAmountController,
+                          hint: '0.00',
+                          icon: Icons.attach_money,
+                          keyboardType: TextInputType.number,
+                        ),
+                        const SizedBox(height: 16),
+                        _buildBillingCycleSelector(context, vm),
+                        const SizedBox(height: 16),
+                        _buildTextField(
+                          context,
+                          label: 'finance.paymentDay'.tr(),
+                          controller: vm.subscriptionBillingDateController,
+                          hint: '1-31',
+                          icon: Icons.calendar_today,
+                          keyboardType: TextInputType.number,
+                        ),
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () => vm.updateSubscription(subscription.id, context),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: ColorConstant.accentBlue,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Text(
+                              'finance.update'.tr(),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: ColorConstant.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildTextField(
+      BuildContext context, {
+        required String label,
+        required TextEditingController controller,
+        required String hint,
+        required IconData icon,
+        TextInputType keyboardType = TextInputType.text,
+      }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: isDarkMode
+                ? ColorConstant.textSecondaryDark
+                : ColorConstant.textSecondaryLight,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          keyboardType: keyboardType,
+          style: TextStyle(
+            color: isDarkMode
+                ? ColorConstant.textPrimaryDark
+                : ColorConstant.textPrimaryLight,
+          ),
+          decoration: InputDecoration(
+            hintText: hint,
+            prefixIcon: Icon(
+              icon,
+              color: isDarkMode
+                  ? ColorConstant.textMutedDark
+                  : ColorConstant.textMutedLight,
+            ),
+            filled: true,
+            fillColor: isDarkMode
+                ? ColorConstant.bgColorDark
+                : ColorConstant.bgColorLight,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBillingCycleSelector(BuildContext context, FinanceViewModel vm) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'finance.billingCycle'.tr(),
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: isDarkMode
+                ? ColorConstant.textSecondaryDark
+                : ColorConstant.textSecondaryLight,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: _buildCycleOption(
+                context,
+                vm,
+                'monthly',
+                'finance.monthly'.tr(),
+                Icons.calendar_month,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildCycleOption(
+                context,
+                vm,
+                'yearly',
+                'finance.yearly'.tr(),
+                Icons.calendar_today,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCycleOption(
+      BuildContext context,
+      FinanceViewModel vm,
+      String value,
+      String label,
+      IconData icon,
+      ) {
+    final isSelected = vm.subscriptionBillingCycle == value;
+    return GestureDetector(
+      onTap: () => vm.setSubscriptionBillingCycle(value),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? ColorConstant.accentBlue.withOpacity(0.1)
+              : (isDarkMode ? ColorConstant.bgColorDark : ColorConstant.bgColorLight),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected
+                ? ColorConstant.accentBlue
+                : (isDarkMode
+                ? ColorConstant.borderColorDark
+                : ColorConstant.borderColorLight),
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 20,
+              color: isSelected
+                  ? ColorConstant.accentBlue
+                  : (isDarkMode
+                  ? ColorConstant.textMutedDark
+                  : ColorConstant.textMutedLight),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                color: isSelected
+                    ? ColorConstant.accentBlue
+                    : (isDarkMode
+                    ? ColorConstant.textSecondaryDark
+                    : ColorConstant.textSecondaryLight),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ==================== EDIT EXPENSE BOTTOM SHEET ====================
+class _EditExpenseBottomSheet extends StatelessWidget {
+  final FinanceViewModel viewModel;
+  final dynamic expense;
+  final bool isDarkMode;
+
+  const _EditExpenseBottomSheet({
+    required this.viewModel,
+    required this.expense,
+    required this.isDarkMode,
+  });
+
+  List<Map<String, dynamic>> get _categories => [
+    {'value': 'food', 'label': 'finance.categories.food'.tr(), 'emoji': '🍔'},
+    {'value': 'transportation', 'label': 'finance.categories.transportation'.tr(), 'emoji': '🚗'},
+    {'value': 'entertainment', 'label': 'finance.categories.entertainment'.tr(), 'emoji': '🎬'},
+    {'value': 'shopping', 'label': 'finance.categories.shopping'.tr(), 'emoji': '🛍️'},
+    {'value': 'bills', 'label': 'finance.categories.bills'.tr(), 'emoji': '📄'},
+    {'value': 'health', 'label': 'finance.categories.health'.tr(), 'emoji': '💊'},
+    {'value': 'education', 'label': 'finance.categories.education'.tr(), 'emoji': '📚'},
+    {'value': 'other', 'label': 'finance.categories.other'.tr(), 'emoji': '💰'},
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider.value(
+      value: viewModel,
+      child: Consumer<FinanceViewModel>(
+        builder: (context, vm, _) {
+          return Container(
+            decoration: BoxDecoration(
+              color: isDarkMode
+                  ? ColorConstant.cardColorDark
+                  : ColorConstant.white,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(28),
+                topRight: Radius.circular(28),
+              ),
+            ),
+            child: SafeArea(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                ),
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Center(
+                          child: Container(
+                            width: 40,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: isDarkMode
+                                  ? ColorConstant.borderColorDark
+                                  : ColorConstant.borderColorLight,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'finance.editExpense'.tr(),
+                              style: TextStyle(
+                                color: isDarkMode
+                                    ? ColorConstant.textPrimaryDark
+                                    : ColorConstant.textPrimaryLight,
+                                fontSize: 24,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                Icons.delete_outline,
+                                color: ColorConstant.errorRed,
+                              ),
+                              onPressed: () {
+                                Navigator.pop(context);
+                                vm.deleteExpense(expense.id, context);
+                              },
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          'finance.selectCategory'.tr(),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: isDarkMode
+                                ? ColorConstant.textSecondaryDark
+                                : ColorConstant.textSecondaryLight,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: _categories.map((category) {
+                            final isSelected = vm.expenseCategory == category['value'];
+                            return GestureDetector(
+                              onTap: () => vm.setExpenseCategory(category['value']),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? ColorConstant.accentBlue.withOpacity(0.1)
+                                      : (isDarkMode
+                                      ? ColorConstant.bgColorDark
+                                      : ColorConstant.bgColorLight),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? ColorConstant.accentBlue
+                                        : (isDarkMode
+                                        ? ColorConstant.borderColorDark
+                                        : ColorConstant.borderColorLight),
+                                    width: isSelected ? 2 : 1,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      category['emoji'],
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      category['label'],
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: isSelected
+                                            ? FontWeight.w700
+                                            : FontWeight.w600,
+                                        color: isSelected
+                                            ? ColorConstant.accentBlue
+                                            : (isDarkMode
+                                            ? ColorConstant.textSecondaryDark
+                                            : ColorConstant.textSecondaryLight),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 20),
+                        _buildTextField(
+                          context,
+                          label: 'finance.amount'.tr(),
+                          controller: vm.expenseAmountController,
+                          hint: '0.00',
+                          icon: Icons.attach_money,
+                          keyboardType: TextInputType.number,
+                        ),
+                        const SizedBox(height: 16),
+                        _buildTextField(
+                          context,
+                          label: 'finance.description'.tr(),
+                          controller: vm.expenseDescriptionController,
+                          hint: 'finance.descriptionHint'.tr(),
+                          icon: Icons.notes,
+                        ),
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () => vm.updateExpense(expense.id, context),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: ColorConstant.accentBlue,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Text(
+                              'finance.update'.tr(),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: ColorConstant.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildTextField(
+      BuildContext context, {
+        required String label,
+        required TextEditingController controller,
+        required String hint,
+        required IconData icon,
+        TextInputType keyboardType = TextInputType.text,
+      }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: isDarkMode
+                ? ColorConstant.textSecondaryDark
+                : ColorConstant.textSecondaryLight,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          keyboardType: keyboardType,
+          style: TextStyle(
+            color: isDarkMode
+                ? ColorConstant.textPrimaryDark
+                : ColorConstant.textPrimaryLight,
+          ),
+          decoration: InputDecoration(
+            hintText: hint,
+            prefixIcon: Icon(
+              icon,
+              color: isDarkMode
+                  ? ColorConstant.textMutedDark
+                  : ColorConstant.textMutedLight,
+            ),
+            filled: true,
+            fillColor: isDarkMode
+                ? ColorConstant.bgColorDark
+                : ColorConstant.bgColorLight,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

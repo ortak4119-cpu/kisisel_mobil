@@ -12,6 +12,8 @@ abstract class IAuthService {
   Future<ServiceResponse<User>> getCurrentUser();
   Future<ServiceResponse<void>> logout();
   Future<ServiceResponse<void>> logoutAllDevices();
+  Future<ServiceResponse<Map<String, dynamic>>> forgotPassword(String email);
+  Future<ServiceResponse<void>> resetPassword(String email, String code, String password, String passwordConfirmation);
 }
 
 class AuthService implements IAuthService {
@@ -146,6 +148,39 @@ class AuthService implements IAuthService {
     if (response.isSuccess) {
       BaseApiService.clearAuthToken();
     }
+
+    return response;
+  }
+
+  @override
+  Future<ServiceResponse<Map<String, dynamic>>> forgotPassword(String email) async {
+    final response = await BaseApiService.post<Map<String, dynamic>>(
+      '/auth/forgot-password',
+      body: {'email': email},
+      requiresAuth: false,
+      fromJson: (json) => json as Map<String, dynamic>,
+    );
+
+    return response;
+  }
+
+  @override
+  Future<ServiceResponse<void>> resetPassword(
+    String email,
+    String code,
+    String password,
+    String passwordConfirmation,
+  ) async {
+    final response = await BaseApiService.post<void>(
+      '/auth/reset-password',
+      body: {
+        'email': email,
+        'code': code,
+        'password': password,
+        'password_confirmation': passwordConfirmation,
+      },
+      requiresAuth: false,
+    );
 
     return response;
   }

@@ -332,15 +332,18 @@ class ProfileViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> sendFriendRequest(int userId, BuildContext context) async {
+  Future<bool> sendFriendRequest(int userId, BuildContext context) async {
     try {
+      debugPrint('🤝 Sending friend request to user $userId');
       final response = await _socialService.sendFriendRequest(userId);
+
+      debugPrint('🤝 Response: ${response.isSuccess}');
 
       if (response.isSuccess) {
         if (context.mounted) {
           CustomSnackBar.showSuccess(context, 'profile.friends.requestSent'.tr());
-          Navigator.pop(context);
         }
+        return true;
       } else {
         if (context.mounted) {
           CustomSnackBar.showError(
@@ -348,12 +351,14 @@ class ProfileViewModel extends ChangeNotifier {
             response.errorMessage ?? 'errors.general'.tr(),
           );
         }
+        return false;
       }
     } catch (e) {
+      debugPrint('❌ Error sending friend request: $e');
       if (context.mounted) {
         CustomSnackBar.showError(context, 'errors.general'.tr());
       }
-      debugPrint('Error sending friend request: $e');
+      return false;
     }
   }
 

@@ -8,14 +8,18 @@ import 'dart:io';
 import '../../../core/init/locator.dart';
 import '../../../service/auth/auth_service.dart';
 import '../../../service/settings/settings_service.dart';
+import '../../../service/budget/budget_service.dart';
 import '../../../models/settings/settings_models.dart';
+import '../../../models/budget/buget_models.dart';
 import '../../../core/route/app_router.gr.dart';
 import '../../../core/utils/custom_snackbar.dart';
 import '../../../core/utils/color_constant.dart';
+import '../../../core/utils/helper_methods.dart';
 
 class SettingsViewModel extends ChangeNotifier {
   final IAuthService _authService = locator.get<IAuthService>();
   final ISettingsService _settingsService = locator.get<ISettingsService>();
+  final IBudgetService _budgetService = locator.get<IBudgetService>();
   final InAppReview _inAppReview = InAppReview.instance;
 
   String _appVersion = '1.0.0';
@@ -485,5 +489,29 @@ class SettingsViewModel extends ChangeNotifier {
         );
       },
     );
+  }
+
+  Future<void> updateCurrencyForLocale(Locale locale) async {
+    try {
+      // Get currency code for the selected locale
+      final currencyCode = getCurrencyFromLocale(locale);
+
+      // Get current budget to preserve monthlyBudget value
+      final budgetResponse = await _budgetService.getBudget();
+
+      if (budgetResponse.isSuccess && budgetResponse.data != null) {
+        final currentBudget = budgetResponse.data!;
+
+        // Update budget with new currency
+        final request = BudgetRequest(
+          monthlyBudget: currentBudget.monthlyBudget,
+          currency: currencyCode,
+        );
+
+        await _budgetService.updateBudget(request);
+      }
+    } catch (e) {
+      debugPrint('Error updating currency: $e');
+    }
   }
 }

@@ -67,18 +67,48 @@ class FinanceViewModel extends ChangeNotifier {
   // Budget Form State
   final TextEditingController budgetAmountController = TextEditingController();
 
-  // Filter State
-  String _filterCategory = 'all';
-  String get filterCategory => _filterCategory;
+  // Filter State - Multi-select
+  List<String> _filterCategories = [];
+  List<String> get filterCategories => _filterCategories;
+
+  // Legacy single filter support
+  String get filterCategory => _filterCategories.isEmpty ? 'all' : _filterCategories.first;
+
+  // Subscription List Expansion State
+  bool _showAllSubscriptions = false;
+  bool get showAllSubscriptions => _showAllSubscriptions;
+
+  void toggleShowAllSubscriptions() {
+    _showAllSubscriptions = !_showAllSubscriptions;
+    notifyListeners();
+  }
 
   void setExpenseCategory(String category) {
     _expenseCategory = category;
     notifyListeners();
   }
 
-  void setFilterCategory(String category) {
-    _filterCategory = category;
+  void toggleFilterCategory(String category) {
+    if (_filterCategories.contains(category)) {
+      _filterCategories.remove(category);
+    } else {
+      _filterCategories.add(category);
+    }
     notifyListeners();
+  }
+
+  void setFilterCategories(List<String> categories) {
+    _filterCategories = categories;
+    notifyListeners();
+  }
+
+  void clearFilters() {
+    _filterCategories.clear();
+    notifyListeners();
+  }
+
+  bool isFilterActive(String category) {
+    return _filterCategories.contains(category);
   }
 
   void resetExpenseForm() {
@@ -94,33 +124,26 @@ class FinanceViewModel extends ChangeNotifier {
   }
 
   void resetFilter() {
-    _filterCategory = 'all';
+    _filterCategories.clear();
     notifyListeners();
   }
 
-  Future<void> applyFilter(BuildContext context) async {
-    try {
-      // Loading gösterme - sadece filtrelenmiş listeyi güncelle
-      final response = await _expenseService.getAllExpenses(
-        category: _filterCategory == 'all' ? null : _filterCategory,
-        perPage: 50,
-      );
-
-      if (response.isSuccess && response.data != null) {
-        _expenses = response.data!.data;
-        // Sadece listeyi güncelle, loading gösterme
-        notifyListeners();
-
-        if (context.mounted) {
-          CustomSnackBar.showSuccess(context, 'success.filterApplied'.tr());
-        }
-      }
-    } catch (e) {
-      if (context.mounted) {
-        CustomSnackBar.showError(context, 'errors.filterFailed'.tr());
-      }
+  // Filtered expenses - client-side filtering
+  List<Expense> get filteredExpenses {
+    if (_filterCategories.isEmpty) {
+      return _expenses;
     }
-    // finally bloğu kaldırıldı - loading flag'i kullanmıyoruz
+    return _expenses.where((expense) => _filterCategories.contains(expense.category)).toList();
+  }
+
+  Future<void> applyFilter(BuildContext context) async {
+    // Client-side filtering - just notify listeners
+    // Filtering is now handled by filteredExpenses getter
+    notifyListeners();
+
+    if (context.mounted) {
+      CustomSnackBar.showSuccess(context, 'success.filterApplied'.tr());
+    }
   }
   @override
   void dispose() {
@@ -285,6 +308,86 @@ class FinanceViewModel extends ChangeNotifier {
       if (context.mounted) {
         CustomSnackBar.showError(context, 'errors.subscriptionDeleteFailed'.tr());
       }
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> updateSubscription(int id, BuildContext context) async {
+    if (subscriptionNameController.text.trim().isEmpty) {
+      CustomSnackBar.showError(context, 'errors.subscriptionNameEmpty'.tr());
+      return;
+    }
+
+    if (subscriptionAmountController.text.trim().isEmpty) {
+      CustomSnackBar.showError(context, 'errors.amountEmpty'.tr());
+      return;
+    }
+
+    final amount = double.tryParse(subscriptionAmountController.text.trim());
+    if (amount == null || amount <= 0) {
+      CustomSnackBar.showError(context, 'errors.invalidAmount'.tr());
+      return;
+    }
+
+    final billingDate = int.tryParse(subscriptionBillingDateController.text.trim());
+    if (billingDate == null || billingDate < 1 || billingDate > 31) {
+      CustomSnackBar.showError(context, 'errors.invalidPaymentDay'.tr());
+      return;
+    }
+
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      // Calculate next billing date
+      final now = DateTime.now();
+      var nextBilling = DateTime(now.year, now.month, billingDate);
+      if (nextBilling.isBefore(now)) {
+        nextBilling = DateTime(now.year, now.month + 1, billingDate);
+      }
+
+      final request = SubscriptionRequest(
+        name: subscriptionNameController.text.trim(),
+        platform: subscriptionNameController.text.trim(),
+        iconUrl: null,
+        amount: amount,
+        currency: 'TRY',
+        billingCycle: _subscriptionBillingCycle,
+        billingDate: billingDate,
+        nextBillingDate: nextBilling.toIso8601String().split('T')[0],
+        reminderEnabled: false,
+        isActive: true,
+        notes: null,
+      );
+
+      final response = await _subscriptionService.updateSubscription(id, request);
+
+      if (response.isSuccess && response.data != null) {
+        final index = _subscriptions.indexWhere((s) => s.id == id);
+        if (index != -1) {
+          _subscriptions[index] = response.data!;
+        }
+        resetSubscriptionForm();
+        await loadSubscriptions(); // Refresh stats
+        if (context.mounted) {
+          CustomSnackBar.showSuccess(context, 'success.subscriptionUpdated'.tr());
+          Navigator.pop(context);
+        }
+      } else {
+        if (context.mounted) {
+          CustomSnackBar.showError(
+            context,
+            response.errorMessage ?? 'errors.unknownError'.tr(),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        CustomSnackBar.showError(context, 'errors.subscriptionUpdateFailed'.tr());
+      }
+      debugPrint('Subscription update exception: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -463,6 +566,70 @@ class FinanceViewModel extends ChangeNotifier {
       if (context.mounted) {
         CustomSnackBar.showError(context, 'errors.expenseDeleteFailed'.tr());
       }
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> updateExpense(int id, BuildContext context) async {
+    if (expenseAmountController.text.trim().isEmpty) {
+      CustomSnackBar.showError(context, 'errors.amountEmpty'.tr());
+      return;
+    }
+
+    final amount = double.tryParse(expenseAmountController.text.trim());
+    if (amount == null || amount <= 0) {
+      CustomSnackBar.showError(context, 'errors.invalidAmount'.tr());
+      return;
+    }
+
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      final request = ExpenseRequest(
+        category: _expenseCategory,
+        amount: amount,
+        currency: 'TRY',
+        description: expenseDescriptionController.text.trim().isEmpty
+            ? null
+            : expenseDescriptionController.text.trim(),
+        expenseDate: DateTime.now().toIso8601String().split('T')[0],
+        paymentMethod: null,
+        receiptImageUrl: null,
+        isRecurring: false,
+        recurringPattern: null,
+        location: null,
+        merchant: null,
+      );
+
+      final response = await _expenseService.updateExpense(id, request);
+
+      if (response.isSuccess && response.data != null) {
+        final index = _expenses.indexWhere((e) => e.id == id);
+        if (index != -1) {
+          _expenses[index] = response.data!;
+        }
+        resetExpenseForm();
+        await loadBudgetStats(); // Refresh budget stats
+        if (context.mounted) {
+          CustomSnackBar.showSuccess(context, 'success.expenseUpdated'.tr());
+          Navigator.pop(context);
+        }
+      } else {
+        if (context.mounted) {
+          CustomSnackBar.showError(
+            context,
+            response.errorMessage ?? 'errors.unknownError'.tr(),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        CustomSnackBar.showError(context, 'errors.expenseUpdateFailed'.tr());
+      }
+      debugPrint('Expense update exception: $e');
     } finally {
       _isLoading = false;
       notifyListeners();

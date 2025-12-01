@@ -6,6 +6,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../../core/route/app_router.gr.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/utils/custom_snackbar.dart';
+import '../../../models/social/social_model.dart';
 import '../viewmodel/profile_viewmodel.dart';
 import '../widgets/user_profile_bottom_sheet.dart';
 
@@ -1257,7 +1258,9 @@ class _FriendsTab extends StatelessWidget {
         isFriend: viewModel.isFriend(userId),
         isFollowing: false,
         isDarkMode: isDarkMode,
-        onSendFriendRequest: () => viewModel.sendFriendRequest(userId, context),
+        onSendFriendRequest: () async {
+          await viewModel.sendFriendRequest(userId, context);
+        },
         onUnfriend: () => viewModel.unfriend(userId, context),
         onFollow: () {},
         onUnfollow: () {},
@@ -1695,47 +1698,76 @@ class _FriendSearchBottomSheetState extends State<_FriendSearchBottomSheet> {
   }
 
   void _showUserProfileDialogFromSearch(BuildContext context, int userId, ProfileViewModel viewModel, bool isDarkMode) async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => Center(
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white, borderRadius: BorderRadius.circular(12)),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircularProgressIndicator(color: ColorConstant.accentBlue),
-              const SizedBox(height: 16),
-              Text('profile.loading'.tr(), style: TextStyle(color: isDarkMode ? ColorConstant.textPrimaryDark : ColorConstant.textPrimaryLight)),
-            ],
-          ),
-        ),
-      ),
-    );
-
-    final userProfile = await viewModel.loadUserProfile(userId);
-    if (!context.mounted) return;
-    Navigator.pop(context);
-
-    if (userProfile == null) {
-      if (context.mounted) CustomSnackBar.showError(context, 'profile.errors.profileLoadFailed'.tr());
-      return;
-    }
-
+    // Direkt bottom sheet aç, içinde loading göster
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => UserProfileBottomSheet(
-        userProfile: userProfile,
-        isFriend: viewModel.isFriend(userId),
-        isFollowing: false,
-        isDarkMode: isDarkMode,
-        onSendFriendRequest: () => viewModel.sendFriendRequest(userId, context),
-        onUnfriend: () => viewModel.unfriend(userId, context),
-        onFollow: () {},
-        onUnfollow: () {},
+      isDismissible: false,
+      enableDrag: false,
+      builder: (sheetContext) => FutureBuilder<UserProfile?>(
+        future: viewModel.loadUserProfile(userId),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            // Loading state
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.4,
+              decoration: BoxDecoration(
+                color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(28),
+                  topRight: Radius.circular(28),
+                ),
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(color: ColorConstant.accentBlue),
+                    const SizedBox(height: 16),
+                    Text(
+                      'profile.loading'.tr(),
+                      style: TextStyle(
+                        color: isDarkMode
+                            ? ColorConstant.textPrimaryDark
+                            : ColorConstant.textPrimaryLight,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
+          if (snapshot.hasError || !snapshot.hasData) {
+            // Error state - close sheet and show error
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (context.mounted) {
+                Navigator.pop(sheetContext);
+                CustomSnackBar.showError(
+                  context,
+                  'profile.errors.profileLoadFailed'.tr(),
+                );
+              }
+            });
+            return const SizedBox.shrink();
+          }
+
+          // Success - show profile
+          return UserProfileBottomSheet(
+            userProfile: snapshot.data!,
+            isFriend: viewModel.isFriend(userId),
+            isFollowing: false,
+            isDarkMode: isDarkMode,
+            onSendFriendRequest: () async {
+              await viewModel.sendFriendRequest(userId, context);
+            },
+            onUnfriend: () => viewModel.unfriend(userId, context),
+            onFollow: () {},
+            onUnfollow: () {},
+          );
+        },
       ),
     );
   }

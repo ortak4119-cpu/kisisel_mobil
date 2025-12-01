@@ -1,9 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:base/core/route/app_router.gr.dart';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/utils/color_constant.dart';
+import '../../../../service/auth/auth_service.dart';
 import '../viewmodel/login_viewmodel.dart';
 
 @RoutePage()
@@ -190,7 +192,7 @@ class _LoginViewState extends State<LoginView> {
                         alignment: Alignment.centerRight,
                         child: TextButton(
                           onPressed: () {
-                            // TODO: Forgot password
+                            _showForgotPasswordDialog(context, viewModel, isDarkMode);
                           },
                           child: Text(
                             'auth.forgotPassword'.tr(),
@@ -519,6 +521,335 @@ class _LoginViewState extends State<LoginView> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showForgotPasswordDialog(BuildContext context, LoginViewModel viewModel, bool isDarkMode) {
+    showDialog(
+      context: context,
+      builder: (context) => _ForgotPasswordDialog(isDarkMode: isDarkMode),
+    );
+  }
+}
+
+// Forgot Password Dialog
+class _ForgotPasswordDialog extends StatefulWidget {
+  final bool isDarkMode;
+
+  const _ForgotPasswordDialog({required this.isDarkMode});
+
+  @override
+  State<_ForgotPasswordDialog> createState() => _ForgotPasswordDialogState();
+}
+
+class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
+  final _emailController = TextEditingController();
+  final _codeController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _passwordConfirmController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+
+  bool _isLoading = false;
+  bool _codeSent = false;
+  String? _email;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _codeController.dispose();
+    _passwordController.dispose();
+    _passwordConfirmController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _sendCode() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    final authService = GetIt.I<IAuthService>();
+    final response = await authService.forgotPassword(_emailController.text.trim());
+
+    setState(() => _isLoading = false);
+
+    if (response.isSuccess && mounted) {
+      setState(() {
+        _codeSent = true;
+        _email = _emailController.text.trim();
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Kod email adresinize gönderildi'),
+          backgroundColor: ColorConstant.successGreen,
+        ),
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(response.message ?? 'Bir hata oluştu'),
+          backgroundColor: ColorConstant.errorRed,
+        ),
+      );
+    }
+  }
+
+  Future<void> _resetPassword() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (_passwordController.text != _passwordConfirmController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Şifreler eşleşmiyor'),
+          backgroundColor: ColorConstant.errorRed,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    final authService = GetIt.I<IAuthService>();
+    final response = await authService.resetPassword(
+      _email!,
+      _codeController.text.trim(),
+      _passwordController.text,
+      _passwordConfirmController.text,
+    );
+
+    setState(() => _isLoading = false);
+
+    if (response.isSuccess && mounted) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Şifreniz başarıyla değiştirildi'),
+          backgroundColor: ColorConstant.successGreen,
+        ),
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(response.message ?? 'Bir hata oluştu'),
+          backgroundColor: ColorConstant.errorRed,
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: widget.isDarkMode
+          ? ColorConstant.cardColorDark
+          : ColorConstant.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      title: Text(
+        _codeSent ? 'auth.resetPassword'.tr() : 'auth.forgotPassword'.tr(),
+        style: TextStyle(
+          color: widget.isDarkMode
+              ? ColorConstant.textPrimaryDark
+              : ColorConstant.textPrimaryLight,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+      content: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (!_codeSent) ...[
+                Text(
+                  'auth.forgotPasswordDescription'.tr(),
+                  style: TextStyle(
+                    color: widget.isDarkMode
+                        ? ColorConstant.textSecondaryDark
+                        : ColorConstant.textSecondaryLight,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                TextFormField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  style: TextStyle(
+                    color: widget.isDarkMode
+                        ? ColorConstant.textPrimaryDark
+                        : ColorConstant.textPrimaryLight,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: 'auth.email'.tr(),
+                    hintText: 'auth.emailHint'.tr(),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'auth.emailRequired'.tr();
+                    }
+                    if (!value.contains('@')) {
+                      return 'auth.emailInvalid'.tr();
+                    }
+                    return null;
+                  },
+                ),
+              ] else ...[
+                Text(
+                  'auth.resetPasswordDescription'.tr(),
+                  style: TextStyle(
+                    color: widget.isDarkMode
+                        ? ColorConstant.textSecondaryDark
+                        : ColorConstant.textSecondaryLight,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                TextFormField(
+                  controller: _codeController,
+                  keyboardType: TextInputType.number,
+                  maxLength: 6,
+                  style: TextStyle(
+                    color: widget.isDarkMode
+                        ? ColorConstant.textPrimaryDark
+                        : ColorConstant.textPrimaryLight,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: 'auth.resetCode'.tr(),
+                    hintText: 'auth.resetCodeHint'.tr(),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    counterText: '',
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'auth.codeRequired'.tr();
+                    }
+                    if (value.length != 6) {
+                      return 'auth.codeInvalid'.tr();
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _passwordController,
+                  obscureText: _obscurePassword,
+                  style: TextStyle(
+                    color: widget.isDarkMode
+                        ? ColorConstant.textPrimaryDark
+                        : ColorConstant.textPrimaryLight,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: 'auth.newPassword'.tr(),
+                    hintText: 'auth.passwordHint'.tr(),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
+                      ),
+                      onPressed: () {
+                        setState(() => _obscurePassword = !_obscurePassword);
+                      },
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'auth.passwordRequired'.tr();
+                    }
+                    if (value.length < 6) {
+                      return 'auth.passwordMinLength'.tr();
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _passwordConfirmController,
+                  obscureText: _obscureConfirmPassword,
+                  style: TextStyle(
+                    color: widget.isDarkMode
+                        ? ColorConstant.textPrimaryDark
+                        : ColorConstant.textPrimaryLight,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: 'auth.confirmPassword'.tr(),
+                    hintText: 'auth.passwordHint'.tr(),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureConfirmPassword
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
+                      ),
+                      onPressed: () {
+                        setState(() => _obscureConfirmPassword = !_obscureConfirmPassword);
+                      },
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'auth.passwordRequired'.tr();
+                    }
+                    if (value != _passwordController.text) {
+                      return 'auth.passwordsDoNotMatch'.tr();
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _isLoading ? null : () => Navigator.pop(context),
+          child: Text(
+            'common.cancel'.tr(),
+            style: TextStyle(
+              color: widget.isDarkMode
+                  ? ColorConstant.textSecondaryDark
+                  : ColorConstant.textSecondaryLight,
+            ),
+          ),
+        ),
+        ElevatedButton(
+          onPressed: _isLoading ? null : (_codeSent ? _resetPassword : _sendCode),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: ColorConstant.primaryPurple,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          child: _isLoading
+              ? SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                    color: ColorConstant.white,
+                    strokeWidth: 2,
+                  ),
+                )
+              : Text(
+                  _codeSent ? 'auth.resetPassword'.tr() : 'auth.sendCode'.tr(),
+                  style: TextStyle(
+                    color: ColorConstant.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+        ),
+      ],
     );
   }
 }

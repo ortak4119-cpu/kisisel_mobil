@@ -42,6 +42,8 @@ class BudgetStats {
   final double monthlyBudget;
   final String currency;
   final double totalSpent;
+  final double expensesTotal;
+  final double subscriptionsTotal;
   final double todaySpent;
   final double remaining;
   final double usagePercentage;
@@ -50,6 +52,8 @@ class BudgetStats {
     required this.monthlyBudget,
     required this.currency,
     required this.totalSpent,
+    required this.expensesTotal,
+    required this.subscriptionsTotal,
     required this.todaySpent,
     required this.remaining,
     required this.usagePercentage,
@@ -66,6 +70,8 @@ class BudgetStats {
       monthlyBudget: parseDouble(json['monthly_budget']),
       currency: json['currency'] as String,
       totalSpent: parseDouble(json['total_spent']),
+      expensesTotal: parseDouble(json['expenses_total']),
+      subscriptionsTotal: parseDouble(json['subscriptions_total']),
       todaySpent: parseDouble(json['today_spent']),
       remaining: parseDouble(json['remaining']),
       usagePercentage: parseDouble(json['usage_percentage']),

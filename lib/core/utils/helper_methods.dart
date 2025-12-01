@@ -1,4 +1,40 @@
 import 'package:intl/intl.dart';
+import 'package:flutter/material.dart';
+
+/// Dil koduna göre para birimi döndürür
+String getCurrencyFromLocale(Locale locale) {
+  final Map<String, String> localeToCurrency = {
+    'tr': 'TRY', // Türk Lirası
+    'en': 'USD', // ABD Doları
+    'zh': 'CNY', // Çin Yuanı
+    'hi': 'INR', // Hint Rupisi
+    'es': 'EUR', // Euro
+    'ar': 'SAR', // Suudi Riyali
+    'fr': 'EUR', // Euro
+    'ru': 'RUB', // Rus Rublesi
+    'pt': 'EUR', // Euro
+    'de': 'EUR', // Euro
+    'ja': 'JPY', // Japon Yeni
+  };
+
+  return localeToCurrency[locale.languageCode] ?? 'TRY';
+}
+
+/// Para birimi sembolünü döndürür
+String getCurrencySymbol(String currencyCode) {
+  final Map<String, String> currencySymbols = {
+    'TRY': '₺',
+    'USD': '\$',
+    'EUR': '€',
+    'CNY': '¥',
+    'INR': '₹',
+    'SAR': 'ر.س',
+    'RUB': '₽',
+    'JPY': '¥',
+  };
+
+  return currencySymbols[currencyCode] ?? currencyCode;
+}
 
 String timerFormatter(int seconds) {
   int minutes = (seconds ~/ 60);

@@ -189,6 +189,7 @@ class SettingsView extends StatelessWidget {
                             _buildDivider(isDarkMode),
                             _buildLanguageTile(
                               context: context,
+                              viewModel: viewModel,
                               title: 'settings.appearance.language'.tr(),
                               subtitle: 'settings.appearance.languageSubtitle'.tr(),
                               icon: Icons.language_rounded,
@@ -912,6 +913,7 @@ class SettingsView extends StatelessWidget {
 
   Widget _buildLanguageTile({
     required BuildContext context,
+    required SettingsViewModel viewModel,
     required String title,
     String? subtitle,
     required IconData icon,
@@ -931,6 +933,7 @@ class SettingsView extends StatelessWidget {
       child: InkWell(
         onTap: () => _showLanguageDialog(
           context: context,
+          viewModel: viewModel,
           isDarkMode: isDarkMode,
         ),
         borderRadius: BorderRadius.circular(20),
@@ -1145,6 +1148,7 @@ class SettingsView extends StatelessWidget {
 
   void _showLanguageDialog({
     required BuildContext context,
+    required SettingsViewModel viewModel,
     required bool isDarkMode,
   }) {
     final currentLocale = context.locale;
@@ -1180,8 +1184,9 @@ class SettingsView extends StatelessWidget {
                   locale: const Locale('en', 'US'),
                   currentLocale: currentLocale,
                   isDarkMode: isDarkMode,
-                  onChanged: (locale) {
+                  onChanged: (locale) async {
                     context.setLocale(locale);
+                    await viewModel.updateCurrencyForLocale(locale);
                     Navigator.pop(dialogContext);
                   },
                 ),
@@ -1193,8 +1198,9 @@ class SettingsView extends StatelessWidget {
                   locale: const Locale('tr', 'TR'),
                   currentLocale: currentLocale,
                   isDarkMode: isDarkMode,
-                  onChanged: (locale) {
+                  onChanged: (locale) async {
                     context.setLocale(locale);
+                    await viewModel.updateCurrencyForLocale(locale);
                     Navigator.pop(dialogContext);
                   },
                 ),
@@ -1206,8 +1212,9 @@ class SettingsView extends StatelessWidget {
                   locale: const Locale('zh', 'CN'),
                   currentLocale: currentLocale,
                   isDarkMode: isDarkMode,
-                  onChanged: (locale) {
+                  onChanged: (locale) async {
                     context.setLocale(locale);
+                    await viewModel.updateCurrencyForLocale(locale);
                     Navigator.pop(dialogContext);
                   },
                 ),
@@ -1219,8 +1226,9 @@ class SettingsView extends StatelessWidget {
                   locale: const Locale('hi', 'IN'),
                   currentLocale: currentLocale,
                   isDarkMode: isDarkMode,
-                  onChanged: (locale) {
+                  onChanged: (locale) async {
                     context.setLocale(locale);
+                    await viewModel.updateCurrencyForLocale(locale);
                     Navigator.pop(dialogContext);
                   },
                 ),
@@ -1232,8 +1240,9 @@ class SettingsView extends StatelessWidget {
                   locale: const Locale('es', 'ES'),
                   currentLocale: currentLocale,
                   isDarkMode: isDarkMode,
-                  onChanged: (locale) {
+                  onChanged: (locale) async {
                     context.setLocale(locale);
+                    await viewModel.updateCurrencyForLocale(locale);
                     Navigator.pop(dialogContext);
                   },
                 ),
@@ -1245,8 +1254,9 @@ class SettingsView extends StatelessWidget {
                   locale: const Locale('ar', 'SA'),
                   currentLocale: currentLocale,
                   isDarkMode: isDarkMode,
-                  onChanged: (locale) {
+                  onChanged: (locale) async {
                     context.setLocale(locale);
+                    await viewModel.updateCurrencyForLocale(locale);
                     Navigator.pop(dialogContext);
                   },
                 ),
@@ -1258,8 +1268,9 @@ class SettingsView extends StatelessWidget {
                   locale: const Locale('fr', 'FR'),
                   currentLocale: currentLocale,
                   isDarkMode: isDarkMode,
-                  onChanged: (locale) {
+                  onChanged: (locale) async {
                     context.setLocale(locale);
+                    await viewModel.updateCurrencyForLocale(locale);
                     Navigator.pop(dialogContext);
                   },
                 ),
@@ -1271,8 +1282,9 @@ class SettingsView extends StatelessWidget {
                   locale: const Locale('ru', 'RU'),
                   currentLocale: currentLocale,
                   isDarkMode: isDarkMode,
-                  onChanged: (locale) {
+                  onChanged: (locale) async {
                     context.setLocale(locale);
+                    await viewModel.updateCurrencyForLocale(locale);
                     Navigator.pop(dialogContext);
                   },
                 ),
@@ -1284,8 +1296,9 @@ class SettingsView extends StatelessWidget {
                   locale: const Locale('pt', 'PT'),
                   currentLocale: currentLocale,
                   isDarkMode: isDarkMode,
-                  onChanged: (locale) {
+                  onChanged: (locale) async {
                     context.setLocale(locale);
+                    await viewModel.updateCurrencyForLocale(locale);
                     Navigator.pop(dialogContext);
                   },
                 ),
@@ -1297,8 +1310,9 @@ class SettingsView extends StatelessWidget {
                   locale: const Locale('de', 'DE'),
                   currentLocale: currentLocale,
                   isDarkMode: isDarkMode,
-                  onChanged: (locale) {
+                  onChanged: (locale) async {
                     context.setLocale(locale);
+                    await viewModel.updateCurrencyForLocale(locale);
                     Navigator.pop(dialogContext);
                   },
                 ),
@@ -1310,8 +1324,9 @@ class SettingsView extends StatelessWidget {
                   locale: const Locale('ja', 'JP'),
                   currentLocale: currentLocale,
                   isDarkMode: isDarkMode,
-                  onChanged: (locale) {
+                  onChanged: (locale) async {
                     context.setLocale(locale);
+                    await viewModel.updateCurrencyForLocale(locale);
                     Navigator.pop(dialogContext);
                   },
                 ),

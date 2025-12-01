@@ -48,13 +48,13 @@ class FriendRequest {
   factory FriendRequest.fromJson(Map<String, dynamic> json) {
     return FriendRequest(
       id: json['id'] as int,
-      senderId: json['sender_id'] as int,
-      receiverId: json['receiver_id'] as int,
+      senderId: json['from_user_id'] as int,
+      receiverId: json['to_user_id'] as int,
       status: json['status'] as String,
-      sender: json['sender'] != null
-          ? UserInfo.fromJson(json['sender'] as Map<String, dynamic>)
+      sender: json['from_user'] != null
+          ? UserInfo.fromJson(json['from_user'] as Map<String, dynamic>)
           : null,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: DateTime.parse(json['requested_at'] as String),
     );
   }
 }

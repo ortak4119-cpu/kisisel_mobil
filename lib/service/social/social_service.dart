@@ -74,11 +74,21 @@ class SocialService implements ISocialService {
 
   @override
   Future<ServiceResponse<FriendRequest>> sendFriendRequest(int userId) async {
-    return await BaseApiService.post<FriendRequest>(
+    debugPrint('🤝 [SocialService] Sending friend request to user $userId');
+
+    final response = await BaseApiService.post<FriendRequest>(
       '/social/friend-request/$userId',
       requiresAuth: true,
       fromJson: (json) => FriendRequest.fromJson(json as Map<String, dynamic>),
     );
+
+    debugPrint('🤝 [SocialService] Response received');
+    debugPrint('   - isSuccess: ${response.isSuccess}');
+    debugPrint('   - statusCode: ${response.statusCode}');
+    debugPrint('   - message: ${response.message}');
+    debugPrint('   - errorMessage: ${response.errorMessage}');
+
+    return response;
   }
 
   @override
