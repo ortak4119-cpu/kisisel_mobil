@@ -5,7 +5,7 @@ class Constants {
 
   // RevenueCat keys
   static const String revenueCatApiKeyIOS = 'appl_AqSfLLdHoJylyNSYFEutttWrDgn';
-  static const String revenueCatApiKeyAndroid = 'goog_xxxxxxxxxxxxxxxxxxxxx';
+  static const String revenueCatApiKeyAndroid = 'goog_DmyUTcobrujYhHoXiuavPXMHaJF';
 
   // App configurations
   static const String appName = 'Your App Name';

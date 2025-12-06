@@ -95,6 +95,9 @@ class FCMService {
         await subscribeToTopic('all_users');
         await subscribeToTopic('test_notifications');
         await subscribeToTopic('ios_users');
+
+        // Token'ı backend'e göndermeyi dene (kullanıcı login ise başarılı olur)
+        await _sendTokenToBackend();
       } else {
         debugPrint('❌ FCM Token is null');
       }

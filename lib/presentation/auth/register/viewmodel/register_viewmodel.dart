@@ -6,10 +6,12 @@ import '../../../../core/init/locator.dart';
 import '../../../../core/utils/custom_snackbar.dart';
 import '../../../../models/auth/auth_models.dart';
 import '../../../../service/auth/auth_service.dart';
+import '../../../../service/firebase/fcm_service.dart';
 
 
 class RegisterViewModel extends ChangeNotifier {
   final IAuthService _authService = locator<IAuthService>();
+  final FCMService _fcmService = locator<FCMService>();
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -46,6 +48,9 @@ class RegisterViewModel extends ChangeNotifier {
         // SharedPreferences prefs = await SharedPreferences.getInstance();
         // await prefs.setString('auth_token', response.data!.token);
         // await prefs.setString('user_data', jsonEncode(response.data!.user.toJson()));
+
+        // Send FCM token to backend after successful registration
+        await _fcmService.sendTokenToBackendAfterLogin();
 
         if (context.mounted) {
           CustomSnackBar.showSuccess(
@@ -113,6 +118,9 @@ class RegisterViewModel extends ChangeNotifier {
       notifyListeners();
 
       if (response.isSuccess && response.data != null) {
+        // Send FCM token to backend after successful registration
+        await _fcmService.sendTokenToBackendAfterLogin();
+
         if (context.mounted) {
           CustomSnackBar.showSuccess(
             context,
@@ -177,6 +185,9 @@ class RegisterViewModel extends ChangeNotifier {
       notifyListeners();
 
       if (response.isSuccess && response.data != null) {
+        // Send FCM token to backend after successful registration
+        await _fcmService.sendTokenToBackendAfterLogin();
+
         if (context.mounted) {
           CustomSnackBar.showSuccess(
             context,
