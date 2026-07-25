@@ -4,17 +4,30 @@ import '../../../core/init/locator.dart';
 import '../../../service/subscription/subscription_service.dart';
 import '../../../service/budget/budget_service.dart';
 import '../../../service/expense/expense_service.dart';
+import '../../../service/profile/profile_service.dart';
 import '../../../models/subscription/subscription_models.dart';
 import '../../../models/budget/buget_models.dart';
+import '../../../models/auth/auth_models.dart';
 import '../../../core/utils/custom_snackbar.dart';
+import '../../../core/utils/premium_helper.dart';
 
 class FinanceViewModel extends ChangeNotifier {
   final ISubscriptionService _subscriptionService = locator.get<ISubscriptionService>();
   final IBudgetService _budgetService = locator.get<IBudgetService>();
   final IExpenseService _expenseService = locator.get<IExpenseService>();
+  final IProfileService _profileService = locator.get<IProfileService>();
+
+  User? _currentUser;
+  User? get currentUser => _currentUser;
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
+
+  bool _isInitialLoading = true;
+  bool get isInitialLoading => _isInitialLoading;
+
+  bool _isUserLoaded = false;
+  bool get isUserLoaded => _isUserLoaded;
 
   // Subscriptions
   List<Subscription> _subscriptions = [];
@@ -183,6 +196,14 @@ class FinanceViewModel extends ChangeNotifier {
   }
 
   Future<void> createSubscription(BuildContext context) async {
+    // Premium limit kontrolü
+    final canCreate = await PremiumHelper.checkSubscriptionLimit(
+      context: context,
+      user: _currentUser,
+      currentSubscriptionCount: _subscriptions.length,
+    );
+    if (!canCreate) return;
+
     if (subscriptionNameController.text.trim().isEmpty) {
       CustomSnackBar.showError(context, 'errors.subscriptionNameEmpty'.tr());
       return;
@@ -481,6 +502,14 @@ class FinanceViewModel extends ChangeNotifier {
   }
 
   Future<void> createExpense(BuildContext context) async {
+    // Premium limit kontrolü
+    final canCreate = await PremiumHelper.checkExpenseLimit(
+      context: context,
+      user: _currentUser,
+      currentExpenseCount: _expenses.length,
+    );
+    if (!canCreate) return;
+
     if (expenseAmountController.text.trim().isEmpty) {
       CustomSnackBar.showError(context, 'errors.amountEmpty'.tr());
       return;
@@ -752,10 +781,27 @@ class FinanceViewModel extends ChangeNotifier {
 
   // ==================== COMMON ====================
 
+  Future<void> loadCurrentUser() async {
+    try {
+      final response = await _profileService.getProfile();
+      if (response.isSuccess && response.data != null) {
+        _currentUser = response.data;
+      }
+    } catch (e) {
+      debugPrint('Error loading current user: $e');
+    } finally {
+      _isUserLoaded = true;
+      notifyListeners();
+    }
+  }
+
   Future<void> refreshAll() async {
+    await loadCurrentUser();
     await Future.wait([
       loadSubscriptions(),
       loadBudgetStats(),
     ]);
+    _isInitialLoading = false;
+    notifyListeners();
   }
 }

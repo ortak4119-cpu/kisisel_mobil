@@ -25,10 +25,13 @@ class CalendarEvent {
 
   factory CalendarEvent.fromJson(Map<String, dynamic> json) {
     try {
-      // event_date ISO8601 formatında geliyor, sadece tarihi alalım
+      // event_date ISO8601 formatında geliyor, UTC'den local'e çevirip tarihi alalım
       String eventDate = json['event_date'] as String;
       if (eventDate.contains('T')) {
-        eventDate = eventDate.split('T')[0]; // 2025-10-28
+        // UTC olarak parse edip local'e çevir
+        final utcDate = DateTime.parse(eventDate);
+        final localDate = utcDate.toLocal();
+        eventDate = '${localDate.year}-${localDate.month.toString().padLeft(2, '0')}-${localDate.day.toString().padLeft(2, '0')}';
       }
 
       return CalendarEvent(

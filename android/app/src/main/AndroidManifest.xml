@@ -5,6 +5,9 @@
 
     <!-- Kamera erişimi -->
     <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- Ses kaydı (not editörü) -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
     <!-- Galeri erişimi (Android 12 ve altı) -->

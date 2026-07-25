@@ -48,3 +48,11 @@ app.*.map.json
 /android/key.properties
 /android/*.keystore
 /android/*.jks
+
+# Claude Code yedekleri ve gecici dosyalar
+*.bak
+*.bak2
+*.bak3
+*.RECOVERED_OK
+*.truncated
+.artifacts/

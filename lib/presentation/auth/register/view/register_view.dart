@@ -67,7 +67,7 @@ class _RegisterViewState extends State<RegisterView> {
                                 boxShadow: [
                                   BoxShadow(
                                     color: ColorConstant.primaryPurple
-                                        .withOpacity(0.25),
+                                        .withValues(alpha: 0.25),
                                     blurRadius: 16,
                                     offset: const Offset(0, 8),
                                   ),
@@ -88,11 +88,11 @@ class _RegisterViewState extends State<RegisterView> {
                                   .textTheme
                                   .headlineLarge
                                   ?.copyWith(
-                                color: isDarkMode
-                                    ? ColorConstant.textPrimaryDark
-                                    : ColorConstant.textPrimaryLight,
-                                fontWeight: FontWeight.w800,
-                              ),
+                                    color: isDarkMode
+                                        ? ColorConstant.textPrimaryDark
+                                        : ColorConstant.textPrimaryLight,
+                                    fontWeight: FontWeight.w800,
+                                  ),
                             ),
                           ],
                         ),
@@ -103,22 +103,24 @@ class _RegisterViewState extends State<RegisterView> {
                       // Header
                       Text(
                         'auth.createAccount'.tr(),
-                        style:
-                        Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          color: isDarkMode
-                              ? ColorConstant.textPrimaryDark
-                              : ColorConstant.textPrimaryLight,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineMedium
+                            ?.copyWith(
+                              color: isDarkMode
+                                  ? ColorConstant.textPrimaryDark
+                                  : ColorConstant.textPrimaryLight,
+                              fontWeight: FontWeight.w700,
+                            ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'auth.createAccountSubtitle'.tr(),
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: isDarkMode
-                              ? ColorConstant.textSecondaryDark
-                              : ColorConstant.textSecondaryLight,
-                        ),
+                              color: isDarkMode
+                                  ? ColorConstant.textSecondaryDark
+                                  : ColorConstant.textSecondaryLight,
+                            ),
                       ),
 
                       const SizedBox(height: 32),
@@ -220,7 +222,7 @@ class _RegisterViewState extends State<RegisterView> {
                           onPressed: () {
                             setState(() {
                               _obscureConfirmPassword =
-                              !_obscureConfirmPassword;
+                                  !_obscureConfirmPassword;
                             });
                           },
                         ),
@@ -257,27 +259,28 @@ class _RegisterViewState extends State<RegisterView> {
                                 decoration: BoxDecoration(
                                   color: _agreeToTerms
                                       ? (isDarkMode
-                                      ? ColorConstant.primaryDarkModePurple
-                                      : ColorConstant.primaryPurple)
+                                          ? ColorConstant.primaryDarkModePurple
+                                          : ColorConstant.primaryPurple)
                                       : Colors.transparent,
                                   border: Border.all(
                                     color: _agreeToTerms
                                         ? (isDarkMode
-                                        ? ColorConstant.primaryDarkModePurple
-                                        : ColorConstant.primaryPurple)
+                                            ? ColorConstant
+                                                .primaryDarkModePurple
+                                            : ColorConstant.primaryPurple)
                                         : (isDarkMode
-                                        ? ColorConstant.borderColorDark
-                                        : ColorConstant.borderColorLight),
+                                            ? ColorConstant.borderColorDark
+                                            : ColorConstant.borderColorLight),
                                     width: 2,
                                   ),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: _agreeToTerms
                                     ? Icon(
-                                  Icons.check_rounded,
-                                  size: 18,
-                                  color: ColorConstant.white,
-                                )
+                                        Icons.check_rounded,
+                                        size: 18,
+                                        color: ColorConstant.white,
+                                      )
                                     : null,
                               ),
                               const SizedBox(width: 12),
@@ -327,21 +330,21 @@ class _RegisterViewState extends State<RegisterView> {
                           onPressed: viewModel.isLoading || !_agreeToTerms
                               ? null
                               : () async {
-                            if (_formKey.currentState!.validate()) {
-                              final success = await viewModel.register(
-                                context,
-                                email: _emailController.text.trim(),
-                                username: _usernameController.text.trim(),
-                                password: _passwordController.text,
-                                passwordConfirmation:
-                                _confirmPasswordController.text,
-                              );
+                                  if (_formKey.currentState!.validate()) {
+                                    final success = await viewModel.register(
+                                      context,
+                                      email: _emailController.text.trim(),
+                                      username: _usernameController.text.trim(),
+                                      password: _passwordController.text,
+                                      passwordConfirmation:
+                                          _confirmPasswordController.text,
+                                    );
 
-                              if (success && mounted) {
-                                context.router.push(HomeRoute());
-                              }
-                            }
-                          },
+                                    if (success && mounted) {
+                                      context.router.push(const HomeRoute());
+                                    }
+                                  }
+                                },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: isDarkMode
                                 ? ColorConstant.primaryDarkModePurple
@@ -355,21 +358,21 @@ class _RegisterViewState extends State<RegisterView> {
                           ),
                           child: viewModel.isLoading
                               ? SizedBox(
-                            height: 24,
-                            width: 24,
-                            child: CircularProgressIndicator(
-                              color: ColorConstant.white,
-                              strokeWidth: 2.5,
-                            ),
-                          )
+                                  height: 24,
+                                  width: 24,
+                                  child: CircularProgressIndicator(
+                                    color: ColorConstant.white,
+                                    strokeWidth: 2.5,
+                                  ),
+                                )
                               : Text(
-                            'auth.register'.tr(),
-                            style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w600,
-                              color: ColorConstant.white,
-                            ),
-                          ),
+                                  'auth.register'.tr(),
+                                  style: TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w600,
+                                    color: ColorConstant.white,
+                                  ),
+                                ),
                         ),
                       ),
 
@@ -415,9 +418,10 @@ class _RegisterViewState extends State<RegisterView> {
                         icon: Icons.g_mobiledata_rounded,
                         isDarkMode: isDarkMode,
                         onPressed: () async {
-                          final success = await viewModel.registerWithGoogle(context);
+                          final success =
+                              await viewModel.registerWithGoogle(context);
                           if (success && mounted) {
-                            context.router.push(HomeRoute());
+                            context.router.push(const HomeRoute());
                           }
                         },
                       ),
@@ -429,9 +433,10 @@ class _RegisterViewState extends State<RegisterView> {
                         icon: Icons.apple_rounded,
                         isDarkMode: isDarkMode,
                         onPressed: () async {
-                          final success = await viewModel.registerWithApple(context);
+                          final success =
+                              await viewModel.registerWithApple(context);
                           if (success && mounted) {
-                            context.router.push(HomeRoute());
+                            context.router.push(const HomeRoute());
                           }
                         },
                       ),
@@ -453,7 +458,7 @@ class _RegisterViewState extends State<RegisterView> {
                             ),
                             TextButton(
                               onPressed: () {
-                                context.router.push(LoginRoute());
+                                context.router.push(const LoginRoute());
                               },
                               child: Text(
                                 'auth.login'.tr(),
@@ -541,9 +546,8 @@ class _RegisterViewState extends State<RegisterView> {
             ),
             suffixIcon: suffixIcon,
             filled: true,
-            fillColor: isDarkMode
-                ? ColorConstant.cardColorDark
-                : ColorConstant.white,
+            fillColor:
+                isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20),
               borderSide: BorderSide(

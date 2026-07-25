@@ -31,7 +31,7 @@ class ThemeProvider with ChangeNotifier {
       _initialized = true;
       notifyListeners();
     } catch (e) {
-      print('Error loading theme mode: $e');
+      debugPrint('Error loading theme mode: $e');
     }
   }
 
@@ -57,7 +57,7 @@ class ThemeProvider with ChangeNotifier {
     try {
       await _prefs.setString(_themeKey, themeValue);
     } catch (e) {
-      print('Error saving theme mode: $e');
+      debugPrint('Error saving theme mode: $e');
     }
 
     notifyListeners();

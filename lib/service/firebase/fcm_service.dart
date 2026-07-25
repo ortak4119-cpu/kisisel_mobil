@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../../models/notification/notification_models.dart';
 import '../notification/notification_service.dart';
 import '../../core/init/locator.dart';
@@ -14,6 +15,10 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   debugPrint('Data: ${message.data}');
 }
 
+// Local notifications için global instance
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
 class FCMService {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   final INotificationService _notificationService = locator.get<INotificationService>();
@@ -24,6 +29,9 @@ class FCMService {
   /// FCM servisini başlat
   Future<void> initialize() async {
     try {
+      // Local notifications'ı başlat
+      await _initializeLocalNotifications();
+
       // Permission iste
       await _requestPermission();
 
@@ -43,6 +51,13 @@ class FCMService {
       // Foreground message handler
       FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
 
+      // iOS foreground presentation options - SES İÇİN ÖNEMLİ
+      await _firebaseMessaging.setForegroundNotificationPresentationOptions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+
       // Message opened from terminated state
       FirebaseMessaging.instance.getInitialMessage().then((message) {
         if (message != null) {
@@ -57,6 +72,54 @@ class FCMService {
     } catch (e) {
       debugPrint('❌ FCM Service initialization failed: $e');
     }
+  }
+
+  /// Local notifications'ı başlat
+  Future<void> _initializeLocalNotifications() async {
+    // Android için ayarlar
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    // iOS için ayarlar
+    const DarwinInitializationSettings initializationSettingsIOS =
+        DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+    );
+
+    const InitializationSettings initializationSettings = InitializationSettings(
+      android: initializationSettingsAndroid,
+      iOS: initializationSettingsIOS,
+    );
+
+    await flutterLocalNotificationsPlugin.initialize(
+      initializationSettings,
+      onDidReceiveNotificationResponse: (NotificationResponse response) {
+        debugPrint('🔔 Local notification tapped: ${response.payload}');
+        // Burada notification tıklamasını handle edebilirsiniz
+      },
+    );
+
+    // Android için notification channel oluştur
+    if (Platform.isAndroid) {
+      const AndroidNotificationChannel channel = AndroidNotificationChannel(
+        'high_importance_channel',
+        'Önemli Bildirimler',
+        description: 'Bu kanal önemli bildirimler için kullanılır',
+        importance: Importance.high,
+        playSound: true,
+        enableVibration: true,
+        sound: RawResourceAndroidNotificationSound('notification'),
+      );
+
+      await flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
+          ?.createNotificationChannel(channel);
+    }
+
+    debugPrint('✅ Local notifications initialized');
   }
 
   /// Notification permission iste
@@ -147,8 +210,47 @@ class FCMService {
     debugPrint('Body: ${message.notification?.body}');
     debugPrint('Data: ${message.data}');
 
-    // Burada local notification gösterebilirsiniz
-    // Veya in-app notification UI'ı gösterebilirsiniz
+    // Foreground'da local notification göster (sesli)
+    _showLocalNotification(message);
+  }
+
+  /// Local notification göster (sesli)
+  Future<void> _showLocalNotification(RemoteMessage message) async {
+    final notification = message.notification;
+    if (notification == null) return;
+
+    // Android notification detayları
+    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      'high_importance_channel',
+      'Önemli Bildirimler',
+      channelDescription: 'Bu kanal önemli bildirimler için kullanılır',
+      importance: Importance.high,
+      priority: Priority.high,
+      playSound: true,
+      enableVibration: true,
+      icon: '@mipmap/ic_launcher',
+    );
+
+    // iOS notification detayları
+    const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+      sound: 'default',
+    );
+
+    const NotificationDetails notificationDetails = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    await flutterLocalNotificationsPlugin.show(
+      notification.hashCode,
+      notification.title,
+      notification.body,
+      notificationDetails,
+      payload: message.data.toString(),
+    );
   }
 
   /// Notification açıldığında (tapped)

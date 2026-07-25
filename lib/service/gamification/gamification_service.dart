@@ -3,7 +3,6 @@ import '../../models/gamification/gamification_models.dart';
 import '../base/base_api_service.dart';
 import '../response/service_response.dart';
 
-
 abstract class IGamificationService {
   Future<ServiceResponse<LevelInfo>> getLevelInfo();
   Future<ServiceResponse<PaginatedResponse<XPTransaction>>> getXPTransactions({
@@ -94,18 +93,22 @@ class GamificationService implements IGamificationService {
       debugPrint('   - statusCode: ${response.statusCode}');
 
       if (response.isSuccess && response.data != null) {
-        debugPrint('🏆 [GamificationService] Response data keys: ${response.data!.keys}');
+        debugPrint(
+            '🏆 [GamificationService] Response data keys: ${response.data!.keys}');
 
         final achievementsData = response.data!['achievements'];
-        debugPrint('🏆 [GamificationService] Achievements data type: ${achievementsData.runtimeType}');
-        debugPrint('🏆 [GamificationService] Achievements count: ${(achievementsData as List).length}');
+        debugPrint(
+            '🏆 [GamificationService] Achievements data type: ${achievementsData.runtimeType}');
+        debugPrint(
+            '🏆 [GamificationService] Achievements count: ${(achievementsData as List).length}');
 
-        final achievements = (achievementsData as List)
+        final achievements = (achievementsData)
             .map((json) {
               try {
                 return Achievement.fromJson(json as Map<String, dynamic>);
               } catch (e) {
-                debugPrint('❌ [GamificationService] Error parsing achievement: $e');
+                debugPrint(
+                    '❌ [GamificationService] Error parsing achievement: $e');
                 debugPrint('   JSON: $json');
                 return null;
               }
@@ -113,7 +116,8 @@ class GamificationService implements IGamificationService {
             .whereType<Achievement>() // Filter out null values
             .toList();
 
-        debugPrint('✅ [GamificationService] Successfully parsed ${achievements.length} achievements');
+        debugPrint(
+            '✅ [GamificationService] Successfully parsed ${achievements.length} achievements');
 
         return ServiceResponse.success(
           statusCode: response.statusCode,
@@ -122,7 +126,8 @@ class GamificationService implements IGamificationService {
         );
       }
 
-      debugPrint('❌ [GamificationService] Response failed: ${response.message}');
+      debugPrint(
+          '❌ [GamificationService] Response failed: ${response.message}');
       return ServiceResponse.error(
         statusCode: response.statusCode,
         message: response.message,
@@ -164,7 +169,8 @@ class GamificationService implements IGamificationService {
 
     if (response.isSuccess && response.data != null) {
       final leaderboard = (response.data!['leaderboard'] as List)
-          .map((json) => LeaderboardEntry.fromJson(json as Map<String, dynamic>))
+          .map(
+              (json) => LeaderboardEntry.fromJson(json as Map<String, dynamic>))
           .toList();
 
       return ServiceResponse.success(
@@ -182,7 +188,8 @@ class GamificationService implements IGamificationService {
   }
 
   @override
-  Future<ServiceResponse<List<LeaderboardEntry>>> getFriendsLeaderboard() async {
+  Future<ServiceResponse<List<LeaderboardEntry>>>
+      getFriendsLeaderboard() async {
     final response = await BaseApiService.get<Map<String, dynamic>>(
       '/gamification/leaderboard/friends',
       requiresAuth: true,
@@ -190,7 +197,8 @@ class GamificationService implements IGamificationService {
 
     if (response.isSuccess && response.data != null) {
       final leaderboard = (response.data!['leaderboard'] as List)
-          .map((json) => LeaderboardEntry.fromJson(json as Map<String, dynamic>))
+          .map(
+              (json) => LeaderboardEntry.fromJson(json as Map<String, dynamic>))
           .toList();
 
       return ServiceResponse.success(

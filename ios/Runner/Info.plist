@@ -45,6 +45,8 @@
 	<string>Fotoğrafları kaydetmek için galeri erişimi gerekiyor.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Profil ve kapak fotoğrafı seçmek için fotoğraf galerisine erişim gerekiyor.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Notlarınıza sesli not eklemek için mikrofon erişimine ihtiyacımız var.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

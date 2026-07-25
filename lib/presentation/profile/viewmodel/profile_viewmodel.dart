@@ -31,6 +31,9 @@ class ProfileViewModel extends ChangeNotifier {
   User? _currentUser;
   User? get currentUser => _currentUser;
 
+  bool _isUserLoaded = false;
+  bool get isUserLoaded => _isUserLoaded;
+
   // Profile Stats
   ProfileStats? _profileStats;
   ProfileStats? get profileStats => _profileStats;
@@ -61,6 +64,7 @@ class ProfileViewModel extends ChangeNotifier {
       if (response.isSuccess && response.data != null) {
         _currentUser = response.data!;
       }
+      _isUserLoaded = true;
 
       // Load stats, friends, and achievements in parallel
       await Future.wait([
@@ -71,6 +75,7 @@ class ProfileViewModel extends ChangeNotifier {
       ]);
     } catch (e) {
       debugPrint('Error loading profile: $e');
+      _isUserLoaded = true;
     } finally {
       _isLoading = false;
       notifyListeners();

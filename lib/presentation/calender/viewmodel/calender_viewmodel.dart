@@ -8,11 +8,13 @@ import '../../../service/diary/diary_service.dart';
 import '../../../service/task/task_service.dart';
 import '../../../service/subscription/subscription_service.dart';
 import '../../../service/expense/expense_service.dart';
+import '../../../service/profile/profile_service.dart';
 import '../../../models/note/note_models.dart';
 import '../../../models/diary/diary_models.dart';
 import '../../../models/task/task_models.dart';
 import '../../../models/subscription/subscription_models.dart';
 import '../../../models/budget/buget_models.dart';
+import '../../../models/auth/auth_models.dart';
 
 enum CalendarViewType { month, week }
 
@@ -23,17 +25,25 @@ class CalendarViewModel extends ChangeNotifier {
   final ISubscriptionService _subscriptionService = locator.get<ISubscriptionService>();
   final IExpenseService _expenseService = locator.get<IExpenseService>();
   final ICalendarService _calendarService = locator.get<ICalendarService>();
+  final IProfileService _profileService = locator.get<IProfileService>();
+
+  User? _currentUser;
+  User? get currentUser => _currentUser;
 
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  bool _isUserLoaded = false;
+  bool get isUserLoaded => _isUserLoaded;
+
   bool _isInitialized = false;
   bool get isInitialized => _isInitialized;
 
-  DateTime _selectedDate = DateTime.now();
+  // Tarih seçiminde UTC sorunu yaşamamak için normalize edilmiş tarihler kullan
+  DateTime _selectedDate = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
   DateTime get selectedDate => _selectedDate;
 
-  DateTime _focusedMonth = DateTime.now();
+  DateTime _focusedMonth = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
   DateTime get focusedMonth => _focusedMonth;
 
   CalendarViewType _calendarViewType = CalendarViewType.month;
@@ -302,15 +312,19 @@ class CalendarViewModel extends ChangeNotifier {
   }
 
   void setSelectedDate(DateTime date) {
-    _selectedDate = date;
-    debugPrint('📆 Calendar: Selected date: ${date.day}/${date.month}/${date.year}');
+    // Tarih UTC olarak gelirse yerel zamana çevir ve saat bilgisini sıfırla
+    final normalizedDate = DateTime(date.year, date.month, date.day);
+    _selectedDate = normalizedDate;
+    debugPrint('📆 Calendar: Selected date: ${normalizedDate.day}/${normalizedDate.month}/${normalizedDate.year}');
     notifyListeners();
   }
 
   void setFocusedMonth(DateTime month) {
-    _focusedMonth = month;
-    debugPrint('📅 Calendar: Focused month: ${month.month}/${month.year}');
-    loadDataForMonth(month.year, month.month);
+    // Tarih UTC olarak gelirse yerel zamana çevir
+    final normalizedMonth = DateTime(month.year, month.month, month.day);
+    _focusedMonth = normalizedMonth;
+    debugPrint('📅 Calendar: Focused month: ${normalizedMonth.month}/${normalizedMonth.year}');
+    loadDataForMonth(normalizedMonth.year, normalizedMonth.month);
   }
 
   void toggleCalendarViewType() {
@@ -565,10 +579,25 @@ class CalendarViewModel extends ChangeNotifier {
     // İlk yüklemede view type'ı önce yükle
     if (!_isInitialized) {
       await _loadCalendarViewType();
+      await _loadCurrentUser();
       _isInitialized = true;
       notifyListeners();
     }
     await loadDataForMonth(_focusedMonth.year, _focusedMonth.month);
+  }
+
+  Future<void> _loadCurrentUser() async {
+    try {
+      final response = await _profileService.getProfile();
+      if (response.isSuccess && response.data != null) {
+        _currentUser = response.data;
+      }
+    } catch (e) {
+      debugPrint('Error loading current user: $e');
+    } finally {
+      _isUserLoaded = true;
+      notifyListeners();
+    }
   }
 
   void nextMonth() {

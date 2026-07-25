@@ -23,6 +23,9 @@ class TasksHabitsViewModel extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  bool _isUserLoaded = false;
+  bool get isUserLoaded => _isUserLoaded;
+
   // Task Filter
   TaskFilter _currentTaskFilter = TaskFilter.all;
   TaskFilter get currentTaskFilter => _currentTaskFilter;
@@ -118,6 +121,23 @@ class TasksHabitsViewModel extends ChangeNotifier {
   String get habitDifficulty => _habitDifficulty;
   String _selectedIcon = '⭐';
   String get selectedIcon => _selectedIcon;
+  // Zaman seçimi: morning(09:00), noon(13:00), evening(17:00)
+  String _habitTimePeriod = 'morning';
+  String get habitTimePeriod => _habitTimePeriod;
+
+  // Zaman periyoduna göre bildirim saati
+  String getReminderTimeForPeriod(String period) {
+    switch (period) {
+      case 'morning':
+        return '09:00';
+      case 'noon':
+        return '13:00';
+      case 'evening':
+        return '17:00';
+      default:
+        return '09:00';
+    }
+  }
 
   void setHabitCategory(String category) {
     _habitCategory = category;
@@ -126,6 +146,11 @@ class TasksHabitsViewModel extends ChangeNotifier {
 
   void setHabitDifficulty(String difficulty) {
     _habitDifficulty = difficulty;
+    notifyListeners();
+  }
+
+  void setHabitTimePeriod(String period) {
+    _habitTimePeriod = period;
     notifyListeners();
   }
 
@@ -152,6 +177,7 @@ class TasksHabitsViewModel extends ChangeNotifier {
     habitDescriptionController.clear();
     _habitCategory = 'health_fitness';
     _habitDifficulty = 'beginner';
+    _habitTimePeriod = 'morning';
     _selectedIcon = '⭐';
     _editingHabitId = null;
     notifyListeners();
@@ -270,7 +296,29 @@ class TasksHabitsViewModel extends ChangeNotifier {
     _habitCategory = habit.category;
     _habitDifficulty = habit.difficultyLevel;
     _selectedIcon = habit.icon ?? '⭐';
+
+    // reminderTimes'dan zaman dilimini çıkar
+    _habitTimePeriod = _getTimePeriodFromReminderTimes(habit.reminderTimes);
+
     notifyListeners();
+  }
+
+  // Hatırlatma saatinden zaman dilimini belirle
+  String _getTimePeriodFromReminderTimes(List<String>? reminderTimes) {
+    if (reminderTimes == null || reminderTimes.isEmpty) {
+      return 'morning';
+    }
+
+    final time = reminderTimes.first;
+    final hour = int.tryParse(time.split(':').first) ?? 9;
+
+    if (hour < 12) {
+      return 'morning';
+    } else if (hour < 15) {
+      return 'noon';
+    } else {
+      return 'evening';
+    }
   }
 
   Future<void> updateHabit(BuildContext context) async {
@@ -288,6 +336,9 @@ class TasksHabitsViewModel extends ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
+      // Seçilen zaman dilimine göre bildirim saati
+      final reminderTime = getReminderTimeForPeriod(_habitTimePeriod);
+
       final request = HabitRequest(
         title: habitTitleController.text.trim(),
         description: habitDescriptionController.text.trim().isEmpty
@@ -297,11 +348,11 @@ class TasksHabitsViewModel extends ChangeNotifier {
         icon: _selectedIcon,
         color: '#FFD54F',
         difficultyLevel: _habitDifficulty,
-        timePeriod: 'daily',
+        timePeriod: 'daily', // Backend daily/weekly/monthly bekliyor
         targetFrequencyType: 'times_per_day',
         targetFrequencyValue: 1,
-        reminderEnabled: false,
-        reminderTimes: null,
+        reminderEnabled: true, // Bildirimi aç
+        reminderTimes: [reminderTime], // Seçilen zamana göre bildirim saati (_habitTimePeriod: morning/evening)
         specificDays: null,
         whyDescription: null,
         motivationQuote: null,
@@ -360,6 +411,9 @@ class TasksHabitsViewModel extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Error loading current user: $e');
+    } finally {
+      _isUserLoaded = true;
+      notifyListeners();
     }
   }
 
@@ -588,6 +642,9 @@ class TasksHabitsViewModel extends ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
+      // Seçilen zaman dilimine göre bildirim saati
+      final reminderTime = getReminderTimeForPeriod(_habitTimePeriod);
+
       final request = HabitRequest(
         title: habitTitleController.text.trim(),
         description: habitDescriptionController.text.trim().isEmpty
@@ -597,11 +654,11 @@ class TasksHabitsViewModel extends ChangeNotifier {
         icon: _selectedIcon,
         color: '#FFD54F',
         difficultyLevel: _habitDifficulty,
-        timePeriod: 'daily',
+        timePeriod: 'daily', // Backend daily/weekly/monthly bekliyor
         targetFrequencyType: 'times_per_day',
         targetFrequencyValue: 1,
-        reminderEnabled: false,
-        reminderTimes: null,
+        reminderEnabled: true, // Bildirimi aç
+        reminderTimes: [reminderTime], // Seçilen zamana göre bildirim saati (_habitTimePeriod: morning/evening)
         specificDays: null,
         whyDescription: null,
         motivationQuote: null,

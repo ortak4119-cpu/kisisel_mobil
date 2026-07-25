@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -44,13 +45,20 @@ class AppInitializer {
   }
 
   static Future<void> _initRevenueCat() async {
-    if (Platform.isIOS) {
-      await Purchases.setup(Constants.revenueCatApiKeyIOS);
-    } else if (Platform.isAndroid) {
-      await Purchases.setup(Constants.revenueCatApiKeyAndroid);
-    }
+    try {
+      final apiKey = Platform.isIOS
+          ? Constants.revenueCatApiKeyIOS
+          : Constants.revenueCatApiKeyAndroid;
 
-    await Purchases.setDebugLogsEnabled(true);
+      final configuration = PurchasesConfiguration(apiKey);
+      await Purchases.configure(configuration);
+
+      if (kDebugMode) {
+        await Purchases.setLogLevel(LogLevel.debug);
+      }
+    } catch (e) {
+      debugPrint('RevenueCat initialization error: $e');
+    }
   }
 
   static Future<void> _initFCM() async {
@@ -59,7 +67,7 @@ class AppInitializer {
       await fcmService.initialize();
     } catch (e) {
       // FCM hatası uygulamayı crash etmemeli
-      print('FCM initialization error: $e');
+      debugPrint('FCM initialization error: $e');
     }
   }
 }

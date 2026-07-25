@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../viewmodel/settings_viewmodel.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/utils/theme_provider.dart';
+import '../../../core/utils/premium_helper.dart';
 
 @RoutePage()
 class SettingsView extends StatelessWidget {
@@ -59,13 +60,13 @@ class SettingsView extends StatelessWidget {
                           end: Alignment.bottomRight,
                           colors: [
                             (isDarkMode
-                                ? ColorConstant.primaryDarkModePurple
-                                : ColorConstant.primaryPurple)
-                                .withOpacity(0.1),
+                                    ? ColorConstant.primaryDarkModePurple
+                                    : ColorConstant.primaryPurple)
+                                .withValues(alpha: 0.1),
                             (isDarkMode
-                                ? ColorConstant.accentBlue
-                                : ColorConstant.accentBlue)
-                                .withOpacity(0.05),
+                                    ? ColorConstant.accentBlue
+                                    : ColorConstant.accentBlue)
+                                .withValues(alpha: 0.05),
                           ],
                         ),
                       ),
@@ -81,20 +82,21 @@ class SettingsView extends StatelessWidget {
                       children: [
                         const SizedBox(height: 8),
 
-                        // Premium Bölümü
-                        _buildSection(
-                          title: 'settings.sections.premium'.tr(),
-                          isDarkMode: isDarkMode,
-                          children: [
-                            _buildPremiumCard(
-                              context: context,
-                              viewModel: viewModel,
-                              isDarkMode: isDarkMode,
-                            ),
-                          ],
-                        ),
+                        // Premium Bölümü - sadece kullanıcı yüklendikten sonra göster
+                        if (viewModel.isUserLoaded)
+                          _buildSection(
+                            title: 'settings.sections.premium'.tr(),
+                            isDarkMode: isDarkMode,
+                            children: [
+                              _buildPremiumCard(
+                                context: context,
+                                viewModel: viewModel,
+                                isDarkMode: isDarkMode,
+                              ),
+                            ],
+                          ),
 
-                        const SizedBox(height: 20),
+                        if (viewModel.isUserLoaded) const SizedBox(height: 20),
 
                         // Bildirimler Bölümü
                         _buildSection(
@@ -103,10 +105,12 @@ class SettingsView extends StatelessWidget {
                           children: [
                             _buildSwitchTile(
                               title: 'settings.notifications.all'.tr(),
-                              subtitle: 'settings.notifications.allSubtitle'.tr(),
+                              subtitle:
+                                  'settings.notifications.allSubtitle'.tr(),
                               icon: Icons.notifications_rounded,
                               isDarkMode: isDarkMode,
-                              value: viewModel.settings?.notificationsEnabled ?? true,
+                              value: viewModel.settings?.notificationsEnabled ??
+                                  true,
                               onChanged: (value) {
                                 viewModel.updateNotificationSettings(
                                   notificationsEnabled: value,
@@ -120,10 +124,12 @@ class SettingsView extends StatelessWidget {
                             _buildDivider(isDarkMode),
                             _buildSwitchTile(
                               title: 'settings.notifications.tasks'.tr(),
-                              subtitle: 'settings.notifications.tasksSubtitle'.tr(),
+                              subtitle:
+                                  'settings.notifications.tasksSubtitle'.tr(),
                               icon: Icons.task_rounded,
                               isDarkMode: isDarkMode,
-                              value: viewModel.settings?.taskNotifications ?? true,
+                              value:
+                                  viewModel.settings?.taskNotifications ?? true,
                               onChanged: (value) {
                                 viewModel.updateNotificationSettings(
                                   taskNotifications: value,
@@ -137,10 +143,12 @@ class SettingsView extends StatelessWidget {
                             _buildDivider(isDarkMode),
                             _buildSwitchTile(
                               title: 'settings.notifications.habits'.tr(),
-                              subtitle: 'settings.notifications.habitsSubtitle'.tr(),
+                              subtitle:
+                                  'settings.notifications.habitsSubtitle'.tr(),
                               icon: Icons.emoji_events_rounded,
                               isDarkMode: isDarkMode,
-                              value: viewModel.settings?.habitNotifications ?? true,
+                              value: viewModel.settings?.habitNotifications ??
+                                  true,
                               onChanged: (value) {
                                 viewModel.updateNotificationSettings(
                                   habitNotifications: value,
@@ -154,7 +162,8 @@ class SettingsView extends StatelessWidget {
                             _buildDivider(isDarkMode),
                             _buildSwitchTile(
                               title: 'settings.notifications.diary'.tr(),
-                              subtitle: 'settings.notifications.diarySubtitle'.tr(),
+                              subtitle:
+                                  'settings.notifications.diarySubtitle'.tr(),
                               icon: Icons.book_rounded,
                               isDarkMode: isDarkMode,
                               value: viewModel.settings?.diaryReminders ?? true,
@@ -181,7 +190,8 @@ class SettingsView extends StatelessWidget {
                             _buildThemeTile(
                               context: context,
                               title: 'settings.appearance.theme'.tr(),
-                              subtitle: 'settings.appearance.themeSubtitle'.tr(),
+                              subtitle:
+                                  'settings.appearance.themeSubtitle'.tr(),
                               icon: Icons.palette_rounded,
                               isDarkMode: isDarkMode,
                               themeProvider: themeProvider,
@@ -191,7 +201,8 @@ class SettingsView extends StatelessWidget {
                               context: context,
                               viewModel: viewModel,
                               title: 'settings.appearance.language'.tr(),
-                              subtitle: 'settings.appearance.languageSubtitle'.tr(),
+                              subtitle:
+                                  'settings.appearance.languageSubtitle'.tr(),
                               icon: Icons.language_rounded,
                               isDarkMode: isDarkMode,
                             ),
@@ -248,26 +259,32 @@ class SettingsView extends StatelessWidget {
                             _buildDivider(isDarkMode),
                             _buildListTile(
                               title: 'settings.account.logoutAll'.tr(),
-                              subtitle: 'settings.account.logoutAllSubtitle'.tr(),
+                              subtitle:
+                                  'settings.account.logoutAllSubtitle'.tr(),
                               icon: Icons.devices_other_rounded,
                               isDarkMode: isDarkMode,
                               iconColor: ColorConstant.accentOrange,
                               iconBgColor: isDarkMode
                                   ? ColorConstant.cardYellowDark
                                   : ColorConstant.cardYellowLight,
-                              onTap: () => viewModel.showLogoutAllDevicesDialog(context),
+                              onTap: () =>
+                                  viewModel.showLogoutAllDevicesDialog(context),
                             ),
                             _buildDivider(isDarkMode),
                             _buildListTile(
                               title: 'settings.account.deleteAccount'.tr(),
-                              subtitle: 'settings.account.deleteAccountSubtitle'.tr(),
+                              subtitle:
+                                  'settings.account.deleteAccountSubtitle'.tr(),
                               icon: Icons.delete_forever_rounded,
                               isDarkMode: isDarkMode,
                               iconColor: ColorConstant.errorRed,
                               iconBgColor: isDarkMode
-                                  ? ColorConstant.errorRed.withOpacity(0.15)
-                                  : ColorConstant.errorRed.withOpacity(0.1),
-                              onTap: () => viewModel.showDeleteAccountDialog(context),
+                                  ? ColorConstant.errorRed
+                                      .withValues(alpha: 0.15)
+                                  : ColorConstant.errorRed
+                                      .withValues(alpha: 0.1),
+                              onTap: () =>
+                                  viewModel.showDeleteAccountDialog(context),
                             ),
                           ],
                         ),
@@ -348,8 +365,9 @@ class SettingsView extends StatelessWidget {
                           ),
                           decoration: BoxDecoration(
                             color: isDarkMode
-                                ? ColorConstant.cardColorDark.withOpacity(0.5)
-                                : ColorConstant.white.withOpacity(0.5),
+                                ? ColorConstant.cardColorDark
+                                    .withValues(alpha: 0.5)
+                                : ColorConstant.white.withValues(alpha: 0.5),
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
                               color: isDarkMode
@@ -452,8 +470,8 @@ class SettingsView extends StatelessWidget {
             boxShadow: [
               BoxShadow(
                 color: isDarkMode
-                    ? ColorConstant.black.withOpacity(0.2)
-                    : ColorConstant.primaryPurple.withOpacity(0.08),
+                    ? ColorConstant.black.withValues(alpha: 0.2)
+                    : ColorConstant.primaryPurple.withValues(alpha: 0.08),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -470,6 +488,76 @@ class SettingsView extends StatelessWidget {
     required SettingsViewModel viewModel,
     required bool isDarkMode,
   }) {
+    final isPremium = PremiumHelper.isPremiumUser(viewModel.currentUser);
+
+    // Premium kullanıcı için farklı kart
+    if (isPremium) {
+      return Container(
+        margin: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              ColorConstant.accentGreen,
+              ColorConstant.accentBlue,
+            ],
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: ColorConstant.accentGreen.withValues(alpha: 0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: ColorConstant.white.withValues(alpha: 0.3),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.verified_rounded,
+                color: ColorConstant.white,
+                size: 32,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'settings.premium.active'.tr(),
+                    style: TextStyle(
+                      color: ColorConstant.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'settings.premium.enjoyFeatures'.tr(),
+                    style: TextStyle(
+                      color: ColorConstant.white.withValues(alpha: 0.9),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Premium olmayan kullanıcı için mevcut kart
     return Container(
       margin: const EdgeInsets.all(20),
       padding: const EdgeInsets.all(24),
@@ -485,7 +573,7 @@ class SettingsView extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: ColorConstant.accentYellow.withOpacity(0.3),
+            color: ColorConstant.accentYellow.withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -499,7 +587,7 @@ class SettingsView extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: ColorConstant.white.withOpacity(0.3),
+                  color: ColorConstant.white.withValues(alpha: 0.3),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -525,7 +613,7 @@ class SettingsView extends StatelessWidget {
                     Text(
                       'paywall.unlockFeatures'.tr(),
                       style: TextStyle(
-                        color: ColorConstant.white.withOpacity(0.9),
+                        color: ColorConstant.white.withValues(alpha: 0.9),
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
@@ -565,9 +653,9 @@ class SettingsView extends StatelessWidget {
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  child:  Text(
+                  child: Text(
                     'paywall.buyNow'.tr(),
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
@@ -585,7 +673,7 @@ class SettingsView extends StatelessWidget {
                   ),
                   padding: const EdgeInsets.all(16),
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.restore_rounded,
                   size: 24,
                 ),
@@ -613,7 +701,7 @@ class SettingsView extends StatelessWidget {
           child: Text(
             text,
             style: TextStyle(
-              color: ColorConstant.white.withOpacity(0.95),
+              color: ColorConstant.white.withValues(alpha: 0.95),
               fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
@@ -770,7 +858,7 @@ class SettingsView extends StatelessWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: isDarkMode
+            activeThumbColor: isDarkMode
                 ? ColorConstant.primaryDarkModePurple
                 : ColorConstant.primaryPurple,
           ),
@@ -1374,18 +1462,18 @@ class SettingsView extends StatelessWidget {
           decoration: BoxDecoration(
             color: isSelected
                 ? (isDarkMode
-                ? ColorConstant.primaryDarkModePurple.withOpacity(0.2)
-                : ColorConstant.primaryPurple.withOpacity(0.1))
+                    ? ColorConstant.primaryDarkModePurple.withValues(alpha: 0.2)
+                    : ColorConstant.primaryPurple.withValues(alpha: 0.1))
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: isSelected
                   ? (isDarkMode
-                  ? ColorConstant.primaryDarkModePurple
-                  : ColorConstant.primaryPurple)
+                      ? ColorConstant.primaryDarkModePurple
+                      : ColorConstant.primaryPurple)
                   : (isDarkMode
-                  ? ColorConstant.borderColorDark
-                  : ColorConstant.borderColorLight),
+                      ? ColorConstant.borderColorDark
+                      : ColorConstant.borderColorLight),
               width: isSelected ? 2 : 1,
             ),
           ),
@@ -1403,11 +1491,11 @@ class SettingsView extends StatelessWidget {
                   icon,
                   color: isSelected
                       ? (isDarkMode
-                      ? ColorConstant.primaryDarkModePurple
-                      : ColorConstant.primaryPurple)
+                          ? ColorConstant.primaryDarkModePurple
+                          : ColorConstant.primaryPurple)
                       : (isDarkMode
-                      ? ColorConstant.textSecondaryDark
-                      : ColorConstant.textSecondaryLight),
+                          ? ColorConstant.textSecondaryDark
+                          : ColorConstant.textSecondaryLight),
                   size: 24,
                 ),
               ),
@@ -1474,16 +1562,16 @@ class SettingsView extends StatelessWidget {
           decoration: BoxDecoration(
             color: isSelected
                 ? (isDarkMode
-                ? ColorConstant.accentBlue.withOpacity(0.2)
-                : ColorConstant.accentBlue.withOpacity(0.1))
+                    ? ColorConstant.accentBlue.withValues(alpha: 0.2)
+                    : ColorConstant.accentBlue.withValues(alpha: 0.1))
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: isSelected
                   ? ColorConstant.accentBlue
                   : (isDarkMode
-                  ? ColorConstant.borderColorDark
-                  : ColorConstant.borderColorLight),
+                      ? ColorConstant.borderColorDark
+                      : ColorConstant.borderColorLight),
               width: isSelected ? 2 : 1,
             ),
           ),
@@ -1502,8 +1590,8 @@ class SettingsView extends StatelessWidget {
                   color: isSelected
                       ? ColorConstant.accentBlue
                       : (isDarkMode
-                      ? ColorConstant.textSecondaryDark
-                      : ColorConstant.textSecondaryLight),
+                          ? ColorConstant.textSecondaryDark
+                          : ColorConstant.textSecondaryLight),
                   size: 24,
                 ),
               ),

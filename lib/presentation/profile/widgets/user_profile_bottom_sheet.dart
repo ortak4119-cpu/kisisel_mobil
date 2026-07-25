@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../models/social/social_model.dart';
-import '../../../models/settings/settings_models.dart';
 
 class UserProfileBottomSheet extends StatefulWidget {
   final UserProfile userProfile;
@@ -38,7 +37,9 @@ class _UserProfileBottomSheetState extends State<UserProfileBottomSheet> {
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: BoxDecoration(
-        color: widget.isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+        color: widget.isDarkMode
+            ? ColorConstant.cardColorDark
+            : ColorConstant.white,
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(28),
           topRight: Radius.circular(28),
@@ -97,7 +98,7 @@ class _UserProfileBottomSheetState extends State<UserProfileBottomSheet> {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: ColorConstant.accentBlue.withOpacity(0.3),
+                        color: ColorConstant.accentBlue.withValues(alpha: 0.3),
                         blurRadius: 20,
                         offset: const Offset(0, 8),
                       ),
@@ -105,19 +106,21 @@ class _UserProfileBottomSheetState extends State<UserProfileBottomSheet> {
                   ),
                   child: CircleAvatar(
                     radius: 54,
-                    backgroundColor: ColorConstant.accentBlue.withOpacity(0.2),
-                    backgroundImage: widget.userProfile.profilePictureUrl != null
+                    backgroundColor:
+                        ColorConstant.accentBlue.withValues(alpha: 0.2),
+                    backgroundImage: widget.userProfile.profilePictureUrl !=
+                            null
                         ? NetworkImage(widget.userProfile.profilePictureUrl!)
                         : null,
                     child: widget.userProfile.profilePictureUrl == null
                         ? Text(
-                      widget.userProfile.displayName[0].toUpperCase(),
-                      style: TextStyle(
-                        fontSize: 40,
-                        fontWeight: FontWeight.w900,
-                        color: ColorConstant.accentBlue,
-                      ),
-                    )
+                            widget.userProfile.displayName[0].toUpperCase(),
+                            style: TextStyle(
+                              fontSize: 40,
+                              fontWeight: FontWeight.w900,
+                              color: ColorConstant.accentBlue,
+                            ),
+                          )
                         : null,
                   ),
                 ),
@@ -167,10 +170,10 @@ class _UserProfileBottomSheetState extends State<UserProfileBottomSheet> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
             decoration: BoxDecoration(
-              color: ColorConstant.accentBlue.withOpacity(0.15),
+              color: ColorConstant.accentBlue.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: ColorConstant.accentBlue.withOpacity(0.3),
+                color: ColorConstant.accentBlue.withValues(alpha: 0.3),
                 width: 1.5,
               ),
             ),
@@ -206,7 +209,7 @@ class _UserProfileBottomSheetState extends State<UserProfileBottomSheet> {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: ColorConstant.accentYellow.withOpacity(0.3),
+                    color: ColorConstant.accentYellow.withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -227,9 +230,10 @@ class _UserProfileBottomSheetState extends State<UserProfileBottomSheet> {
                   ),
                   const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: ColorConstant.white.withOpacity(0.2),
+                      color: ColorConstant.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
@@ -254,7 +258,8 @@ class _UserProfileBottomSheetState extends State<UserProfileBottomSheet> {
           ],
 
           // Bio
-          if (widget.userProfile.bio != null && widget.userProfile.bio!.isNotEmpty) ...[
+          if (widget.userProfile.bio != null &&
+              widget.userProfile.bio!.isNotEmpty) ...[
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(14),
@@ -296,24 +301,26 @@ class _UserProfileBottomSheetState extends State<UserProfileBottomSheet> {
       child: SizedBox(
         width: double.infinity,
         child: ElevatedButton(
-          onPressed: _isProcessing ? null : () async {
-            setState(() => _isProcessing = true);
+          onPressed: _isProcessing
+              ? null
+              : () async {
+                  setState(() => _isProcessing = true);
 
-            Navigator.pop(context);
+                  Navigator.pop(context);
 
-            if (widget.isFriend) {
-              widget.onUnfriend?.call();
-            } else {
-              widget.onSendFriendRequest?.call();
-            }
+                  if (widget.isFriend) {
+                    widget.onUnfriend?.call();
+                  } else {
+                    widget.onSendFriendRequest?.call();
+                  }
 
-            // Kısa bir delay ekle (isteğe bağlı)
-            await Future.delayed(const Duration(milliseconds: 300));
+                  // Kısa bir delay ekle (isteğe bağlı)
+                  await Future.delayed(const Duration(milliseconds: 300));
 
-            if (mounted) {
-              setState(() => _isProcessing = false);
-            }
-          },
+                  if (mounted) {
+                    setState(() => _isProcessing = false);
+                  }
+                },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.transparent,
             foregroundColor: ColorConstant.white,
@@ -328,18 +335,18 @@ class _UserProfileBottomSheetState extends State<UserProfileBottomSheet> {
               gradient: LinearGradient(
                 colors: _isProcessing
                     ? [
-                  ColorConstant.textMutedDark,
-                  ColorConstant.textMutedDark.withOpacity(0.8),
-                ]
+                        ColorConstant.textMutedDark,
+                        ColorConstant.textMutedDark.withValues(alpha: 0.8),
+                      ]
                     : widget.isFriend
-                    ? [
-                  ColorConstant.errorRed,
-                  ColorConstant.errorRed.withOpacity(0.8),
-                ]
-                    : [
-                  ColorConstant.accentBlue,
-                  ColorConstant.primaryPurple,
-                ],
+                        ? [
+                            ColorConstant.errorRed,
+                            ColorConstant.errorRed.withValues(alpha: 0.8),
+                          ]
+                        : [
+                            ColorConstant.accentBlue,
+                            ColorConstant.primaryPurple,
+                          ],
               ),
               borderRadius: BorderRadius.circular(14),
             ),
@@ -348,30 +355,35 @@ class _UserProfileBottomSheetState extends State<UserProfileBottomSheet> {
               alignment: Alignment.center,
               child: _isProcessing
                   ? SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(ColorConstant.white),
-                ),
-              )
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(ColorConstant.white),
+                      ),
+                    )
                   : Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    widget.isFriend ? Icons.person_remove : Icons.person_add,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    widget.isFriend ? 'profile.friends.unfriend'.tr() : 'profile.friends.addFriend'.tr(),
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          widget.isFriend
+                              ? Icons.person_remove
+                              : Icons.person_add,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          widget.isFriend
+                              ? 'profile.friends.unfriend'.tr()
+                              : 'profile.friends.addFriend'.tr(),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
             ),
           ),
         ),
@@ -445,10 +457,14 @@ class _UserProfileBottomSheetState extends State<UserProfileBottomSheet> {
             emoji: '🏆',
             color: ColorConstant.accentYellow,
             stats: [
-              _StatItem('profile.stats.total'.tr(), '${stats.habits.total}', '📊'),
-              _StatItem('profile.stats.active'.tr(), '${stats.habits.active}', '✅'),
-              _StatItem('profile.stats.today'.tr(), '${stats.habits.completedToday}', '🎯'),
-              _StatItem('profile.stats.streak'.tr(), '${stats.habits.currentStreak}', '🔥'),
+              _StatItem(
+                  'profile.stats.total'.tr(), '${stats.habits.total}', '📊'),
+              _StatItem(
+                  'profile.stats.active'.tr(), '${stats.habits.active}', '✅'),
+              _StatItem('profile.stats.today'.tr(),
+                  '${stats.habits.completedToday}', '🎯'),
+              _StatItem('profile.stats.streak'.tr(),
+                  '${stats.habits.currentStreak}', '🔥'),
             ],
           ),
 
@@ -462,9 +478,12 @@ class _UserProfileBottomSheetState extends State<UserProfileBottomSheet> {
           color: ColorConstant.accentBlue,
           stats: [
             _StatItem('profile.stats.total'.tr(), '${stats.tasks.total}', '📊'),
-            _StatItem('profile.stats.completed'.tr(), '${stats.tasks.completed}', '✅'),
-            _StatItem('profile.stats.pending'.tr(), '${stats.tasks.pending}', '⏳'),
-            _StatItem('profile.stats.overdue'.tr(), '${stats.tasks.overdue}', '⚠️'),
+            _StatItem('profile.stats.completed'.tr(),
+                '${stats.tasks.completed}', '✅'),
+            _StatItem(
+                'profile.stats.pending'.tr(), '${stats.tasks.pending}', '⏳'),
+            _StatItem(
+                'profile.stats.overdue'.tr(), '${stats.tasks.overdue}', '⚠️'),
           ],
         ),
 
@@ -477,9 +496,12 @@ class _UserProfileBottomSheetState extends State<UserProfileBottomSheet> {
           emoji: '👥',
           color: const Color(0xFFB794F6),
           stats: [
-            _StatItem('profile.stats.friends'.tr(), '${stats.social.friends}', '🤝'),
-            _StatItem('profile.stats.followers'.tr(), '${stats.social.followers}', '👀'),
-            _StatItem('profile.stats.following'.tr(), '${stats.social.following}', '⭐'),
+            _StatItem(
+                'profile.stats.friends'.tr(), '${stats.social.friends}', '🤝'),
+            _StatItem('profile.stats.followers'.tr(),
+                '${stats.social.followers}', '👀'),
+            _StatItem('profile.stats.following'.tr(),
+                '${stats.social.following}', '⭐'),
           ],
         ),
 
@@ -498,15 +520,17 @@ class _UserProfileBottomSheetState extends State<UserProfileBottomSheet> {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: widget.isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+        color: widget.isDarkMode
+            ? ColorConstant.cardColorDark
+            : ColorConstant.white,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: color.withOpacity(0.3),
+          color: color.withValues(alpha: 0.3),
           width: 2,
         ),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -523,13 +547,13 @@ class _UserProfileBottomSheetState extends State<UserProfileBottomSheet> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      color.withOpacity(0.2),
-                      color.withOpacity(0.1),
+                      color.withValues(alpha: 0.2),
+                      color.withValues(alpha: 0.1),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: color.withOpacity(0.3),
+                    color: color.withValues(alpha: 0.3),
                     width: 2,
                   ),
                 ),
@@ -560,13 +584,13 @@ class _UserProfileBottomSheetState extends State<UserProfileBottomSheet> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      color.withOpacity(0.08),
-                      color.withOpacity(0.03),
+                      color.withValues(alpha: 0.08),
+                      color.withValues(alpha: 0.03),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: color.withOpacity(0.2),
+                    color: color.withValues(alpha: 0.2),
                     width: 1.5,
                   ),
                 ),

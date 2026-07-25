@@ -9,8 +9,10 @@ import '../../../core/init/locator.dart';
 import '../../../service/auth/auth_service.dart';
 import '../../../service/settings/settings_service.dart';
 import '../../../service/budget/budget_service.dart';
+import '../../../service/profile/profile_service.dart';
 import '../../../models/settings/settings_models.dart';
 import '../../../models/budget/buget_models.dart';
+import '../../../models/auth/auth_models.dart';
 import '../../../core/route/app_router.gr.dart';
 import '../../../core/utils/custom_snackbar.dart';
 import '../../../core/utils/color_constant.dart';
@@ -20,15 +22,20 @@ class SettingsViewModel extends ChangeNotifier {
   final IAuthService _authService = locator.get<IAuthService>();
   final ISettingsService _settingsService = locator.get<ISettingsService>();
   final IBudgetService _budgetService = locator.get<IBudgetService>();
+  final IProfileService _profileService = locator.get<IProfileService>();
   final InAppReview _inAppReview = InAppReview.instance;
 
   String _appVersion = '1.0.0';
   bool _isLoading = false;
+  bool _isUserLoaded = false;
   Settings? _settings;
+  User? _currentUser;
 
   String get appVersion => _appVersion;
   bool get isLoading => _isLoading;
+  bool get isUserLoaded => _isUserLoaded;
   Settings? get settings => _settings;
+  User? get currentUser => _currentUser;
 
   SettingsViewModel() {
     _initialize();
@@ -37,6 +44,21 @@ class SettingsViewModel extends ChangeNotifier {
   Future<void> _initialize() async {
     await _loadAppVersion();
     await loadSettings();
+    await _loadCurrentUser();
+  }
+
+  Future<void> _loadCurrentUser() async {
+    try {
+      final response = await _profileService.getProfile();
+      if (response.isSuccess && response.data != null) {
+        _currentUser = response.data;
+      }
+    } catch (e) {
+      debugPrint('Error loading current user: $e');
+    } finally {
+      _isUserLoaded = true;
+      notifyListeners();
+    }
   }
 
   Future<void> _loadAppVersion() async {
@@ -261,9 +283,7 @@ class SettingsViewModel extends ChangeNotifier {
       if (await _inAppReview.isAvailable()) {
         await _inAppReview.requestReview();
       } else {
-        final appId = Platform.isIOS
-            ? '6754823140'
-            : 'com.aedev.kisiseş';
+        final appId = Platform.isIOS ? '6754823140' : 'com.aedev.kisiseş';
         final url = Platform.isIOS
             ? 'https://apps.apple.com/app/id$appId?action=write-review'
             : 'https://play.google.com/store/apps/details?id=$appId';
@@ -318,9 +338,9 @@ class SettingsViewModel extends ChangeNotifier {
                     ? ColorConstant.textSecondaryDark
                     : ColorConstant.textSecondaryLight,
               ),
-              child:  Text(
+              child: Text(
                 'common.cancel'.tr(),
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -334,9 +354,9 @@ class SettingsViewModel extends ChangeNotifier {
               style: TextButton.styleFrom(
                 foregroundColor: ColorConstant.errorRed,
               ),
-              child:  Text(
+              child: Text(
                 'settings.account.logout'.tr(),
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -388,9 +408,9 @@ class SettingsViewModel extends ChangeNotifier {
                     ? ColorConstant.textSecondaryDark
                     : ColorConstant.textSecondaryLight,
               ),
-              child:  Text(
+              child: Text(
                 'common.cancel'.tr(),
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -404,9 +424,9 @@ class SettingsViewModel extends ChangeNotifier {
               style: TextButton.styleFrom(
                 foregroundColor: ColorConstant.errorRed,
               ),
-              child:  Text(
+              child: Text(
                 'settings.account.logoutAll'.tr(),
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -459,9 +479,9 @@ class SettingsViewModel extends ChangeNotifier {
                     ? ColorConstant.textSecondaryDark
                     : ColorConstant.textSecondaryLight,
               ),
-              child:  Text(
+              child: Text(
                 'common.cancel'.tr(),
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -477,9 +497,9 @@ class SettingsViewModel extends ChangeNotifier {
               style: TextButton.styleFrom(
                 foregroundColor: ColorConstant.errorRed,
               ),
-              child:  Text(
+              child: Text(
                 'common.delete'.tr(),
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),

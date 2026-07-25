@@ -8,13 +8,14 @@ import '../viewmodel/onboarding_viewmodel.dart';
 
 @RoutePage()
 class OnboardingView extends StatefulWidget {
-  const OnboardingView({Key? key}) : super(key: key);
+  const OnboardingView({super.key});
 
   @override
   State<OnboardingView> createState() => _OnboardingViewState();
 }
 
-class _OnboardingViewState extends State<OnboardingView> with TickerProviderStateMixin {
+class _OnboardingViewState extends State<OnboardingView>
+    with TickerProviderStateMixin {
   final PageController _pageController = PageController();
   late AnimationController _mainAnimationController;
   late AnimationController _secondaryAnimationController;
@@ -68,13 +69,13 @@ class _OnboardingViewState extends State<OnboardingView> with TickerProviderStat
                         end: Alignment.bottomCenter,
                         colors: isDarkMode
                             ? [
-                          ColorConstant.bgColorDark,
-                          ColorConstant.cardColorDark,
-                        ]
+                                ColorConstant.bgColorDark,
+                                ColorConstant.cardColorDark,
+                              ]
                             : [
-                          ColorConstant.bgColorLight,
-                          ColorConstant.white,
-                        ],
+                                ColorConstant.bgColorLight,
+                                ColorConstant.white,
+                              ],
                       ),
                     ),
                   ),
@@ -121,14 +122,14 @@ class _OnboardingViewState extends State<OnboardingView> with TickerProviderStat
     return Container(
       decoration: BoxDecoration(
         color: isDarkMode
-            ? ColorConstant.cardColorDark.withOpacity(0.9)
-            : ColorConstant.white.withOpacity(0.9),
+            ? ColorConstant.cardColorDark.withValues(alpha: 0.9)
+            : ColorConstant.white.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
             color: isDarkMode
-                ? ColorConstant.black.withOpacity(0.2)
-                : ColorConstant.primaryPurple.withOpacity(0.1),
+                ? ColorConstant.black.withValues(alpha: 0.2)
+                : ColorConstant.primaryPurple.withValues(alpha: 0.1),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -238,9 +239,7 @@ class _OnboardingViewState extends State<OnboardingView> with TickerProviderStat
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: isDarkMode
-            ? ColorConstant.cardColorDark
-            : ColorConstant.white,
+        color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(32),
           topRight: Radius.circular(32),
@@ -248,8 +247,8 @@ class _OnboardingViewState extends State<OnboardingView> with TickerProviderStat
         boxShadow: [
           BoxShadow(
             color: isDarkMode
-                ? ColorConstant.black.withOpacity(0.3)
-                : ColorConstant.primaryPurple.withOpacity(0.08),
+                ? ColorConstant.black.withValues(alpha: 0.3)
+                : ColorConstant.primaryPurple.withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, -5),
             spreadRadius: 2,
@@ -288,7 +287,8 @@ class _OnboardingViewState extends State<OnboardingView> with TickerProviderStat
 
                       return AnimatedSwitcher(
                         duration: const Duration(milliseconds: 350),
-                        transitionBuilder: (Widget child, Animation<double> animation) {
+                        transitionBuilder:
+                            (Widget child, Animation<double> animation) {
                           return FadeTransition(
                             opacity: animation,
                             child: SlideTransition(
@@ -325,7 +325,8 @@ class _OnboardingViewState extends State<OnboardingView> with TickerProviderStat
 
                       return AnimatedSwitcher(
                         duration: const Duration(milliseconds: 400),
-                        transitionBuilder: (Widget child, Animation<double> animation) {
+                        transitionBuilder:
+                            (Widget child, Animation<double> animation) {
                           return FadeTransition(
                             opacity: animation,
                             child: SlideTransition(
@@ -369,7 +370,8 @@ class _OnboardingViewState extends State<OnboardingView> with TickerProviderStat
     );
   }
 
-  Widget _buildNavigationControls(BuildContext context, OnboardingViewModel viewModel) {
+  Widget _buildNavigationControls(
+      BuildContext context, OnboardingViewModel viewModel) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Row(
@@ -379,7 +381,7 @@ class _OnboardingViewState extends State<OnboardingView> with TickerProviderStat
           Row(
             children: List.generate(
               viewModel.pages.length,
-                  (index) => _buildPageIndicator(index, viewModel.currentPage),
+              (index) => _buildPageIndicator(index, viewModel.currentPage),
             ),
           ),
 
@@ -403,22 +405,23 @@ class _OnboardingViewState extends State<OnboardingView> with TickerProviderStat
       decoration: BoxDecoration(
         color: isActive
             ? (isDarkMode
-            ? ColorConstant.primaryDarkModePurple
-            : ColorConstant.primaryPurple)
+                ? ColorConstant.primaryDarkModePurple
+                : ColorConstant.primaryPurple)
             : (isDarkMode
-            ? ColorConstant.borderColorDark
-            : ColorConstant.borderColorLight),
+                ? ColorConstant.borderColorDark
+                : ColorConstant.borderColorLight),
         borderRadius: BorderRadius.circular(6),
         boxShadow: isActive
             ? [
-          BoxShadow(
-            color: isDarkMode
-                ? ColorConstant.primaryDarkModePurple.withOpacity(0.4)
-                : ColorConstant.primaryPurple.withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ]
+                BoxShadow(
+                  color: isDarkMode
+                      ? ColorConstant.primaryDarkModePurple
+                          .withValues(alpha: 0.4)
+                      : ColorConstant.primaryPurple.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ]
             : null,
       ),
     );
@@ -472,20 +475,21 @@ class _OnboardingViewState extends State<OnboardingView> with TickerProviderStat
                   end: Alignment.bottomRight,
                   colors: isDarkMode
                       ? [
-                    ColorConstant.primaryDarkModePurple,
-                    ColorConstant.primaryDarkModeBlue,
-                  ]
+                          ColorConstant.primaryDarkModePurple,
+                          ColorConstant.primaryDarkModeBlue,
+                        ]
                       : [
-                    ColorConstant.primaryPurple,
-                    ColorConstant.accentBlue,
-                  ],
+                          ColorConstant.primaryPurple,
+                          ColorConstant.accentBlue,
+                        ],
                 ),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
                     color: isDarkMode
-                        ? ColorConstant.primaryDarkModePurple.withOpacity(0.4)
-                        : ColorConstant.primaryPurple.withOpacity(0.3),
+                        ? ColorConstant.primaryDarkModePurple
+                            .withValues(alpha: 0.4)
+                        : ColorConstant.primaryPurple.withValues(alpha: 0.3),
                     blurRadius: 16,
                     offset: const Offset(0, 6),
                   ),
@@ -505,7 +509,8 @@ class _OnboardingViewState extends State<OnboardingView> with TickerProviderStat
                   child: Center(
                     child: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
-                      transitionBuilder: (Widget child, Animation<double> animation) {
+                      transitionBuilder:
+                          (Widget child, Animation<double> animation) {
                         return RotationTransition(
                           turns: animation,
                           child: FadeTransition(
@@ -557,7 +562,8 @@ class _HabitAnimation extends StatelessWidget {
             animation: mainController,
             builder: (context, child) {
               return Transform.scale(
-                scale: 1.0 + (math.sin(mainController.value * 2 * math.pi) * 0.05),
+                scale:
+                    1.0 + (math.sin(mainController.value * 2 * math.pi) * 0.05),
                 child: Container(
                   width: 200,
                   height: 200,
@@ -565,8 +571,8 @@ class _HabitAnimation extends StatelessWidget {
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
                       colors: [
-                        ColorConstant.primaryPurple.withOpacity(0.15),
-                        ColorConstant.accentBlue.withOpacity(0.15),
+                        ColorConstant.primaryPurple.withValues(alpha: 0.15),
+                        ColorConstant.accentBlue.withValues(alpha: 0.15),
                       ],
                     ),
                   ),
@@ -589,7 +595,10 @@ class _HabitAnimation extends StatelessWidget {
                   height: 70,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [ColorConstant.accentYellow, ColorConstant.accentOrange],
+                      colors: [
+                        ColorConstant.accentYellow,
+                        ColorConstant.accentOrange
+                      ],
                     ),
                     shape: BoxShape.circle,
                   ),
@@ -619,8 +628,9 @@ class _HabitAnimation extends StatelessWidget {
       return AnimatedBuilder(
         animation: mainController,
         builder: (context, child) {
-          final angle = (item['angle'] as double) + (mainController.value * 2 * math.pi);
-          final radius = 80.0;
+          final angle =
+              (item['angle'] as double) + (mainController.value * 2 * math.pi);
+          const radius = 80.0;
           final x = math.cos(angle) * radius;
           final y = math.sin(angle) * radius;
 
@@ -630,7 +640,9 @@ class _HabitAnimation extends StatelessWidget {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+                color: isDarkMode
+                    ? ColorConstant.cardColorDark
+                    : ColorConstant.white,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Center(
@@ -677,7 +689,10 @@ class _FinanceAnimation extends StatelessWidget {
                   height: 80,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [ColorConstant.accentBlue, const Color(0xFF667EEA)],
+                      colors: [
+                        ColorConstant.accentBlue,
+                        const Color(0xFF667EEA)
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -700,7 +715,8 @@ class _FinanceAnimation extends StatelessWidget {
       return AnimatedBuilder(
         animation: mainController,
         builder: (context, child) {
-          final progress = ((mainController.value - delay) % 1.0).clamp(0.0, 1.0);
+          final progress =
+              ((mainController.value - delay) % 1.0).clamp(0.0, 1.0);
           final y = -80 + (progress * 160) - (progress * progress * 160);
 
           return Transform.translate(
@@ -712,7 +728,10 @@ class _FinanceAnimation extends StatelessWidget {
                 height: 40,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [ColorConstant.accentYellow, ColorConstant.accentOrange],
+                    colors: [
+                      ColorConstant.accentYellow,
+                      ColorConstant.accentOrange
+                    ],
                   ),
                   shape: BoxShape.circle,
                 ),
@@ -753,7 +772,8 @@ class _DiaryAnimation extends StatelessWidget {
       child: AnimatedBuilder(
         animation: mainController,
         builder: (context, child) {
-          final openAngle = (math.sin(mainController.value * 2 * math.pi) + 1) / 4;
+          final openAngle =
+              (math.sin(mainController.value * 2 * math.pi) + 1) / 4;
 
           return Stack(
             alignment: Alignment.center,
@@ -769,7 +789,10 @@ class _DiaryAnimation extends StatelessWidget {
                   height: 140,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [ColorConstant.accentOrange, const Color(0xFFFF8A5C)],
+                      colors: [
+                        ColorConstant.accentOrange,
+                        const Color(0xFFFF8A5C)
+                      ],
                     ),
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(12),
@@ -796,7 +819,9 @@ class _DiaryAnimation extends StatelessWidget {
                   width: 100,
                   height: 140,
                   decoration: BoxDecoration(
-                    color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+                    color: isDarkMode
+                        ? ColorConstant.cardColorDark
+                        : ColorConstant.white,
                     borderRadius: const BorderRadius.only(
                       topRight: Radius.circular(12),
                       bottomRight: Radius.circular(12),
@@ -808,11 +833,12 @@ class _DiaryAnimation extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: List.generate(
                         4,
-                            (index) => Container(
+                        (index) => Container(
                           margin: const EdgeInsets.only(bottom: 8),
                           height: 3,
                           decoration: BoxDecoration(
-                            color: ColorConstant.textMutedLight.withOpacity(0.3),
+                            color: ColorConstant.textMutedLight
+                                .withValues(alpha: 0.3),
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
@@ -861,14 +887,17 @@ class _GamificationAnimation extends StatelessWidget {
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [ColorConstant.primaryPurple, ColorConstant.accentBlue],
+                      colors: [
+                        ColorConstant.primaryPurple,
+                        ColorConstant.accentBlue
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(35),
                   ),
-                  child: Center(
+                  child: const Center(
                     child: Text(
                       '🚀',
-                      style: const TextStyle(fontSize: 40),
+                      style: TextStyle(fontSize: 40),
                     ),
                   ),
                 ),
@@ -895,16 +924,18 @@ class _GamificationAnimation extends StatelessWidget {
       return AnimatedBuilder(
         animation: mainController,
         builder: (context, child) {
-          final progress = ((mainController.value - (pos['delay'] as double)) % 1.0).clamp(0.0, 1.0);
+          final progress =
+              ((mainController.value - (pos['delay'] as double)) % 1.0)
+                  .clamp(0.0, 1.0);
           final scale = math.sin(progress * math.pi);
 
           return Transform.translate(
             offset: Offset(pos['x'] as double, pos['y'] as double),
             child: Transform.scale(
               scale: scale * 0.8,
-              child: Text(
+              child: const Text(
                 '⭐',
-                style: const TextStyle(fontSize: 24),
+                style: TextStyle(fontSize: 24),
               ),
             ),
           );
@@ -931,7 +962,7 @@ class _GamificationAnimation extends StatelessWidget {
                 width: 45,
                 height: 45,
                 decoration: BoxDecoration(
-                  color: ColorConstant.accentGreen.withOpacity(0.2),
+                  color: ColorConstant.accentGreen.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: ColorConstant.accentGreen,
@@ -982,7 +1013,10 @@ class _SubscriptionAnimation extends StatelessWidget {
                   height: 100,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [ColorConstant.primaryPurple, ColorConstant.accentBlue],
+                      colors: [
+                        ColorConstant.primaryPurple,
+                        ColorConstant.accentBlue
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -1014,8 +1048,9 @@ class _SubscriptionAnimation extends StatelessWidget {
       return AnimatedBuilder(
         animation: mainController,
         builder: (context, child) {
-          final angle = (item['angle'] as double) + (mainController.value * 2 * math.pi);
-          final radius = 85.0;
+          final angle =
+              (item['angle'] as double) + (mainController.value * 2 * math.pi);
+          const radius = 85.0;
           final x = math.cos(angle) * radius;
           final y = math.sin(angle) * radius;
 
@@ -1025,11 +1060,13 @@ class _SubscriptionAnimation extends StatelessWidget {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+                color: isDarkMode
+                    ? ColorConstant.cardColorDark
+                    : ColorConstant.white,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: ColorConstant.primaryPurple.withOpacity(0.2),
+                    color: ColorConstant.primaryPurple.withValues(alpha: 0.2),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -1080,7 +1117,9 @@ class _PasswordAnimation extends StatelessWidget {
                     height: 50,
                     decoration: BoxDecoration(
                       border: Border.all(
-                        color: isOpen ? ColorConstant.accentGreen : ColorConstant.accentOrange,
+                        color: isOpen
+                            ? ColorConstant.accentGreen
+                            : ColorConstant.accentOrange,
                         width: 8,
                       ),
                       borderRadius: const BorderRadius.only(
@@ -1088,7 +1127,9 @@ class _PasswordAnimation extends StatelessWidget {
                         topRight: Radius.circular(20),
                       ),
                     ),
-                    transform: isOpen ? Matrix4.translationValues(-15, 0, 0) : Matrix4.identity(),
+                    transform: isOpen
+                        ? Matrix4.translationValues(-15, 0, 0)
+                        : Matrix4.identity(),
                   ),
                   // Lock Body
                   Container(
@@ -1097,8 +1138,12 @@ class _PasswordAnimation extends StatelessWidget {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          isOpen ? ColorConstant.accentGreen : ColorConstant.accentOrange,
-                          isOpen ? ColorConstant.accentGreen.withOpacity(0.8) : ColorConstant.accentYellow,
+                          isOpen
+                              ? ColorConstant.accentGreen
+                              : ColorConstant.accentOrange,
+                          isOpen
+                              ? ColorConstant.accentGreen.withValues(alpha: 0.8)
+                              : ColorConstant.accentYellow,
                         ],
                       ),
                       borderRadius: BorderRadius.circular(12),
@@ -1166,7 +1211,10 @@ class _MedicineAnimation extends StatelessWidget {
                         gradient: LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
-                          colors: [ColorConstant.accentBlue, const Color(0xFF667EEA)],
+                          colors: [
+                            ColorConstant.accentBlue,
+                            const Color(0xFF667EEA)
+                          ],
                         ),
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -1195,7 +1243,8 @@ class _MedicineAnimation extends StatelessWidget {
       return AnimatedBuilder(
         animation: mainController,
         builder: (context, child) {
-          final progress = ((mainController.value - delay) % 1.0).clamp(0.0, 1.0);
+          final progress =
+              ((mainController.value - delay) % 1.0).clamp(0.0, 1.0);
           final x = (delay - 0.4) * 100;
           final y = -60 + (progress * 120);
 
@@ -1208,14 +1257,17 @@ class _MedicineAnimation extends StatelessWidget {
                 height: 30,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [ColorConstant.errorRed, ColorConstant.accentOrange],
+                    colors: [
+                      ColorConstant.errorRed,
+                      ColorConstant.accentOrange
+                    ],
                   ),
                   borderRadius: BorderRadius.circular(15),
                 ),
-                child: Center(
+                child: const Center(
                   child: Text(
                     '💊',
-                    style: const TextStyle(fontSize: 16),
+                    style: TextStyle(fontSize: 16),
                   ),
                 ),
               ),
@@ -1255,11 +1307,14 @@ class _FileSecurityAnimation extends StatelessWidget {
                   width: 100,
                   height: 120,
                   decoration: BoxDecoration(
-                    color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+                    color: isDarkMode
+                        ? ColorConstant.cardColorDark
+                        : ColorConstant.white,
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: ColorConstant.primaryPurple.withOpacity(0.3),
+                        color:
+                            ColorConstant.primaryPurple.withValues(alpha: 0.3),
                         blurRadius: 20,
                         offset: const Offset(0, 8),
                       ),
@@ -1278,7 +1333,8 @@ class _FileSecurityAnimation extends StatelessWidget {
           AnimatedBuilder(
             animation: mainController,
             builder: (context, child) {
-              final scale = 1.0 + (math.sin(mainController.value * 2 * math.pi) * 0.1);
+              final scale =
+                  1.0 + (math.sin(mainController.value * 2 * math.pi) * 0.1);
 
               return Transform.scale(
                 scale: scale,
@@ -1287,7 +1343,10 @@ class _FileSecurityAnimation extends StatelessWidget {
                   height: 60,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [ColorConstant.accentGreen, const Color(0xFF48BB78)],
+                      colors: [
+                        ColorConstant.accentGreen,
+                        const Color(0xFF48BB78)
+                      ],
                     ),
                     shape: BoxShape.circle,
                   ),
@@ -1328,7 +1387,8 @@ class _NotificationAnimation extends StatelessWidget {
           AnimatedBuilder(
             animation: secondaryController,
             builder: (context, child) {
-              final rotation = math.sin(secondaryController.value * 2 * math.pi) * 0.3;
+              final rotation =
+                  math.sin(secondaryController.value * 2 * math.pi) * 0.3;
 
               return Transform.rotate(
                 angle: rotation,
@@ -1337,7 +1397,10 @@ class _NotificationAnimation extends StatelessWidget {
                   height: 80,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [ColorConstant.primaryPurple, ColorConstant.accentBlue],
+                      colors: [
+                        ColorConstant.primaryPurple,
+                        ColorConstant.accentBlue
+                      ],
                     ),
                     shape: BoxShape.circle,
                   ),
@@ -1359,17 +1422,30 @@ class _NotificationAnimation extends StatelessWidget {
 
   List<Widget> _buildNotificationCards(bool isDarkMode) {
     final notifications = [
-      {'icon': Icons.task_rounded, 'color': ColorConstant.accentBlue, 'angle': 0.0},
-      {'icon': Icons.emoji_events_rounded, 'color': ColorConstant.accentYellow, 'angle': math.pi * 2 / 3},
-      {'icon': Icons.attach_money, 'color': ColorConstant.accentGreen, 'angle': math.pi * 4 / 3},
+      {
+        'icon': Icons.task_rounded,
+        'color': ColorConstant.accentBlue,
+        'angle': 0.0
+      },
+      {
+        'icon': Icons.emoji_events_rounded,
+        'color': ColorConstant.accentYellow,
+        'angle': math.pi * 2 / 3
+      },
+      {
+        'icon': Icons.attach_money,
+        'color': ColorConstant.accentGreen,
+        'angle': math.pi * 4 / 3
+      },
     ];
 
     return notifications.map((notif) {
       return AnimatedBuilder(
         animation: mainController,
         builder: (context, child) {
-          final angle = (notif['angle'] as double) + (mainController.value * 2 * math.pi);
-          final radius = 90.0;
+          final angle =
+              (notif['angle'] as double) + (mainController.value * 2 * math.pi);
+          const radius = 90.0;
           final x = math.cos(angle) * radius;
           final y = math.sin(angle) * radius;
 
@@ -1383,7 +1459,7 @@ class _NotificationAnimation extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: (notif['color'] as Color).withOpacity(0.4),
+                    color: (notif['color'] as Color).withValues(alpha: 0.4),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),

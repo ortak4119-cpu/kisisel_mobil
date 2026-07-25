@@ -151,13 +151,13 @@ class _PaywallViewState extends State<PaywallView>
           end: Alignment.bottomRight,
           colors: isDarkMode
               ? [
-            ColorConstant.primaryDarkModePurple.withOpacity(0.3),
-            ColorConstant.primaryDarkModeBlue.withOpacity(0.2),
+            ColorConstant.primaryDarkModePurple.withValues(alpha: 0.3),
+            ColorConstant.primaryDarkModeBlue.withValues(alpha: 0.2),
             ColorConstant.bgColorDark,
           ]
               : [
-            ColorConstant.primaryPurple.withOpacity(0.1),
-            ColorConstant.accentBlue.withOpacity(0.05),
+            ColorConstant.primaryPurple.withValues(alpha: 0.1),
+            ColorConstant.accentBlue.withValues(alpha: 0.05),
             ColorConstant.bgColorLight,
           ],
         ),
@@ -228,7 +228,7 @@ class _PaywallViewState extends State<PaywallView>
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: ColorConstant.accentYellow.withOpacity(0.4),
+                color: ColorConstant.accentYellow.withValues(alpha: 0.4),
                 blurRadius: 20,
                 spreadRadius: 5,
               ),
@@ -456,8 +456,8 @@ class _PaywallViewState extends State<PaywallView>
             decoration: BoxDecoration(
               color: isSelected
                   ? (isDarkMode
-                  ? ColorConstant.primaryDarkModePurple.withOpacity(0.15)
-                  : ColorConstant.primaryPurple.withOpacity(0.08))
+                  ? ColorConstant.primaryDarkModePurple.withValues(alpha: 0.15)
+                  : ColorConstant.primaryPurple.withValues(alpha: 0.08))
                   : (isDarkMode
                   ? ColorConstant.cardColorDark
                   : ColorConstant.white),
@@ -478,7 +478,7 @@ class _PaywallViewState extends State<PaywallView>
                   color: (isDarkMode
                       ? ColorConstant.primaryDarkModePurple
                       : ColorConstant.primaryPurple)
-                      .withOpacity(0.2),
+                      .withValues(alpha: 0.2),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -590,7 +590,7 @@ class _PaywallViewState extends State<PaywallView>
                                     vertical: 2,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: ColorConstant.accentBlue.withOpacity(0.1),
+                                    color: ColorConstant.accentBlue.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: Text(
@@ -707,8 +707,8 @@ class _PaywallViewState extends State<PaywallView>
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDarkMode
-            ? ColorConstant.cardColorDark.withOpacity(0.5)
-            : ColorConstant.white.withOpacity(0.5),
+            ? ColorConstant.cardColorDark.withValues(alpha: 0.5)
+            : ColorConstant.white.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isDarkMode

@@ -2,6 +2,12 @@
 cmake_minimum_required(VERSION 3.14)
 project(base LANGUAGES CXX)
 
+# Ensure subdirectory CMake files that require a newer minimum policy
+# don't fail during configuration. Some extracted SDK cmake files use
+# an older `cmake_minimum_required` value that is incompatible with
+# recent CMake; setting this variable helps avoid that error.
+set(CMAKE_POLICY_VERSION_MINIMUM 3.10)
+
 # The name of the executable created for the application. Change this to change
 # the on-disk name of your application.
 set(BINARY_NAME "base")

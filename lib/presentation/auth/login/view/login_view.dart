@@ -63,7 +63,7 @@ class _LoginViewState extends State<LoginView> {
                                 boxShadow: [
                                   BoxShadow(
                                     color: ColorConstant.primaryPurple
-                                        .withOpacity(0.3),
+                                        .withValues(alpha: 0.3),
                                     blurRadius: 20,
                                     offset: const Offset(0, 10),
                                   ),
@@ -84,11 +84,11 @@ class _LoginViewState extends State<LoginView> {
                                   .textTheme
                                   .displayMedium
                                   ?.copyWith(
-                                color: isDarkMode
-                                    ? ColorConstant.textPrimaryDark
-                                    : ColorConstant.textPrimaryLight,
-                                fontWeight: FontWeight.w800,
-                              ),
+                                    color: isDarkMode
+                                        ? ColorConstant.textPrimaryDark
+                                        : ColorConstant.textPrimaryLight,
+                                    fontWeight: FontWeight.w800,
+                                  ),
                             ),
                             const SizedBox(height: 8),
                             Text(
@@ -97,10 +97,10 @@ class _LoginViewState extends State<LoginView> {
                                   .textTheme
                                   .bodyMedium
                                   ?.copyWith(
-                                color: isDarkMode
-                                    ? ColorConstant.textSecondaryDark
-                                    : ColorConstant.textSecondaryLight,
-                              ),
+                                    color: isDarkMode
+                                        ? ColorConstant.textSecondaryDark
+                                        : ColorConstant.textSecondaryLight,
+                                  ),
                             ),
                           ],
                         ),
@@ -111,21 +111,23 @@ class _LoginViewState extends State<LoginView> {
                       // Welcome Back
                       Text(
                         'auth.welcomeBack'.tr(),
-                        style:
-                        Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          color: isDarkMode
-                              ? ColorConstant.textPrimaryDark
-                              : ColorConstant.textPrimaryLight,
-                        ),
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineMedium
+                            ?.copyWith(
+                              color: isDarkMode
+                                  ? ColorConstant.textPrimaryDark
+                                  : ColorConstant.textPrimaryLight,
+                            ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'auth.signInInstruction'.tr(),
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: isDarkMode
-                              ? ColorConstant.textSecondaryDark
-                              : ColorConstant.textSecondaryLight,
-                        ),
+                              color: isDarkMode
+                                  ? ColorConstant.textSecondaryDark
+                                  : ColorConstant.textSecondaryLight,
+                            ),
                       ),
 
                       const SizedBox(height: 32),
@@ -192,7 +194,8 @@ class _LoginViewState extends State<LoginView> {
                         alignment: Alignment.centerRight,
                         child: TextButton(
                           onPressed: () {
-                            _showForgotPasswordDialog(context, viewModel, isDarkMode);
+                            _showForgotPasswordDialog(
+                                context, viewModel, isDarkMode);
                           },
                           child: Text(
                             'auth.forgotPassword'.tr(),
@@ -214,18 +217,18 @@ class _LoginViewState extends State<LoginView> {
                           onPressed: viewModel.isLoading
                               ? null
                               : () async {
-                            if (_formKey.currentState!.validate()) {
-                              final success = await viewModel.login(
-                                context,
-                                _emailController.text.trim(),
-                                _passwordController.text,
-                              );
+                                  if (_formKey.currentState!.validate()) {
+                                    final success = await viewModel.login(
+                                      context,
+                                      _emailController.text.trim(),
+                                      _passwordController.text,
+                                    );
 
-                              if (success && mounted) {
-                                context.router.push(HomeRoute());
-                              }
-                            }
-                          },
+                                    if (success && mounted) {
+                                      context.router.push(const HomeRoute());
+                                    }
+                                  }
+                                },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: isDarkMode
                                 ? ColorConstant.primaryDarkModePurple
@@ -236,21 +239,21 @@ class _LoginViewState extends State<LoginView> {
                           ),
                           child: viewModel.isLoading
                               ? SizedBox(
-                            height: 24,
-                            width: 24,
-                            child: CircularProgressIndicator(
-                              color: ColorConstant.white,
-                              strokeWidth: 2.5,
-                            ),
-                          )
+                                  height: 24,
+                                  width: 24,
+                                  child: CircularProgressIndicator(
+                                    color: ColorConstant.white,
+                                    strokeWidth: 2.5,
+                                  ),
+                                )
                               : Text(
-                            'auth.login'.tr(),
-                            style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w600,
-                              color: ColorConstant.white,
-                            ),
-                          ),
+                                  'auth.login'.tr(),
+                                  style: TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w600,
+                                    color: ColorConstant.white,
+                                  ),
+                                ),
                         ),
                       ),
 
@@ -296,9 +299,10 @@ class _LoginViewState extends State<LoginView> {
                         icon: Icons.g_mobiledata_rounded,
                         isDarkMode: isDarkMode,
                         onPressed: () async {
-                          final success = await viewModel.loginWithGoogle(context);
+                          final success =
+                              await viewModel.loginWithGoogle(context);
                           if (success && mounted) {
-                            context.router.push(HomeRoute());
+                            context.router.push(const HomeRoute());
                           }
                         },
                       ),
@@ -310,9 +314,10 @@ class _LoginViewState extends State<LoginView> {
                         icon: Icons.apple_rounded,
                         isDarkMode: isDarkMode,
                         onPressed: () async {
-                          final success = await viewModel.loginWithApple(context);
+                          final success =
+                              await viewModel.loginWithApple(context);
                           if (success && mounted) {
-                            context.router.push(HomeRoute());
+                            context.router.push(const HomeRoute());
                           }
                         },
                       ),
@@ -334,7 +339,7 @@ class _LoginViewState extends State<LoginView> {
                             ),
                             TextButton(
                               onPressed: () {
-                                context.router.push(RegisterRoute());
+                                context.router.push(const RegisterRoute());
                               },
                               child: Text(
                                 'auth.register'.tr(),
@@ -422,9 +427,8 @@ class _LoginViewState extends State<LoginView> {
             ),
             suffixIcon: suffixIcon,
             filled: true,
-            fillColor: isDarkMode
-                ? ColorConstant.cardColorDark
-                : ColorConstant.white,
+            fillColor:
+                isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20),
               borderSide: BorderSide(
@@ -524,7 +528,8 @@ class _LoginViewState extends State<LoginView> {
     );
   }
 
-  void _showForgotPasswordDialog(BuildContext context, LoginViewModel viewModel, bool isDarkMode) {
+  void _showForgotPasswordDialog(
+      BuildContext context, LoginViewModel viewModel, bool isDarkMode) {
     showDialog(
       context: context,
       builder: (context) => _ForgotPasswordDialog(isDarkMode: isDarkMode),
@@ -570,7 +575,8 @@ class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
     setState(() => _isLoading = true);
 
     final authService = GetIt.I<IAuthService>();
-    final response = await authService.forgotPassword(_emailController.text.trim());
+    final response =
+        await authService.forgotPassword(_emailController.text.trim());
 
     setState(() => _isLoading = false);
 
@@ -582,7 +588,7 @@ class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Kod email adresinize gönderildi'),
+          content: const Text('Kod email adresinize gönderildi'),
           backgroundColor: ColorConstant.successGreen,
         ),
       );
@@ -602,7 +608,7 @@ class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
     if (_passwordController.text != _passwordConfirmController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Şifreler eşleşmiyor'),
+          content: const Text('Şifreler eşleşmiyor'),
           backgroundColor: ColorConstant.errorRed,
         ),
       );
@@ -625,7 +631,7 @@ class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Şifreniz başarıyla değiştirildi'),
+          content: const Text('Şifreniz başarıyla değiştirildi'),
           backgroundColor: ColorConstant.successGreen,
         ),
       );
@@ -642,9 +648,8 @@ class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: widget.isDarkMode
-          ? ColorConstant.cardColorDark
-          : ColorConstant.white,
+      backgroundColor:
+          widget.isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
@@ -793,7 +798,8 @@ class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
                             : Icons.visibility_off_outlined,
                       ),
                       onPressed: () {
-                        setState(() => _obscureConfirmPassword = !_obscureConfirmPassword);
+                        setState(() =>
+                            _obscureConfirmPassword = !_obscureConfirmPassword);
                       },
                     ),
                   ),
@@ -825,7 +831,8 @@ class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
           ),
         ),
         ElevatedButton(
-          onPressed: _isLoading ? null : (_codeSent ? _resetPassword : _sendCode),
+          onPressed:
+              _isLoading ? null : (_codeSent ? _resetPassword : _sendCode),
           style: ElevatedButton.styleFrom(
             backgroundColor: ColorConstant.primaryPurple,
             shape: RoundedRectangleBorder(

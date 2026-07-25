@@ -10,12 +10,10 @@ class AppTheme {
       secondary: ColorConstant.accentBlue,
       tertiary: ColorConstant.accentYellow,
       surface: ColorConstant.cardColorLight,
-      background: ColorConstant.bgColorLight,
       error: ColorConstant.errorRed,
       onPrimary: ColorConstant.white,
       onSecondary: ColorConstant.white,
       onSurface: ColorConstant.textPrimaryLight,
-      onBackground: ColorConstant.textPrimaryLight,
     ),
     scaffoldBackgroundColor: ColorConstant.bgColorLight,
     appBarTheme: AppBarTheme(
@@ -33,7 +31,7 @@ class AppTheme {
     cardTheme: CardThemeData(
       color: ColorConstant.cardColorLight,
       elevation: 0,
-      shadowColor: ColorConstant.primaryPurple.withOpacity(0.1),
+      shadowColor: ColorConstant.primaryPurple.withValues(alpha: 0.1),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
       ),
@@ -108,7 +106,7 @@ class AppTheme {
         backgroundColor: ColorConstant.primaryPurple,
         foregroundColor: ColorConstant.white,
         elevation: 0,
-        shadowColor: ColorConstant.primaryPurple.withOpacity(0.25),
+        shadowColor: ColorConstant.primaryPurple.withValues(alpha: 0.25),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
@@ -155,11 +153,13 @@ class AppTheme {
       fillColor: ColorConstant.white,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(20),
-        borderSide: BorderSide(color: ColorConstant.borderColorLight, width: 1.5),
+        borderSide:
+            BorderSide(color: ColorConstant.borderColorLight, width: 1.5),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(20),
-        borderSide: BorderSide(color: ColorConstant.borderColorLight, width: 1.5),
+        borderSide:
+            BorderSide(color: ColorConstant.borderColorLight, width: 1.5),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(20),
@@ -252,12 +252,10 @@ class AppTheme {
       secondary: ColorConstant.primaryDarkModeBlue,
       tertiary: ColorConstant.accentDarkModeYellow,
       surface: ColorConstant.cardColorDark,
-      background: ColorConstant.bgColorDark,
       error: ColorConstant.errorRed,
       onPrimary: ColorConstant.white,
       onSecondary: ColorConstant.white,
       onSurface: ColorConstant.textPrimaryDark,
-      onBackground: ColorConstant.textPrimaryDark,
     ),
     scaffoldBackgroundColor: ColorConstant.bgColorDark,
     appBarTheme: AppBarTheme(
@@ -275,7 +273,7 @@ class AppTheme {
     cardTheme: CardThemeData(
       color: ColorConstant.cardColorDark,
       elevation: 0,
-      shadowColor: ColorConstant.black.withOpacity(0.3),
+      shadowColor: ColorConstant.black.withValues(alpha: 0.3),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
       ),
@@ -350,7 +348,8 @@ class AppTheme {
         backgroundColor: ColorConstant.primaryDarkModePurple,
         foregroundColor: ColorConstant.white,
         elevation: 0,
-        shadowColor: ColorConstant.primaryDarkModePurple.withOpacity(0.25),
+        shadowColor:
+            ColorConstant.primaryDarkModePurple.withValues(alpha: 0.25),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
@@ -397,15 +396,18 @@ class AppTheme {
       fillColor: ColorConstant.cardColorDark,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(20),
-        borderSide: BorderSide(color: ColorConstant.borderColorDark, width: 1.5),
+        borderSide:
+            BorderSide(color: ColorConstant.borderColorDark, width: 1.5),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(20),
-        borderSide: BorderSide(color: ColorConstant.borderColorDark, width: 1.5),
+        borderSide:
+            BorderSide(color: ColorConstant.borderColorDark, width: 1.5),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(20),
-        borderSide: BorderSide(color: ColorConstant.primaryDarkModePurple, width: 2.5),
+        borderSide:
+            BorderSide(color: ColorConstant.primaryDarkModePurple, width: 2.5),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(20),

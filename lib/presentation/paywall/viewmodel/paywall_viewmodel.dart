@@ -2,9 +2,12 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import '../../../service/revenue_cat/revenue_cat_service.dart';
+import '../../../service/profile/profile_service.dart';
+import '../../../core/init/locator.dart';
 
 class PaywallViewModel extends ChangeNotifier {
   final RevenueCatService _revenueCatService = RevenueCatService();
+  final IProfileService _profileService = locator.get<IProfileService>();
 
   bool _isLoading = true;
   bool _isPurchasing = false;
@@ -140,8 +143,9 @@ class PaywallViewModel extends ChangeNotifier {
       if (customerInfo != null) {
         debugPrint('✅ Purchase successful!');
 
-        // Premium durumunu kontrol et
-        final isPremium = customerInfo.entitlements.all['premium']?.isActive ?? false;
+        // Backend'den kullanıcı durumunu kontrol et
+        // RevenueCat webhook backend'i güncelleyecek, biz de backend'den güncel durumu alalım
+        final isPremium = await _checkPremiumFromBackend();
 
         if (isPremium) {
           debugPrint('🎉 User is now premium!');
@@ -160,6 +164,29 @@ class PaywallViewModel extends ChangeNotifier {
     }
   }
 
+  /// Backend'den premium durumunu kontrol et
+  Future<bool> _checkPremiumFromBackend() async {
+    try {
+      final response = await _profileService.getProfile();
+      if (response.isSuccess && response.data != null) {
+        final user = response.data!;
+        final subscriptionStatus = user.subscriptionStatus;
+        final subscriptionType = user.subscriptionType;
+
+        // Aktif subscription kontrolü
+        if (subscriptionStatus == 'active' || subscriptionStatus == 'trialing') {
+          if (subscriptionType != null && subscriptionType != 'free') {
+            debugPrint('✅ User is premium from backend: $subscriptionType ($subscriptionStatus)');
+            return true;
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('❌ Error checking premium from backend: $e');
+    }
+    return false;
+  }
+
   /// Satın alımları restore et
   Future<bool> restorePurchases() async {
     _isRestoring = true;
@@ -170,10 +197,10 @@ class PaywallViewModel extends ChangeNotifier {
       final customerInfo = await _revenueCatService.restorePurchases();
 
       if (customerInfo != null) {
-        final isPremium = customerInfo.entitlements.all['premium']?.isActive ?? false;
-
-        if (isPremium) {
-          debugPrint('✅ Purchases restored - User is premium');
+        // Sadece backend'den kontrol et
+        final backendPremium = await _checkPremiumFromBackend();
+        if (backendPremium) {
+          debugPrint('✅ Purchases restored - User is premium (from backend)');
           return true;
         } else {
           _errorMessage = 'paywall.errors.noActiveSubscription'.tr();

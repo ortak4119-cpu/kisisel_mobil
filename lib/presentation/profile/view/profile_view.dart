@@ -4,8 +4,10 @@ import 'package:auto_route/auto_route.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../core/route/app_router.gr.dart';
+import '../../../core/design/app_design.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/utils/custom_snackbar.dart';
+import '../../../core/utils/premium_helper.dart';
 import '../../../models/social/social_model.dart';
 import '../viewmodel/profile_viewmodel.dart';
 import '../widgets/user_profile_bottom_sheet.dart';
@@ -116,43 +118,44 @@ class _ProfileViewState extends State<ProfileView>
                       background: _buildHeader(context, viewModel, isDarkMode),
                     ),
                     actions: [
-                      // Premium Button
-                      Padding(
-                        padding: const EdgeInsets.only(right: 4),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                ColorConstant.accentYellow,
-                                ColorConstant.accentOrange,
+                      // Premium Button - kullanıcı yüklendikten sonra, sadece premium değilse göster
+                      if (viewModel.isUserLoaded && !PremiumHelper.isPremiumUser(viewModel.currentUser))
+                        Padding(
+                          padding: const EdgeInsets.only(right: 4),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  ColorConstant.accentYellow,
+                                  ColorConstant.accentOrange,
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: ColorConstant.accentYellow.withValues(alpha: 0.3),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
                               ],
                             ),
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: ColorConstant.accentYellow.withOpacity(0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () => context.router.push(const PaywallRoute()),
-                              borderRadius: BorderRadius.circular(12),
-                              child: Padding(
-                                padding: const EdgeInsets.all(8),
-                                child: Icon(
-                                  Icons.workspace_premium_rounded,
-                                  color: ColorConstant.white,
-                                  size: 20,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () => context.router.push(const PaywallRoute()),
+                                borderRadius: BorderRadius.circular(12),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8),
+                                  child: Icon(
+                                    Icons.workspace_premium_rounded,
+                                    color: ColorConstant.white,
+                                    size: 20,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                         ),
-                      ),
                       Padding(
                         padding: const EdgeInsets.only(right: 8),
                         child: IconButton(
@@ -160,8 +163,8 @@ class _ProfileViewState extends State<ProfileView>
                               context.router.push(const SettingsRoute()),
                           style: IconButton.styleFrom(
                             backgroundColor: isDarkMode
-                                ? ColorConstant.cardColorDark.withOpacity(0.8)
-                                : ColorConstant.white.withOpacity(0.8),
+                                ? ColorConstant.cardColorDark.withValues(alpha: 0.8)
+                                : ColorConstant.white.withValues(alpha: 0.8),
                           ),
                           icon: Icon(
                             Icons.settings_rounded,
@@ -198,7 +201,7 @@ class _ProfileViewState extends State<ProfileView>
                         gradient: LinearGradient(
                           colors: [
                             ColorConstant.accentBlue,
-                            ColorConstant.accentBlue.withOpacity(0.8),
+                            ColorConstant.accentBlue.withValues(alpha: 0.8),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(14),
@@ -308,10 +311,10 @@ class _ProfileViewState extends State<ProfileView>
                 left: 16,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.6),
+                    color: Colors.black.withValues(alpha: 0.6),
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: ColorConstant.white.withOpacity(0.3),
+                      color: ColorConstant.white.withValues(alpha: 0.3),
                       width: 2,
                     ),
                   ),
@@ -347,7 +350,7 @@ class _ProfileViewState extends State<ProfileView>
             height: 120,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: ColorConstant.white.withOpacity(0.1),
+              color: ColorConstant.white.withValues(alpha: 0.1),
             ),
           ),
         ),
@@ -359,7 +362,7 @@ class _ProfileViewState extends State<ProfileView>
             height: 80,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: ColorConstant.white.withOpacity(0.1),
+              color: ColorConstant.white.withValues(alpha: 0.1),
             ),
           ),
         ),
@@ -392,7 +395,7 @@ class _ProfileViewState extends State<ProfileView>
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: ColorConstant.accentBlue.withOpacity(0.3),
+                                color: ColorConstant.accentBlue.withValues(alpha: 0.3),
                                 blurRadius: 20,
                                 offset: const Offset(0, 8),
                               ),
@@ -440,7 +443,7 @@ class _ProfileViewState extends State<ProfileView>
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: ColorConstant.accentBlue.withOpacity(0.4),
+                            color: ColorConstant.accentBlue.withValues(alpha: 0.4),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -765,7 +768,7 @@ class _StatsTab extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: ColorConstant.accentYellow.withOpacity(0.4),
+            color: ColorConstant.accentYellow.withValues(alpha: 0.4),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -777,7 +780,7 @@ class _StatsTab extends StatelessWidget {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: ColorConstant.white.withOpacity(0.2),
+              color: ColorConstant.white.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: const Center(child: Text('🏆', style: TextStyle(fontSize: 48))),
@@ -810,9 +813,9 @@ class _StatsTab extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: ColorConstant.white.withOpacity(0.2),
+        color: ColorConstant.white.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: ColorConstant.white.withOpacity(0.3), width: 1.5),
+        border: Border.all(color: ColorConstant.white.withValues(alpha: 0.3), width: 1.5),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -838,9 +841,9 @@ class _StatsTab extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: color.withOpacity(0.3), width: 2),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 2),
         boxShadow: [
-          BoxShadow(color: color.withOpacity(0.08), blurRadius: 8, offset: const Offset(0, 2)),
+          BoxShadow(color: color.withValues(alpha: 0.08), blurRadius: 8, offset: const Offset(0, 2)),
         ],
       ),
       child: Column(
@@ -853,12 +856,12 @@ class _StatsTab extends StatelessWidget {
                 height: 40,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [color.withOpacity(0.2), color.withOpacity(0.1)],
+                    colors: [color.withValues(alpha: 0.2), color.withValues(alpha: 0.1)],
                   ),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: color.withOpacity(0.3), width: 1.5),
+                  border: Border.all(color: color.withValues(alpha: 0.3), width: 1.5),
                 ),
-                child: Center(child: Text(emoji, style: const TextStyle(fontSize: 20))),
+                child: Center(child: Icon(icon, size: 20, color: color)),
               ),
               const SizedBox(width: 10),
               Text(
@@ -879,10 +882,10 @@ class _StatsTab extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [color.withOpacity(0.08), color.withOpacity(0.03)],
+                      colors: [color.withValues(alpha: 0.08), color.withValues(alpha: 0.03)],
                     ),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: color.withOpacity(0.2), width: 1),
+                    border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
                   ),
                   child: Column(
                     children: [
@@ -951,12 +954,12 @@ class _FriendsTab extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    ColorConstant.accentBlue.withOpacity(0.1),
-                    ColorConstant.primaryPurple.withOpacity(0.1),
+                    ColorConstant.accentBlue.withValues(alpha: 0.1),
+                    ColorConstant.primaryPurple.withValues(alpha: 0.1),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: ColorConstant.accentBlue.withOpacity(0.3), width: 2),
+                border: Border.all(color: ColorConstant.accentBlue.withValues(alpha: 0.3), width: 2),
               ),
               child: Row(
                 children: [
@@ -1028,7 +1031,7 @@ class _FriendsTab extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: ColorConstant.accentYellow.withOpacity(0.2),
+                    color: ColorConstant.accentYellow.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -1066,7 +1069,7 @@ class _FriendsTab extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: ColorConstant.accentBlue.withOpacity(0.2),
+                  color: ColorConstant.accentBlue.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -1081,7 +1084,7 @@ class _FriendsTab extends StatelessWidget {
           if (viewModel.friends.isNotEmpty)
             ...viewModel.friends.map((f) => _buildFriendCard(context, f, viewModel, isDarkMode))
           else
-            _buildEmptyState(emoji: '🤝', message: 'profile.friends.emptyState'.tr(), subtitle: 'profile.friends.emptyStateSubtitle'.tr(), isDarkMode: isDarkMode),
+            _buildEmptyState(illustration: 'empty_habits.svg', message: 'profile.friends.emptyState'.tr(), subtitle: 'profile.friends.emptyStateSubtitle'.tr(), accent: ColorConstant.accentBlue),
         ],
       ),
     );
@@ -1092,9 +1095,9 @@ class _FriendsTab extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [ColorConstant.accentYellow.withOpacity(0.1), ColorConstant.accentOrange.withOpacity(0.05)]),
+        gradient: LinearGradient(colors: [ColorConstant.accentYellow.withValues(alpha: 0.1), ColorConstant.accentOrange.withValues(alpha: 0.05)]),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: ColorConstant.accentYellow.withOpacity(0.4), width: 2),
+        border: Border.all(color: ColorConstant.accentYellow.withValues(alpha: 0.4), width: 2),
       ),
       child: Row(
         children: [
@@ -1102,7 +1105,7 @@ class _FriendsTab extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 28,
-                backgroundColor: ColorConstant.accentBlue.withOpacity(0.2),
+                backgroundColor: ColorConstant.accentBlue.withValues(alpha: 0.2),
                 backgroundImage: request.sender?.profilePictureUrl != null ? NetworkImage(request.sender!.profilePictureUrl!) : null,
                 child: request.sender?.profilePictureUrl == null
                     ? Text(request.sender!.displayName[0].toUpperCase(), style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: ColorConstant.accentBlue))
@@ -1139,13 +1142,13 @@ class _FriendsTab extends StatelessWidget {
             children: [
               IconButton(
                 onPressed: () => viewModel.acceptFriendRequest(request.id, context),
-                style: IconButton.styleFrom(backgroundColor: ColorConstant.accentGreen.withOpacity(0.15)),
+                style: IconButton.styleFrom(backgroundColor: ColorConstant.accentGreen.withValues(alpha: 0.15)),
                 icon: Icon(Icons.check_rounded, color: ColorConstant.accentGreen),
               ),
               const SizedBox(width: 6),
               IconButton(
                 onPressed: () => viewModel.rejectFriendRequest(request.id, context),
-                style: IconButton.styleFrom(backgroundColor: ColorConstant.errorRed.withOpacity(0.15)),
+                style: IconButton.styleFrom(backgroundColor: ColorConstant.errorRed.withValues(alpha: 0.15)),
                 icon: Icon(Icons.close_rounded, color: ColorConstant.errorRed),
               ),
             ],
@@ -1170,7 +1173,7 @@ class _FriendsTab extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 26,
-              backgroundColor: ColorConstant.accentBlue.withOpacity(0.2),
+              backgroundColor: ColorConstant.accentBlue.withValues(alpha: 0.2),
               backgroundImage: friend.profilePictureUrl != null ? NetworkImage(friend.profilePictureUrl!) : null,
               child: friend.profilePictureUrl == null
                   ? Text(friend.displayName[0].toUpperCase(), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: ColorConstant.accentBlue))
@@ -1196,7 +1199,7 @@ class _FriendsTab extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(colors: [ColorConstant.accentYellow.withOpacity(0.2), ColorConstant.accentOrange.withOpacity(0.2)]),
+                          gradient: LinearGradient(colors: [ColorConstant.accentYellow.withValues(alpha: 0.2), ColorConstant.accentOrange.withValues(alpha: 0.2)]),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
@@ -1304,7 +1307,7 @@ class _AchievementsTab extends StatelessWidget {
                 colors: [ColorConstant.accentYellow, ColorConstant.accentOrange],
               ),
               borderRadius: BorderRadius.circular(24),
-              boxShadow: [BoxShadow(color: ColorConstant.accentYellow.withOpacity(0.4), blurRadius: 20, offset: const Offset(0, 8))],
+              boxShadow: [BoxShadow(color: ColorConstant.accentYellow.withValues(alpha: 0.4), blurRadius: 20, offset: const Offset(0, 8))],
             ),
             child: Column(
               children: [
@@ -1315,13 +1318,13 @@ class _AchievementsTab extends StatelessWidget {
                   style: TextStyle(fontSize: 42, fontWeight: FontWeight.w900, color: ColorConstant.white, letterSpacing: -1),
                 ),
                 const SizedBox(height: 8),
-                Text('profile.achievements.unlocked'.tr(), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: ColorConstant.white.withOpacity(0.95))),
+                Text('profile.achievements.unlocked'.tr(), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: ColorConstant.white.withValues(alpha: 0.95))),
                 const SizedBox(height: 20),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: LinearProgressIndicator(
                     value: viewModel.achievements.isEmpty ? 0 : viewModel.achievements.where((a) => a.isCompleted).length / viewModel.achievements.length,
-                    backgroundColor: ColorConstant.white.withOpacity(0.3),
+                    backgroundColor: ColorConstant.white.withValues(alpha: 0.3),
                     valueColor: AlwaysStoppedAnimation<Color>(ColorConstant.white),
                     minHeight: 10,
                   ),
@@ -1329,7 +1332,7 @@ class _AchievementsTab extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   '${viewModel.achievements.isEmpty ? 0 : ((viewModel.achievements.where((a) => a.isCompleted).length / viewModel.achievements.length) * 100).toStringAsFixed(0)}${'profile.achievements.completed'.tr()}',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: ColorConstant.white.withOpacity(0.9)),
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: ColorConstant.white.withValues(alpha: 0.9)),
                 ),
               ],
             ),
@@ -1374,7 +1377,7 @@ class _AchievementsTab extends StatelessWidget {
           if (viewModel.achievements.isNotEmpty)
             ...viewModel.achievements.map((a) => _buildAchievementCard(a, isDarkMode))
           else
-            _buildEmptyState(emoji: '🎯', message: 'profile.achievements.emptyState'.tr(), subtitle: 'profile.achievements.emptyStateSubtitle'.tr(), isDarkMode: isDarkMode),
+            _buildEmptyState(illustration: 'empty_tasks.svg', message: 'profile.achievements.emptyState'.tr(), subtitle: 'profile.achievements.emptyStateSubtitle'.tr(), accent: ColorConstant.accentOrange),
         ],
       ),
     );
@@ -1386,7 +1389,7 @@ class _AchievementsTab extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.3), width: 2),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 2),
       ),
       child: Column(
         children: [
@@ -1413,12 +1416,12 @@ class _AchievementsTab extends StatelessWidget {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         gradient: isCompleted
-            ? LinearGradient(colors: [ColorConstant.accentYellow.withOpacity(0.15), ColorConstant.accentOrange.withOpacity(0.05)])
+            ? LinearGradient(colors: [ColorConstant.accentYellow.withValues(alpha: 0.15), ColorConstant.accentOrange.withValues(alpha: 0.05)])
             : null,
         color: isCompleted ? null : (isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isCompleted ? ColorConstant.accentYellow.withOpacity(0.5) : (isDarkMode ? ColorConstant.borderColorDark : ColorConstant.borderColorLight),
+          color: isCompleted ? ColorConstant.accentYellow.withValues(alpha: 0.5) : (isDarkMode ? ColorConstant.borderColorDark : ColorConstant.borderColorLight),
           width: isCompleted ? 2 : 1.5,
         ),
       ),
@@ -1430,7 +1433,7 @@ class _AchievementsTab extends StatelessWidget {
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  gradient: isCompleted ? LinearGradient(colors: [ColorConstant.accentYellow.withOpacity(0.3), ColorConstant.accentOrange.withOpacity(0.2)]) : null,
+                  gradient: isCompleted ? LinearGradient(colors: [ColorConstant.accentYellow.withValues(alpha: 0.3), ColorConstant.accentOrange.withValues(alpha: 0.2)]) : null,
                   color: isCompleted ? null : (isDarkMode ? ColorConstant.bgColorDark : ColorConstant.bgColorLight),
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -1465,7 +1468,7 @@ class _AchievementsTab extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: isCompleted ? ColorConstant.accentYellow.withOpacity(0.2) : (isDarkMode ? ColorConstant.bgColorDark : ColorConstant.bgColorLight),
+                  color: isCompleted ? ColorConstant.accentYellow.withValues(alpha: 0.2) : (isDarkMode ? ColorConstant.bgColorDark : ColorConstant.bgColorLight),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
@@ -1616,7 +1619,7 @@ class _FriendSearchBottomSheetState extends State<_FriendSearchBottomSheet> {
                           Icon(
                             Icons.search_rounded,
                             size: 64,
-                            color: widget.isDarkMode ? ColorConstant.textMutedDark.withOpacity(0.5) : ColorConstant.textMutedLight.withOpacity(0.5),
+                            color: widget.isDarkMode ? ColorConstant.textMutedDark.withValues(alpha: 0.5) : ColorConstant.textMutedLight.withValues(alpha: 0.5),
                           ),
                           const SizedBox(height: 16),
                           Text(
@@ -1649,7 +1652,7 @@ class _FriendSearchBottomSheetState extends State<_FriendSearchBottomSheet> {
                             children: [
                               CircleAvatar(
                                 radius: 24,
-                                backgroundColor: ColorConstant.accentBlue.withOpacity(0.2),
+                                backgroundColor: ColorConstant.accentBlue.withValues(alpha: 0.2),
                                 backgroundImage: user.profilePictureUrl != null ? NetworkImage(user.profilePictureUrl!) : null,
                                 child: user.profilePictureUrl == null
                                     ? Text(user.displayName[0].toUpperCase(), style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: ColorConstant.accentBlue))
@@ -1775,40 +1778,20 @@ class _FriendSearchBottomSheetState extends State<_FriendSearchBottomSheet> {
 
 // ==================== HELPER WIDGETS ====================
 
-Widget _buildEmptyState({required String emoji, required String message, required String subtitle, required bool isDarkMode}) {
-  return Center(
-    child: Padding(
-      padding: const EdgeInsets.symmetric(vertical: 60),
-      child: Column(
-        children: [
-          TweenAnimationBuilder<double>(
-            tween: Tween(begin: 0.0, end: 1.0),
-            duration: const Duration(milliseconds: 800),
-            curve: Curves.elasticOut,
-            builder: (context, value, child) {
-              return Transform.scale(scale: value, child: Text(emoji, style: const TextStyle(fontSize: 80)));
-            },
-          ),
-          const SizedBox(height: 20),
-          Text(
-            message,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: isDarkMode ? ColorConstant.textPrimaryDark : ColorConstant.textPrimaryLight,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            subtitle,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: isDarkMode ? ColorConstant.textSecondaryDark : ColorConstant.textSecondaryLight,
-            ),
-          ),
-        ],
-      ),
+/// Boş durum — emoji yerine SVG illüstrasyon.
+Widget _buildEmptyState({
+  required String illustration,
+  required String message,
+  required String subtitle,
+  required Color accent,
+}) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 24),
+    child: AppEmptyState(
+      illustration: illustration,
+      title: message,
+      message: subtitle,
+      accent: accent,
     ),
   );
 }

@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:record/record.dart';
 import '../../../core/init/locator.dart';
 import '../../../service/note/note_service.dart';
 import '../../../service/diary/diary_service.dart';
@@ -24,6 +27,9 @@ class NotesDiaryViewModel extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  bool _isUserLoaded = false;
+  bool get isUserLoaded => _isUserLoaded;
+
   // Notes
   List<Note> _notes = [];
   List<Note> get notes => _notes;
@@ -41,11 +47,125 @@ class NotesDiaryViewModel extends ChangeNotifier {
   // Note Form State
   final TextEditingController noteTitleController = TextEditingController();
   final TextEditingController noteContentController = TextEditingController();
+
+  /// İçerik alanının odak düğümü — checklist/madde çipine basıldığında
+  /// klavye odağını içeriğe taşımak için kullanılır.
+  final FocusNode noteContentFocus = FocusNode();
   int? _editingNoteId;
   int? _selectedCategoryForNote;
   int? get selectedCategoryForNote => _selectedCategoryForNote;
   String _selectedNoteColor = '#B794F6'; // Default mor renk
   String get selectedNoteColor => _selectedNoteColor;
+
+  // Editör form durumları (kilit / sabitleme / hatırlatıcı)
+  bool _noteLocked = false;
+  bool get noteLocked => _noteLocked;
+  bool _notePinned = false;
+  bool get notePinned => _notePinned;
+  DateTime? _noteReminder;
+  DateTime? get noteReminder => _noteReminder;
+
+  // Editöre eklenen görseller (image_picker ile seçilir, editörde gösterilir)
+  final List<File> _pickedImages = [];
+  List<File> get pickedImages => _pickedImages;
+  final ImagePicker _imagePicker = ImagePicker();
+
+  Future<void> pickNoteImage(ImageSource source) async {
+    try {
+      if (source == ImageSource.gallery) {
+        final files = await _imagePicker.pickMultiImage(imageQuality: 80);
+        for (final f in files) {
+          _pickedImages.add(File(f.path));
+        }
+      } else {
+        final f = await _imagePicker.pickImage(
+            source: source, imageQuality: 80);
+        if (f != null) _pickedImages.add(File(f.path));
+      }
+      notifyListeners();
+    } catch (_) {
+      // İzin reddi / iptal — sessizce geç
+    }
+  }
+
+  /// Çizim veya başka kaynaktan üretilen bir görsel dosyasını ekler.
+  void addPickedImageFile(File file) {
+    _pickedImages.add(file);
+    notifyListeners();
+  }
+
+  void removePickedImage(int index) {
+    if (index >= 0 && index < _pickedImages.length) {
+      _pickedImages.removeAt(index);
+      notifyListeners();
+    }
+  }
+
+  // Eklenen dosyalar (file_picker)
+  final List<File> _pickedFiles = [];
+  List<File> get pickedFiles => _pickedFiles;
+  void addPickedFile(File f) {
+    _pickedFiles.add(f);
+    notifyListeners();
+  }
+
+  void removePickedFile(int index) {
+    if (index >= 0 && index < _pickedFiles.length) {
+      _pickedFiles.removeAt(index);
+      notifyListeners();
+    }
+  }
+
+  // Ses kaydı (record 7.x)
+  final AudioRecorder _recorder = AudioRecorder();
+  bool _isRecording = false;
+  bool get isRecording => _isRecording;
+  String? _voiceNotePath;
+  String? get voiceNotePath => _voiceNotePath;
+
+  Future<void> toggleRecording() async {
+    try {
+      if (_isRecording) {
+        final path = await _recorder.stop();
+        _isRecording = false;
+        if (path != null) _voiceNotePath = path;
+        notifyListeners();
+      } else {
+        if (await _recorder.hasPermission()) {
+          final dir = Directory.systemTemp;
+          final path =
+              '${dir.path}/ses_${DateTime.now().millisecondsSinceEpoch}.m4a';
+          await _recorder.start(const RecordConfig(), path: path);
+          _isRecording = true;
+          notifyListeners();
+        }
+      }
+    } catch (_) {
+      _isRecording = false;
+      notifyListeners();
+    }
+  }
+
+  void removeVoiceNote() {
+    _voiceNotePath = null;
+    notifyListeners();
+  }
+
+
+  void toggleNoteLocked() {
+    _noteLocked = !_noteLocked;
+    notifyListeners();
+  }
+
+  void toggleNotePinned() {
+    _notePinned = !_notePinned;
+    notifyListeners();
+  }
+
+  void setNoteReminder(DateTime? value) {
+    _noteReminder = value;
+    notifyListeners();
+  }
 
   // Diary Form State
   final TextEditingController diaryTitleController = TextEditingController();
@@ -63,6 +183,15 @@ class NotesDiaryViewModel extends ChangeNotifier {
   bool? get filterLocked => _filterLocked;
   bool? _filterArchived;
   bool? get filterArchived => _filterArchived;
+
+  // İstatistik kartı sekmesi: 'all' | 'pinned' | 'folders' | 'archive'
+  String _notesFilter = 'all';
+  String get notesFilter => _notesFilter;
+  void setNotesFilter(String value) {
+    _notesFilter = value;
+    if (value != 'folders') _selectedCategoryId = null;
+    notifyListeners();
+  }
 
   // Filter Methods
   void setSelectedCategory(int? categoryId) {
@@ -147,6 +276,16 @@ class NotesDiaryViewModel extends ChangeNotifier {
     _editingNoteId = null;
     _selectedCategoryForNote = null;
     _selectedNoteColor = '#B794F6'; // Rengi de resetle
+    _noteLocked = false;
+    _notePinned = false;
+    _noteReminder = null;
+    _pickedImages.clear();
+    _pickedFiles.clear();
+    _voiceNotePath = null;
+    if (_isRecording) {
+      _recorder.stop();
+      _isRecording = false;
+    }
     notifyListeners();
   }
 
@@ -164,6 +303,12 @@ class NotesDiaryViewModel extends ChangeNotifier {
     noteContentController.text = note.content ?? '';
     _selectedCategoryForNote = note.categoryId;
     _selectedNoteColor = note.color ?? '#B794F6'; // Notun rengini yükle
+    _noteLocked = note.isLocked;
+    _notePinned = note.isPinned;
+    _noteReminder = note.reminderDate;
+    _pickedImages.clear();
+    _pickedFiles.clear();
+    _voiceNotePath = null;
     notifyListeners();
   }
 
@@ -214,6 +359,9 @@ class NotesDiaryViewModel extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Error loading current user: $e');
+    } finally {
+      _isUserLoaded = true;
+      notifyListeners();
     }
   }
 
@@ -267,9 +415,9 @@ class NotesDiaryViewModel extends ChangeNotifier {
         categoryId: _selectedCategoryForNote,
         templateType: null,
         color: _selectedNoteColor, // Seçilen rengi gönder
-        reminderDate: null,
-        isLocked: false,
-        isPinned: false,
+        reminderDate: _noteReminder,
+        isLocked: _noteLocked,
+        isPinned: _notePinned,
       );
 
       final response = await _noteService.createNote(request);
@@ -305,6 +453,43 @@ class NotesDiaryViewModel extends ChangeNotifier {
     }
   }
 
+  /// Bir notun içeriğindeki checklist satırını işaretler/kaldırır (☐ ↔ ☑)
+  /// ve değişikliği backend'e kaydeder. Kart üzerinden hızlı işaretleme için.
+  Future<void> toggleChecklistLine(Note note, int lineIndex) async {
+    final lines = (note.content ?? '').split('\n');
+    if (lineIndex < 0 || lineIndex >= lines.length) return;
+    final line = lines[lineIndex];
+    if (line.startsWith('☐ ')) {
+      lines[lineIndex] = '☑ ${line.substring(2)}';
+    } else if (line.startsWith('☑ ')) {
+      lines[lineIndex] = '☐ ${line.substring(2)}';
+    } else {
+      return;
+    }
+    final newContent = lines.join('\n');
+    final idx = _notes.indexWhere((n) => n.id == note.id);
+
+    try {
+      final request = NoteRequest(
+        title: note.title ?? '',
+        content: newContent,
+        categoryId: note.categoryId,
+        templateType: null,
+        color: note.color,
+        reminderDate: null,
+        isLocked: note.isLocked,
+        isPinned: note.isPinned,
+      );
+      final response = await _noteService.updateNote(note.id, request);
+      if (response.isSuccess && response.data != null && idx != -1) {
+        _notes[idx] = response.data!;
+        notifyListeners();
+      }
+    } catch (_) {
+      // Ağ hatası: sessizce geç, sonraki yenilemede senkron olur.
+    }
+  }
+
   Future<void> updateNote(BuildContext context) async {
     if (_editingNoteId == null) {
       CustomSnackBar.showError(context, 'errors.noteNotFound'.tr());
@@ -329,9 +514,9 @@ class NotesDiaryViewModel extends ChangeNotifier {
         categoryId: _selectedCategoryForNote,
         templateType: null,
         color: _selectedNoteColor, // Seçilen rengi gönder
-        reminderDate: null,
-        isLocked: currentNote.isLocked, // Mevcut kilit durumunu koru
-        isPinned: currentNote.isPinned, // Mevcut pin durumunu koru
+        reminderDate: _noteReminder,
+        isLocked: _noteLocked,
+        isPinned: _notePinned,
       );
 
       final response = await _noteService.updateNote(_editingNoteId!, request);

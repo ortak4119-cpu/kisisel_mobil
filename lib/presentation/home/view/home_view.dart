@@ -50,8 +50,8 @@ class _HomeViewState extends State<HomeView> {
             ? ColorConstant.primaryDarkModePurple
             : ColorConstant.primaryPurple)
             : (isDarkMode
-            ? ColorConstant.primaryDarkModePurple.withOpacity(0.8)
-            : ColorConstant.primaryPurple.withOpacity(0.8)),
+            ? ColorConstant.primaryDarkModePurple.withValues(alpha: 0.8)
+            : ColorConstant.primaryPurple.withValues(alpha: 0.8)),
         elevation: 6,
         child: Icon(
           Icons.calendar_month_rounded,
@@ -280,7 +280,7 @@ class _HomeViewState extends State<HomeView> {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: isDarkMode
-                ? ColorConstant.cardColorDark.withOpacity(0.5)
+                ? ColorConstant.cardColorDark.withValues(alpha: 0.5)
                 : ColorConstant.bgColorLight,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
@@ -295,7 +295,7 @@ class _HomeViewState extends State<HomeView> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.15),
+                  color: color.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Icon(
@@ -379,7 +379,7 @@ class HomePage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: ColorConstant.primaryPurple.withOpacity(0.15),
+                color: ColorConstant.primaryPurple.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -448,7 +448,7 @@ class TasksPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: ColorConstant.accentBlue.withOpacity(0.15),
+                color: ColorConstant.accentBlue.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -517,7 +517,7 @@ class HabitsPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: ColorConstant.accentYellow.withOpacity(0.15),
+                color: ColorConstant.accentYellow.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -599,7 +599,7 @@ class ProfilePage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: ColorConstant.accentOrange.withOpacity(0.15),
+                color: ColorConstant.accentOrange.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: Icon(

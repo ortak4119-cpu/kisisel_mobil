@@ -1,14 +1,15 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import '../../models/auth/auth_models.dart';
-import '../../core/route/app_router.dart';
 import '../route/app_router.gr.dart';
 
 class PremiumHelper {
   // Premium limit değerleri
-  static const int FREE_NOTE_LIMIT = 5;
-  static const int FREE_HABIT_LIMIT = 2;
-  static const int FREE_TASK_LIMIT = 3;
+  static const int FREE_NOTE_LIMIT = 2;
+  static const int FREE_HABIT_LIMIT = 1;
+  static const int FREE_TASK_LIMIT = 2;
+  static const int FREE_SUBSCRIPTION_LIMIT = 2;
+  static const int FREE_EXPENSE_LIMIT = 2;
 
   /// Kullanıcının premium olup olmadığını kontrol eder
   static bool isPremiumUser(User? user) {
@@ -44,8 +45,9 @@ class PremiumHelper {
 
     // Limit kontrolü
     if (currentNoteCount >= FREE_NOTE_LIMIT) {
-      await _showPremiumPaywall(context);
-      return false;
+      // Paywall göster, satın alma başarılı olursa true dön
+      final purchased = await _showPremiumPaywall(context);
+      return purchased;
     }
 
     return true;
@@ -63,8 +65,8 @@ class PremiumHelper {
 
     // Limit kontrolü
     if (currentHabitCount >= FREE_HABIT_LIMIT) {
-      await _showPremiumPaywall(context);
-      return false;
+      final purchased = await _showPremiumPaywall(context);
+      return purchased;
     }
 
     return true;
@@ -82,24 +84,64 @@ class PremiumHelper {
 
     // Limit kontrolü
     if (currentTaskCount >= FREE_TASK_LIMIT) {
-      await _showPremiumPaywall(context);
-      return false;
+      final purchased = await _showPremiumPaywall(context);
+      return purchased;
+    }
+
+    return true;
+  }
+
+  /// Abonelik ekleme limitini kontrol eder ve gerekirse paywall gösterir
+  /// Returns: true ise devam edebilir, false ise limit aşılmış
+  static Future<bool> checkSubscriptionLimit({
+    required BuildContext context,
+    required User? user,
+    required int currentSubscriptionCount,
+  }) async {
+    // Premium kullanıcı ise sınır yok
+    if (isPremiumUser(user)) return true;
+
+    // Limit kontrolü
+    if (currentSubscriptionCount >= FREE_SUBSCRIPTION_LIMIT) {
+      final purchased = await _showPremiumPaywall(context);
+      return purchased;
+    }
+
+    return true;
+  }
+
+  /// Harcama ekleme limitini kontrol eder ve gerekirse paywall gösterir
+  /// Returns: true ise devam edebilir, false ise limit aşılmış
+  static Future<bool> checkExpenseLimit({
+    required BuildContext context,
+    required User? user,
+    required int currentExpenseCount,
+  }) async {
+    // Premium kullanıcı ise sınır yok
+    if (isPremiumUser(user)) return true;
+
+    // Limit kontrolü
+    if (currentExpenseCount >= FREE_EXPENSE_LIMIT) {
+      final purchased = await _showPremiumPaywall(context);
+      return purchased;
     }
 
     return true;
   }
 
   /// Paywall ekranını gösterir
-  static Future<void> _showPremiumPaywall(BuildContext context) async {
-    if (!context.mounted) return;
+  /// Satın alma başarılı olursa true döner
+  static Future<bool> _showPremiumPaywall(BuildContext context) async {
+    if (!context.mounted) return false;
 
     final result = await context.router.push(const PaywallRoute());
 
     // Paywall'dan döndükten sonra result true ise premium satın alındı
     if (result == true && context.mounted) {
-      // Kullanıcı bilgilerini yenilemeyi tetikleyebilirsiniz
       debugPrint('✅ Premium satın alındı!');
+      return true;
     }
+    return false;
   }
 
   /// Premium özellik bilgisi gösterir (isteğe bağlı, daha soft bir yaklaşım)

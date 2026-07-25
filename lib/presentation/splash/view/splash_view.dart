@@ -6,6 +6,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../../core/route/app_router.gr.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../service/base/base_api_service.dart';
+import '../../../service/auth/auth_service.dart';
 
 @RoutePage()
 class SplashView extends StatefulWidget {
@@ -70,6 +71,11 @@ class _SplashViewState extends State<SplashView> with SingleTickerProviderStateM
     // Firebase Auth kontrolü
     final user = FirebaseAuth.instance.currentUser;
 
+    // Kullanıcı bilgilerini logla (token varsa)
+    if (token != null && token.isNotEmpty) {
+      await _logUserPremiumStatus();
+    }
+
     if (mounted) {
       if (isFirstTime) {
         // İlk açılışta onboarding'e git
@@ -84,6 +90,37 @@ class _SplashViewState extends State<SplashView> with SingleTickerProviderStateM
         // Token ve kullanıcı yoksa login'e git
         context.router.replace(const LoginRoute());
       }
+    }
+  }
+
+  Future<void> _logUserPremiumStatus() async {
+    try {
+      final authService = AuthService();
+      final response = await authService.getCurrentUser();
+
+      if (response.isSuccess && response.data != null) {
+        final user = response.data!;
+        debugPrint('═══════════════════════════════════════════');
+        debugPrint('🚀 APP STARTED - USER INFO');
+        debugPrint('═══════════════════════════════════════════');
+        debugPrint('👤 User ID: ${user.id}');
+        debugPrint('📧 Email: ${user.email}');
+        debugPrint('👤 Username: ${user.username}');
+        debugPrint('📱 Is Guest: ${user.isGuest}');
+        debugPrint('───────────────────────────────────────────');
+        debugPrint('💎 Subscription Type: ${user.subscriptionType ?? "null"}');
+        debugPrint('📊 Subscription Status: ${user.subscriptionStatus ?? "null"}');
+
+        // Premium durumu hesapla
+        final isPremium = (user.subscriptionStatus == 'active' || user.subscriptionStatus == 'trialing') &&
+            user.subscriptionType != null && user.subscriptionType != 'free';
+        debugPrint('⭐ IS PREMIUM: $isPremium');
+        debugPrint('═══════════════════════════════════════════');
+      } else {
+        debugPrint('⚠️ Could not fetch user info: ${response.errorMessage}');
+      }
+    } catch (e) {
+      debugPrint('❌ Error logging user status: $e');
     }
   }
 
@@ -106,11 +143,11 @@ class _SplashViewState extends State<SplashView> with SingleTickerProviderStateM
             colors: isDarkMode
                 ? [
               ColorConstant.bgColorDark,
-              ColorConstant.cardColorDark.withOpacity(0.5),
+              ColorConstant.cardColorDark.withValues(alpha: 0.5),
             ]
                 : [
               ColorConstant.bgColorLight,
-              ColorConstant.primaryPurple.withOpacity(0.05),
+              ColorConstant.primaryPurple.withValues(alpha: 0.05),
             ],
           ),
         ),
@@ -137,7 +174,7 @@ class _SplashViewState extends State<SplashView> with SingleTickerProviderStateM
                                 color: (isDarkMode
                                     ? ColorConstant.primaryDarkModePurple
                                     : ColorConstant.primaryPurple)
-                                    .withOpacity(0.4),
+                                    .withValues(alpha: 0.4),
                                 blurRadius: 40,
                                 spreadRadius: 5,
                                 offset: const Offset(0, 15),
@@ -216,7 +253,7 @@ class _SplashViewState extends State<SplashView> with SingleTickerProviderStateM
                               backgroundColor: (isDarkMode
                                   ? ColorConstant.primaryDarkModePurple
                                   : ColorConstant.primaryPurple)
-                                  .withOpacity(0.2),
+                                  .withValues(alpha: 0.2),
                             ),
                           ),
                           const SizedBox(height: 24),

@@ -1,0 +1,109 @@
+# =============================================================================
+# LifeSync — Codemagic CI/CD yapılandırması
+# Mac'in olmadan iOS derleyip App Store'a, Android'i Google Play'e gönderir.
+#
+# KURULUM (Codemagic panelinde, bir kez):
+#  1) codemagic.io → GitHub/GitLab deponu bağla (bu projeyi git'e push et).
+#  2) Team settings → Integrations → App Store Connect:
+#       - App Store Connect'te bir API Key oluştur (Users and Access → Integrations
+#         → App Store Connect API → "+"), rolü "App Manager".
+#       - .p8 dosyasını, Issuer ID ve Key ID'yi Codemagic'e ekle.
+#       - Bu entegrasyona bir isim ver (aşağıdaki "AppStoreConnectApiKey" ile aynı olsun).
+#  3) (Android için) Team settings → Code signing identities → Android keystores:
+#       - upload-keystore.jks + key.properties bilgilerini yükle, referans adı: "lifesync_keystore".
+#       - Google Play service account JSON'unu "google_play" grubuna GCLOUD_SERVICE_ACCOUNT_CREDENTIALS olarak ekle.
+# =============================================================================
+
+workflows:
+  # ---------------------------------------------------------------------------
+  # iOS — App Store / TestFlight
+  # ---------------------------------------------------------------------------
+  ios-release:
+    name: iOS App Store yayını
+    max_build_duration: 90
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: AppStoreConnectApiKey   # <-- Codemagic'teki API key entegrasyon adı
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.aedev.kisisel
+      vars:
+        APP_STORE_APPLE_ID: 6754823140            # LifeSync uygulamanın App Store ID'si
+        BUNDLE_ID: "com.aedev.kisisel"
+      flutter: 3.44.7
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Flutter paketlerini al
+        script: flutter pub get
+      - name: CocoaPods yükle (native pod'lar: ses/dosya/firebase vb.)
+        script: |
+          find . -name "Podfile" -execdir pod install \;
+      - name: Xcode imzalama profillerini uygula
+        script: xcode-project use-profiles
+      - name: IPA derle (build numarasını otomatik artır)
+        script: |
+          # Yayındaki son TestFlight build'inden 1 fazlasını kullanır.
+          BUILD_NUMBER=$(($(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID") + 1))
+          flutter build ipa --release \
+            --build-name=1.1.0 \
+            --build-number=$BUILD_NUMBER \
+            --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - flutter_drive.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        # Önce sadece TestFlight'a gönder (güvenli). Hazır olunca aşağıyı aç.
+        submit_to_testflight: true
+        # submit_to_app_store: true
+        # release_type: MANUAL   # onaydan sonra ELLE yayınla (otomatik istemiyorsan)
+      email:
+        recipients:
+          - samet.88991@gmail.com
+        notify:
+          success: true
+          failure: true
+
+  # ---------------------------------------------------------------------------
+  # Android — Google Play (aynı güncellemeyi Play'e de göndermek istersen)
+  # ---------------------------------------------------------------------------
+  android-release:
+    name: Android Google Play yayını
+    max_build_duration: 90
+    instance_type: linux_x2
+    environment:
+      android_signing:
+        - lifesync_keystore            # <-- Codemagic'e yüklediğin keystore referans adı
+      groups:
+        - google_play                  # GCLOUD_SERVICE_ACCOUNT_CREDENTIALS burada
+      vars:
+        PACKAGE_NAME: "com.aedev.kisisel"
+      flutter: 3.44.7
+    scripts:
+      - name: Flutter paketlerini al
+        script: flutter pub get
+      - name: AAB derle
+        script: |
+          flutter build appbundle --release \
+            --build-name=1.1.0 \
+            --build-number=$(($(google-play get-latest-build-number \
+              --package-name "$PACKAGE_NAME" \
+              --tracks internal) + 1))
+    artifacts:
+      - build/**/outputs/bundle/**/*.aab
+      - build/**/outputs/**/mapping.txt
+    publishing:
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal               # önce internal test; sonra production'a taşırsın
+        submit_as_draft: false
+      email:
+        recipients:
+          - samet.88991@gmail.com
+        notify:
+          success: true
+          failure: true

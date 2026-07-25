@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:auto_route/auto_route.dart';
+import '../../../core/design/app_design.dart';
 import '../../../core/utils/color_constant.dart';
+import '../../../core/utils/premium_helper.dart';
 import '../../../core/route/app_router.gr.dart';
 import '../viewmodel/tasks_habits_viewmodel.dart';
 
@@ -69,176 +71,67 @@ class _TasksHabitsViewState extends State<TasksHabitsView>
                                 ),
                               ),
                             ),
-                            // Premium Button
-                            Container(
-                              margin: const EdgeInsets.only(right: 4),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    ColorConstant.accentYellow,
-                                    ColorConstant.accentOrange,
+                            // Premium Button - kullanıcı yüklendikten sonra, sadece premium değilse göster
+                            if (viewModel.isUserLoaded &&
+                                !PremiumHelper.isPremiumUser(
+                                    viewModel.currentUser))
+                              Container(
+                                margin: const EdgeInsets.only(right: 4),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      ColorConstant.accentYellow,
+                                      ColorConstant.accentOrange,
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: ColorConstant.accentYellow
+                                          .withValues(alpha: 0.3),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
                                   ],
                                 ),
-                                borderRadius: BorderRadius.circular(12),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: ColorConstant.accentYellow.withOpacity(0.3),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: () => context.router.push(const PaywallRoute()),
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8),
-                                    child: Icon(
-                                      Icons.workspace_premium_rounded,
-                                      color: ColorConstant.white,
-                                      size: 20,
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: () => context.router
+                                        .push(const PaywallRoute()),
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8),
+                                      child: Icon(
+                                        Icons.workspace_premium_rounded,
+                                        color: ColorConstant.white,
+                                        size: 20,
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
                           ],
                         ),
                         const SizedBox(height: 20),
 
-                        // Modern Toggle Switch
-                        Row(
-                          children: [
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () {
-                                  _tabController.animateTo(0);
-                                },
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 200),
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
-                                  decoration: BoxDecoration(
-                                    gradient: _tabController.index == 0
-                                        ? LinearGradient(
-                                      colors: [
-                                        ColorConstant.accentYellow,
-                                        ColorConstant.accentOrange,
-                                      ],
-                                    )
-                                        : null,
-                                    color: _tabController.index == 0
-                                        ? null
-                                        : (isDarkMode
-                                        ? ColorConstant.cardColorDark
-                                        : ColorConstant.bgColorLight),
-                                    borderRadius: BorderRadius.circular(14),
-                                    boxShadow: _tabController.index == 0
-                                        ? [
-                                      BoxShadow(
-                                        color: ColorConstant.accentYellow
-                                            .withOpacity(0.3),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ]
-                                        : null,
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.emoji_events_rounded,
-                                        color: _tabController.index == 0
-                                            ? ColorConstant.white
-                                            : (isDarkMode
-                                            ? ColorConstant.textSecondaryDark
-                                            : ColorConstant.textSecondaryLight),
-                                        size: 20,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'habits.title'.tr(),
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w700,
-                                          color: _tabController.index == 0
-                                              ? ColorConstant.white
-                                              : (isDarkMode
-                                              ? ColorConstant.textSecondaryDark
-                                              : ColorConstant.textSecondaryLight),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
+                        // Segment değiştirici — ortak tasarım sistemi bileşeni.
+                        // Eskiden 134 satırlık iki ayrı AnimatedContainer vardı;
+                        // artık her ekranda aynı görünen tek bir kontrol.
+                        AppSegmentedControl(
+                          selectedIndex: _tabController.index,
+                          onChanged: (i) => _tabController.animateTo(i),
+                          accent: _tabController.index == 0
+                              ? ColorConstant.accentOrange
+                              : ColorConstant.accentBlue,
+                          segments: [
+                            AppSegment(
+                              label: 'habits.title'.tr(),
+                              icon: Icons.emoji_events_rounded,
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () {
-                                  _tabController.animateTo(1);
-                                },
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 200),
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
-                                  decoration: BoxDecoration(
-                                    gradient: _tabController.index == 1
-                                        ? LinearGradient(
-                                      colors: [
-                                        ColorConstant.accentBlue,
-                                        ColorConstant.accentBlue.withOpacity(0.8),
-                                      ],
-                                    )
-                                        : null,
-                                    color: _tabController.index == 1
-                                        ? null
-                                        : (isDarkMode
-                                        ? ColorConstant.cardColorDark
-                                        : ColorConstant.bgColorLight),
-                                    borderRadius: BorderRadius.circular(14),
-                                    boxShadow: _tabController.index == 1
-                                        ? [
-                                      BoxShadow(
-                                        color: ColorConstant.accentBlue
-                                            .withOpacity(0.3),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ]
-                                        : null,
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.task_rounded,
-                                        color: _tabController.index == 1
-                                            ? ColorConstant.white
-                                            : (isDarkMode
-                                            ? ColorConstant.textSecondaryDark
-                                            : ColorConstant.textSecondaryLight),
-                                        size: 20,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'tasks.title'.tr(),
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w700,
-                                          color: _tabController.index == 1
-                                              ? ColorConstant.white
-                                              : (isDarkMode
-                                              ? ColorConstant.textSecondaryDark
-                                              : ColorConstant.textSecondaryLight),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
+                            AppSegment(
+                              label: 'tasks.title'.tr(),
+                              icon: Icons.task_rounded,
                             ),
                           ],
                         ),
@@ -304,21 +197,21 @@ class _TasksHabitsViewState extends State<TasksHabitsView>
                     end: Alignment.bottomRight,
                     colors: _tabController.index == 0
                         ? [
-                      ColorConstant.accentYellow,
-                      ColorConstant.accentOrange,
-                    ]
+                            ColorConstant.accentYellow,
+                            ColorConstant.accentOrange,
+                          ]
                         : [
-                      ColorConstant.accentBlue,
-                      ColorConstant.accentBlue.withOpacity(0.8),
-                    ],
+                            ColorConstant.accentBlue,
+                            ColorConstant.accentBlue.withValues(alpha: 0.8),
+                          ],
                   ),
-                  shape: BoxShape.circle,  // Yuvarlak
+                  shape: BoxShape.circle, // Yuvarlak
                   boxShadow: [
                     BoxShadow(
                       color: (_tabController.index == 0
-                          ? ColorConstant.accentYellow
-                          : ColorConstant.accentBlue)
-                          .withOpacity(0.4),
+                              ? ColorConstant.accentYellow
+                              : ColorConstant.accentBlue)
+                          .withValues(alpha: 0.4),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -338,36 +231,47 @@ class _TasksHabitsViewState extends State<TasksHabitsView>
   }
 
   void _showAddTaskDialog(
-      BuildContext context,
-      TasksHabitsViewModel viewModel,
-      bool isDarkMode,
-      ) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _AddTaskBottomSheet(
-        viewModel: viewModel,
-        isDarkMode: isDarkMode,
-      ),
-    );
-  }
+    BuildContext context,
+    TasksHabitsViewModel viewModel,
+    bool isDarkMode,
+  ) =>
+      showAddTaskSheet(context, viewModel, isDarkMode);
 
   void _showAddHabitDialog(
-      BuildContext context,
-      TasksHabitsViewModel viewModel,
-      bool isDarkMode,
-      ) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _AddHabitBottomSheet(
-        viewModel: viewModel,
-        isDarkMode: isDarkMode,
-      ),
-    );
-  }
+    BuildContext context,
+    TasksHabitsViewModel viewModel,
+    bool isDarkMode,
+  ) =>
+      showAddHabitSheet(context, viewModel, isDarkMode);
+}
+
+/// Görev ekleme sayfasını açar.
+/// Üst seviyede tutuluyor ki hem FAB hem de boş durum butonu aynı yeri açsın.
+void showAddTaskSheet(
+    BuildContext context, TasksHabitsViewModel viewModel, bool isDarkMode) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) => _AddTaskBottomSheet(
+      viewModel: viewModel,
+      isDarkMode: isDarkMode,
+    ),
+  );
+}
+
+/// Alışkanlık ekleme sayfasını açar.
+void showAddHabitSheet(
+    BuildContext context, TasksHabitsViewModel viewModel, bool isDarkMode) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) => _AddHabitBottomSheet(
+      viewModel: viewModel,
+      isDarkMode: isDarkMode,
+    ),
+  );
 }
 
 // ==================== ALIŞKANLIKLAR TAB ====================
@@ -395,23 +299,26 @@ class _HabitsTab extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          // Fun İstatistikler
+          // İstatistikler — emoji yerine ortak AppStatTile bileşeni
           Row(
             children: [
-              _buildFunMiniStat(
-                '${viewModel.completedTodayCount}/${viewModel.habits.length}',
-                'common.today'.tr(),
-                '🎯',
-                ColorConstant.accentYellow,
-                isDarkMode,
+              Expanded(
+                child: AppStatTile(
+                  icon: Icons.track_changes_rounded,
+                  value:
+                      '${viewModel.completedTodayCount}/${viewModel.habits.length}',
+                  label: 'common.today'.tr(),
+                  accent: ColorConstant.accentOrange,
+                ),
               ),
-              const SizedBox(width: 12),
-              _buildFunMiniStat(
-                '${viewModel.longestStreak}',
-                'habits.stats.streak'.tr(),
-                '🔥',
-                ColorConstant.accentOrange,
-                isDarkMode,
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: AppStatTile(
+                  icon: Icons.local_fire_department_rounded,
+                  value: '${viewModel.longestStreak}',
+                  label: 'habits.stats.streak'.tr(),
+                  accent: ColorConstant.accentRed,
+                ),
               ),
             ],
           ),
@@ -420,16 +327,16 @@ class _HabitsTab extends StatelessWidget {
           // Alışkanlıklar
           if (viewModel.habits.isNotEmpty)
             ...viewModel.habits.map(
-                  (habit) => _buildHabitCard(context, habit, viewModel, isDarkMode),
+              (habit) => _buildHabitCard(context, habit, viewModel, isDarkMode),
             )
           else
             _buildEmptyState(
-              icon: Icons.emoji_events_rounded,
-              emoji: '🌱',
+              illustration: 'empty_habits.svg',
               message: 'habits.emptyState'.tr(),
               subtitle: 'habits.emptyStateSubtitle'.tr(),
-              color: ColorConstant.accentYellow,
-              isDarkMode: isDarkMode,
+              color: ColorConstant.accentOrange,
+              actionLabel: 'habits.newHabit'.tr(),
+              onAction: () => showAddHabitSheet(context, viewModel, isDarkMode),
             ),
         ],
       ),
@@ -437,11 +344,11 @@ class _HabitsTab extends StatelessWidget {
   }
 
   Widget _buildHabitCard(
-      BuildContext context,
-      habit,
-      TasksHabitsViewModel viewModel,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    habit,
+    TasksHabitsViewModel viewModel,
+    bool isDarkMode,
+  ) {
     return Dismissible(
       key: Key('habit_${habit.id}'),
       direction: DismissDirection.endToStart,
@@ -450,7 +357,7 @@ class _HabitsTab extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              ColorConstant.errorRed.withOpacity(0.8),
+              ColorConstant.errorRed.withValues(alpha: 0.8),
               ColorConstant.errorRed,
             ],
           ),
@@ -482,9 +389,8 @@ class _HabitsTab extends StatelessWidget {
         return await showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            backgroundColor: isDarkMode
-                ? ColorConstant.cardColorDark
-                : ColorConstant.white,
+            backgroundColor:
+                isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
@@ -553,14 +459,15 @@ class _HabitsTab extends StatelessWidget {
         child: Container(
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
-            color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+            color:
+                isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: habit.completedToday
                   ? ColorConstant.accentGreen
                   : (isDarkMode
-                  ? ColorConstant.borderColorDark
-                  : ColorConstant.borderColorLight),
+                      ? ColorConstant.borderColorDark
+                      : ColorConstant.borderColorLight),
               width: habit.completedToday ? 2 : 1,
             ),
           ),
@@ -599,13 +506,19 @@ class _HabitsTab extends StatelessWidget {
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
-                                  viewModel.getHabitColor(habit.color).withOpacity(0.2),
-                                  viewModel.getHabitColor(habit.color).withOpacity(0.1),
+                                  viewModel
+                                      .getHabitColor(habit.color)
+                                      .withValues(alpha: 0.2),
+                                  viewModel
+                                      .getHabitColor(habit.color)
+                                      .withValues(alpha: 0.1),
                                 ],
                               ),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: viewModel.getHabitColor(habit.color).withOpacity(0.3),
+                                color: viewModel
+                                    .getHabitColor(habit.color)
+                                    .withValues(alpha: 0.3),
                                 width: 2,
                               ),
                             ),
@@ -641,14 +554,17 @@ class _HabitsTab extends StatelessWidget {
                             spacing: 8,
                             runSpacing: 6,
                             children: [
-                              _buildFunDifficultyBadge(habit.difficultyLevel, isDarkMode),
+                              _buildFunDifficultyBadge(
+                                  habit.difficultyLevel, isDarkMode),
                               _buildInfoChip(
-                                '🔥 ${habit.currentStreak}',
+                                Icons.local_fire_department_rounded,
+                                '${habit.currentStreak}',
                                 ColorConstant.accentOrange,
                                 isDarkMode,
                               ),
                               _buildInfoChip(
-                                '✅ ${habit.totalCompletions}',
+                                Icons.check_circle_rounded,
+                                '${habit.totalCompletions}',
                                 ColorConstant.accentGreen,
                                 isDarkMode,
                               ),
@@ -661,7 +577,8 @@ class _HabitsTab extends StatelessWidget {
 
                     // Animated Check button
                     GestureDetector(
-                      onTap: () => viewModel.toggleHabitComplete(habit, context),
+                      onTap: () =>
+                          viewModel.toggleHabitComplete(habit, context),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
                         width: 44,
@@ -669,34 +586,36 @@ class _HabitsTab extends StatelessWidget {
                         decoration: BoxDecoration(
                           gradient: habit.completedToday
                               ? LinearGradient(
-                            colors: [
-                              ColorConstant.accentGreen,
-                              ColorConstant.accentGreen.withOpacity(0.8),
-                            ],
-                          )
+                                  colors: [
+                                    ColorConstant.accentGreen,
+                                    ColorConstant.accentGreen
+                                        .withValues(alpha: 0.8),
+                                  ],
+                                )
                               : null,
                           color: habit.completedToday
                               ? null
                               : (isDarkMode
-                              ? ColorConstant.cardColorDark
-                              : ColorConstant.bgColorLight),
+                                  ? ColorConstant.cardColorDark
+                                  : ColorConstant.bgColorLight),
                           border: Border.all(
                             color: habit.completedToday
                                 ? ColorConstant.accentGreen
                                 : (isDarkMode
-                                ? ColorConstant.borderColorDark
-                                : ColorConstant.borderColorLight),
+                                    ? ColorConstant.borderColorDark
+                                    : ColorConstant.borderColorLight),
                             width: 2,
                           ),
                           borderRadius: BorderRadius.circular(14),
                           boxShadow: habit.completedToday
                               ? [
-                            BoxShadow(
-                              color: ColorConstant.accentGreen.withOpacity(0.3),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ]
+                                  BoxShadow(
+                                    color: ColorConstant.accentGreen
+                                        .withValues(alpha: 0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ]
                               : null,
                         ),
                         child: Icon(
@@ -706,8 +625,8 @@ class _HabitsTab extends StatelessWidget {
                           color: habit.completedToday
                               ? ColorConstant.white
                               : (isDarkMode
-                              ? ColorConstant.textMutedDark
-                              : ColorConstant.textMutedLight),
+                                  ? ColorConstant.textMutedDark
+                                  : ColorConstant.textMutedLight),
                           size: 24,
                         ),
                       ),
@@ -725,28 +644,28 @@ class _HabitsTab extends StatelessWidget {
   Widget _buildFunDifficultyBadge(String difficulty, bool isDarkMode) {
     Color color;
     String label;
-    String emoji;
+    IconData badgeIcon;
 
     switch (difficulty) {
       case 'beginner':
         color = ColorConstant.accentGreen;
         label = 'habits.difficulty.easy'.tr();
-        emoji = '🌱';
+        badgeIcon = Icons.eco_rounded;
         break;
       case 'intermediate':
         color = ColorConstant.accentYellow;
         label = 'habits.difficulty.medium'.tr();
-        emoji = '💪';
+        badgeIcon = Icons.fitness_center_rounded;
         break;
       case 'advanced':
         color = ColorConstant.errorRed;
         label = 'habits.difficulty.hard'.tr();
-        emoji = '🚀';
+        badgeIcon = Icons.rocket_launch_rounded;
         break;
       default:
         color = ColorConstant.accentGreen;
         label = 'habits.difficulty.easy'.tr();
-        emoji = '🌱';
+        badgeIcon = Icons.eco_rounded;
     }
 
     return Container(
@@ -754,17 +673,17 @@ class _HabitsTab extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            color.withOpacity(0.2),
-            color.withOpacity(0.1),
+            color.withValues(alpha: 0.2),
+            color.withValues(alpha: 0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.4), width: 1.5),
+        border: Border.all(color: color.withValues(alpha: 0.4), width: 1.5),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 12)),
+          Icon(badgeIcon, size: 13, color: color),
           const SizedBox(width: 4),
           Text(
             label,
@@ -779,24 +698,29 @@ class _HabitsTab extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoChip(String text, Color color, bool isDarkMode) {
+  /// Bilgi rozeti — metne emoji gömmek yerine gerçek ikon alır.
+  Widget _buildInfoChip(
+      IconData icon, String text, Color color, bool isDarkMode) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: color.withOpacity(0.3),
-          width: 1,
-        ),
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
       ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          color: color,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: color),
+          const SizedBox(width: 4),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 11.5,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -871,18 +795,21 @@ class _TasksTab extends StatelessWidget {
                 // Filtered Tasks
                 if (viewModel.filteredTasks.isNotEmpty)
                   ...viewModel.filteredTasks.map(
-                        (task) => _buildTaskCard(context, task, viewModel, isDarkMode),
+                    (task) =>
+                        _buildTaskCard(context, task, viewModel, isDarkMode),
                   ),
 
                 // Boş durum
                 if (viewModel.filteredTasks.isEmpty)
                   _buildEmptyState(
-                    icon: Icons.task_rounded,
-                    emoji: _getEmptyStateEmoji(viewModel.currentTaskFilter),
+                    illustration: 'empty_tasks.svg',
                     message: _getEmptyStateMessage(viewModel.currentTaskFilter),
-                    subtitle: _getEmptyStateSubtitle(viewModel.currentTaskFilter),
+                    subtitle:
+                        _getEmptyStateSubtitle(viewModel.currentTaskFilter),
                     color: ColorConstant.accentBlue,
-                    isDarkMode: isDarkMode,
+                    actionLabel: 'tasks.newTask'.tr(),
+                    onAction: () =>
+                        showAddTaskSheet(context, viewModel, isDarkMode),
                   ),
               ],
             ),
@@ -893,13 +820,13 @@ class _TasksTab extends StatelessWidget {
   }
 
   Widget _buildFilterTab(
-      BuildContext context,
-      TasksHabitsViewModel vm,
-      TaskFilter filter,
-      String label,
-      String emoji,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    TasksHabitsViewModel vm,
+    TaskFilter filter,
+    String label,
+    String emoji,
+    bool isDarkMode,
+  ) {
     final isSelected = vm.currentTaskFilter == filter;
 
     Color getFilterColor() {
@@ -936,34 +863,34 @@ class _TasksTab extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: isSelected
                 ? LinearGradient(
-              colors: [
-                color.withOpacity(0.2),
-                color.withOpacity(0.1),
-              ],
-            )
+                    colors: [
+                      color.withValues(alpha: 0.2),
+                      color.withValues(alpha: 0.1),
+                    ],
+                  )
                 : null,
             color: isSelected
                 ? null
                 : (isDarkMode
-                ? ColorConstant.cardColorDark.withOpacity(0.3)
-                : ColorConstant.bgColorLight),
+                    ? ColorConstant.cardColorDark.withValues(alpha: 0.3)
+                    : ColorConstant.bgColorLight),
             border: Border.all(
               color: isSelected
                   ? color
                   : (isDarkMode
-                  ? ColorConstant.borderColorDark
-                  : ColorConstant.borderColorLight),
+                      ? ColorConstant.borderColorDark
+                      : ColorConstant.borderColorLight),
               width: isSelected ? 2 : 1,
             ),
             borderRadius: BorderRadius.circular(12),
             boxShadow: isSelected
                 ? [
-              BoxShadow(
-                color: color.withOpacity(0.2),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ]
+                    BoxShadow(
+                      color: color.withValues(alpha: 0.2),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
                 : null,
           ),
           child: Column(
@@ -984,8 +911,8 @@ class _TasksTab extends StatelessWidget {
                       color: isSelected
                           ? color
                           : (isDarkMode
-                          ? ColorConstant.textSecondaryDark
-                          : ColorConstant.textSecondaryLight),
+                              ? ColorConstant.textSecondaryDark
+                              : ColorConstant.textSecondaryLight),
                       fontWeight: FontWeight.w700,
                       fontSize: 13,
                     ),
@@ -999,8 +926,8 @@ class _TasksTab extends StatelessWidget {
                   color: isSelected
                       ? color
                       : (isDarkMode
-                      ? ColorConstant.textMutedDark
-                      : ColorConstant.textMutedLight),
+                          ? ColorConstant.textMutedDark
+                          : ColorConstant.textMutedLight),
                   fontWeight: FontWeight.w900,
                   fontSize: isSelected ? 18 : 16,
                 ),
@@ -1012,16 +939,8 @@ class _TasksTab extends StatelessWidget {
     );
   }
 
-  String _getEmptyStateEmoji(TaskFilter filter) {
-    switch (filter) {
-      case TaskFilter.all:
-        return '📝';
-      case TaskFilter.pending:
-        return '⏳';
-      case TaskFilter.completed:
-        return '🎉';
-    }
-  }
+  // _getEmptyStateEmoji kaldırıldı: boş durumlar artık emoji yerine
+  // assets/images/ altındaki SVG illüstrasyonları kullanıyor.
 
   String _getEmptyStateMessage(TaskFilter filter) {
     switch (filter) {
@@ -1046,11 +965,11 @@ class _TasksTab extends StatelessWidget {
   }
 
   Widget _buildTaskCard(
-      BuildContext context,
-      task,
-      TasksHabitsViewModel viewModel,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    task,
+    TasksHabitsViewModel viewModel,
+    bool isDarkMode,
+  ) {
     return Dismissible(
       key: Key('task_${task.id}'),
       direction: DismissDirection.endToStart,
@@ -1059,7 +978,7 @@ class _TasksTab extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              ColorConstant.errorRed.withOpacity(0.8),
+              ColorConstant.errorRed.withValues(alpha: 0.8),
               ColorConstant.errorRed,
             ],
           ),
@@ -1091,9 +1010,8 @@ class _TasksTab extends StatelessWidget {
         return await showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            backgroundColor: isDarkMode
-                ? ColorConstant.cardColorDark
-                : ColorConstant.white,
+            backgroundColor:
+                isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
@@ -1162,7 +1080,8 @@ class _TasksTab extends StatelessWidget {
         child: Container(
           margin: const EdgeInsets.only(bottom: 8),
           decoration: BoxDecoration(
-            color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+            color:
+                isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: isDarkMode
@@ -1202,39 +1121,40 @@ class _TasksTab extends StatelessWidget {
                         decoration: BoxDecoration(
                           gradient: task.isCompleted
                               ? LinearGradient(
-                            colors: [
-                              ColorConstant.accentGreen,
-                              ColorConstant.accentGreen.withOpacity(0.8),
-                            ],
-                          )
+                                  colors: [
+                                    ColorConstant.accentGreen,
+                                    ColorConstant.accentGreen
+                                        .withValues(alpha: 0.8),
+                                  ],
+                                )
                               : null,
                           color: task.isCompleted ? null : Colors.transparent,
                           border: Border.all(
                             color: task.isCompleted
                                 ? ColorConstant.accentGreen
                                 : (isDarkMode
-                                ? ColorConstant.borderColorDark
-                                : ColorConstant.borderColorLight),
+                                    ? ColorConstant.borderColorDark
+                                    : ColorConstant.borderColorLight),
                             width: 2,
                           ),
                           borderRadius: BorderRadius.circular(6),
                           boxShadow: task.isCompleted
                               ? [
-                            BoxShadow(
-                              color: ColorConstant.accentGreen
-                                  .withOpacity(0.3),
-                              blurRadius: 6,
-                              offset: const Offset(0, 2),
-                            ),
-                          ]
+                                  BoxShadow(
+                                    color: ColorConstant.accentGreen
+                                        .withValues(alpha: 0.3),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ]
                               : null,
                         ),
                         child: task.isCompleted
                             ? Icon(
-                          Icons.check_rounded,
-                          size: 16,
-                          color: ColorConstant.white,
-                        )
+                                Icons.check_rounded,
+                                size: 16,
+                                color: ColorConstant.white,
+                              )
                             : null,
                       ),
                     ),
@@ -1255,11 +1175,11 @@ class _TasksTab extends StatelessWidget {
                                     fontWeight: FontWeight.w600,
                                     color: task.isCompleted
                                         ? (isDarkMode
-                                        ? ColorConstant.textMutedDark
-                                        : ColorConstant.textMutedLight)
+                                            ? ColorConstant.textMutedDark
+                                            : ColorConstant.textMutedLight)
                                         : (isDarkMode
-                                        ? ColorConstant.textPrimaryDark
-                                        : ColorConstant.textPrimaryLight),
+                                            ? ColorConstant.textPrimaryDark
+                                            : ColorConstant.textPrimaryLight),
                                     decoration: task.isCompleted
                                         ? TextDecoration.lineThrough
                                         : null,
@@ -1349,12 +1269,12 @@ class _TasksTab extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            color.withOpacity(0.2),
-            color.withOpacity(0.1),
+            color.withValues(alpha: 0.2),
+            color.withValues(alpha: 0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withOpacity(0.4), width: 1.5),
+        border: Border.all(color: color.withValues(alpha: 0.4), width: 1.5),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1378,10 +1298,10 @@ class _TasksTab extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6),
         border: Border.all(
-          color: color.withOpacity(0.3),
+          color: color.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -1398,114 +1318,28 @@ class _TasksTab extends StatelessWidget {
 }
 // ==================== YARDIMCI WIDGET'LAR ====================
 
-Widget _buildFunMiniStat(String value, String label, String emoji, Color color, bool isDarkMode) {
-  return Expanded(
-    child: Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            color.withOpacity(0.1),
-            color.withOpacity(0.05),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: color.withOpacity(0.3),
-          width: 2,
-        ),
-      ),
-      child: Row(
-        children: [
-          Text(
-            emoji,
-            style: const TextStyle(fontSize: 32),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w900,
-                    color: color,
-                  ),
-                ),
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: isDarkMode
-                        ? ColorConstant.textSecondaryDark
-                        : ColorConstant.textSecondaryLight,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
+// _buildFunMiniStat kaldırıldı: istatistikler artık ortak AppStatTile
+// bileşenini kullanıyor (emoji yerine gerçek ikon).
 
+/// Boş durum — artık emoji yerine özel SVG illüstrasyon kullanıyor ve
+/// kullanıcıyı doğrudan ilk kaydı oluşturmaya yönlendiren bir buton içeriyor.
 Widget _buildEmptyState({
-  required IconData icon,
-  required String emoji,
+  required String illustration,
   required String message,
   required String subtitle,
   required Color color,
-  required bool isDarkMode,
+  String? actionLabel,
+  VoidCallback? onAction,
 }) {
-  return Center(
-    child: Padding(
-      padding: const EdgeInsets.symmetric(vertical: 60),
-      child: Column(
-        children: [
-          TweenAnimationBuilder<double>(
-            tween: Tween(begin: 0.0, end: 1.0),
-            duration: const Duration(milliseconds: 800),
-            curve: Curves.elasticOut,
-            builder: (context, value, child) {
-              return Transform.scale(
-                scale: value,
-                child: Text(
-                  emoji,
-                  style: const TextStyle(fontSize: 80),
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 20),
-          Text(
-            message,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: isDarkMode
-                  ? ColorConstant.textPrimaryDark
-                  : ColorConstant.textPrimaryLight,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            subtitle,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: isDarkMode
-                  ? ColorConstant.textSecondaryDark
-                  : ColorConstant.textSecondaryLight,
-            ),
-          ),
-        ],
-      ),
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 32),
+    child: AppEmptyState(
+      illustration: illustration,
+      title: message,
+      message: subtitle,
+      accent: color,
+      actionLabel: actionLabel,
+      onAction: onAction,
     ),
   );
 }
@@ -1575,7 +1409,9 @@ class _AddTaskBottomSheet extends StatelessWidget {
                             ),
                             const SizedBox(width: 12),
                             Text(
-                              isEditing ? 'tasks.editTask'.tr() : 'tasks.newTask'.tr(),
+                              isEditing
+                                  ? 'tasks.editTask'.tr()
+                                  : 'tasks.newTask'.tr(),
                               style: TextStyle(
                                 color: isDarkMode
                                     ? ColorConstant.textPrimaryDark
@@ -1589,57 +1425,24 @@ class _AddTaskBottomSheet extends StatelessWidget {
                         const SizedBox(height: 24),
 
                         // Task Title
-                        TextField(
+                        AppTextField(
                           controller: vm.taskTitleController,
-                          style: TextStyle(
-                            color: isDarkMode
-                                ? ColorConstant.textPrimaryDark
-                                : ColorConstant.textPrimaryLight,
-                          ),
-                          decoration: InputDecoration(
-                            hintText: 'tasks.taskTitle'.tr(),
-                            hintStyle: TextStyle(
-                              color: isDarkMode
-                                  ? ColorConstant.textMutedDark
-                                  : ColorConstant.textMutedLight,
-                            ),
-                            filled: true,
-                            fillColor: isDarkMode
-                                ? ColorConstant.bgColorDark
-                                : ColorConstant.bgColorLight,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
+                          hint: 'tasks.taskTitle'.tr(),
+                          accent: ColorConstant.accentBlue,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          maxLines: 1,
                         ),
                         const SizedBox(height: 16),
 
                         // Description
-                        TextField(
+                        AppTextField(
                           controller: vm.taskDescriptionController,
-                          maxLines: 3,
-                          style: TextStyle(
-                            color: isDarkMode
-                                ? ColorConstant.textPrimaryDark
-                                : ColorConstant.textPrimaryLight,
-                          ),
-                          decoration: InputDecoration(
-                            hintText: 'tasks.description'.tr(),
-                            hintStyle: TextStyle(
-                              color: isDarkMode
-                                  ? ColorConstant.textMutedDark
-                                  : ColorConstant.textMutedLight,
-                            ),
-                            filled: true,
-                            fillColor: isDarkMode
-                                ? ColorConstant.bgColorDark
-                                : ColorConstant.bgColorLight,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
+                          hint: 'tasks.description'.tr(),
+                          accent: ColorConstant.accentBlue,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          maxLines: 4,
                         ),
                         const SizedBox(height: 20),
 
@@ -1788,15 +1591,18 @@ class _AddTaskBottomSheet extends StatelessWidget {
                                         color: vm.reminderEnabled
                                             ? ColorConstant.accentBlue
                                             : (isDarkMode
-                                                ? ColorConstant.textSecondaryDark
-                                                : ColorConstant.textSecondaryLight),
+                                                ? ColorConstant
+                                                    .textSecondaryDark
+                                                : ColorConstant
+                                                    .textSecondaryLight),
                                       ),
                                     ),
                                   ),
                                   Switch(
                                     value: vm.reminderEnabled,
-                                    onChanged: (value) => vm.setReminderEnabled(value),
-                                    activeColor: ColorConstant.accentBlue,
+                                    onChanged: (value) =>
+                                        vm.setReminderEnabled(value),
+                                    activeThumbColor: ColorConstant.accentBlue,
                                   ),
                                 ],
                               ),
@@ -1814,9 +1620,11 @@ class _AddTaskBottomSheet extends StatelessWidget {
                                 const SizedBox(height: 12),
                                 GestureDetector(
                                   onTap: () async {
-                                    final TimeOfDay? pickedTime = await showTimePicker(
+                                    final TimeOfDay? pickedTime =
+                                        await showTimePicker(
                                       context: context,
-                                      initialTime: vm.reminderTime ?? TimeOfDay.now(),
+                                      initialTime:
+                                          vm.reminderTime ?? TimeOfDay.now(),
                                       builder: (context, child) {
                                         return Theme(
                                           data: Theme.of(context).copyWith(
@@ -1844,7 +1652,8 @@ class _AddTaskBottomSheet extends StatelessWidget {
                                             ? ColorConstant.accentBlue
                                             : (isDarkMode
                                                 ? ColorConstant.borderColorDark
-                                                : ColorConstant.borderColorLight),
+                                                : ColorConstant
+                                                    .borderColorLight),
                                         width: vm.reminderTime != null ? 2 : 1,
                                       ),
                                     ),
@@ -1855,8 +1664,10 @@ class _AddTaskBottomSheet extends StatelessWidget {
                                           color: vm.reminderTime != null
                                               ? ColorConstant.accentBlue
                                               : (isDarkMode
-                                                  ? ColorConstant.textSecondaryDark
-                                                  : ColorConstant.textSecondaryLight),
+                                                  ? ColorConstant
+                                                      .textSecondaryDark
+                                                  : ColorConstant
+                                                      .textSecondaryLight),
                                           size: 20,
                                         ),
                                         const SizedBox(width: 12),
@@ -1871,17 +1682,21 @@ class _AddTaskBottomSheet extends StatelessWidget {
                                               color: vm.reminderTime != null
                                                   ? ColorConstant.accentBlue
                                                   : (isDarkMode
-                                                      ? ColorConstant.textSecondaryDark
-                                                      : ColorConstant.textSecondaryLight),
+                                                      ? ColorConstant
+                                                          .textSecondaryDark
+                                                      : ColorConstant
+                                                          .textSecondaryLight),
                                             ),
                                           ),
                                         ),
                                         if (vm.reminderTime != null)
                                           IconButton(
-                                            onPressed: () => vm.setReminderTime(null),
+                                            onPressed: () =>
+                                                vm.setReminderTime(null),
                                             icon: Icon(
                                               Icons.close_rounded,
-                                              color: ColorConstant.textSecondaryDark,
+                                              color: ColorConstant
+                                                  .textSecondaryDark,
                                               size: 18,
                                             ),
                                             padding: EdgeInsets.zero,
@@ -1908,7 +1723,7 @@ class _AddTaskBottomSheet extends StatelessWidget {
                                 },
                                 style: OutlinedButton.styleFrom(
                                   padding:
-                                  const EdgeInsets.symmetric(vertical: 16),
+                                      const EdgeInsets.symmetric(vertical: 16),
                                   side: BorderSide(
                                     color: isDarkMode
                                         ? ColorConstant.borderColorDark
@@ -1938,13 +1753,15 @@ class _AddTaskBottomSheet extends StatelessWidget {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: ColorConstant.accentBlue,
                                   padding:
-                                  const EdgeInsets.symmetric(vertical: 16),
+                                      const EdgeInsets.symmetric(vertical: 16),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(16),
                                   ),
                                 ),
                                 child: Text(
-                                  isEditing ? 'common.update'.tr() : 'common.create'.tr(),
+                                  isEditing
+                                      ? 'common.update'.tr()
+                                      : 'common.create'.tr(),
                                   style: TextStyle(
                                     color: ColorConstant.white,
                                     fontWeight: FontWeight.w700,
@@ -1967,14 +1784,14 @@ class _AddTaskBottomSheet extends StatelessWidget {
   }
 
   Widget _buildPriorityChip(
-      BuildContext context,
-      TasksHabitsViewModel vm,
-      int priority,
-      String label,
-      String emoji,
-      Color color,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    TasksHabitsViewModel vm,
+    int priority,
+    String label,
+    String emoji,
+    Color color,
+    bool isDarkMode,
+  ) {
     final isSelected = vm.taskPriority == priority;
     return Expanded(
       child: GestureDetector(
@@ -1985,19 +1802,19 @@ class _AddTaskBottomSheet extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: isSelected
                 ? LinearGradient(
-              colors: [
-                color.withOpacity(0.2),
-                color.withOpacity(0.1),
-              ],
-            )
+                    colors: [
+                      color.withValues(alpha: 0.2),
+                      color.withValues(alpha: 0.1),
+                    ],
+                  )
                 : null,
             color: isSelected ? null : Colors.transparent,
             border: Border.all(
               color: isSelected
                   ? color
                   : (isDarkMode
-                  ? ColorConstant.borderColorDark
-                  : ColorConstant.borderColorLight),
+                      ? ColorConstant.borderColorDark
+                      : ColorConstant.borderColorLight),
               width: isSelected ? 2 : 1,
             ),
             borderRadius: BorderRadius.circular(12),
@@ -2013,8 +1830,8 @@ class _AddTaskBottomSheet extends StatelessWidget {
                   color: isSelected
                       ? color
                       : (isDarkMode
-                      ? ColorConstant.textSecondaryDark
-                      : ColorConstant.textSecondaryLight),
+                          ? ColorConstant.textSecondaryDark
+                          : ColorConstant.textSecondaryLight),
                   fontWeight: FontWeight.w700,
                   fontSize: 12,
                 ),
@@ -2078,10 +1895,7 @@ class _AddHabitBottomSheet extends StatelessWidget {
             child: SafeArea(
               child: Padding(
                 padding: EdgeInsets.only(
-                  bottom: MediaQuery
-                      .of(context)
-                      .viewInsets
-                      .bottom,
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
                 ),
                 child: SingleChildScrollView(
                   child: Padding(
@@ -2105,27 +1919,15 @@ class _AddHabitBottomSheet extends StatelessWidget {
                         ),
                         const SizedBox(height: 24),
 
-                        // Title with emoji
-                        Row(
-                          children: [
-                            Text(
-                              isEditing ? '✏️' : '✨',
-                              style: const TextStyle(fontSize: 28),
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              isEditing
-                                  ? 'habits.editHabit'.tr()
-                                  : 'habits.newHabit'.tr(),
-                              style: TextStyle(
-                                color: isDarkMode
-                                    ? ColorConstant.textPrimaryDark
-                                    : ColorConstant.textPrimaryLight,
-                                fontSize: 24,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ],
+                        // Başlık — emoji yerine renkli ikon rozeti
+                        AppSectionHeader(
+                          icon: isEditing
+                              ? Icons.edit_rounded
+                              : Icons.auto_awesome_rounded,
+                          title: isEditing
+                              ? 'habits.editHabit'.tr()
+                              : 'habits.newHabit'.tr(),
+                          accent: ColorConstant.accentOrange,
                         ),
                         const SizedBox(height: 24),
 
@@ -2158,25 +1960,25 @@ class _AddHabitBottomSheet extends StatelessWidget {
                                   decoration: BoxDecoration(
                                     gradient: isSelected
                                         ? LinearGradient(
-                                      colors: [
-                                        ColorConstant.accentYellow.withOpacity(
-                                            0.2),
-                                        ColorConstant.accentOrange.withOpacity(
-                                            0.1),
-                                      ],
-                                    )
+                                            colors: [
+                                              ColorConstant.accentYellow
+                                                  .withValues(alpha: 0.2),
+                                              ColorConstant.accentOrange
+                                                  .withValues(alpha: 0.1),
+                                            ],
+                                          )
                                         : null,
                                     color: isSelected
                                         ? null
                                         : (isDarkMode
-                                        ? ColorConstant.bgColorDark
-                                        : ColorConstant.bgColorLight),
+                                            ? ColorConstant.bgColorDark
+                                            : ColorConstant.bgColorLight),
                                     border: Border.all(
                                       color: isSelected
                                           ? ColorConstant.accentYellow
                                           : (isDarkMode
-                                          ? ColorConstant.borderColorDark
-                                          : ColorConstant.borderColorLight),
+                                              ? ColorConstant.borderColorDark
+                                              : ColorConstant.borderColorLight),
                                       width: isSelected ? 3 : 1,
                                     ),
                                     borderRadius: BorderRadius.circular(18),
@@ -2197,57 +1999,24 @@ class _AddHabitBottomSheet extends StatelessWidget {
                         const SizedBox(height: 20),
 
                         // Habit Title
-                        TextField(
+                        AppTextField(
                           controller: vm.habitTitleController,
-                          style: TextStyle(
-                            color: isDarkMode
-                                ? ColorConstant.textPrimaryDark
-                                : ColorConstant.textPrimaryLight,
-                          ),
-                          decoration: InputDecoration(
-                            hintText: 'habits.habitTitle'.tr(),
-                            hintStyle: TextStyle(
-                              color: isDarkMode
-                                  ? ColorConstant.textMutedDark
-                                  : ColorConstant.textMutedLight,
-                            ),
-                            filled: true,
-                            fillColor: isDarkMode
-                                ? ColorConstant.bgColorDark
-                                : ColorConstant.bgColorLight,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
+                          hint: 'habits.habitTitle'.tr(),
+                          accent: ColorConstant.accentOrange,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          maxLines: 1,
                         ),
                         const SizedBox(height: 16),
 
                         // Description
-                        TextField(
+                        AppTextField(
                           controller: vm.habitDescriptionController,
-                          maxLines: 2,
-                          style: TextStyle(
-                            color: isDarkMode
-                                ? ColorConstant.textPrimaryDark
-                                : ColorConstant.textPrimaryLight,
-                          ),
-                          decoration: InputDecoration(
-                            hintText: 'tasks.description'.tr(),
-                            hintStyle: TextStyle(
-                              color: isDarkMode
-                                  ? ColorConstant.textMutedDark
-                                  : ColorConstant.textMutedLight,
-                            ),
-                            filled: true,
-                            fillColor: isDarkMode
-                                ? ColorConstant.bgColorDark
-                                : ColorConstant.bgColorLight,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
+                          hint: 'habits.hints.description'.tr(),
+                          accent: ColorConstant.accentOrange,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          maxLines: 4,
                         ),
                         const SizedBox(height: 20),
 
@@ -2296,62 +2065,86 @@ class _AddHabitBottomSheet extends StatelessWidget {
                             ),
                           ],
                         ),
+                        const SizedBox(height: 20),
+
+                        // Time Period Selection
+                        Text(
+                          'habits.reminderTime'.tr(),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: isDarkMode
+                                ? ColorConstant.textSecondaryDark
+                                : ColorConstant.textSecondaryLight,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            _buildTimePeriodChip(
+                              context,
+                              vm,
+                              'morning',
+                              'habits.time.morning'.tr(),
+                              '🌅',
+                              '09:00',
+                              ColorConstant.accentYellow,
+                              isDarkMode,
+                            ),
+                            const SizedBox(width: 8),
+                            _buildTimePeriodChip(
+                              context,
+                              vm,
+                              'noon',
+                              'habits.time.noon'.tr(),
+                              '☀️',
+                              '13:00',
+                              ColorConstant.accentOrange,
+                              isDarkMode,
+                            ),
+                            const SizedBox(width: 8),
+                            _buildTimePeriodChip(
+                              context,
+                              vm,
+                              'evening',
+                              'habits.time.evening'.tr(),
+                              '🌙',
+                              '17:00',
+                              ColorConstant.primaryPurple,
+                              isDarkMode,
+                            ),
+                          ],
+                        ),
                         const SizedBox(height: 24),
 
-                        // Buttons
+                        // Butonlar — ortak tasarım sistemi bileşenleri.
+                        // Onay butonu daha geniş (flex 2) ki birincil eylem
+                        // görsel olarak öne çıksın.
                         Row(
                           children: [
                             Expanded(
-                              child: OutlinedButton(
+                              child: AppGhostButton(
+                                label: 'common.cancel'.tr(),
                                 onPressed: () {
                                   vm.resetHabitForm();
                                   Navigator.pop(context);
                                 },
-                                style: OutlinedButton.styleFrom(
-                                  padding:
-                                  const EdgeInsets.symmetric(vertical: 16),
-                                  side: BorderSide(
-                                    color: isDarkMode
-                                        ? ColorConstant.borderColorDark
-                                        : ColorConstant.borderColorLight,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                ),
-                                child: Text(
-                                  'common.cancel'.tr(),
-                                  style: TextStyle(
-                                    color: isDarkMode
-                                        ? ColorConstant.textSecondaryDark
-                                        : ColorConstant.textSecondaryLight,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: AppSpacing.md),
                             Expanded(
-                              child: ElevatedButton(
-                                onPressed: () =>
-                                isEditing
+                              flex: 2,
+                              child: AppPrimaryButton(
+                                label: isEditing
+                                    ? 'common.update'.tr()
+                                    : 'common.create'.tr(),
+                                icon: isEditing
+                                    ? Icons.check_rounded
+                                    : Icons.add_rounded,
+                                accent: ColorConstant.accentOrange,
+                                onPressed: () => isEditing
                                     ? vm.updateHabit(context)
                                     : vm.createHabit(context),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: ColorConstant.accentYellow,
-                                  padding:
-                                  const EdgeInsets.symmetric(vertical: 16),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                ),
-                                child: Text(
-                                  isEditing ? 'common.update'.tr() : 'common.create'.tr(),
-                                  style: TextStyle(
-                                    color: ColorConstant.white,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
                               ),
                             ),
                           ],
@@ -2368,13 +2161,15 @@ class _AddHabitBottomSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildDifficultyChip(BuildContext context,
-      TasksHabitsViewModel vm,
-      String value,
-      String label,
-      String emoji,
-      Color color,
-      bool isDarkMode,) {
+  Widget _buildDifficultyChip(
+    BuildContext context,
+    TasksHabitsViewModel vm,
+    String value,
+    String label,
+    String emoji,
+    Color color,
+    bool isDarkMode,
+  ) {
     final isSelected = vm.habitDifficulty == value;
     return Expanded(
       child: GestureDetector(
@@ -2385,19 +2180,19 @@ class _AddHabitBottomSheet extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: isSelected
                 ? LinearGradient(
-              colors: [
-                color.withOpacity(0.2),
-                color.withOpacity(0.1),
-              ],
-            )
+                    colors: [
+                      color.withValues(alpha: 0.2),
+                      color.withValues(alpha: 0.1),
+                    ],
+                  )
                 : null,
             color: isSelected ? null : Colors.transparent,
             border: Border.all(
               color: isSelected
                   ? color
                   : (isDarkMode
-                  ? ColorConstant.borderColorDark
-                  : ColorConstant.borderColorLight),
+                      ? ColorConstant.borderColorDark
+                      : ColorConstant.borderColorLight),
               width: isSelected ? 2 : 1,
             ),
             borderRadius: BorderRadius.circular(12),
@@ -2413,8 +2208,8 @@ class _AddHabitBottomSheet extends StatelessWidget {
                   color: isSelected
                       ? color
                       : (isDarkMode
-                      ? ColorConstant.textSecondaryDark
-                      : ColorConstant.textSecondaryLight),
+                          ? ColorConstant.textSecondaryDark
+                          : ColorConstant.textSecondaryLight),
                   fontWeight: FontWeight.w700,
                   fontSize: 12,
                 ),
@@ -2425,16 +2220,90 @@ class _AddHabitBottomSheet extends StatelessWidget {
       ),
     );
   }
-}
-Widget _buildRecurrenceChip(
+
+  Widget _buildTimePeriodChip(
     BuildContext context,
     TasksHabitsViewModel vm,
-    String recurrence,
+    String value,
     String label,
     String emoji,
+    String time,
     Color color,
     bool isDarkMode,
-    ) {
+  ) {
+    final isSelected = vm.habitTimePeriod == value;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => vm.setHabitTimePeriod(value),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            gradient: isSelected
+                ? LinearGradient(
+                    colors: [
+                      color.withValues(alpha: 0.2),
+                      color.withValues(alpha: 0.1),
+                    ],
+                  )
+                : null,
+            color: isSelected ? null : Colors.transparent,
+            border: Border.all(
+              color: isSelected
+                  ? color
+                  : (isDarkMode
+                      ? ColorConstant.borderColorDark
+                      : ColorConstant.borderColorLight),
+              width: isSelected ? 2 : 1,
+            ),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            children: [
+              Text(emoji, style: const TextStyle(fontSize: 20)),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: isSelected
+                      ? color
+                      : (isDarkMode
+                          ? ColorConstant.textSecondaryDark
+                          : ColorConstant.textSecondaryLight),
+                  fontWeight: FontWeight.w700,
+                  fontSize: 11,
+                ),
+              ),
+              Text(
+                time,
+                style: TextStyle(
+                  color: isSelected
+                      ? color.withValues(alpha: 0.8)
+                      : (isDarkMode
+                          ? ColorConstant.textMutedDark
+                          : ColorConstant.textMutedLight),
+                  fontWeight: FontWeight.w500,
+                  fontSize: 10,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+Widget _buildRecurrenceChip(
+  BuildContext context,
+  TasksHabitsViewModel vm,
+  String recurrence,
+  String label,
+  String emoji,
+  Color color,
+  bool isDarkMode,
+) {
   final isSelected = vm.taskRecurrence == recurrence;
   return Expanded(
     child: GestureDetector(
@@ -2445,19 +2314,19 @@ Widget _buildRecurrenceChip(
         decoration: BoxDecoration(
           gradient: isSelected
               ? LinearGradient(
-            colors: [
-              color.withOpacity(0.2),
-              color.withOpacity(0.1),
-            ],
-          )
+                  colors: [
+                    color.withValues(alpha: 0.2),
+                    color.withValues(alpha: 0.1),
+                  ],
+                )
               : null,
           color: isSelected ? null : Colors.transparent,
           border: Border.all(
             color: isSelected
                 ? color
                 : (isDarkMode
-                ? ColorConstant.borderColorDark
-                : ColorConstant.borderColorLight),
+                    ? ColorConstant.borderColorDark
+                    : ColorConstant.borderColorLight),
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(12),
@@ -2473,8 +2342,8 @@ Widget _buildRecurrenceChip(
                 color: isSelected
                     ? color
                     : (isDarkMode
-                    ? ColorConstant.textSecondaryDark
-                    : ColorConstant.textSecondaryLight),
+                        ? ColorConstant.textSecondaryDark
+                        : ColorConstant.textSecondaryLight),
                 fontWeight: FontWeight.w700,
                 fontSize: 10,
               ),
@@ -2516,12 +2385,12 @@ Widget _buildRecurrenceBadge(String recurringPattern, bool isDarkMode) {
     decoration: BoxDecoration(
       gradient: LinearGradient(
         colors: [
-          color.withOpacity(0.2),
-          color.withOpacity(0.1),
+          color.withValues(alpha: 0.2),
+          color.withValues(alpha: 0.1),
         ],
       ),
       borderRadius: BorderRadius.circular(6),
-      border: Border.all(color: color.withOpacity(0.4), width: 1.5),
+      border: Border.all(color: color.withValues(alpha: 0.4), width: 1.5),
     ),
     child: Row(
       mainAxisSize: MainAxisSize.min,
@@ -2540,4 +2409,3 @@ Widget _buildRecurrenceBadge(String recurringPattern, bool isDarkMode) {
     ),
   );
 }
-

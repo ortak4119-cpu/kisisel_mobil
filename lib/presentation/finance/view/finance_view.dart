@@ -3,8 +3,10 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../../core/design/app_design.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/utils/subscription_icons.dart';
+import '../../../core/utils/premium_helper.dart';
 import '../../../core/route/app_router.gr.dart';
 import '../viewmodel/finance_viewmodel.dart';
 
@@ -20,16 +22,14 @@ class _FinanceViewState extends State<FinanceView> {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
-    return viewModel.activeSubscriptions
-        .where((sub) {
+    return viewModel.activeSubscriptions.where((sub) {
       final billingDate = DateTime(
         sub.nextBillingDate.year,
         sub.nextBillingDate.month,
         sub.nextBillingDate.day,
       );
       return billingDate.isAtSameMomentAs(today) || billingDate.isAfter(today);
-    })
-        .length;
+    }).length;
   }
 
   @override
@@ -45,190 +45,304 @@ class _FinanceViewState extends State<FinanceView> {
                 ? ColorConstant.bgColorDark
                 : ColorConstant.bgColorLight,
             body: SafeArea(
-              child: viewModel.isLoading
+              child: viewModel.isInitialLoading
                   ? Center(
-                child: CircularProgressIndicator(
-                  color: ColorConstant.accentBlue,
-                ),
-              )
+                      child: CircularProgressIndicator(
+                        color: ColorConstant.accentBlue,
+                      ),
+                    )
                   : RefreshIndicator(
-                onRefresh: () => viewModel.refreshAll(),
-                color: ColorConstant.accentBlue,
-                child: CustomScrollView(
-                  slivers: [
-                    // App Bar
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                'finance.title'.tr(),
-                                style: TextStyle(
-                                  color: isDarkMode
-                                      ? ColorConstant.textPrimaryDark
-                                      : ColorConstant.textPrimaryLight,
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: -0.5,
-                                ),
-                              ),
-                            ),
-                            Row(
-                              children: [
-                                // Premium Button
-                                Container(
-                                  margin: const EdgeInsets.only(right: 4),
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        ColorConstant.accentYellow,
-                                        ColorConstant.accentOrange,
-                                      ],
-                                    ),
-                                    borderRadius: BorderRadius.circular(12),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: ColorConstant.accentYellow.withOpacity(0.3),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Material(
-                                    color: Colors.transparent,
-                                    child: InkWell(
-                                      onTap: () => context.router.push(const PaywallRoute()),
-                                      borderRadius: BorderRadius.circular(12),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8),
-                                        child: Icon(
-                                          Icons.workspace_premium_rounded,
-                                          color: ColorConstant.white,
-                                          size: 20,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                IconButton(
-                                  onPressed: () {
-                                    viewModel.budgetAmountController.text =
-                                        viewModel.budgetStats?.monthlyBudget
-                                            .toStringAsFixed(0) ??
-                                            '';
-                                    _showBudgetSettingsDialog(
-                                        context, viewModel, isDarkMode);
-                                  },
-                                  icon: Icon(
-                                    Icons.settings_outlined,
-                                    color: isDarkMode
-                                        ? ColorConstant.textSecondaryDark
-                                        : ColorConstant.textSecondaryLight,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    // Today Section
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'finance.today'.tr(),
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w700,
-                                color: isDarkMode
-                                    ? ColorConstant.textPrimaryDark
-                                    : ColorConstant.textPrimaryLight,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            _buildTodayCard(viewModel, isDarkMode),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    // This Month Section
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.calendar_month_rounded,
-                                      size: 20,
-                                      color: isDarkMode
-                                          ? ColorConstant.textSecondaryDark
-                                          : ColorConstant.textSecondaryLight,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      'finance.thisMonth'.tr(),
+                      onRefresh: () => viewModel.refreshAll(),
+                      color: ColorConstant.accentBlue,
+                      child: CustomScrollView(
+                        slivers: [
+                          // App Bar
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      'finance.title'.tr(),
                                       style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w700,
                                         color: isDarkMode
                                             ? ColorConstant.textPrimaryDark
                                             : ColorConstant.textPrimaryLight,
+                                        fontSize: 32,
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: -0.5,
                                       ),
                                     ),
+                                  ),
+                                  Row(
+                                    children: [
+                                      // Premium Button - kullanıcı yüklendikten sonra, sadece premium değilse göster
+                                      if (viewModel.isUserLoaded &&
+                                          !PremiumHelper.isPremiumUser(
+                                              viewModel.currentUser))
+                                        Container(
+                                          margin:
+                                              const EdgeInsets.only(right: 4),
+                                          decoration: BoxDecoration(
+                                            gradient: LinearGradient(
+                                              colors: [
+                                                ColorConstant.accentYellow,
+                                                ColorConstant.accentOrange,
+                                              ],
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: ColorConstant
+                                                    .accentYellow
+                                                    .withValues(alpha: 0.3),
+                                                blurRadius: 8,
+                                                offset: const Offset(0, 2),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Material(
+                                            color: Colors.transparent,
+                                            child: InkWell(
+                                              onTap: () => context.router
+                                                  .push(const PaywallRoute()),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(8),
+                                                child: Icon(
+                                                  Icons
+                                                      .workspace_premium_rounded,
+                                                  color: ColorConstant.white,
+                                                  size: 20,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      IconButton(
+                                        onPressed: () {
+                                          viewModel.budgetAmountController
+                                              .text = viewModel
+                                                  .budgetStats?.monthlyBudget
+                                                  .toStringAsFixed(0) ??
+                                              '';
+                                          _showBudgetSettingsDialog(
+                                              context, viewModel, isDarkMode);
+                                        },
+                                        icon: Icon(
+                                          Icons.settings_outlined,
+                                          color: isDarkMode
+                                              ? ColorConstant.textSecondaryDark
+                                              : ColorConstant
+                                                  .textSecondaryLight,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          // Today Section
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'finance.today'.tr(),
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w700,
+                                      color: isDarkMode
+                                          ? ColorConstant.textPrimaryDark
+                                          : ColorConstant.textPrimaryLight,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _buildTodayCard(viewModel, isDarkMode),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          // This Month Section
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.calendar_month_rounded,
+                                            size: 20,
+                                            color: isDarkMode
+                                                ? ColorConstant
+                                                    .textSecondaryDark
+                                                : ColorConstant
+                                                    .textSecondaryLight,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'finance.thisMonth'.tr(),
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.w700,
+                                              color: isDarkMode
+                                                  ? ColorConstant
+                                                      .textPrimaryDark
+                                                  : ColorConstant
+                                                      .textPrimaryLight,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      IconButton(
+                                        onPressed: () =>
+                                            _showMonthlyStatisticsDialog(
+                                                context, viewModel, isDarkMode),
+                                        icon: Icon(
+                                          Icons.bar_chart_rounded,
+                                          color: ColorConstant.accentBlue,
+                                          size: 24,
+                                        ),
+                                        tooltip: 'finance.monthlyStats'.tr(),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  if (viewModel.budgetStats != null)
+                                    _buildMonthlyBudgetCard(context, viewModel,
+                                        viewModel.budgetStats!, isDarkMode),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          // Upcoming Payments Section
+                          if (viewModel.activeSubscriptions.isNotEmpty)
+                            SliverToBoxAdapter(
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.schedule_rounded,
+                                              size: 20,
+                                              color: isDarkMode
+                                                  ? ColorConstant
+                                                      .textSecondaryDark
+                                                  : ColorConstant
+                                                      .textSecondaryLight,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              'finance.upcomingPayments'.tr(),
+                                              style: TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.w700,
+                                                color: isDarkMode
+                                                    ? ColorConstant
+                                                        .textPrimaryDark
+                                                    : ColorConstant
+                                                        .textPrimaryLight,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        if (viewModel.subscriptionStats != null)
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 12,
+                                              vertical: 6,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: ColorConstant.accentBlue
+                                                  .withValues(alpha: 0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: Text(
+                                              '₺${viewModel.subscriptionStats!.monthlyEquivalent.toStringAsFixed(0)}/ay',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w700,
+                                                color: ColorConstant.accentBlue,
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    ..._buildUpcomingSubscriptions(
+                                        context, viewModel, isDarkMode),
+                                    // Show All / Show Less button
+                                    if (_getUpcomingCount(viewModel) > 3)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 8),
+                                        child: TextButton.icon(
+                                          onPressed: () => viewModel
+                                              .toggleShowAllSubscriptions(),
+                                          icon: Icon(
+                                            viewModel.showAllSubscriptions
+                                                ? Icons.expand_less_rounded
+                                                : Icons.expand_more_rounded,
+                                            size: 20,
+                                          ),
+                                          label: Text(
+                                            viewModel.showAllSubscriptions
+                                                ? 'common.showLess'.tr()
+                                                : 'common.showAll'.tr(),
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          style: TextButton.styleFrom(
+                                            foregroundColor:
+                                                ColorConstant.accentBlue,
+                                          ),
+                                        ),
+                                      ),
                                   ],
                                 ),
-                                IconButton(
-                                  onPressed: () => _showMonthlyStatisticsDialog(
-                                      context, viewModel, isDarkMode),
-                                  icon: Icon(
-                                    Icons.bar_chart_rounded,
-                                    color: ColorConstant.accentBlue,
-                                    size: 24,
-                                  ),
-                                  tooltip: 'finance.monthlyStats'.tr(),
-                                ),
-                              ],
+                              ),
                             ),
-                            const SizedBox(height: 16),
-                            if (viewModel.budgetStats != null)
-                              _buildMonthlyBudgetCard(
-                                  context, viewModel, viewModel.budgetStats!, isDarkMode),
-                          ],
-                        ),
-                      ),
-                    ),
 
-                    // Upcoming Payments Section
-                    if (viewModel.activeSubscriptions.isNotEmpty)
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
+                          // Recent Activities Section
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                              child: Row(
                                 mainAxisAlignment:
-                                MainAxisAlignment.spaceBetween,
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Row(
                                     children: [
                                       Icon(
-                                        Icons.schedule_rounded,
+                                        Icons.history_rounded,
                                         size: 20,
                                         color: isDarkMode
                                             ? ColorConstant.textSecondaryDark
@@ -236,7 +350,7 @@ class _FinanceViewState extends State<FinanceView> {
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
-                                        'finance.upcomingPayments'.tr(),
+                                        'finance.recentActivities'.tr(),
                                         style: TextStyle(
                                           fontSize: 20,
                                           fontWeight: FontWeight.w700,
@@ -247,158 +361,78 @@ class _FinanceViewState extends State<FinanceView> {
                                       ),
                                     ],
                                   ),
-                                  if (viewModel.subscriptionStats != null)
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 6,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: ColorConstant.accentBlue
-                                            .withOpacity(0.15),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Text(
-                                        '₺${viewModel.subscriptionStats!.monthlyEquivalent.toStringAsFixed(0)}/ay',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w700,
-                                          color: ColorConstant.accentBlue,
-                                        ),
-                                      ),
-                                    ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              ..._buildUpcomingSubscriptions(
-                                  context, viewModel, isDarkMode),
-                              // Show All / Show Less button
-                              if (_getUpcomingCount(viewModel) > 3)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-                                  child: TextButton.icon(
-                                    onPressed: () => viewModel.toggleShowAllSubscriptions(),
+                                  TextButton.icon(
+                                    onPressed: () => _showExpenseFilterDialog(
+                                        context, viewModel, isDarkMode),
                                     icon: Icon(
-                                      viewModel.showAllSubscriptions
-                                          ? Icons.expand_less_rounded
-                                          : Icons.expand_more_rounded,
-                                      size: 20,
+                                      Icons.filter_list_rounded,
+                                      size: 18,
+                                      color: ColorConstant.accentBlue,
                                     ),
                                     label: Text(
-                                      viewModel.showAllSubscriptions
-                                          ? 'common.showLess'.tr()
-                                          : 'common.showAll'.tr(),
-                                      style: const TextStyle(
-                                        fontSize: 14,
+                                      'finance.filter'.tr(),
+                                      style: TextStyle(
+                                        color: ColorConstant.accentBlue,
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
-                                    style: TextButton.styleFrom(
-                                      foregroundColor: ColorConstant.accentBlue,
-                                    ),
                                   ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                    // Recent Activities Section
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.history_rounded,
-                                  size: 20,
-                                  color: isDarkMode
-                                      ? ColorConstant.textSecondaryDark
-                                      : ColorConstant.textSecondaryLight,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'finance.recentActivities'.tr(),
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w700,
-                                    color: isDarkMode
-                                        ? ColorConstant.textPrimaryDark
-                                        : ColorConstant.textPrimaryLight,
-                                  ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                            TextButton.icon(
-                              onPressed: () => _showExpenseFilterDialog(
-                                  context, viewModel, isDarkMode),
-                              icon: Icon(
-                                Icons.filter_list_rounded,
-                                size: 18,
+                          ),
+
+                          // Activities List
+                          if (viewModel.expenses.isNotEmpty &&
+                              viewModel.filteredExpenses.isEmpty)
+                            SliverToBoxAdapter(
+                              child: _buildEmptyState(
+                                illustration: 'empty_finance.svg',
+                                message: 'finance.noExpensesInFilter'.tr(),
+                                subtitle: 'finance.emptyStateSubtitle'.tr(),
                                 color: ColorConstant.accentBlue,
                               ),
-                              label: Text(
-                                'finance.filter'.tr(),
-                                style: TextStyle(
-                                  color: ColorConstant.accentBlue,
-                                  fontWeight: FontWeight.w600,
+                            )
+                          else if (viewModel.filteredExpenses.isNotEmpty)
+                            SliverPadding(
+                              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                              sliver: SliverList(
+                                delegate: SliverChildBuilderDelegate(
+                                  (context, index) {
+                                    return _buildExpenseCard(
+                                      context,
+                                      viewModel.filteredExpenses[index],
+                                      viewModel,
+                                      isDarkMode,
+                                    );
+                                  },
+                                  childCount: viewModel.filteredExpenses.length,
                                 ),
                               ),
+                            )
+                          else
+                            SliverToBoxAdapter(
+                              child: _buildEmptyState(
+                                illustration: 'empty_finance.svg',
+                                message: 'finance.emptyState'.tr(),
+                                subtitle: 'finance.emptyStateSubtitle'.tr(),
+                                color: ColorConstant.accentBlue,
+                                actionLabel: 'finance.addExpense'.tr(),
+                                onAction: () => _showAddExpenseDialog(
+                                    context, viewModel, isDarkMode),
+                              ),
                             ),
-                          ],
-                        ),
-                      ),
-                    ),
 
-                    // Activities List
-                    if (viewModel.expenses.isNotEmpty && viewModel.filteredExpenses.isEmpty)
-                      SliverToBoxAdapter(
-                        child: _buildEmptyState(
-                          icon: Icons.filter_alt_off_rounded,
-                          message: 'finance.noExpensesInFilter'.tr(),
-                          color: ColorConstant.accentBlue,
-                          isDarkMode: isDarkMode,
-                        ),
-                      )
-                    else if (viewModel.filteredExpenses.isNotEmpty)
-                      SliverPadding(
-                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                        sliver: SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                                (context, index) {
-                              return _buildExpenseCard(
-                                context,
-                                viewModel.filteredExpenses[index],
-                                viewModel,
-                                isDarkMode,
-                              );
-                            },
-                            childCount: viewModel.filteredExpenses.length,
+                          // Bottom Padding
+                          const SliverToBoxAdapter(
+                            child: SizedBox(height: 80),
                           ),
-                        ),
-                      )
-                    else
-                      SliverToBoxAdapter(
-                        child: _buildEmptyState(
-                          icon: Icons.receipt_long_rounded,
-                          message: 'finance.emptyState'.tr(),
-                          color: ColorConstant.accentGreen,
-                          isDarkMode: isDarkMode,
-                        ),
+                        ],
                       ),
-
-                    // Bottom Padding
-                    const SliverToBoxAdapter(
-                      child: SizedBox(height: 80),
                     ),
-                  ],
-                ),
-              ),
             ),
-            floatingActionButton: _buildSpeedDial(context, viewModel, isDarkMode),
+            floatingActionButton:
+                _buildSpeedDial(context, viewModel, isDarkMode),
           );
         },
       ),
@@ -422,7 +456,7 @@ class _FinanceViewState extends State<FinanceView> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: ColorConstant.accentBlue.withOpacity(0.3),
+            color: ColorConstant.accentBlue.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -434,7 +468,7 @@ class _FinanceViewState extends State<FinanceView> {
           Text(
             'finance.todayExpense'.tr(),
             style: TextStyle(
-              color: ColorConstant.white.withOpacity(0.9),
+              color: ColorConstant.white.withValues(alpha: 0.9),
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
@@ -457,7 +491,7 @@ class _FinanceViewState extends State<FinanceView> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: ColorConstant.white.withOpacity(0.2),
+              color: ColorConstant.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
@@ -466,7 +500,7 @@ class _FinanceViewState extends State<FinanceView> {
                 Text(
                   'finance.dailyAverage'.tr(),
                   style: TextStyle(
-                    color: ColorConstant.white.withOpacity(0.9),
+                    color: ColorConstant.white.withValues(alpha: 0.9),
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),
@@ -495,11 +529,11 @@ class _FinanceViewState extends State<FinanceView> {
   }
 
   Widget _buildMonthlyBudgetCard(
-      BuildContext context,
-      FinanceViewModel viewModel,
-      stats,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    FinanceViewModel viewModel,
+    stats,
+    bool isDarkMode,
+  ) {
     final percentage = stats.usagePercentage.clamp(0.0, 100.0);
     final isOverBudget = percentage > 100;
 
@@ -543,8 +577,8 @@ class _FinanceViewState extends State<FinanceView> {
                       color: isOverBudget
                           ? ColorConstant.errorRed
                           : (isDarkMode
-                          ? ColorConstant.textPrimaryDark
-                          : ColorConstant.textPrimaryLight),
+                              ? ColorConstant.textPrimaryDark
+                              : ColorConstant.textPrimaryLight),
                     ),
                   ),
                 ],
@@ -568,8 +602,8 @@ class _FinanceViewState extends State<FinanceView> {
                           isOverBudget
                               ? ColorConstant.errorRed
                               : percentage > 80
-                              ? ColorConstant.accentYellow
-                              : ColorConstant.accentGreen,
+                                  ? ColorConstant.accentYellow
+                                  : ColorConstant.accentGreen,
                         ),
                       ),
                     ),
@@ -620,7 +654,7 @@ class _FinanceViewState extends State<FinanceView> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -650,29 +684,27 @@ class _FinanceViewState extends State<FinanceView> {
   }
 
   List<Widget> _buildUpcomingSubscriptions(
-      BuildContext context,
-      FinanceViewModel viewModel,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    FinanceViewModel viewModel,
+    bool isDarkMode,
+  ) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
     // Sadece bugün ve gelecekteki ödemeleri filtrele
-    final upcoming = List<dynamic>.from(viewModel.activeSubscriptions)
-        .where((sub) {
+    final upcoming =
+        List<dynamic>.from(viewModel.activeSubscriptions).where((sub) {
       final billingDate = DateTime(
         sub.nextBillingDate.year,
         sub.nextBillingDate.month,
         sub.nextBillingDate.day,
       );
       return billingDate.isAtSameMomentAs(today) || billingDate.isAfter(today);
-    })
-        .toList()
-      ..sort((a, b) => a.nextBillingDate.compareTo(b.nextBillingDate));
+    }).toList()
+          ..sort((a, b) => a.nextBillingDate.compareTo(b.nextBillingDate));
 
-    final subscriptionsToShow = viewModel.showAllSubscriptions
-        ? upcoming
-        : upcoming.take(3);
+    final subscriptionsToShow =
+        viewModel.showAllSubscriptions ? upcoming : upcoming.take(3);
 
     return subscriptionsToShow.map((sub) {
       final daysUntil = sub.nextBillingDate.difference(DateTime.now()).inDays;
@@ -686,131 +718,136 @@ class _FinanceViewState extends State<FinanceView> {
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+            color:
+                isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: isUrgent
-                  ? ColorConstant.accentYellow.withOpacity(0.5)
+                  ? ColorConstant.accentYellow.withValues(alpha: 0.5)
                   : (isDarkMode
-                  ? ColorConstant.borderColorDark
-                  : ColorConstant.borderColorLight),
+                      ? ColorConstant.borderColorDark
+                      : ColorConstant.borderColorLight),
               width: isUrgent ? 2 : 1,
             ),
           ),
           child: Row(
             children: [
-            Builder(
-              builder: (context) {
-                final iconData = SubscriptionIcons.getIcon(sub.name) ??
-                    SubscriptionIcons.getDefaultIcon();
+              Builder(
+                builder: (context) {
+                  final iconData = SubscriptionIcons.getIcon(sub.name) ??
+                      SubscriptionIcons.getDefaultIcon();
 
-                return Container(
-                  width: 48,
-                  height: 48,
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: isDarkMode ? ColorConstant.bgColorDark : ColorConstant.bgColorLight,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: iconData.color.withOpacity(0.3),
-                      width: 1.5,
+                  return Container(
+                    width: 48,
+                    height: 48,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: isDarkMode
+                          ? ColorConstant.bgColorDark
+                          : ColorConstant.bgColorLight,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: iconData.color.withValues(alpha: 0.3),
+                        width: 1.5,
+                      ),
                     ),
-                  ),
-                  child: iconData.logoUrl != null
-                      ? SvgPicture.network(
-                          iconData.logoUrl!,
-                          colorFilter: ColorFilter.mode(
-                            iconData.color,
-                            BlendMode.srcIn,
-                          ),
-                          placeholderBuilder: (context) => Icon(
+                    child: iconData.logoUrl != null
+                        ? SvgPicture.network(
+                            iconData.logoUrl!,
+                            colorFilter: ColorFilter.mode(
+                              iconData.color,
+                              BlendMode.srcIn,
+                            ),
+                            placeholderBuilder: (context) => Icon(
+                              iconData.icon,
+                              color: iconData.color,
+                              size: 24,
+                            ),
+                          )
+                        : Icon(
                             iconData.icon,
                             color: iconData.color,
                             size: 24,
                           ),
-                        )
-                      : Icon(
-                          iconData.icon,
-                          color: iconData.color,
-                          size: 24,
-                        ),
-                );
-              },
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    sub.name,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: isDarkMode
-                          ? ColorConstant.textPrimaryDark
-                          : ColorConstant.textPrimaryLight,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(
-                        isUrgent
-                            ? Icons.warning_amber_rounded
-                            : Icons.schedule_rounded,
-                        size: 14,
-                        color: isUrgent
-                            ? ColorConstant.accentYellow
-                            : (isDarkMode
-                            ? ColorConstant.textMutedDark
-                            : ColorConstant.textMutedLight),
+                  );
+                },
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      sub.name,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: isDarkMode
+                            ? ColorConstant.textPrimaryDark
+                            : ColorConstant.textPrimaryLight,
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        daysUntil == 0
-                            ? 'common.today'.tr()
-                            : daysUntil == 1
-                            ? 'finance.tomorrow'.tr()
-                            : 'common.daysLater'.tr(namedArgs: {'count': '$daysUntil'}),
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: isUrgent ? FontWeight.w600 : FontWeight.w500,
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(
+                          isUrgent
+                              ? Icons.warning_amber_rounded
+                              : Icons.schedule_rounded,
+                          size: 14,
                           color: isUrgent
                               ? ColorConstant.accentYellow
                               : (isDarkMode
-                              ? ColorConstant.textSecondaryDark
-                              : ColorConstant.textSecondaryLight),
+                                  ? ColorConstant.textMutedDark
+                                  : ColorConstant.textMutedLight),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                        const SizedBox(width: 4),
+                        Text(
+                          daysUntil == 0
+                              ? 'common.today'.tr()
+                              : daysUntil == 1
+                                  ? 'finance.tomorrow'.tr()
+                                  : 'common.daysLater'
+                                      .tr(namedArgs: {'count': '$daysUntil'}),
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight:
+                                isUrgent ? FontWeight.w600 : FontWeight.w500,
+                            color: isUrgent
+                                ? ColorConstant.accentYellow
+                                : (isDarkMode
+                                    ? ColorConstant.textSecondaryDark
+                                    : ColorConstant.textSecondaryLight),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-            Text(
-              '₺${sub.amount.toStringAsFixed(2)}',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: isDarkMode
-                    ? ColorConstant.textPrimaryDark
-                    : ColorConstant.textPrimaryLight,
+              Text(
+                '₺${sub.amount.toStringAsFixed(2)}',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: isDarkMode
+                      ? ColorConstant.textPrimaryDark
+                      : ColorConstant.textPrimaryLight,
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
         ),
       );
     }).toList();
   }
 
   Widget _buildExpenseCard(
-      BuildContext context,
-      expense,
-      FinanceViewModel viewModel,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    expense,
+    FinanceViewModel viewModel,
+    bool isDarkMode,
+  ) {
     return Dismissible(
       key: Key('expense_${expense.id}'),
       direction: DismissDirection.endToStart,
@@ -833,7 +870,7 @@ class _FinanceViewState extends State<FinanceView> {
           context: context,
           builder: (context) => AlertDialog(
             backgroundColor:
-            isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+                isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
             title: Text(
               'finance.deleteExpense'.tr(),
               style: TextStyle(
@@ -877,7 +914,8 @@ class _FinanceViewState extends State<FinanceView> {
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+            color:
+                isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: isDarkMode
@@ -888,95 +926,97 @@ class _FinanceViewState extends State<FinanceView> {
           ),
           child: Row(
             children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: viewModel.getCategoryColor(expense.category).withOpacity(0.15),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Center(
-                child: Text(
-                  viewModel.getCategoryEmoji(expense.category),
-                  style: const TextStyle(fontSize: 24),
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: viewModel
+                      .getCategoryColor(expense.category)
+                      .withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
+                  child: Text(
+                    viewModel.getCategoryEmoji(expense.category),
+                    style: const TextStyle(fontSize: 24),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    viewModel.getCategoryLabel(expense.category),
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: isDarkMode
-                          ? ColorConstant.textPrimaryDark
-                          : ColorConstant.textPrimaryLight,
-                    ),
-                  ),
-                  if (expense.description != null &&
-                      expense.description!.isNotEmpty) ...[
-                    const SizedBox(height: 4),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      expense.description!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      viewModel.getCategoryLabel(expense.category),
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
                         color: isDarkMode
-                            ? ColorConstant.textSecondaryDark
-                            : ColorConstant.textSecondaryLight,
+                            ? ColorConstant.textPrimaryDark
+                            : ColorConstant.textPrimaryLight,
                       ),
                     ),
-                  ],
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.access_time_rounded,
-                        size: 12,
-                        color: isDarkMode
-                            ? ColorConstant.textMutedDark
-                            : ColorConstant.textMutedLight,
-                      ),
-                      const SizedBox(width: 4),
+                    if (expense.description != null &&
+                        expense.description!.isNotEmpty) ...[
+                      const SizedBox(height: 4),
                       Text(
-                        _formatDate(expense.expenseDate),
+                        expense.description!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 13,
+                          color: isDarkMode
+                              ? ColorConstant.textSecondaryDark
+                              : ColorConstant.textSecondaryLight,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.access_time_rounded,
+                          size: 12,
                           color: isDarkMode
                               ? ColorConstant.textMutedDark
                               : ColorConstant.textMutedLight,
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                        const SizedBox(width: 4),
+                        Text(
+                          _formatDate(expense.expenseDate),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isDarkMode
+                                ? ColorConstant.textMutedDark
+                                : ColorConstant.textMutedLight,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-            Text(
-              '-₺${expense.amount.toStringAsFixed(2)}',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: ColorConstant.errorRed,
+              Text(
+                '-₺${expense.amount.toStringAsFixed(2)}',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: ColorConstant.errorRed,
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildSpeedDial(
-      BuildContext context,
-      FinanceViewModel viewModel,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    FinanceViewModel viewModel,
+    bool isDarkMode,
+  ) {
     return FloatingActionButton(
       heroTag: 'finance_fab',
       onPressed: () {
@@ -1025,7 +1065,8 @@ class _FinanceViewState extends State<FinanceView> {
                     color: ColorConstant.accentBlue,
                     onTap: () {
                       Navigator.pop(context);
-                      _showAddSubscriptionDialog(context, viewModel, isDarkMode);
+                      _showAddSubscriptionDialog(
+                          context, viewModel, isDarkMode);
                     },
                     isDarkMode: isDarkMode,
                   ),
@@ -1053,7 +1094,7 @@ class _FinanceViewState extends State<FinanceView> {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: ColorConstant.accentBlue.withOpacity(0.4),
+              color: ColorConstant.accentBlue.withValues(alpha: 0.4),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -1080,7 +1121,7 @@ class _FinanceViewState extends State<FinanceView> {
         width: 48,
         height: 48,
         decoration: BoxDecoration(
-          color: color.withOpacity(0.15),
+          color: color.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Icon(icon, color: color),
@@ -1123,44 +1164,34 @@ class _FinanceViewState extends State<FinanceView> {
     return '${date.day}.${date.month}.${date.year}';
   }
 
+  /// Boş durum — SVG illüstrasyon + opsiyonel aksiyon butonu.
   Widget _buildEmptyState({
-    required IconData icon,
+    required String illustration,
     required String message,
+    required String subtitle,
     required Color color,
-    required bool isDarkMode,
+    String? actionLabel,
+    VoidCallback? onAction,
   }) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 60),
-        child: Column(
-          children: [
-            Icon(
-              icon,
-              size: 80,
-              color: color.withOpacity(0.3),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              message,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: isDarkMode
-                    ? ColorConstant.textSecondaryDark
-                    : ColorConstant.textSecondaryLight,
-              ),
-            ),
-          ],
-        ),
+    return Padding(
+      // Alt boşluk: butonun alt menü/FAB ile çakışmaması için.
+      padding: const EdgeInsets.only(top: 24, bottom: 96),
+      child: AppEmptyState(
+        illustration: illustration,
+        title: message,
+        message: subtitle,
+        accent: color,
+        actionLabel: actionLabel,
+        onAction: onAction,
       ),
     );
   }
 
   void _showAddSubscriptionDialog(
-      BuildContext context,
-      FinanceViewModel viewModel,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    FinanceViewModel viewModel,
+    bool isDarkMode,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1173,10 +1204,10 @@ class _FinanceViewState extends State<FinanceView> {
   }
 
   void _showAddExpenseDialog(
-      BuildContext context,
-      FinanceViewModel viewModel,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    FinanceViewModel viewModel,
+    bool isDarkMode,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1189,15 +1220,17 @@ class _FinanceViewState extends State<FinanceView> {
   }
 
   void _showEditSubscriptionSheet(
-      BuildContext context,
-      FinanceViewModel viewModel,
-      dynamic subscription,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    FinanceViewModel viewModel,
+    dynamic subscription,
+    bool isDarkMode,
+  ) {
     // Form alanlarını mevcut subscription verileriyle doldur
     viewModel.subscriptionNameController.text = subscription.name;
-    viewModel.subscriptionAmountController.text = subscription.amount.toString();
-    viewModel.subscriptionBillingDateController.text = subscription.billingDate.toString();
+    viewModel.subscriptionAmountController.text =
+        subscription.amount.toString();
+    viewModel.subscriptionBillingDateController.text =
+        subscription.billingDate.toString();
     viewModel.setSubscriptionBillingCycle(subscription.billingCycle);
 
     showModalBottomSheet(
@@ -1213,11 +1246,11 @@ class _FinanceViewState extends State<FinanceView> {
   }
 
   void _showEditExpenseSheet(
-      BuildContext context,
-      FinanceViewModel viewModel,
-      dynamic expense,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    FinanceViewModel viewModel,
+    dynamic expense,
+    bool isDarkMode,
+  ) {
     // Form alanlarını mevcut expense verileriyle doldur
     viewModel.expenseAmountController.text = expense.amount.toString();
     viewModel.expenseDescriptionController.text = expense.description ?? '';
@@ -1236,10 +1269,10 @@ class _FinanceViewState extends State<FinanceView> {
   }
 
   void _showBudgetSettingsDialog(
-      BuildContext context,
-      FinanceViewModel viewModel,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    FinanceViewModel viewModel,
+    bool isDarkMode,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1252,10 +1285,10 @@ class _FinanceViewState extends State<FinanceView> {
   }
 
   void _showExpenseFilterDialog(
-      BuildContext context,
-      FinanceViewModel viewModel,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    FinanceViewModel viewModel,
+    bool isDarkMode,
+  ) {
     showDialog(
       context: context,
       builder: (context) => _ExpenseFilterDialog(
@@ -1266,10 +1299,10 @@ class _FinanceViewState extends State<FinanceView> {
   }
 
   void _showMonthlyStatisticsDialog(
-      BuildContext context,
-      FinanceViewModel viewModel,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    FinanceViewModel viewModel,
+    bool isDarkMode,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1350,8 +1383,9 @@ class _AddSubscriptionBottomSheet extends StatelessWidget {
                         ValueListenableBuilder<TextEditingValue>(
                           valueListenable: vm.subscriptionNameController,
                           builder: (context, value, child) {
-                            final iconData = SubscriptionIcons.getIcon(value.text) ??
-                                SubscriptionIcons.getDefaultIcon();
+                            final iconData =
+                                SubscriptionIcons.getIcon(value.text) ??
+                                    SubscriptionIcons.getDefaultIcon();
 
                             return Center(
                               child: Container(
@@ -1359,15 +1393,19 @@ class _AddSubscriptionBottomSheet extends StatelessWidget {
                                 height: 80,
                                 padding: const EdgeInsets.all(18),
                                 decoration: BoxDecoration(
-                                  color: isDarkMode ? ColorConstant.bgColorDark : ColorConstant.bgColorLight,
+                                  color: isDarkMode
+                                      ? ColorConstant.bgColorDark
+                                      : ColorConstant.bgColorLight,
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: iconData.color.withOpacity(0.3),
+                                    color:
+                                        iconData.color.withValues(alpha: 0.3),
                                     width: 2,
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: iconData.color.withOpacity(0.2),
+                                      color:
+                                          iconData.color.withValues(alpha: 0.2),
                                       blurRadius: 12,
                                       offset: const Offset(0, 4),
                                     ),
@@ -1482,7 +1520,8 @@ class _AddSubscriptionBottomSheet extends StatelessWidget {
                                   Navigator.pop(context);
                                 },
                                 style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
                                   side: BorderSide(
                                     color: isDarkMode
                                         ? ColorConstant.borderColorDark
@@ -1509,7 +1548,8 @@ class _AddSubscriptionBottomSheet extends StatelessWidget {
                                 onPressed: () => vm.createSubscription(context),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: ColorConstant.accentBlue,
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(16),
                                   ),
@@ -1538,12 +1578,12 @@ class _AddSubscriptionBottomSheet extends StatelessWidget {
   }
 
   Widget _buildCycleChip(
-      BuildContext context,
-      FinanceViewModel vm,
-      String value,
-      String label,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    FinanceViewModel vm,
+    String value,
+    String label,
+    bool isDarkMode,
+  ) {
     final isSelected = vm.subscriptionBillingCycle == value;
     return Expanded(
       child: GestureDetector(
@@ -1552,14 +1592,14 @@ class _AddSubscriptionBottomSheet extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
             color: isSelected
-                ? ColorConstant.accentBlue.withOpacity(0.15)
+                ? ColorConstant.accentBlue.withValues(alpha: 0.15)
                 : Colors.transparent,
             border: Border.all(
               color: isSelected
                   ? ColorConstant.accentBlue
                   : (isDarkMode
-                  ? ColorConstant.borderColorDark
-                  : ColorConstant.borderColorLight),
+                      ? ColorConstant.borderColorDark
+                      : ColorConstant.borderColorLight),
               width: isSelected ? 2 : 1,
             ),
             borderRadius: BorderRadius.circular(12),
@@ -1571,8 +1611,8 @@ class _AddSubscriptionBottomSheet extends StatelessWidget {
               color: isSelected
                   ? ColorConstant.accentBlue
                   : (isDarkMode
-                  ? ColorConstant.textSecondaryDark
-                  : ColorConstant.textSecondaryLight),
+                      ? ColorConstant.textSecondaryDark
+                      : ColorConstant.textSecondaryLight),
               fontWeight: FontWeight.w600,
               fontSize: 13,
             ),
@@ -1593,15 +1633,47 @@ class _AddExpenseBottomSheet extends StatelessWidget {
   });
 
   List<Map<String, dynamic>> get _categories => [
-    {'value': 'food', 'label': 'finance.categories.food'.tr(), 'emoji': '🍔'},
-    {'value': 'transportation', 'label': 'finance.categories.transportation'.tr(), 'emoji': '🚗'},
-    {'value': 'entertainment', 'label': 'finance.categories.entertainment'.tr(), 'emoji': '🎬'},
-    {'value': 'shopping', 'label': 'finance.categories.shopping'.tr(), 'emoji': '🛍️'},
-    {'value': 'bills', 'label': 'finance.categories.bills'.tr(), 'emoji': '📄'},
-    {'value': 'health', 'label': 'finance.categories.health'.tr(), 'emoji': '💊'},
-    {'value': 'education', 'label': 'finance.categories.education'.tr(), 'emoji': '📚'},
-    {'value': 'other', 'label': 'finance.categories.other'.tr(), 'emoji': '💰'},
-  ];
+        {
+          'value': 'food',
+          'label': 'finance.categories.food'.tr(),
+          'emoji': '🍔'
+        },
+        {
+          'value': 'transportation',
+          'label': 'finance.categories.transportation'.tr(),
+          'emoji': '🚗'
+        },
+        {
+          'value': 'entertainment',
+          'label': 'finance.categories.entertainment'.tr(),
+          'emoji': '🎬'
+        },
+        {
+          'value': 'shopping',
+          'label': 'finance.categories.shopping'.tr(),
+          'emoji': '🛍️'
+        },
+        {
+          'value': 'bills',
+          'label': 'finance.categories.bills'.tr(),
+          'emoji': '📄'
+        },
+        {
+          'value': 'health',
+          'label': 'finance.categories.health'.tr(),
+          'emoji': '💊'
+        },
+        {
+          'value': 'education',
+          'label': 'finance.categories.education'.tr(),
+          'emoji': '📚'
+        },
+        {
+          'value': 'other',
+          'label': 'finance.categories.other'.tr(),
+          'emoji': '💰'
+        },
+      ];
 
   @override
   Widget build(BuildContext context) {
@@ -1673,24 +1745,27 @@ class _AddExpenseBottomSheet extends StatelessWidget {
                             itemCount: _categories.length,
                             itemBuilder: (context, index) {
                               final category = _categories[index];
-                              final isSelected = vm.expenseCategory == category['value'];
+                              final isSelected =
+                                  vm.expenseCategory == category['value'];
                               return GestureDetector(
-                                onTap: () => vm.setExpenseCategory(category['value']!),
+                                onTap: () =>
+                                    vm.setExpenseCategory(category['value']!),
                                 child: Container(
                                   width: 70,
                                   margin: const EdgeInsets.only(right: 12),
                                   decoration: BoxDecoration(
                                     color: isSelected
-                                        ? ColorConstant.accentGreen.withOpacity(0.15)
+                                        ? ColorConstant.accentGreen
+                                            .withValues(alpha: 0.15)
                                         : (isDarkMode
-                                        ? ColorConstant.bgColorDark
-                                        : ColorConstant.bgColorLight),
+                                            ? ColorConstant.bgColorDark
+                                            : ColorConstant.bgColorLight),
                                     border: Border.all(
                                       color: isSelected
                                           ? ColorConstant.accentGreen
                                           : (isDarkMode
-                                          ? ColorConstant.borderColorDark
-                                          : ColorConstant.borderColorLight),
+                                              ? ColorConstant.borderColorDark
+                                              : ColorConstant.borderColorLight),
                                       width: isSelected ? 2 : 1,
                                     ),
                                     borderRadius: BorderRadius.circular(16),
@@ -1711,8 +1786,10 @@ class _AddExpenseBottomSheet extends StatelessWidget {
                                           color: isSelected
                                               ? ColorConstant.accentGreen
                                               : (isDarkMode
-                                              ? ColorConstant.textSecondaryDark
-                                              : ColorConstant.textSecondaryLight),
+                                                  ? ColorConstant
+                                                      .textSecondaryDark
+                                                  : ColorConstant
+                                                      .textSecondaryLight),
                                         ),
                                       ),
                                     ],
@@ -1784,7 +1861,8 @@ class _AddExpenseBottomSheet extends StatelessWidget {
                                   Navigator.pop(context);
                                 },
                                 style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
                                   side: BorderSide(
                                     color: isDarkMode
                                         ? ColorConstant.borderColorDark
@@ -1811,7 +1889,8 @@ class _AddExpenseBottomSheet extends StatelessWidget {
                                 onPressed: () => vm.createExpense(context),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: ColorConstant.accentGreen,
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(16),
                                   ),
@@ -1938,7 +2017,8 @@ class _BudgetSettingsBottomSheet extends StatelessWidget {
                                   Navigator.pop(context);
                                 },
                                 style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
                                   side: BorderSide(
                                     color: isDarkMode
                                         ? ColorConstant.borderColorDark
@@ -1965,7 +2045,8 @@ class _BudgetSettingsBottomSheet extends StatelessWidget {
                                 onPressed: () => vm.updateBudget(context),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: ColorConstant.accentGreen,
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(16),
                                   ),
@@ -2132,7 +2213,8 @@ class _MonthlyStatisticsBottomSheetState
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: ColorConstant.accentBlue.withOpacity(0.15),
+                          color:
+                              ColorConstant.accentBlue.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -2217,7 +2299,7 @@ class _MonthlyStatisticsBottomSheetState
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: ColorConstant.accentBlue.withOpacity(0.3),
+                  color: ColorConstant.accentBlue.withValues(alpha: 0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -2229,7 +2311,7 @@ class _MonthlyStatisticsBottomSheetState
                 Text(
                   monthName,
                   style: TextStyle(
-                    color: ColorConstant.white.withOpacity(0.9),
+                    color: ColorConstant.white.withValues(alpha: 0.9),
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
@@ -2247,7 +2329,7 @@ class _MonthlyStatisticsBottomSheetState
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: ColorConstant.white.withOpacity(0.2),
+                    color: ColorConstant.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
@@ -2256,7 +2338,7 @@ class _MonthlyStatisticsBottomSheetState
                       Text(
                         'finance.totalExpense'.tr(),
                         style: TextStyle(
-                          color: ColorConstant.white.withOpacity(0.9),
+                          color: ColorConstant.white.withValues(alpha: 0.9),
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
@@ -2319,7 +2401,7 @@ class _MonthlyStatisticsBottomSheetState
                           decoration: BoxDecoration(
                             color: widget.viewModel
                                 .getCategoryColor(categoryName)
-                                .withOpacity(0.15),
+                                .withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Center(
@@ -2400,7 +2482,7 @@ class _MonthlyStatisticsBottomSheetState
                   ],
                 ),
               );
-            }).toList(),
+            }),
           ] else
             Center(
               child: Padding(
@@ -2431,15 +2513,47 @@ class _ExpenseFilterDialog extends StatelessWidget {
   });
 
   List<Map<String, dynamic>> get _categories => [
-    {'value': 'food', 'label': 'finance.categories.food'.tr(), 'emoji': '🍔'},
-    {'value': 'transportation', 'label': 'finance.categories.transportation'.tr(), 'emoji': '🚗'},
-    {'value': 'entertainment', 'label': 'finance.categories.entertainment'.tr(), 'emoji': '🎬'},
-    {'value': 'shopping', 'label': 'finance.categories.shopping'.tr(), 'emoji': '🛍️'},
-    {'value': 'bills', 'label': 'finance.categories.bills'.tr(), 'emoji': '📄'},
-    {'value': 'health', 'label': 'finance.categories.health'.tr(), 'emoji': '💊'},
-    {'value': 'education', 'label': 'finance.categories.education'.tr(), 'emoji': '📚'},
-    {'value': 'other', 'label': 'finance.categories.other'.tr(), 'emoji': '💰'},
-  ];
+        {
+          'value': 'food',
+          'label': 'finance.categories.food'.tr(),
+          'emoji': '🍔'
+        },
+        {
+          'value': 'transportation',
+          'label': 'finance.categories.transportation'.tr(),
+          'emoji': '🚗'
+        },
+        {
+          'value': 'entertainment',
+          'label': 'finance.categories.entertainment'.tr(),
+          'emoji': '🎬'
+        },
+        {
+          'value': 'shopping',
+          'label': 'finance.categories.shopping'.tr(),
+          'emoji': '🛍️'
+        },
+        {
+          'value': 'bills',
+          'label': 'finance.categories.bills'.tr(),
+          'emoji': '📄'
+        },
+        {
+          'value': 'health',
+          'label': 'finance.categories.health'.tr(),
+          'emoji': '💊'
+        },
+        {
+          'value': 'education',
+          'label': 'finance.categories.education'.tr(),
+          'emoji': '📚'
+        },
+        {
+          'value': 'other',
+          'label': 'finance.categories.other'.tr(),
+          'emoji': '💰'
+        },
+      ];
 
   @override
   Widget build(BuildContext context) {
@@ -2448,9 +2562,8 @@ class _ExpenseFilterDialog extends StatelessWidget {
       child: Consumer<FinanceViewModel>(
         builder: (context, vm, _) {
           return AlertDialog(
-            backgroundColor: isDarkMode
-                ? ColorConstant.cardColorDark
-                : ColorConstant.white,
+            backgroundColor:
+                isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
@@ -2485,7 +2598,8 @@ class _ExpenseFilterDialog extends StatelessWidget {
                     children: _categories.map((category) {
                       final isSelected = vm.isFilterActive(category['value']!);
                       return GestureDetector(
-                        onTap: () => vm.toggleFilterCategory(category['value']!),
+                        onTap: () =>
+                            vm.toggleFilterCategory(category['value']!),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 12,
@@ -2493,16 +2607,17 @@ class _ExpenseFilterDialog extends StatelessWidget {
                           ),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? ColorConstant.accentBlue.withOpacity(0.15)
+                                ? ColorConstant.accentBlue
+                                    .withValues(alpha: 0.15)
                                 : (isDarkMode
-                                ? ColorConstant.bgColorDark
-                                : ColorConstant.bgColorLight),
+                                    ? ColorConstant.bgColorDark
+                                    : ColorConstant.bgColorLight),
                             border: Border.all(
                               color: isSelected
                                   ? ColorConstant.accentBlue
                                   : (isDarkMode
-                                  ? ColorConstant.borderColorDark
-                                  : ColorConstant.borderColorLight),
+                                      ? ColorConstant.borderColorDark
+                                      : ColorConstant.borderColorLight),
                               width: isSelected ? 2 : 1,
                             ),
                             borderRadius: BorderRadius.circular(12),
@@ -2523,8 +2638,8 @@ class _ExpenseFilterDialog extends StatelessWidget {
                                   color: isSelected
                                       ? ColorConstant.accentBlue
                                       : (isDarkMode
-                                      ? ColorConstant.textSecondaryDark
-                                      : ColorConstant.textSecondaryLight),
+                                          ? ColorConstant.textSecondaryDark
+                                          : ColorConstant.textSecondaryLight),
                                 ),
                               ),
                             ],
@@ -2689,7 +2804,8 @@ class _EditSubscriptionBottomSheet extends StatelessWidget {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: () => vm.updateSubscription(subscription.id, context),
+                            onPressed: () =>
+                                vm.updateSubscription(subscription.id, context),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: ColorConstant.accentBlue,
                               padding: const EdgeInsets.symmetric(vertical: 16),
@@ -2720,13 +2836,13 @@ class _EditSubscriptionBottomSheet extends StatelessWidget {
   }
 
   Widget _buildTextField(
-      BuildContext context, {
-        required String label,
-        required TextEditingController controller,
-        required String hint,
-        required IconData icon,
-        TextInputType keyboardType = TextInputType.text,
-      }) {
+    BuildContext context, {
+    required String label,
+    required TextEditingController controller,
+    required String hint,
+    required IconData icon,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -2814,12 +2930,12 @@ class _EditSubscriptionBottomSheet extends StatelessWidget {
   }
 
   Widget _buildCycleOption(
-      BuildContext context,
-      FinanceViewModel vm,
-      String value,
-      String label,
-      IconData icon,
-      ) {
+    BuildContext context,
+    FinanceViewModel vm,
+    String value,
+    String label,
+    IconData icon,
+  ) {
     final isSelected = vm.subscriptionBillingCycle == value;
     return GestureDetector(
       onTap: () => vm.setSubscriptionBillingCycle(value),
@@ -2827,15 +2943,17 @@ class _EditSubscriptionBottomSheet extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         decoration: BoxDecoration(
           color: isSelected
-              ? ColorConstant.accentBlue.withOpacity(0.1)
-              : (isDarkMode ? ColorConstant.bgColorDark : ColorConstant.bgColorLight),
+              ? ColorConstant.accentBlue.withValues(alpha: 0.1)
+              : (isDarkMode
+                  ? ColorConstant.bgColorDark
+                  : ColorConstant.bgColorLight),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected
                 ? ColorConstant.accentBlue
                 : (isDarkMode
-                ? ColorConstant.borderColorDark
-                : ColorConstant.borderColorLight),
+                    ? ColorConstant.borderColorDark
+                    : ColorConstant.borderColorLight),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -2848,8 +2966,8 @@ class _EditSubscriptionBottomSheet extends StatelessWidget {
               color: isSelected
                   ? ColorConstant.accentBlue
                   : (isDarkMode
-                  ? ColorConstant.textMutedDark
-                  : ColorConstant.textMutedLight),
+                      ? ColorConstant.textMutedDark
+                      : ColorConstant.textMutedLight),
             ),
             const SizedBox(width: 8),
             Text(
@@ -2860,8 +2978,8 @@ class _EditSubscriptionBottomSheet extends StatelessWidget {
                 color: isSelected
                     ? ColorConstant.accentBlue
                     : (isDarkMode
-                    ? ColorConstant.textSecondaryDark
-                    : ColorConstant.textSecondaryLight),
+                        ? ColorConstant.textSecondaryDark
+                        : ColorConstant.textSecondaryLight),
               ),
             ),
           ],
@@ -2884,15 +3002,47 @@ class _EditExpenseBottomSheet extends StatelessWidget {
   });
 
   List<Map<String, dynamic>> get _categories => [
-    {'value': 'food', 'label': 'finance.categories.food'.tr(), 'emoji': '🍔'},
-    {'value': 'transportation', 'label': 'finance.categories.transportation'.tr(), 'emoji': '🚗'},
-    {'value': 'entertainment', 'label': 'finance.categories.entertainment'.tr(), 'emoji': '🎬'},
-    {'value': 'shopping', 'label': 'finance.categories.shopping'.tr(), 'emoji': '🛍️'},
-    {'value': 'bills', 'label': 'finance.categories.bills'.tr(), 'emoji': '📄'},
-    {'value': 'health', 'label': 'finance.categories.health'.tr(), 'emoji': '💊'},
-    {'value': 'education', 'label': 'finance.categories.education'.tr(), 'emoji': '📚'},
-    {'value': 'other', 'label': 'finance.categories.other'.tr(), 'emoji': '💰'},
-  ];
+        {
+          'value': 'food',
+          'label': 'finance.categories.food'.tr(),
+          'emoji': '🍔'
+        },
+        {
+          'value': 'transportation',
+          'label': 'finance.categories.transportation'.tr(),
+          'emoji': '🚗'
+        },
+        {
+          'value': 'entertainment',
+          'label': 'finance.categories.entertainment'.tr(),
+          'emoji': '🎬'
+        },
+        {
+          'value': 'shopping',
+          'label': 'finance.categories.shopping'.tr(),
+          'emoji': '🛍️'
+        },
+        {
+          'value': 'bills',
+          'label': 'finance.categories.bills'.tr(),
+          'emoji': '📄'
+        },
+        {
+          'value': 'health',
+          'label': 'finance.categories.health'.tr(),
+          'emoji': '💊'
+        },
+        {
+          'value': 'education',
+          'label': 'finance.categories.education'.tr(),
+          'emoji': '📚'
+        },
+        {
+          'value': 'other',
+          'label': 'finance.categories.other'.tr(),
+          'emoji': '💰'
+        },
+      ];
 
   @override
   Widget build(BuildContext context) {
@@ -2976,9 +3126,11 @@ class _EditExpenseBottomSheet extends StatelessWidget {
                           spacing: 8,
                           runSpacing: 8,
                           children: _categories.map((category) {
-                            final isSelected = vm.expenseCategory == category['value'];
+                            final isSelected =
+                                vm.expenseCategory == category['value'];
                             return GestureDetector(
-                              onTap: () => vm.setExpenseCategory(category['value']),
+                              onTap: () =>
+                                  vm.setExpenseCategory(category['value']),
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 12,
@@ -2986,17 +3138,18 @@ class _EditExpenseBottomSheet extends StatelessWidget {
                                 ),
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? ColorConstant.accentBlue.withOpacity(0.1)
+                                      ? ColorConstant.accentBlue
+                                          .withValues(alpha: 0.1)
                                       : (isDarkMode
-                                      ? ColorConstant.bgColorDark
-                                      : ColorConstant.bgColorLight),
+                                          ? ColorConstant.bgColorDark
+                                          : ColorConstant.bgColorLight),
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
                                     color: isSelected
                                         ? ColorConstant.accentBlue
                                         : (isDarkMode
-                                        ? ColorConstant.borderColorDark
-                                        : ColorConstant.borderColorLight),
+                                            ? ColorConstant.borderColorDark
+                                            : ColorConstant.borderColorLight),
                                     width: isSelected ? 2 : 1,
                                   ),
                                 ),
@@ -3018,8 +3171,10 @@ class _EditExpenseBottomSheet extends StatelessWidget {
                                         color: isSelected
                                             ? ColorConstant.accentBlue
                                             : (isDarkMode
-                                            ? ColorConstant.textSecondaryDark
-                                            : ColorConstant.textSecondaryLight),
+                                                ? ColorConstant
+                                                    .textSecondaryDark
+                                                : ColorConstant
+                                                    .textSecondaryLight),
                                       ),
                                     ),
                                   ],
@@ -3049,7 +3204,8 @@ class _EditExpenseBottomSheet extends StatelessWidget {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: () => vm.updateExpense(expense.id, context),
+                            onPressed: () =>
+                                vm.updateExpense(expense.id, context),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: ColorConstant.accentBlue,
                               padding: const EdgeInsets.symmetric(vertical: 16),
@@ -3080,13 +3236,13 @@ class _EditExpenseBottomSheet extends StatelessWidget {
   }
 
   Widget _buildTextField(
-      BuildContext context, {
-        required String label,
-        required TextEditingController controller,
-        required String hint,
-        required IconData icon,
-        TextInputType keyboardType = TextInputType.text,
-      }) {
+    BuildContext context, {
+    required String label,
+    required TextEditingController controller,
+    required String hint,
+    required IconData icon,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

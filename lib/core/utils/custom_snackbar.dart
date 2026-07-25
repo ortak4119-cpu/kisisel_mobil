@@ -11,12 +11,12 @@ class CustomSnackBar {
   /// [type] determines the background color (success, error, info, warning)
   /// [icon] optional icon to display
   static void show(
-      BuildContext context, {
-        required String message,
-        SnackBarType type = SnackBarType.info,
-        Duration duration = const Duration(seconds: 3),
-        IconData? icon,
-      }) {
+    BuildContext context, {
+    required String message,
+    SnackBarType type = SnackBarType.info,
+    Duration duration = const Duration(seconds: 3),
+    IconData? icon,
+  }) {
     // Determine if dark mode is active
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
@@ -28,21 +28,21 @@ class CustomSnackBar {
     switch (type) {
       case SnackBarType.success:
         backgroundColor = isDarkMode
-            ? ColorConstant.successGreen.withOpacity(0.9)
+            ? ColorConstant.successGreen.withValues(alpha: 0.9)
             : ColorConstant.successGreen;
         textColor = ColorConstant.white;
         defaultIcon = Icons.check_circle_rounded;
         break;
       case SnackBarType.error:
         backgroundColor = isDarkMode
-            ? ColorConstant.errorRed.withOpacity(0.9)
+            ? ColorConstant.errorRed.withValues(alpha: 0.9)
             : ColorConstant.errorRed;
         textColor = ColorConstant.white;
         defaultIcon = Icons.error_rounded;
         break;
       case SnackBarType.warning:
         backgroundColor = isDarkMode
-            ? ColorConstant.warningOrange.withOpacity(0.9)
+            ? ColorConstant.warningOrange.withValues(alpha: 0.9)
             : ColorConstant.warningOrange;
         textColor = ColorConstant.white;
         defaultIcon = Icons.warning_rounded;
@@ -95,11 +95,11 @@ class CustomSnackBar {
 
   /// Success notification with green background
   static void showSuccess(
-      BuildContext context,
-      String message, {
-        Duration? duration,
-        IconData? icon,
-      }) {
+    BuildContext context,
+    String message, {
+    Duration? duration,
+    IconData? icon,
+  }) {
     show(
       context,
       message: message,
@@ -111,11 +111,11 @@ class CustomSnackBar {
 
   /// Error notification with red background
   static void showError(
-      BuildContext context,
-      String message, {
-        Duration? duration,
-        IconData? icon,
-      }) {
+    BuildContext context,
+    String message, {
+    Duration? duration,
+    IconData? icon,
+  }) {
     show(
       context,
       message: message,
@@ -127,11 +127,11 @@ class CustomSnackBar {
 
   /// Warning notification with orange background
   static void showWarning(
-      BuildContext context,
-      String message, {
-        Duration? duration,
-        IconData? icon,
-      }) {
+    BuildContext context,
+    String message, {
+    Duration? duration,
+    IconData? icon,
+  }) {
     show(
       context,
       message: message,
@@ -143,11 +143,11 @@ class CustomSnackBar {
 
   /// Info notification with purple background
   static void showInfo(
-      BuildContext context,
-      String message, {
-        Duration? duration,
-        IconData? icon,
-      }) {
+    BuildContext context,
+    String message, {
+    Duration? duration,
+    IconData? icon,
+  }) {
     show(
       context,
       message: message,
@@ -160,10 +160,10 @@ class CustomSnackBar {
   /// Backwards-compatible method to quickly update existing SnackBar calls
   /// Automatically determines the appropriate theme and styling
   static void showDefault(
-      BuildContext context,
-      String message, {
-        Duration? duration,
-      }) {
+    BuildContext context,
+    String message, {
+    Duration? duration,
+  }) {
     show(
       context,
       message: message,

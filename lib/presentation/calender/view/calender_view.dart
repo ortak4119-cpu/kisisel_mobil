@@ -4,16 +4,14 @@ import 'package:auto_route/auto_route.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../../core/design/app_design.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/utils/custom_snackbar.dart';
 import '../../../core/utils/subscription_icons.dart';
+import '../../../core/utils/premium_helper.dart';
 import '../../../core/route/app_router.gr.dart';
 import '../../../models/calender/calendar_models.dart';
 import '../../../models/note/note_models.dart';
-import '../../../models/diary/diary_models.dart';
-import '../../../models/task/task_models.dart';
-import '../../../models/subscription/subscription_models.dart';
-import '../../../models/budget/buget_models.dart';
 import '../viewmodel/calender_viewmodel.dart';
 
 @RoutePage()
@@ -57,7 +55,8 @@ class _CalendarViewState extends State<CalendarView> {
             ),
             floatingActionButton: FloatingActionButton(
               heroTag: 'calendar_fab',
-              onPressed: () => _showAddEventDialog(context, viewModel, isDarkMode),
+              onPressed: () =>
+                  _showAddEventDialog(context, viewModel, isDarkMode),
               backgroundColor: const Color(0xFFB794F6),
               child: const Icon(Icons.add, color: Colors.white),
             ),
@@ -68,10 +67,10 @@ class _CalendarViewState extends State<CalendarView> {
   }
 
   Widget _buildHeader(
-      BuildContext context,
-      CalendarViewModel viewModel,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    CalendarViewModel viewModel,
+    bool isDarkMode,
+  ) {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
       child: Column(
@@ -82,7 +81,9 @@ class _CalendarViewState extends State<CalendarView> {
             children: [
               Expanded(
                 child: Text(
-                  'calendar.title'.tr(),
+                  // Ekran başlığı: 'calendar.title' form alanı etiketi olarak
+                  // da kullanıldığı için ("Başlık") ayrı bir anahtar gerekli.
+                  'calendar.screenTitle'.tr(),
                   style: TextStyle(
                     color: isDarkMode
                         ? ColorConstant.textPrimaryDark
@@ -93,41 +94,44 @@ class _CalendarViewState extends State<CalendarView> {
                   ),
                 ),
               ),
-              // Premium Button
-              Container(
-                margin: const EdgeInsets.only(right: 4),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      ColorConstant.accentYellow,
-                      ColorConstant.accentOrange,
+              // Premium Button - kullanıcı yüklendikten sonra, sadece premium değilse göster
+              if (viewModel.isUserLoaded &&
+                  !PremiumHelper.isPremiumUser(viewModel.currentUser))
+                Container(
+                  margin: const EdgeInsets.only(right: 4),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        ColorConstant.accentYellow,
+                        ColorConstant.accentOrange,
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color:
+                            ColorConstant.accentYellow.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: ColorConstant.accentYellow.withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () => context.router.push(const PaywallRoute()),
-                    borderRadius: BorderRadius.circular(12),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Icon(
-                        Icons.workspace_premium_rounded,
-                        color: ColorConstant.white,
-                        size: 20,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => context.router.push(const PaywallRoute()),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Icon(
+                          Icons.workspace_premium_rounded,
+                          color: ColorConstant.white,
+                          size: 20,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
               // View Toggle Button
               IconButton(
                 onPressed: () => viewModel.toggleCalendarViewType(),
@@ -175,7 +179,7 @@ class _CalendarViewState extends State<CalendarView> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -222,98 +226,98 @@ class _CalendarViewState extends State<CalendarView> {
             ),
           ),
           TableCalendar(
-        locale: context.locale.toString(),
-        firstDay: DateTime.utc(2020, 1, 1),
-        lastDay: DateTime.utc(2030, 12, 31),
-        focusedDay: viewModel.focusedMonth,
-        selectedDayPredicate: (day) => viewModel.isSelectedDate(day),
-        calendarFormat: viewModel.calendarViewType == CalendarViewType.month
-            ? CalendarFormat.month
-            : CalendarFormat.week,
-        onDaySelected: (selectedDay, focusedDay) {
-          viewModel.setSelectedDate(selectedDay);
-        },
-        onPageChanged: (focusedDay) {
-          viewModel.setFocusedMonth(focusedDay);
-        },
-        calendarStyle: CalendarStyle(
-          // Today
-          todayDecoration: BoxDecoration(
-            color: const Color(0xFFB794F6).withOpacity(0.2),
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: const Color(0xFFB794F6),
-              width: 2,
+            locale: context.locale.toString(),
+            firstDay: DateTime(2020, 1, 1),
+            lastDay: DateTime(2030, 12, 31),
+            focusedDay: viewModel.focusedMonth,
+            selectedDayPredicate: (day) => viewModel.isSelectedDate(day),
+            calendarFormat: viewModel.calendarViewType == CalendarViewType.month
+                ? CalendarFormat.month
+                : CalendarFormat.week,
+            onDaySelected: (selectedDay, focusedDay) {
+              viewModel.setSelectedDate(selectedDay);
+            },
+            onPageChanged: (focusedDay) {
+              viewModel.setFocusedMonth(focusedDay);
+            },
+            calendarStyle: CalendarStyle(
+              // Today
+              todayDecoration: BoxDecoration(
+                color: const Color(0xFFB794F6).withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: const Color(0xFFB794F6),
+                  width: 2,
+                ),
+              ),
+              todayTextStyle: TextStyle(
+                color: isDarkMode
+                    ? ColorConstant.textPrimaryDark
+                    : ColorConstant.textPrimaryLight,
+                fontWeight: FontWeight.w700,
+              ),
+              // Selected Day
+              selectedDecoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFFB794F6), Color(0xFF9B6FE8)],
+                ),
+                shape: BoxShape.circle,
+              ),
+              selectedTextStyle: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+              // Default Day
+              defaultTextStyle: TextStyle(
+                color: isDarkMode
+                    ? ColorConstant.textPrimaryDark
+                    : ColorConstant.textPrimaryLight,
+                fontWeight: FontWeight.w600,
+              ),
+              // Outside Days
+              outsideTextStyle: TextStyle(
+                color: isDarkMode
+                    ? ColorConstant.textMutedDark
+                    : ColorConstant.textMutedLight,
+                fontWeight: FontWeight.w500,
+              ),
+              // Weekend
+              weekendTextStyle: TextStyle(
+                color: isDarkMode
+                    ? ColorConstant.textSecondaryDark
+                    : ColorConstant.textSecondaryLight,
+                fontWeight: FontWeight.w600,
+              ),
+              // Markers
+              markerDecoration: const BoxDecoration(
+                color: Color(0xFFB794F6),
+                shape: BoxShape.circle,
+              ),
+              markersMaxCount: 4,
+              cellMargin: const EdgeInsets.all(4),
             ),
-          ),
-          todayTextStyle: TextStyle(
-            color: isDarkMode
-                ? ColorConstant.textPrimaryDark
-                : ColorConstant.textPrimaryLight,
-            fontWeight: FontWeight.w700,
-          ),
-          // Selected Day
-          selectedDecoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFFB794F6), Color(0xFF9B6FE8)],
+            headerVisible: false,
+            daysOfWeekStyle: DaysOfWeekStyle(
+              weekdayStyle: TextStyle(
+                color: isDarkMode
+                    ? ColorConstant.textSecondaryDark
+                    : ColorConstant.textSecondaryLight,
+                fontWeight: FontWeight.w700,
+                fontSize: 12,
+              ),
+              weekendStyle: TextStyle(
+                color: isDarkMode
+                    ? ColorConstant.textSecondaryDark
+                    : ColorConstant.textSecondaryLight,
+                fontWeight: FontWeight.w700,
+                fontSize: 12,
+              ),
             ),
-            shape: BoxShape.circle,
-          ),
-          selectedTextStyle: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w700,
-          ),
-          // Default Day
-          defaultTextStyle: TextStyle(
-            color: isDarkMode
-                ? ColorConstant.textPrimaryDark
-                : ColorConstant.textPrimaryLight,
-            fontWeight: FontWeight.w600,
-          ),
-          // Outside Days
-          outsideTextStyle: TextStyle(
-            color: isDarkMode
-                ? ColorConstant.textMutedDark
-                : ColorConstant.textMutedLight,
-            fontWeight: FontWeight.w500,
-          ),
-          // Weekend
-          weekendTextStyle: TextStyle(
-            color: isDarkMode
-                ? ColorConstant.textSecondaryDark
-                : ColorConstant.textSecondaryLight,
-            fontWeight: FontWeight.w600,
-          ),
-          // Markers
-          markerDecoration: const BoxDecoration(
-            color: Color(0xFFB794F6),
-            shape: BoxShape.circle,
-          ),
-          markersMaxCount: 4,
-          cellMargin: const EdgeInsets.all(4),
-        ),
-        headerVisible: false,
-        daysOfWeekStyle: DaysOfWeekStyle(
-          weekdayStyle: TextStyle(
-            color: isDarkMode
-                ? ColorConstant.textSecondaryDark
-                : ColorConstant.textSecondaryLight,
-            fontWeight: FontWeight.w700,
-            fontSize: 12,
-          ),
-          weekendStyle: TextStyle(
-            color: isDarkMode
-                ? ColorConstant.textSecondaryDark
-                : ColorConstant.textSecondaryLight,
-            fontWeight: FontWeight.w700,
-            fontSize: 12,
-          ),
-        ),
-        calendarBuilders: CalendarBuilders(
-          markerBuilder: (context, date, events) {
-            return _buildDayMarkers(date, viewModel);
-          },
-        ),
+            calendarBuilders: CalendarBuilders(
+              markerBuilder: (context, date, events) {
+                return _buildDayMarkers(date, viewModel);
+              },
+            ),
           ),
         ],
       ),
@@ -440,14 +444,14 @@ class _CalendarViewState extends State<CalendarView> {
   }
 
   Widget _buildEventsList(
-      BuildContext context,
-      CalendarViewModel viewModel,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    CalendarViewModel viewModel,
+    bool isDarkMode,
+  ) {
     final totalEvents = viewModel.getTotalEventsForSelectedDate();
 
     if (totalEvents == 0) {
-      return _buildEmptyState(isDarkMode);
+      return _buildEmptyState(context, viewModel, isDarkMode);
     }
 
     return ListView(
@@ -484,57 +488,29 @@ class _CalendarViewState extends State<CalendarView> {
     );
   }
 
-  Widget _buildEmptyState(bool isDarkMode) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: const Color(0xFFB794F6).withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.event_busy_rounded,
-              size: 64,
-              color: const Color(0xFFB794F6).withOpacity(0.5),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'calendar.noEventsForDay'.tr(),
-            style: TextStyle(
-              color: isDarkMode
-                  ? ColorConstant.textPrimaryDark
-                  : ColorConstant.textPrimaryLight,
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'calendar.addEventHint'.tr(),
-            style: TextStyle(
-              color: isDarkMode
-                  ? ColorConstant.textSecondaryDark
-                  : ColorConstant.textSecondaryLight,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+  /// Boş durum — SVG illüstrasyon + doğrudan etkinlik ekleyen buton.
+  /// Alt boşluk, butonun alt menü/FAB ile çakışmasını önler.
+  Widget _buildEmptyState(
+      BuildContext context, CalendarViewModel viewModel, bool isDarkMode) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 28),
+      child: AppEmptyState(
+        illustration: 'empty_calendar.svg',
+        title: 'calendar.noEventsForDay'.tr(),
+        message: 'calendar.addEventHint'.tr(),
+        accent: const Color(0xFFB794F6),
+        actionLabel: 'calendar.addEvent'.tr(),
+        onAction: () => _showAddEventDialog(context, viewModel, isDarkMode),
       ),
     );
   }
 
   // ============ CALENDAR EVENTS SECTION ============
   Widget _buildCalendarEventsSection(
-      BuildContext context,
-      CalendarViewModel viewModel,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    CalendarViewModel viewModel,
+    bool isDarkMode,
+  ) {
     final events = viewModel.calendarEventsForSelectedDate;
 
     return Container(
@@ -574,9 +550,10 @@ class _CalendarViewState extends State<CalendarView> {
                 ),
                 const Spacer(),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF64B5F6).withOpacity(0.1),
+                    color: const Color(0xFF64B5F6).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -599,7 +576,8 @@ class _CalendarViewState extends State<CalendarView> {
             itemCount: events.length,
             itemBuilder: (context, index) {
               final event = events[index];
-              return _buildCalendarEventCard(context, event, viewModel, isDarkMode);
+              return _buildCalendarEventCard(
+                  context, event, viewModel, isDarkMode);
             },
           ),
         ],
@@ -608,11 +586,11 @@ class _CalendarViewState extends State<CalendarView> {
   }
 
   Widget _buildCalendarEventCard(
-      BuildContext context,
-      CalendarEvent event,
-      CalendarViewModel viewModel,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    CalendarEvent event,
+    CalendarViewModel viewModel,
+    bool isDarkMode,
+  ) {
     final eventTypeColors = {
       'habit': const Color(0xFF66BB6A),
       'task': const Color(0xFFEF5350),
@@ -640,12 +618,12 @@ class _CalendarViewState extends State<CalendarView> {
         color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: color.withOpacity(0.2),
+          color: color.withValues(alpha: 0.2),
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -655,7 +633,8 @@ class _CalendarViewState extends State<CalendarView> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () => _showCalendarEventDetail(context, event, viewModel, isDarkMode),
+          onTap: () =>
+              _showCalendarEventDetail(context, event, viewModel, isDarkMode),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -664,7 +643,7 @@ class _CalendarViewState extends State<CalendarView> {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -696,7 +675,8 @@ class _CalendarViewState extends State<CalendarView> {
                       ),
 
                       // Time & Description
-                      if (event.eventTime != null || event.description != null) ...[
+                      if (event.eventTime != null ||
+                          event.description != null) ...[
                         const SizedBox(height: 6),
                         Row(
                           children: [
@@ -720,9 +700,11 @@ class _CalendarViewState extends State<CalendarView> {
                                 ),
                               ),
                             ],
-                            if (event.eventTime != null && event.description != null) ...[
+                            if (event.eventTime != null &&
+                                event.description != null) ...[
                               Container(
-                                margin: const EdgeInsets.symmetric(horizontal: 8),
+                                margin:
+                                    const EdgeInsets.symmetric(horizontal: 8),
                                 width: 4,
                                 height: 4,
                                 decoration: BoxDecoration(
@@ -754,8 +736,6 @@ class _CalendarViewState extends State<CalendarView> {
                     ],
                   ),
                 ),
-
-
               ],
             ),
           ),
@@ -784,11 +764,11 @@ class _CalendarViewState extends State<CalendarView> {
   }
 
   void _showCalendarEventDetail(
-      BuildContext context,
-      CalendarEvent event,
-      CalendarViewModel viewModel,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    CalendarEvent event,
+    CalendarViewModel viewModel,
+    bool isDarkMode,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -799,7 +779,8 @@ class _CalendarViewState extends State<CalendarView> {
         maxChildSize: 0.9,
         builder: (context, scrollController) => Container(
           decoration: BoxDecoration(
-            color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+            color:
+                isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
             borderRadius: const BorderRadius.vertical(
               top: Radius.circular(24),
             ),
@@ -887,7 +868,6 @@ class _CalendarViewState extends State<CalendarView> {
                           event.eventTime!,
                         ),
 
-
                       // Description
                       if (event.description != null) ...[
                         const SizedBox(height: 24),
@@ -924,10 +904,12 @@ class _CalendarViewState extends State<CalendarView> {
                             child: OutlinedButton(
                               onPressed: () {
                                 Navigator.pop(context);
-                                _showEditEventDialog(context, event, viewModel, isDarkMode);
+                                _showEditEventDialog(
+                                    context, event, viewModel, isDarkMode);
                               },
                               style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 14),
                                 side: const BorderSide(
                                   color: Color(0xFFB794F6),
                                   width: 2,
@@ -936,9 +918,9 @@ class _CalendarViewState extends State<CalendarView> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
-                              child:  Text(
+                              child: Text(
                                 'common.edit'.tr(),
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: Color(0xFFB794F6),
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
@@ -951,7 +933,10 @@ class _CalendarViewState extends State<CalendarView> {
                             child: Container(
                               decoration: BoxDecoration(
                                 gradient: const LinearGradient(
-                                  colors: [Color(0xFFEF5350), Color(0xFFE53935)],
+                                  colors: [
+                                    Color(0xFFEF5350),
+                                    Color(0xFFE53935)
+                                  ],
                                 ),
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -962,13 +947,16 @@ class _CalendarViewState extends State<CalendarView> {
                                     isDarkMode,
                                   );
                                   if (confirm == true) {
-                                    final success = await viewModel.deleteCalendarEvent(event.id);
+                                    final success = await viewModel
+                                        .deleteCalendarEvent(event.id);
                                     if (context.mounted) {
                                       Navigator.pop(context);
                                       if (success) {
-                                        CustomSnackBar.showSuccess(context, 'success.eventDeleted'.tr());
+                                        CustomSnackBar.showSuccess(context,
+                                            'success.eventDeleted'.tr());
                                       } else {
-                                        CustomSnackBar.showError(context, 'errors.eventDeleteFailed'.tr());
+                                        CustomSnackBar.showError(context,
+                                            'errors.eventDeleteFailed'.tr());
                                       }
                                     }
                                   }
@@ -976,12 +964,13 @@ class _CalendarViewState extends State<CalendarView> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.transparent,
                                   shadowColor: Colors.transparent,
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 14),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                 ),
-                                child:  Text(
+                                child: Text(
                                   'common.delete'.tr(),
                                   style: const TextStyle(
                                     color: Colors.white,
@@ -1006,16 +995,17 @@ class _CalendarViewState extends State<CalendarView> {
   }
 
   Widget _buildInfoRow(
-      bool isDarkMode,
-      IconData icon,
-      String label,
-      String value,
-      ) {
+    bool isDarkMode,
+    IconData icon,
+    String label,
+    String value,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isDarkMode ? ColorConstant.bgColorDark : ColorConstant.bgColorLight,
+        color:
+            isDarkMode ? ColorConstant.bgColorDark : ColorConstant.bgColorLight,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -1084,7 +1074,8 @@ class _CalendarViewState extends State<CalendarView> {
     return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+        backgroundColor:
+            isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
@@ -1127,9 +1118,9 @@ class _CalendarViewState extends State<CalendarView> {
             ),
             child: TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child:  Text(
+              child: Text(
                 'common.delete'.tr(),
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
                 ),
@@ -1143,10 +1134,10 @@ class _CalendarViewState extends State<CalendarView> {
 
   // ADD EVENT DIALOG
   void _showAddEventDialog(
-      BuildContext context,
-      CalendarViewModel viewModel,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    CalendarViewModel viewModel,
+    bool isDarkMode,
+  ) {
     final titleController = TextEditingController();
     final descriptionController = TextEditingController();
     String selectedType = 'custom';
@@ -1157,7 +1148,8 @@ class _CalendarViewState extends State<CalendarView> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          backgroundColor: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+          backgroundColor:
+              isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
@@ -1221,8 +1213,6 @@ class _CalendarViewState extends State<CalendarView> {
                 ),
                 const SizedBox(height: 16),
 
-
-
                 // Tarih Seçimi
                 ListTile(
                   title: Text(
@@ -1242,7 +1232,8 @@ class _CalendarViewState extends State<CalendarView> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  trailing: const Icon(Icons.calendar_today, color: Color(0xFFB794F6)),
+                  trailing: const Icon(Icons.calendar_today,
+                      color: Color(0xFFB794F6)),
                   onTap: () async {
                     final date = await showDatePicker(
                       context: context,
@@ -1277,7 +1268,8 @@ class _CalendarViewState extends State<CalendarView> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  trailing: const Icon(Icons.access_time, color: Color(0xFFB794F6)),
+                  trailing:
+                      const Icon(Icons.access_time, color: Color(0xFFB794F6)),
                   onTap: () async {
                     final time = await showTimePicker(
                       context: context,
@@ -1325,7 +1317,7 @@ class _CalendarViewState extends State<CalendarView> {
                         : descriptionController.text,
                     eventType: selectedType,
                     eventDate:
-                    '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}',
+                        '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}',
                     eventTime: selectedTime != null
                         ? '${selectedTime!.hour.toString().padLeft(2, '0')}:${selectedTime!.minute.toString().padLeft(2, '0')}'
                         : null,
@@ -1337,15 +1329,17 @@ class _CalendarViewState extends State<CalendarView> {
                     Navigator.pop(context);
 
                     if (success) {
-                      CustomSnackBar.showSuccess(context, 'success.eventCreated'.tr());
+                      CustomSnackBar.showSuccess(
+                          context, 'success.eventCreated'.tr());
                     } else {
-                      CustomSnackBar.showError(context, 'errors.eventCreateFailed'.tr());
+                      CustomSnackBar.showError(
+                          context, 'errors.eventCreateFailed'.tr());
                     }
                   }
                 },
-                child:  Text(
+                child: Text(
                   'calendar.save'.tr(),
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
                   ),
@@ -1363,10 +1357,10 @@ class _CalendarViewState extends State<CalendarView> {
   // Örnek olarak sadece birkaç tanesini ekliyorum:
 
   Widget _buildDiarySection(
-      BuildContext context,
-      CalendarViewModel viewModel,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    CalendarViewModel viewModel,
+    bool isDarkMode,
+  ) {
     final diary = viewModel.diaryForSelectedDate!;
 
     return Container(
@@ -1413,10 +1407,12 @@ class _CalendarViewState extends State<CalendarView> {
             margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+              color: isDarkMode
+                  ? ColorConstant.cardColorDark
+                  : ColorConstant.white,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: const Color(0xFFFFA07A).withOpacity(0.2),
+                color: const Color(0xFFFFA07A).withValues(alpha: 0.2),
                 width: 1.5,
               ),
             ),
@@ -1443,10 +1439,10 @@ class _CalendarViewState extends State<CalendarView> {
                     ),
                   ],
                 ),
-                if (diary.content != null) ...[
+                ...[
                   const SizedBox(height: 12),
                   Text(
-                    diary.content!,
+                    diary.content,
                     style: TextStyle(
                       color: isDarkMode
                           ? ColorConstant.textSecondaryDark
@@ -1468,10 +1464,10 @@ class _CalendarViewState extends State<CalendarView> {
   }
 
   Widget _buildUnlockedNotesSection(
-      BuildContext context,
-      CalendarViewModel viewModel,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    CalendarViewModel viewModel,
+    bool isDarkMode,
+  ) {
     final notes = viewModel.unlockedNotesForSelectedDate;
 
     return Container(
@@ -1511,9 +1507,10 @@ class _CalendarViewState extends State<CalendarView> {
                 ),
                 const Spacer(),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFB794F6).withOpacity(0.1),
+                    color: const Color(0xFFB794F6).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -1540,10 +1537,12 @@ class _CalendarViewState extends State<CalendarView> {
                 margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+                  color: isDarkMode
+                      ? ColorConstant.cardColorDark
+                      : ColorConstant.white,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: const Color(0xFFB794F6).withOpacity(0.2),
+                    color: const Color(0xFFB794F6).withValues(alpha: 0.2),
                     width: 1.5,
                   ),
                 ),
@@ -1588,10 +1587,10 @@ class _CalendarViewState extends State<CalendarView> {
   }
 
   Widget _buildLockedNotesSection(
-      BuildContext context,
-      CalendarViewModel viewModel,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    CalendarViewModel viewModel,
+    bool isDarkMode,
+  ) {
     final notes = viewModel.lockedNotesForSelectedDate;
 
     return Container(
@@ -1631,9 +1630,10 @@ class _CalendarViewState extends State<CalendarView> {
                 ),
                 const Spacer(),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF9B6FE8).withOpacity(0.1),
+                    color: const Color(0xFF9B6FE8).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -1664,20 +1664,21 @@ class _CalendarViewState extends State<CalendarView> {
                   isDarkMode,
                 ),
                 child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        const Color(0xFFB794F6).withOpacity(0.15),
-                        const Color(0xFF9B6FE8).withOpacity(0.05),
+                        const Color(0xFFB794F6).withValues(alpha: 0.15),
+                        const Color(0xFF9B6FE8).withValues(alpha: 0.05),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: const Color(0xFFB794F6).withOpacity(0.3),
+                      color: const Color(0xFFB794F6).withValues(alpha: 0.3),
                       width: 1.5,
                     ),
                   ),
@@ -1693,7 +1694,8 @@ class _CalendarViewState extends State<CalendarView> {
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFFB794F6).withOpacity(0.3),
+                              color: const Color(0xFFB794F6)
+                                  .withValues(alpha: 0.3),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -1740,9 +1742,9 @@ class _CalendarViewState extends State<CalendarView> {
                       ),
 
                       // Arrow Icon
-                      Icon(
+                      const Icon(
                         Icons.arrow_forward_ios_rounded,
-                        color: const Color(0xFFB794F6),
+                        color: Color(0xFFB794F6),
                         size: 16,
                       ),
                     ],
@@ -1758,17 +1760,18 @@ class _CalendarViewState extends State<CalendarView> {
 
   // Unlock Dialog
   void _showUnlockDialog(
-      BuildContext context,
-      Note note,
-      CalendarViewModel viewModel,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    Note note,
+    CalendarViewModel viewModel,
+    bool isDarkMode,
+  ) {
     final pinController = TextEditingController();
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+        backgroundColor:
+            isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
@@ -1777,7 +1780,7 @@ class _CalendarViewState extends State<CalendarView> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFFB794F6).withOpacity(0.1),
+                color: const Color(0xFFB794F6).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(
@@ -1913,7 +1916,8 @@ class _CalendarViewState extends State<CalendarView> {
                       }
                     } else {
                       // Hatalı PIN
-                      CustomSnackBar.showError(context, 'errors.invalidPin'.tr());
+                      CustomSnackBar.showError(
+                          context, 'errors.invalidPin'.tr());
                     }
                   }
                 }
@@ -1924,9 +1928,9 @@ class _CalendarViewState extends State<CalendarView> {
                   vertical: 12,
                 ),
               ),
-              child:  Text(
+              child: Text(
                 'common.open'.tr(),
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
                   fontSize: 16,
@@ -1941,10 +1945,10 @@ class _CalendarViewState extends State<CalendarView> {
 
   // Unlocked Note Detail Bottom Sheet
   void _showUnlockedNoteDetail(
-      BuildContext context,
-      Note note,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    Note note,
+    bool isDarkMode,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1955,7 +1959,8 @@ class _CalendarViewState extends State<CalendarView> {
         maxChildSize: 0.95,
         builder: (context, scrollController) => Container(
           decoration: BoxDecoration(
-            color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+            color:
+                isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
             borderRadius: const BorderRadius.vertical(
               top: Radius.circular(24),
             ),
@@ -2089,10 +2094,10 @@ class _CalendarViewState extends State<CalendarView> {
   }
 
   Widget _buildTasksSection(
-      BuildContext context,
-      CalendarViewModel viewModel,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    CalendarViewModel viewModel,
+    bool isDarkMode,
+  ) {
     final tasks = viewModel.tasksForSelectedDate;
 
     return Container(
@@ -2132,9 +2137,10 @@ class _CalendarViewState extends State<CalendarView> {
                 ),
                 const Spacer(),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF81C784).withOpacity(0.1),
+                    color: const Color(0xFF81C784).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -2161,10 +2167,12 @@ class _CalendarViewState extends State<CalendarView> {
                 margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+                  color: isDarkMode
+                      ? ColorConstant.cardColorDark
+                      : ColorConstant.white,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: const Color(0xFF81C784).withOpacity(0.2),
+                    color: const Color(0xFF81C784).withValues(alpha: 0.2),
                     width: 1.5,
                   ),
                 ),
@@ -2177,8 +2185,8 @@ class _CalendarViewState extends State<CalendarView> {
                       color: task.isCompleted
                           ? const Color(0xFF66BB6A)
                           : isDarkMode
-                          ? ColorConstant.textMutedDark
-                          : ColorConstant.textMutedLight,
+                              ? ColorConstant.textMutedDark
+                              : ColorConstant.textMutedLight,
                       size: 24,
                     ),
                     const SizedBox(width: 12),
@@ -2208,10 +2216,10 @@ class _CalendarViewState extends State<CalendarView> {
   }
 
   Widget _buildExpensesSection(
-      BuildContext context,
-      CalendarViewModel viewModel,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    CalendarViewModel viewModel,
+    bool isDarkMode,
+  ) {
     final expenses = viewModel.expensesForSelectedDate;
 
     return Container(
@@ -2251,9 +2259,10 @@ class _CalendarViewState extends State<CalendarView> {
                 ),
                 const Spacer(),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEF5350).withOpacity(0.1),
+                    color: const Color(0xFFEF5350).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -2280,10 +2289,12 @@ class _CalendarViewState extends State<CalendarView> {
                 margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+                  color: isDarkMode
+                      ? ColorConstant.cardColorDark
+                      : ColorConstant.white,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: const Color(0xFFEF5350).withOpacity(0.2),
+                    color: const Color(0xFFEF5350).withValues(alpha: 0.2),
                     width: 1.5,
                   ),
                 ),
@@ -2293,7 +2304,7 @@ class _CalendarViewState extends State<CalendarView> {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEF5350).withOpacity(0.1),
+                        color: const Color(0xFFEF5350).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
@@ -2404,10 +2415,10 @@ class _CalendarViewState extends State<CalendarView> {
   }
 
   Widget _buildSubscriptionsSection(
-      BuildContext context,
-      CalendarViewModel viewModel,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    CalendarViewModel viewModel,
+    bool isDarkMode,
+  ) {
     final subscriptions = viewModel.subscriptionsForSelectedDate;
 
     return Container(
@@ -2447,9 +2458,10 @@ class _CalendarViewState extends State<CalendarView> {
                 ),
                 const Spacer(),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFAB47BC).withOpacity(0.1),
+                    color: const Color(0xFFAB47BC).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -2476,10 +2488,12 @@ class _CalendarViewState extends State<CalendarView> {
                 margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+                  color: isDarkMode
+                      ? ColorConstant.cardColorDark
+                      : ColorConstant.white,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: const Color(0xFFAB47BC).withOpacity(0.2),
+                    color: const Color(0xFFAB47BC).withValues(alpha: 0.2),
                     width: 1.5,
                   ),
                 ),
@@ -2488,18 +2502,21 @@ class _CalendarViewState extends State<CalendarView> {
                     // Subscription Logo
                     Builder(
                       builder: (context) {
-                        final iconData = SubscriptionIcons.getIcon(subscription.name) ??
-                            SubscriptionIcons.getDefaultIcon();
+                        final iconData =
+                            SubscriptionIcons.getIcon(subscription.name) ??
+                                SubscriptionIcons.getDefaultIcon();
 
                         return Container(
                           width: 48,
                           height: 48,
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: isDarkMode ? ColorConstant.bgColorDark : ColorConstant.bgColorLight,
+                            color: isDarkMode
+                                ? ColorConstant.bgColorDark
+                                : ColorConstant.bgColorLight,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: iconData.color.withOpacity(0.3),
+                              color: iconData.color.withValues(alpha: 0.3),
                               width: 1.5,
                             ),
                           ),
@@ -2606,16 +2623,16 @@ class _CalendarViewState extends State<CalendarView> {
     }
   }
 
-
   // EDIT EVENT DIALOG
   void _showEditEventDialog(
-      BuildContext context,
-      CalendarEvent event,
-      CalendarViewModel viewModel,
-      bool isDarkMode,
-      ) {
+    BuildContext context,
+    CalendarEvent event,
+    CalendarViewModel viewModel,
+    bool isDarkMode,
+  ) {
     final titleController = TextEditingController(text: event.title);
-    final descriptionController = TextEditingController(text: event.description ?? '');
+    final descriptionController =
+        TextEditingController(text: event.description ?? '');
     DateTime selectedDate = DateTime.parse(event.eventDate);
     TimeOfDay? selectedTime;
 
@@ -2631,7 +2648,8 @@ class _CalendarViewState extends State<CalendarView> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          backgroundColor: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+          backgroundColor:
+              isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
@@ -2714,7 +2732,8 @@ class _CalendarViewState extends State<CalendarView> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  trailing: const Icon(Icons.calendar_today, color: Color(0xFFB794F6)),
+                  trailing: const Icon(Icons.calendar_today,
+                      color: Color(0xFFB794F6)),
                   onTap: () async {
                     final date = await showDatePicker(
                       context: context,
@@ -2754,7 +2773,8 @@ class _CalendarViewState extends State<CalendarView> {
                     children: [
                       if (selectedTime != null)
                         IconButton(
-                          icon: const Icon(Icons.clear, color: Colors.red, size: 20),
+                          icon: const Icon(Icons.clear,
+                              color: Colors.red, size: 20),
                           onPressed: () {
                             setState(() => selectedTime = null);
                           },
@@ -2808,30 +2828,33 @@ class _CalendarViewState extends State<CalendarView> {
                         ? null
                         : descriptionController.text,
                     eventDate:
-                    '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}',
+                        '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}',
                     eventTime: selectedTime != null
                         ? '${selectedTime!.hour.toString().padLeft(2, '0')}:${selectedTime!.minute.toString().padLeft(2, '0')}'
                         : null,
                   );
 
-                  final success = await viewModel.updateCalendarEvent(event.id, request);
+                  final success =
+                      await viewModel.updateCalendarEvent(event.id, request);
 
                   if (context.mounted) {
                     Navigator.pop(context);
 
                     if (success) {
-                      CustomSnackBar.showSuccess(context, 'success.eventUpdated'.tr());
+                      CustomSnackBar.showSuccess(
+                          context, 'success.eventUpdated'.tr());
                     } else {
-                      CustomSnackBar.showError(context, 'errors.eventUpdateFailed'.tr());
+                      CustomSnackBar.showError(
+                          context, 'errors.eventUpdateFailed'.tr());
                     }
                   }
                 },
                 style: TextButton.styleFrom(
                   foregroundColor: Colors.white,
                 ),
-                child:  Text(
+                child: Text(
                   'calendar.update'.tr(),
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -2842,5 +2865,4 @@ class _CalendarViewState extends State<CalendarView> {
       ),
     );
   }
-
 }
