@@ -1,5 +1,0 @@
-- [x] Markdown ayrıştırıcı mantığını düzelt (`markdown_note_parser.dart`)
-- [x] Günlük listesinde markdown desteğini ekle (`notes_diary_view.dart`)
-- [x] Günlük detay sayfasında markdown desteğini ekle (`notes_diary_view.dart`)
-- [x] Markdown ayrıştırıcıyı daha sağlam bir regex ile güncelle (`markdown_note_parser.dart`)
-- [x] Değişiklikleri doğrula
