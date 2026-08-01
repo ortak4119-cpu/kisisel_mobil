@@ -70,10 +70,11 @@ workflows:
     publishing:
       app_store_connect:
         auth: integration
-        # Önce sadece TestFlight'a gönder (güvenli). Hazır olunca aşağıyı aç.
-        submit_to_testflight: true
-        # submit_to_app_store: true
-        # release_type: MANUAL   # onaydan sonra ELLE yayınla (otomatik istemiyorsan)
+        # Sadece binary'yi App Store Connect'e yukle. Metadata + gozden gecirme
+        # gonderimi App Store Connect panelinden ELLE yapilir (ilk yayin icin guvenli).
+        submit_to_testflight: false
+        # submit_to_app_store: true   # tum metadata hazir olunca otomatik gonderim icin ac
+        # release_type: MANUAL         # onaydan sonra ELLE yayinla
       email:
         recipients:
           - samet.88991@gmail.com
