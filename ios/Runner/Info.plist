@@ -47,6 +47,8 @@
 	<string>We need access to your photo library to select profile and cover photos.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>We need microphone access to add voice notes to your notes.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We use your location to provide relevant local features and improve your experience.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
