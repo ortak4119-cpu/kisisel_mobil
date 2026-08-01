@@ -855,7 +855,8 @@
       "deleteAccount": "Delete Account",
       "deleteAccountSubtitle": "Permanently delete your account",
       "deleteAccountConfirm": "Delete Account?",
-      "deleteAccountWarning": "If you delete your account and do not log in for 2 days, all your data will be permanently deleted. This action cannot be undone."
+      "deleteAccountWarning": "If you delete your account and do not log in for 2 days, all your data will be permanently deleted. This action cannot be undone.",
+      "deleteAccountSuccess": "Your account has been marked for deletion. It will be permanently removed if you don't log in within 2 days."
     },
     "legal": {
       "privacy": "Privacy Policy",

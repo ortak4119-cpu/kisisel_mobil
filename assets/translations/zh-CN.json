@@ -847,7 +847,8 @@
       "deleteAccount": "删除账户",
       "deleteAccountSubtitle": "永久删除您的账户",
       "deleteAccountConfirm": "删除账户？",
-      "deleteAccountWarning": "如果您删除账户并且2天内未登录，您的所有数据将被永久删除。此操作无法撤消。"
+      "deleteAccountWarning": "如果您删除账户并且2天内未登录，您的所有数据将被永久删除。此操作无法撤消。",
+      "deleteAccountSuccess": "您的账户已被标记为删除。如果您在2天内未登录，账户将被永久删除。"
     },
     "legal": {
       "privacy": "隐私政策",

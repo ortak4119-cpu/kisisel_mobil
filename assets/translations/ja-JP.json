@@ -847,7 +847,8 @@
       "deleteAccount": "アカウントを削除",
       "deleteAccountSubtitle": "アカウントを完全に削除します",
       "deleteAccountConfirm": "アカウントを削除しますか？",
-      "deleteAccountWarning": "アカウントを削除し、2日間ログインしない場合、すべてのデータが完全に削除されます。この操作は元に戻せません。"
+      "deleteAccountWarning": "アカウントを削除し、2日間ログインしない場合、すべてのデータが完全に削除されます。この操作は元に戻せません。",
+      "deleteAccountSuccess": "アカウントは削除対象としてマークされました。2日以内にログインしない場合、完全に削除されます。"
     },
     "legal": {
       "privacy": "プライバシーポリシー",

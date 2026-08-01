@@ -867,7 +867,8 @@
       "deleteAccount": "Hesabı Sil",
       "deleteAccountSubtitle": "Hesabınızı kalıcı olarak silin",
       "deleteAccountConfirm": "Hesabı Silmek İstediğinizden Emin misiniz?",
-      "deleteAccountWarning": "Hesabınızı sil derseniz 2 gün giriş yapmadığınız taktirde tüm verileriniz kalıcı olarak silinecektir. Bu işlem geri alınamaz."
+      "deleteAccountWarning": "Hesabınızı sil derseniz 2 gün giriş yapmadığınız taktirde tüm verileriniz kalıcı olarak silinecektir. Bu işlem geri alınamaz.",
+      "deleteAccountSuccess": "Hesabınız silinmek üzere işaretlendi. 2 gün içinde giriş yapmazsanız kalıcı olarak silinecek."
     },
     "legal": {
       "privacy": "Gizlilik Politikası",

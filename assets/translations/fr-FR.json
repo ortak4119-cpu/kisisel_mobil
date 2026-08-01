@@ -847,7 +847,8 @@
       "deleteAccount": "Supprimer le compte",
       "deleteAccountSubtitle": "Supprimer définitivement votre compte",
       "deleteAccountConfirm": "Supprimer le compte ?",
-      "deleteAccountWarning": "Si vous supprimez votre compte et ne vous connectez pas pendant 2 jours, toutes vos données seront définitivement supprimées. Cette action est irréversible."
+      "deleteAccountWarning": "Si vous supprimez votre compte et ne vous connectez pas pendant 2 jours, toutes vos données seront définitivement supprimées. Cette action est irréversible.",
+      "deleteAccountSuccess": "Votre compte a été marqué pour suppression. Il sera définitivement supprimé si vous ne vous connectez pas dans un délai de 2 jours."
     },
     "legal": {
       "privacy": "Politique de Confidentialité",

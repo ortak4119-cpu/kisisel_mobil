@@ -847,7 +847,8 @@
       "deleteAccount": "Konto löschen",
       "deleteAccountSubtitle": "Konto dauerhaft löschen",
       "deleteAccountConfirm": "Konto löschen?",
-      "deleteAccountWarning": "Wenn Sie Ihr Konto löschen und sich 2 Tage lang nicht anmelden, werden alle Ihre Daten dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden."
+      "deleteAccountWarning": "Wenn Sie Ihr Konto löschen und sich 2 Tage lang nicht anmelden, werden alle Ihre Daten dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.",
+      "deleteAccountSuccess": "Ihr Konto wurde zur Löschung vorgemerkt. Es wird endgültig entfernt, wenn Sie sich nicht innerhalb von 2 Tagen anmelden."
     },
     "legal": {
       "privacy": "Datenschutzerklärung",

@@ -219,6 +219,40 @@ class SettingsViewModel extends ChangeNotifier {
     }
   }
 
+  Future<void> deleteAccount(BuildContext context) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      final response = await _profileService.deleteAccount();
+
+      if (response.isSuccess) {
+        // Hesap silme başlatıldı; yerel oturumu da temizle (hata olsa da devam et)
+        try {
+          await _authService.logout();
+        } catch (_) {}
+        if (context.mounted) {
+          CustomSnackBar.showSuccess(
+            context,
+            'settings.account.deleteAccountSuccess'.tr(),
+          );
+          context.router.replaceAll([const SplashRoute()]);
+        }
+      } else {
+        if (context.mounted) {
+          CustomSnackBar.showError(context, response.errorMessage);
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        CustomSnackBar.showError(context, 'errors.general'.tr());
+      }
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<void> logoutAllDevices(BuildContext context) async {
     try {
       _isLoading = true;
@@ -490,9 +524,7 @@ class SettingsViewModel extends ChangeNotifier {
             TextButton(
               onPressed: () {
                 Navigator.pop(dialogContext);
-                // TODO: Hesap silme endpoint'i eklendiğinde burası güncellenecek
-                // Şimdilik sadece çıkış yap
-                logout(context);
+                deleteAccount(context);
               },
               style: TextButton.styleFrom(
                 foregroundColor: ColorConstant.errorRed,

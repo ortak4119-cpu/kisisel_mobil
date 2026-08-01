@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/utils/color_constant.dart';
 import '../viewmodel/paywall_viewmodel.dart';
 
@@ -868,7 +869,10 @@ class _PaywallViewState extends State<PaywallView>
       children: [
         TextButton(
           onPressed: () {
-            // Terms açılacak
+            launchUrl(
+              Uri.parse('https://goodlifesync.com/terms'),
+              mode: LaunchMode.externalApplication,
+            );
           },
           child: Text(
             'paywall.terms'.tr(),
@@ -890,7 +894,10 @@ class _PaywallViewState extends State<PaywallView>
         ),
         TextButton(
           onPressed: () {
-            // Privacy açılacak
+            launchUrl(
+              Uri.parse('https://goodlifesync.com/privacy'),
+              mode: LaunchMode.externalApplication,
+            );
           },
           child: Text(
             'paywall.privacy'.tr(),

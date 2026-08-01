@@ -847,7 +847,8 @@
       "deleteAccount": "Excluir conta",
       "deleteAccountSubtitle": "Excluir permanentemente sua conta",
       "deleteAccountConfirm": "Excluir conta?",
-      "deleteAccountWarning": "Se você excluir sua conta e não fizer login por 2 dias, todos os seus dados serão excluídos permanentemente. Esta ação não pode ser desfeita."
+      "deleteAccountWarning": "Se você excluir sua conta e não fizer login por 2 dias, todos os seus dados serão excluídos permanentemente. Esta ação não pode ser desfeita.",
+      "deleteAccountSuccess": "A sua conta foi marcada para exclusão. Será removida permanentemente se não iniciar sessão dentro de 2 dias."
     },
     "legal": {
       "privacy": "Política de Privacidade",

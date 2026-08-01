@@ -847,7 +847,8 @@
       "deleteAccount": "Eliminar cuenta",
       "deleteAccountSubtitle": "Eliminar permanentemente tu cuenta",
       "deleteAccountConfirm": "¿Eliminar cuenta?",
-      "deleteAccountWarning": "Si eliminas tu cuenta y no inicias sesión durante 2 días, todos tus datos se eliminarán permanentemente. Esta acción no se puede deshacer."
+      "deleteAccountWarning": "Si eliminas tu cuenta y no inicias sesión durante 2 días, todos tus datos se eliminarán permanentemente. Esta acción no se puede deshacer.",
+      "deleteAccountSuccess": "Tu cuenta ha sido marcada para eliminación. Se eliminará permanentemente si no inicias sesión en un plazo de 2 días."
     },
     "legal": {
       "privacy": "Política de Privacidad",
