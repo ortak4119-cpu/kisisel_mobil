@@ -82,6 +82,70 @@ workflows:
           failure: true
 
   # ---------------------------------------------------------------------------
+  # iOS — Ad-hoc (TestFlight'sız, cihaza ozel test kurulumu)
+  # DEVICE_UDID ortam degiskenini Codemagic'te tanimla (iPhone UDID'in).
+  # Ciktidaki IPA'yi Diawi'ye yukleyip Safari'den kurarsin.
+  # ---------------------------------------------------------------------------
+  ios-adhoc:
+    name: iOS Ad-hoc test kurulumu
+    max_build_duration: 90
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: AppStoreConnectApiKey
+    environment:
+      vars:
+        BUNDLE_ID: "com.aedev.kisisel"
+        # DEVICE_UDID: Codemagic > app > Environment variables altinda tanimla
+      flutter: 3.44.7
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Flutter paketlerini al
+        script: flutter pub get
+      - name: "CocoaPods yükle"
+        script: |
+          find . -name "Podfile" -execdir pod install \;
+      - name: Cihazi kaydet + ad-hoc imzalama
+        script: |
+          keychain initialize
+          # iPhone'u Apple'a kaydet (zaten kayitliysa devam et)
+          if [ -n "$DEVICE_UDID" ]; then
+            app-store-connect devices register \
+              --name "Test iPhone" \
+              --platform IOS \
+              --udid "$DEVICE_UDID" || true
+          fi
+          # Sertifika ozel anahtari (env'de varsa onu kullan)
+          if [ -n "$CERTIFICATE_PRIVATE_KEY" ]; then
+            printf '%s' "$CERTIFICATE_PRIVATE_KEY" > /tmp/cert_key.pem
+          else
+            openssl genrsa -out /tmp/cert_key.pem 2048
+          fi
+          # Ad-hoc sertifika + profil (tum kayitli cihazlari icerir)
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_ADHOC \
+            --certificate-key=@file:/tmp/cert_key.pem \
+            --create
+          keychain add-certificates
+          xcode-project use-profiles
+      - name: Ad-hoc IPA derle
+        script: |
+          flutter build ipa --release \
+            --build-name=1.1.0 \
+            --build-number=1 \
+            --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      email:
+        recipients:
+          - samet.88991@gmail.com
+        notify:
+          success: true
+          failure: true
+
+  # ---------------------------------------------------------------------------
   # Android — Google Play (aynı güncellemeyi Play'e de göndermek istersen)
   # ---------------------------------------------------------------------------
   android-release:
