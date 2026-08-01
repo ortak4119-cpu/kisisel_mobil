@@ -25,9 +25,6 @@ workflows:
     integrations:
       app_store_connect: AppStoreConnectApiKey   # <-- Codemagic'teki API key entegrasyon adı
     environment:
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.aedev.kisisel
       vars:
         APP_STORE_APPLE_ID: 6754823140            # LifeSync uygulamanın App Store ID'si
         BUNDLE_ID: "com.aedev.kisisel"
@@ -40,12 +37,22 @@ workflows:
       - name: "CocoaPods yükle - native pod'lar (ses/dosya/firebase)"
         script: |
           find . -name "Podfile" -execdir pod install \;
-      - name: Xcode imzalama profillerini uygula
-        script: xcode-project use-profiles
+      - name: Kod imzalama (sertifika + profil olustur/getir)
+        script: |
+          keychain initialize
+          # Bundle ID yoksa olustur (varsa hata verme)
+          app-store-connect create-bundle-id "$BUNDLE_ID" --name "LifeSync" --platform IOS || true
+          # App Store dagitim sertifikasi + provisioning profilini getir, yoksa olustur
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create
+          keychain add-certificates
+          xcode-project use-profiles
       - name: IPA derle (build numarasını otomatik artır)
         script: |
-          # Yayındaki son TestFlight build'inden 1 fazlasını kullanır.
-          BUILD_NUMBER=$(($(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID") + 1))
+          # Yayindaki son TestFlight build'inden 1 fazlasini kullanir (yoksa 1'den baslar).
+          LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID" 2>/dev/null || echo 0)
+          BUILD_NUMBER=$((LATEST + 1))
           flutter build ipa --release \
             --build-name=1.1.0 \
             --build-number=$BUILD_NUMBER \
