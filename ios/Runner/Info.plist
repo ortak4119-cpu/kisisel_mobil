@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>base</string>
+	<string>LifeSync</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -40,13 +40,13 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Profil ve kapak fotoğrafı çekmek için kamera erişimine ihtiyacımız var.</string>
+	<string>We need camera access to take profile and cover photos.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Fotoğrafları kaydetmek için galeri erişimi gerekiyor.</string>
+	<string>We need photo library access to save photos.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Profil ve kapak fotoğrafı seçmek için fotoğraf galerisine erişim gerekiyor.</string>
+	<string>We need access to your photo library to select profile and cover photos.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Notlarınıza sesli not eklemek için mikrofon erişimine ihtiyacımız var.</string>
+	<string>We need microphone access to add voice notes to your notes.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
@@ -56,15 +56,11 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>

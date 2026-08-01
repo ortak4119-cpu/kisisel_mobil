@@ -52,6 +52,22 @@ class ProfileViewModel extends ChangeNotifier {
   List<Achievement> _achievements = [];
   List<Achievement> get achievements => _achievements;
 
+  // Level info (gerçek XP ilerlemesi)
+  LevelInfo? _levelInfo;
+  LevelInfo? get levelInfo => _levelInfo;
+
+  Future<void> loadLevelInfo() async {
+    try {
+      final response = await _gamificationService.getLevelInfo();
+      if (response.isSuccess && response.data != null) {
+        _levelInfo = response.data!;
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Error loading level info: $e');
+    }
+  }
+
   // ==================== PROFILE ====================
 
   Future<void> loadProfile() async {
@@ -72,6 +88,7 @@ class ProfileViewModel extends ChangeNotifier {
         loadFriends(),
         loadFriendRequests(),
         loadAchievements(),
+        loadLevelInfo(),
       ]);
     } catch (e) {
       debugPrint('Error loading profile: $e');
@@ -508,6 +525,7 @@ class ProfileViewModel extends ChangeNotifier {
       loadFriends(),
       loadFriendRequests(),
       loadAchievements(),
+      loadLevelInfo(),
     ]);
   }
 }

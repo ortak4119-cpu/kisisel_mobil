@@ -8,6 +8,6 @@ class Constants {
   static const String revenueCatApiKeyAndroid = 'goog_DmyUTcobrujYhHoXiuavPXMHaJF';
 
   // App configurations
-  static const String appName = 'Your App Name';
+  static const String appName = 'LifeSync';
   static const bool debugMode = false;
 }

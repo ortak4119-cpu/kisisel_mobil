@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:convert';
+import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -94,6 +96,91 @@ class NotesDiaryViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ==================== NOT GÖRSELLERİ (yerel kalıcı) ====================
+  // Not görselleri backend'de tutulmuyor; cihazda kalıcı klasöre kopyalanır
+  // ve not id'siyle eşlenip SharedPreferences'ta saklanır. Kartta küçük
+  // önizleme olarak gösterilir. (Not: cihazlar arası senkron olmaz.)
+  static const String _kNoteImagesKey = 'note_images_v1';
+  final Map<int, List<String>> _noteImages = {};
+  List<String> imagesForNote(int id) => _noteImages[id] ?? const [];
+
+  // Düzenlenen notun mevcut (kayıtlı) görselleri — editörde gösterilir.
+  List<String> _editingExistingImages = [];
+  List<String> get editingExistingImages => _editingExistingImages;
+  void removeExistingImage(int index) {
+    if (index >= 0 && index < _editingExistingImages.length) {
+      _editingExistingImages.removeAt(index);
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadNoteImages() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_kNoteImagesKey);
+      if (raw == null || raw.isEmpty) return;
+      final map = jsonDecode(raw) as Map<String, dynamic>;
+      _noteImages.clear();
+      map.forEach((k, v) {
+        final id = int.tryParse(k);
+        if (id != null && v is List) {
+          // Sadece hâlâ diskte var olan görselleri tut.
+          final paths = v
+              .cast<String>()
+              .where((p) => File(p).existsSync())
+              .toList();
+          if (paths.isNotEmpty) _noteImages[id] = paths;
+        }
+      });
+      notifyListeners();
+    } catch (_) {}
+  }
+
+  Future<void> _persistNoteImages() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final map = _noteImages
+          .map((k, v) => MapEntry(k.toString(), v));
+      await prefs.setString(_kNoteImagesKey, jsonEncode(map));
+    } catch (_) {}
+  }
+
+  /// Seçilen görselleri kalıcı klasöre kopyalar, yeni yolları döndürür.
+  Future<List<String>> _copyImagesToPersistentDir(List<File> files) async {
+    final saved = <String>[];
+    try {
+      final docs = await getApplicationDocumentsDirectory();
+      final dir = Directory('${docs.path}/note_images');
+      if (!dir.existsSync()) dir.createSync(recursive: true);
+      var i = 0;
+      for (final f in files) {
+        if (!f.existsSync()) continue;
+        final ext = f.path.contains('.') ? f.path.split('.').last : 'jpg';
+        final stamp = DateTime.now().microsecondsSinceEpoch + (i++);
+        final dest = '${dir.path}/img_$stamp.$ext';
+        await f.copy(dest);
+        saved.add(dest);
+      }
+    } catch (_) {}
+    return saved;
+  }
+
+  /// Not kaydedildikten sonra seçilen görselleri o notun id'sine bağlar.
+  Future<void> _attachImagesToNote(int noteId,
+      {List<String> keepExisting = const []}) async {
+    final merged = <String>[...keepExisting];
+    if (_pickedImages.isNotEmpty) {
+      merged.addAll(await _copyImagesToPersistentDir(_pickedImages));
+    }
+    if (merged.isEmpty) {
+      _noteImages.remove(noteId);
+    } else {
+      _noteImages[noteId] = merged;
+    }
+    await _persistNoteImages();
+    notifyListeners();
+  }
+
   void removePickedImage(int index) {
     if (index >= 0 && index < _pickedImages.length) {
       _pickedImages.removeAt(index);
@@ -183,6 +270,24 @@ class NotesDiaryViewModel extends ChangeNotifier {
   bool? get filterLocked => _filterLocked;
   bool? _filterArchived;
   bool? get filterArchived => _filterArchived;
+
+  // Not arama sorgusu (başlık + içerik)
+  String _noteSearchQuery = '';
+  String get noteSearchQuery => _noteSearchQuery;
+  void setNoteSearchQuery(String v) {
+    _noteSearchQuery = v;
+    notifyListeners();
+  }
+
+  List<Note> applyNoteSearch(List<Note> list) {
+    final q = _noteSearchQuery.trim().toLowerCase();
+    if (q.isEmpty) return list;
+    return list
+        .where((n) =>
+            (n.title ?? '').toLowerCase().contains(q) ||
+            (n.content ?? '').toLowerCase().contains(q))
+        .toList();
+  }
 
   // İstatistik kartı sekmesi: 'all' | 'pinned' | 'folders' | 'archive'
   String _notesFilter = 'all';
@@ -281,6 +386,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
     _noteReminder = null;
     _pickedImages.clear();
     _pickedFiles.clear();
+    _editingExistingImages = [];
     _voiceNotePath = null;
     if (_isRecording) {
       _recorder.stop();
@@ -308,6 +414,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
     _noteReminder = note.reminderDate;
     _pickedImages.clear();
     _pickedFiles.clear();
+    _editingExistingImages = List<String>.from(_noteImages[note.id] ?? const []);
     _voiceNotePath = null;
     notifyListeners();
   }
@@ -380,6 +487,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
       if (response.isSuccess && response.data != null) {
         _notes = response.data!;
       }
+      await loadNoteImages();
     } catch (e) {
       debugPrint('Error loading notes: $e');
     } finally {
@@ -423,6 +531,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
       final response = await _noteService.createNote(request);
 
       if (response.isSuccess && response.data != null) {
+        await _attachImagesToNote(response.data!.id);
         _notes.insert(0, response.data!);
         resetNoteForm();
         if (context.mounted) {
@@ -526,6 +635,8 @@ class NotesDiaryViewModel extends ChangeNotifier {
         if (index != -1) {
           _notes[index] = response.data!;
         }
+        await _attachImagesToNote(_editingNoteId!,
+            keepExisting: _editingExistingImages);
         resetNoteForm();
         if (context.mounted) {
           final cleanMsg = _cleanMessage(response.message);
@@ -564,6 +675,9 @@ class NotesDiaryViewModel extends ChangeNotifier {
 
       if (response.isSuccess) {
         _notes.removeWhere((n) => n.id == noteId);
+        if (_noteImages.remove(noteId) != null) {
+          await _persistNoteImages();
+        }
         if (context.mounted) {
           final cleanMsg = _cleanMessage(response.message);
           CustomSnackBar.showSuccess(

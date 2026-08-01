@@ -134,6 +134,19 @@ class Expense {
       return DateTime.now();
     }
 
+    // expense_date takvim tarihidir. Backend Istanbul (GMT+3) gece yarısına
+    // göre UTC saklıyor; cihaz saat diliminden bağımsız +3 uygulayıp
+    // amaçlanan günü al (aksi halde negatif TZ'de gün bir gün geri kayıyor).
+    DateTime parseExpenseDate(dynamic value) {
+      if (value is String && value.contains('T')) {
+        try {
+          final ist = DateTime.parse(value).toUtc().add(const Duration(hours: 3));
+          return DateTime(ist.year, ist.month, ist.day);
+        } catch (_) {}
+      }
+      return parseDateTime(value);
+    }
+
     return Expense(
       id: json['id'] as int,
       userId: json['user_id'] as int,
@@ -141,7 +154,7 @@ class Expense {
       amount: parseDouble(json['amount']),
       currency: json['currency'] as String? ?? 'TRY',
       description: json['description'] as String?,
-      expenseDate: parseDateTime(json['expense_date']),
+      expenseDate: parseExpenseDate(json['expense_date']),
       paymentMethod: json['payment_method'] as String?,
       receiptImageUrl: json['receipt_image_url'] as String?,
       isRecurring: json['is_recurring'] as bool? ?? false,

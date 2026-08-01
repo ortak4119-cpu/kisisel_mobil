@@ -37,21 +37,11 @@ import FirebaseMessaging
   // APNs token başarıyla alındığında çağrılır
   override func application(_ application: UIApplication,
                            didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-    print("🍎 APNs token received")
-
-    // APNs token'ı Firebase Messaging'e gönder
     Messaging.messaging().apnsToken = deviceToken
-
-    // Token'ı hex string olarak logla (debug için)
-    let tokenParts = deviceToken.map { data in String(format: "%02.2hhx", data) }
-    let token = tokenParts.joined()
-    print("🍎 APNs Device Token: \(token)")
   }
 
-  // APNs token alınamazsa çağrılır
   override func application(_ application: UIApplication,
                            didFailToRegisterForRemoteNotificationsWithError error: Error) {
-    print("❌ Failed to register for remote notifications: \(error.localizedDescription)")
   }
 
   // MARK: - UNUserNotificationCenterDelegate Methods
@@ -60,9 +50,6 @@ import FirebaseMessaging
   override func userNotificationCenter(_ center: UNUserNotificationCenter,
                                       willPresent notification: UNNotification,
                                       withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-    let userInfo = notification.request.content.userInfo
-    print("📨 Notification received in foreground: \(userInfo)")
-
     // iOS 14+
     if #available(iOS 14.0, *) {
       completionHandler([[.banner, .badge, .sound]])
@@ -76,9 +63,6 @@ import FirebaseMessaging
   override func userNotificationCenter(_ center: UNUserNotificationCenter,
                                       didReceive response: UNNotificationResponse,
                                       withCompletionHandler completionHandler: @escaping () -> Void) {
-    let userInfo = response.notification.request.content.userInfo
-    print("🔔 Notification tapped: \(userInfo)")
-
     completionHandler()
   }
 }

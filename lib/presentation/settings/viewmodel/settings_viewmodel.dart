@@ -283,7 +283,7 @@ class SettingsViewModel extends ChangeNotifier {
       if (await _inAppReview.isAvailable()) {
         await _inAppReview.requestReview();
       } else {
-        final appId = Platform.isIOS ? '6754823140' : 'com.aedev.kisiseş';
+        final appId = Platform.isIOS ? '6754823140' : 'com.aedev.kisisel';
         final url = Platform.isIOS
             ? 'https://apps.apple.com/app/id$appId?action=write-review'
             : 'https://play.google.com/store/apps/details?id=$appId';

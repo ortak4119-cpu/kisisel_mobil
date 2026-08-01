@@ -4,6 +4,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../../../../core/init/locator.dart';
 import '../../../../core/utils/custom_snackbar.dart';
+import '../../../../core/utils/helper_methods.dart';
 import '../../../../models/auth/auth_models.dart';
 import '../../../../service/auth/auth_service.dart';
 import '../../../../service/firebase/fcm_service.dart';
@@ -29,7 +30,7 @@ class LoginViewModel extends ChangeNotifier {
       final request = LoginRequest(
         email: email,
         password: password,
-        deviceId: 'device-unique-id', // TODO: Get from device_info package
+        deviceId: await getDeviceId(),
       );
 
       final response = await _authService.login(request);
@@ -102,7 +103,7 @@ class LoginViewModel extends ChangeNotifier {
         email: googleUser.email,
         displayName: googleUser.displayName ?? googleUser.email.split('@')[0],
         profilePictureUrl: googleUser.photoUrl,
-        deviceId: 'device-unique-id', // TODO: Get from device_info_plus
+        deviceId: await getDeviceId(),
       );
 
       final response = await _authService.loginWithGoogle(request);
@@ -168,7 +169,7 @@ class LoginViewModel extends ChangeNotifier {
         appleId: credential.userIdentifier??"NotFound",
         email: credential.email, // İlk girişte gelir, sonra null olabilir
         displayName: displayName,
-        deviceId: 'device-unique-id', // TODO: Get from device_info_plus
+        deviceId: await getDeviceId(),
       );
 
       final response = await _authService.loginWithApple(request);
@@ -217,7 +218,7 @@ class LoginViewModel extends ChangeNotifier {
 
     try {
       final request = GuestLoginRequest(
-        deviceId: 'device-unique-id',
+        deviceId: await getDeviceId(),
       );
 
       final response = await _authService.loginAsGuest(request);

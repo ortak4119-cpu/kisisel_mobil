@@ -1,6 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/init/locator.dart';
+import '../../../core/utils/custom_snackbar.dart';
 import '../../../models/calender/calendar_models.dart';
 import '../../../service/calender/calendar_service.dart';
 import '../../../service/note/note_service.dart';
@@ -16,7 +19,58 @@ import '../../../models/subscription/subscription_models.dart';
 import '../../../models/budget/buget_models.dart';
 import '../../../models/auth/auth_models.dart';
 
-enum CalendarViewType { month, week }
+enum CalendarViewType { month, week, day, agenda }
+
+/// Etkinliğin backend'de tutulmayan ek alanları (yerel, event id ile eşlenir).
+class EventMeta {
+  String kind; // meeting | reminder | birthday | focus
+  String category; // is | kisisel | saglik | diger
+  String? color; // hex
+  String? endTime; // HH:mm
+  bool allDay;
+  List<int> reminders; // dakika önce
+  String? location;
+  String recurrence; // none | daily | weekly | monthly | yearly
+  String? tag;
+
+  EventMeta({
+    this.kind = 'meeting',
+    this.category = 'is',
+    this.color,
+    this.endTime,
+    this.allDay = false,
+    List<int>? reminders,
+    this.location,
+    this.recurrence = 'none',
+    this.tag,
+  }) : reminders = reminders ?? [];
+
+  Map<String, dynamic> toJson() => {
+        'kind': kind,
+        'category': category,
+        'color': color,
+        'endTime': endTime,
+        'allDay': allDay,
+        'reminders': reminders,
+        'location': location,
+        'recurrence': recurrence,
+        'tag': tag,
+      };
+
+  factory EventMeta.fromJson(Map<String, dynamic> j) => EventMeta(
+        kind: j['kind'] as String? ?? 'meeting',
+        category: j['category'] as String? ?? 'is',
+        color: j['color'] as String?,
+        endTime: j['endTime'] as String?,
+        allDay: j['allDay'] as bool? ?? false,
+        reminders: (j['reminders'] as List?)?.cast<int>() ?? [],
+        location: j['location'] as String?,
+        recurrence: j['recurrence'] as String? ?? 'none',
+        tag: j['tag'] as String?,
+      );
+
+  EventMeta copy() => EventMeta.fromJson(toJson());
+}
 
 class CalendarViewModel extends ChangeNotifier {
   final INoteService _noteService = locator.get<INoteService>();
@@ -336,6 +390,12 @@ class CalendarViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setCalendarViewType(CalendarViewType t) {
+    _calendarViewType = t;
+    _saveCalendarViewType();
+    notifyListeners();
+  }
+
   Future<void> _loadCalendarViewType() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -377,6 +437,7 @@ class CalendarViewModel extends ChangeNotifier {
         _loadSubscriptions(),
         _loadExpenses(year, month),
         _loadCalendarEvents(year, month),
+        loadEventMeta(),
       ]);
 
       debugPrint('✅ Calendar: Data loaded successfully');
@@ -715,5 +776,289 @@ class CalendarViewModel extends ChangeNotifier {
       debugPrint('⚠️ Calendar: Calendar event with id $eventId not found');
       return null;
     }
+  }
+
+  // ==================== YENİ TASARIM: ETKİNLİK META + FORM ====================
+
+  static const String _kEventMetaKey = 'event_meta_v1';
+  final Map<int, EventMeta> _eventMeta = {};
+  EventMeta metaForEvent(int id) => _eventMeta[id] ?? EventMeta();
+
+  Future<void> loadEventMeta() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_kEventMetaKey);
+      _eventMeta.clear();
+      if (raw == null || raw.isEmpty) return;
+      final map = jsonDecode(raw) as Map<String, dynamic>;
+      map.forEach((k, v) {
+        final id = int.tryParse(k);
+        if (id != null && v is Map<String, dynamic>) {
+          _eventMeta[id] = EventMeta.fromJson(v);
+        }
+      });
+    } catch (_) {}
+  }
+
+  Future<void> _persistEventMeta() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final map = _eventMeta.map((k, v) => MapEntry(k.toString(), v.toJson()));
+      await prefs.setString(_kEventMetaKey, jsonEncode(map));
+    } catch (_) {}
+  }
+
+  // ---- Form durumu ----
+  final TextEditingController eventTitleController = TextEditingController();
+  final TextEditingController eventDescController = TextEditingController();
+  int? _editingEventId;
+  int? get editingEventId => _editingEventId;
+
+  String _formKind = 'meeting';
+  String get formKind => _formKind;
+  void setFormKind(String k) {
+    _formKind = k;
+    notifyListeners();
+  }
+
+  String _formCategory = 'is';
+  String get formCategory => _formCategory;
+  void setFormCategory(String c) {
+    _formCategory = c;
+    notifyListeners();
+  }
+
+  String? _formColor;
+  String? get formColor => _formColor;
+  void setFormColor(String? c) {
+    _formColor = c;
+    notifyListeners();
+  }
+
+  DateTime _formStartDate = DateTime.now();
+  DateTime get formStartDate => _formStartDate;
+  TimeOfDay _formStartTime = const TimeOfDay(hour: 9, minute: 0);
+  TimeOfDay get formStartTime => _formStartTime;
+  DateTime _formEndDate = DateTime.now();
+  DateTime get formEndDate => _formEndDate;
+  TimeOfDay _formEndTime = const TimeOfDay(hour: 10, minute: 0);
+  TimeOfDay get formEndTime => _formEndTime;
+  void setFormStartDate(DateTime d) {
+    _formStartDate = d;
+    if (_formEndDate.isBefore(d)) _formEndDate = d;
+    notifyListeners();
+  }
+
+  void setFormStartTime(TimeOfDay t) {
+    _formStartTime = t;
+    notifyListeners();
+  }
+
+  void setFormEndDate(DateTime d) {
+    _formEndDate = d;
+    notifyListeners();
+  }
+
+  void setFormEndTime(TimeOfDay t) {
+    _formEndTime = t;
+    notifyListeners();
+  }
+
+  bool _formAllDay = false;
+  bool get formAllDay => _formAllDay;
+  void setFormAllDay(bool v) {
+    _formAllDay = v;
+    notifyListeners();
+  }
+
+  String _formRecurrence = 'none';
+  String get formRecurrence => _formRecurrence;
+  void setFormRecurrence(String r) {
+    _formRecurrence = r;
+    notifyListeners();
+  }
+
+  final List<int> _formReminders = [30];
+  List<int> get formReminders => _formReminders;
+  void addFormReminder(int m) {
+    if (!_formReminders.contains(m)) {
+      _formReminders.add(m);
+      _formReminders.sort();
+      notifyListeners();
+    }
+  }
+
+  void removeFormReminder(int m) {
+    _formReminders.remove(m);
+    notifyListeners();
+  }
+
+  String? _formLocation;
+  String? get formLocation => _formLocation;
+  void setFormLocation(String? v) {
+    _formLocation = (v == null || v.trim().isEmpty) ? null : v.trim();
+    notifyListeners();
+  }
+
+  String? _formTag;
+  String? get formTag => _formTag;
+  void setFormTag(String? v) {
+    _formTag = (v == null || v.trim().isEmpty) ? null : v.trim();
+    notifyListeners();
+  }
+
+  void resetEventForm({DateTime? date}) {
+    eventTitleController.clear();
+    eventDescController.clear();
+    _editingEventId = null;
+    _formKind = 'meeting';
+    _formCategory = 'is';
+    _formColor = null;
+    final d = date ?? _selectedDate;
+    _formStartDate = DateTime(d.year, d.month, d.day);
+    _formEndDate = _formStartDate;
+    _formStartTime = const TimeOfDay(hour: 9, minute: 0);
+    _formEndTime = const TimeOfDay(hour: 10, minute: 0);
+    _formAllDay = false;
+    _formRecurrence = 'none';
+    _formReminders
+      ..clear()
+      ..add(30);
+    _formLocation = null;
+    _formTag = null;
+    notifyListeners();
+  }
+
+  void prepareEditEvent(CalendarEvent e) {
+    resetEventForm();
+    _editingEventId = e.id;
+    eventTitleController.text = e.title;
+    eventDescController.text = e.description ?? '';
+    try {
+      _formStartDate = DateTime.parse(e.eventDate);
+      _formEndDate = _formStartDate;
+    } catch (_) {}
+    if (e.eventTime != null && e.eventTime!.length >= 5) {
+      final p = e.eventTime!.split(':');
+      _formStartTime =
+          TimeOfDay(hour: int.parse(p[0]), minute: int.parse(p[1]));
+    }
+    final m = metaForEvent(e.id).copy();
+    _formKind = m.kind;
+    _formCategory = m.category;
+    _formColor = m.color;
+    _formAllDay = m.allDay;
+    _formRecurrence = m.recurrence;
+    _formLocation = m.location;
+    _formTag = m.tag;
+    _formReminders
+      ..clear()
+      ..addAll(m.reminders.isEmpty ? [30] : m.reminders);
+    if (m.endTime != null && m.endTime!.length >= 5) {
+      final p = m.endTime!.split(':');
+      _formEndTime = TimeOfDay(hour: int.parse(p[0]), minute: int.parse(p[1]));
+    }
+    notifyListeners();
+  }
+
+  String _fmtDate(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+  String _fmtTime(TimeOfDay t) =>
+      '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
+
+  Future<void> saveEventFromForm(BuildContext context) async {
+    if (eventTitleController.text.trim().isEmpty) {
+      CustomSnackBar.showError(context, 'errors.taskTitleEmpty'.tr());
+      return;
+    }
+    final backendType = _formKind == 'reminder' ? 'reminder' : 'custom';
+    final meta = EventMeta(
+      kind: _formKind,
+      category: _formCategory,
+      color: _formColor,
+      endTime: _formAllDay ? null : _fmtTime(_formEndTime),
+      allDay: _formAllDay,
+      reminders: List.from(_formReminders),
+      location: _formLocation,
+      recurrence: _formRecurrence,
+      tag: _formTag,
+    );
+
+    if (_editingEventId != null) {
+      final ok = await updateCalendarEvent(
+        _editingEventId!,
+        CalendarEventUpdateRequest(
+          title: eventTitleController.text.trim(),
+          description: eventDescController.text.trim().isEmpty
+              ? null
+              : eventDescController.text.trim(),
+          eventDate: _fmtDate(_formStartDate),
+          eventTime: _formAllDay ? null : _fmtTime(_formStartTime),
+        ),
+      );
+      if (ok) {
+        _eventMeta[_editingEventId!] = meta;
+        await _persistEventMeta();
+        if (context.mounted) {
+          CustomSnackBar.showSuccess(context, 'success.eventUpdated'.tr());
+          Navigator.pop(context);
+        }
+      } else if (context.mounted) {
+        CustomSnackBar.showError(context, 'errors.updateFailed'.tr());
+      }
+      return;
+    }
+
+    final request = CalendarEventRequest(
+      title: eventTitleController.text.trim(),
+      description: eventDescController.text.trim().isEmpty
+          ? null
+          : eventDescController.text.trim(),
+      eventType: backendType,
+      eventDate: _fmtDate(_formStartDate),
+      eventTime: _formAllDay ? null : _fmtTime(_formStartTime),
+    );
+    final resp = await _calendarService.createEvent(request);
+    if (resp.isSuccess && resp.data != null) {
+      _calendarEvents.add(resp.data!);
+      _eventMeta[resp.data!.id] = meta;
+      await _persistEventMeta();
+      notifyListeners();
+      if (context.mounted) {
+        CustomSnackBar.showSuccess(context, 'success.eventCreated'.tr());
+        Navigator.pop(context);
+      }
+    } else if (context.mounted) {
+      CustomSnackBar.showError(context, 'errors.unknownError'.tr());
+    }
+  }
+
+  // ---- Yardımcılar ----
+  List<CalendarEvent> eventsForDate(DateTime date) {
+    return _calendarEvents.where((e) {
+      try {
+        final d = DateTime.parse(e.eventDate);
+        return d.year == date.year &&
+            d.month == date.month &&
+            d.day == date.day;
+      } catch (_) {
+        return false;
+      }
+    }).toList()
+      ..sort((a, b) => (a.eventTime ?? '99:99').compareTo(b.eventTime ?? '99:99'));
+  }
+
+  /// Aya ait, o günde etkinlik kategorileri (renk noktaları için).
+  Map<DateTime, Set<String>> eventCategoryDots() {
+    final map = <DateTime, Set<String>>{};
+    for (final e in _calendarEvents) {
+      try {
+        final d0 = DateTime.parse(e.eventDate);
+        final d = DateTime(d0.year, d0.month, d0.day);
+        final cat = metaForEvent(e.id).category;
+        (map[d] ??= <String>{}).add(cat);
+      } catch (_) {}
+    }
+    return map;
   }
 }

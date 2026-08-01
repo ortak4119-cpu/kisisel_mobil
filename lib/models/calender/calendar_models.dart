@@ -25,13 +25,15 @@ class CalendarEvent {
 
   factory CalendarEvent.fromJson(Map<String, dynamic> json) {
     try {
-      // event_date ISO8601 formatında geliyor, UTC'den local'e çevirip tarihi alalım
+      // Backend, tarihi Istanbul (GMT+3) gece yarısına göre UTC saklıyor
+      // (örn. 28 Temmuz -> 2026-07-27T21:00:00Z). Amaçlanan takvim gününü
+      // geri almak için cihaz saat diliminden bağımsız olarak +3 uygula.
       String eventDate = json['event_date'] as String;
       if (eventDate.contains('T')) {
-        // UTC olarak parse edip local'e çevir
-        final utcDate = DateTime.parse(eventDate);
-        final localDate = utcDate.toLocal();
-        eventDate = '${localDate.year}-${localDate.month.toString().padLeft(2, '0')}-${localDate.day.toString().padLeft(2, '0')}';
+        final utc = DateTime.parse(eventDate).toUtc();
+        final ist = utc.add(const Duration(hours: 3));
+        eventDate =
+            '${ist.year}-${ist.month.toString().padLeft(2, '0')}-${ist.day.toString().padLeft(2, '0')}';
       }
 
       return CalendarEvent(

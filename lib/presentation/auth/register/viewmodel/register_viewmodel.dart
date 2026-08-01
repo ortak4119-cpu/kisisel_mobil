@@ -4,6 +4,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../../../../core/init/locator.dart';
 import '../../../../core/utils/custom_snackbar.dart';
+import '../../../../core/utils/helper_methods.dart';
 import '../../../../models/auth/auth_models.dart';
 import '../../../../service/auth/auth_service.dart';
 import '../../../../service/firebase/fcm_service.dart';
@@ -108,7 +109,7 @@ class RegisterViewModel extends ChangeNotifier {
         email: googleUser.email,
         displayName: googleUser.displayName ?? googleUser.email.split('@')[0],
         profilePictureUrl: googleUser.photoUrl,
-        deviceId: 'device-unique-id', // TODO: Get from device_info_plus
+        deviceId: await getDeviceId(),
       );
 
       // Backend'de login ve register aynı endpoint (otomatik kullanıcı oluşturur)
@@ -175,7 +176,7 @@ class RegisterViewModel extends ChangeNotifier {
         appleId: credential.userIdentifier??"credentialnotfound",
         email: credential.email, // İlk girişte gelir, sonra null olabilir
         displayName: displayName,
-        deviceId: 'device-unique-id', // TODO: Get from device_info_plus
+        deviceId: await getDeviceId(),
       );
 
       // Backend'de login ve register aynı endpoint (otomatik kullanıcı oluşturur)

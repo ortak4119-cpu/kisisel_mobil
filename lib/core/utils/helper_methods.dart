@@ -1,5 +1,20 @@
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+/// Cihaz için benzersiz ID döndürür (SharedPreferences'ta saklanır)
+Future<String> getDeviceId() async {
+  final prefs = await SharedPreferences.getInstance();
+  const key = 'device_unique_id';
+  String? id = prefs.getString(key);
+  if (id == null || id.isEmpty) {
+    final ts = DateTime.now().millisecondsSinceEpoch;
+    final rand = (ts * 1000 + (ts % 997)).toRadixString(16);
+    id = 'dev-$rand';
+    await prefs.setString(key, id);
+  }
+  return id;
+}
 
 /// Dil koduna göre para birimi döndürür
 String getCurrencyFromLocale(Locale locale) {
