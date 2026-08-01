@@ -37,7 +37,7 @@ workflows:
     scripts:
       - name: Flutter paketlerini al
         script: flutter pub get
-      - name: CocoaPods yükle (native pod'lar: ses/dosya/firebase vb.)
+      - name: "CocoaPods yükle - native pod'lar (ses/dosya/firebase)"
         script: |
           find . -name "Podfile" -execdir pod install \;
       - name: Xcode imzalama profillerini uygula
