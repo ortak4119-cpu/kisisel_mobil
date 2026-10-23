@@ -724,6 +724,27 @@
       "amount": "Importe",
       "currency": "Moneda",
       "description": "Descripción"
+    },
+    "lock": {
+      "title": "Bloqueo de finanzas",
+      "on": "Activado",
+      "off": "Desactivado",
+      "enterTitle": "Introduce el PIN",
+      "enterSub": "La sección de finanzas está bloqueada",
+      "unlock": "Desbloquear",
+      "setTitle": "Crear PIN de finanzas",
+      "changeTitle": "Cambiar PIN de finanzas",
+      "currentPin": "PIN actual",
+      "newPin": "Nuevo PIN (mín. 4 dígitos)",
+      "confirmPin": "Confirmar PIN",
+      "minLen": "El PIN debe tener al menos 4 dígitos",
+      "mismatch": "Los PIN no coinciden",
+      "saved": "PIN guardado",
+      "saveFailed": "No se pudo guardar el PIN (el PIN actual puede ser incorrecto)",
+      "removed": "Bloqueo eliminado",
+      "wrongPin": "PIN incorrecto",
+      "tooManyAttempts": "Demasiados intentos, inténtalo más tarde",
+      "remove": "Eliminar bloqueo"
     }
   },
   "notes": {

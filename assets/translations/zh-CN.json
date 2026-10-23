@@ -724,6 +724,27 @@
       "amount": "金额",
       "currency": "货币",
       "description": "描述"
+    },
+    "lock": {
+      "title": "财务锁",
+      "on": "已开启",
+      "off": "已关闭",
+      "enterTitle": "输入PIN",
+      "enterSub": "财务部分已锁定",
+      "unlock": "解锁",
+      "setTitle": "设置财务PIN",
+      "changeTitle": "更改财务PIN",
+      "currentPin": "当前PIN",
+      "newPin": "新PIN（至少4位）",
+      "confirmPin": "确认PIN",
+      "minLen": "PIN至少需4位",
+      "mismatch": "PIN不匹配",
+      "saved": "PIN已保存",
+      "saveFailed": "无法保存PIN（当前PIN可能有误）",
+      "removed": "已移除锁",
+      "wrongPin": "PIN错误",
+      "tooManyAttempts": "尝试次数过多，请稍后再试",
+      "remove": "移除锁"
     }
   },
   "notes": {

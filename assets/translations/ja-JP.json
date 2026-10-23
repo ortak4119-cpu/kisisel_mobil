@@ -724,6 +724,27 @@
       "amount": "金額",
       "currency": "通貨",
       "description": "説明"
+    },
+    "lock": {
+      "title": "家計ロック",
+      "on": "オン",
+      "off": "オフ",
+      "enterTitle": "PINを入力",
+      "enterSub": "家計セクションはロックされています",
+      "unlock": "ロック解除",
+      "setTitle": "家計PINを設定",
+      "changeTitle": "家計PINを変更",
+      "currentPin": "現在のPIN",
+      "newPin": "新しいPIN（4桁以上）",
+      "confirmPin": "PINを再入力",
+      "minLen": "PINは4桁以上必要です",
+      "mismatch": "PINが一致しません",
+      "saved": "PINを保存しました",
+      "saveFailed": "PINを保存できませんでした（現在のPINが違う可能性）",
+      "removed": "ロックを解除しました",
+      "wrongPin": "PINが違います",
+      "tooManyAttempts": "試行回数が多すぎます。後で再試行",
+      "remove": "ロックを解除"
     }
   },
   "notes": {

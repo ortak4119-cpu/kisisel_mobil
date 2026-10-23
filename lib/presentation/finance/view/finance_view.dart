@@ -158,6 +158,8 @@ class _FinanceViewState extends State<FinanceView> {
               bottom: false,
               child: vm.isInitialLoading
                   ? Center(child: CircularProgressIndicator(color: _fOrange))
+                  : vm.financeLocked
+                  ? _FinanceLockGate(vm: vm, c: c)
                   : RefreshIndicator(
                       onRefresh: () => vm.refreshAll(),
                       color: _fOrange,
@@ -2642,6 +2644,65 @@ class _BudgetSettingsBottomSheet extends StatelessWidget {
                             ),
                           ),
                         ),
+                        const SizedBox(height: 16),
+                        InkWell(
+                          onTap: () =>
+                              _showFinanceLockDialog(context, vm, isDarkMode),
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: isDarkMode
+                                  ? ColorConstant.bgColorDark
+                                  : ColorConstant.bgColorLight,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  vm.financeHasPin
+                                      ? Icons.lock_rounded
+                                      : Icons.lock_open_rounded,
+                                  color: _fOrange,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'finance.lock.title'.tr(),
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          color: isDarkMode
+                                              ? ColorConstant.textPrimaryDark
+                                              : ColorConstant.textPrimaryLight,
+                                        ),
+                                      ),
+                                      Text(
+                                        vm.financeHasPin
+                                            ? 'finance.lock.on'.tr()
+                                            : 'finance.lock.off'.tr(),
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: isDarkMode
+                                              ? ColorConstant.textSecondaryDark
+                                              : ColorConstant
+                                                  .textSecondaryLight,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Icon(Icons.chevron_right,
+                                    color: isDarkMode
+                                        ? ColorConstant.textSecondaryDark
+                                        : ColorConstant.textSecondaryLight),
+                              ],
+                            ),
+                          ),
+                        ),
                         const SizedBox(height: 24),
                         Row(
                           children: [
@@ -3944,6 +4005,312 @@ class _EditExpenseBottomSheet extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+// ==================== FİNANS KİLİDİ ====================
+
+void _showFinanceLockDialog(
+    BuildContext context, FinanceViewModel vm, bool isDark) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => _FinanceLockSettingsSheet(vm: vm, isDark: isDark),
+  );
+}
+
+/// Finans ekranı kilitliyken gösterilen PIN giriş kapısı.
+class _FinanceLockGate extends StatefulWidget {
+  final FinanceViewModel vm;
+  final AppColors c;
+  const _FinanceLockGate({required this.vm, required this.c});
+
+  @override
+  State<_FinanceLockGate> createState() => _FinanceLockGateState();
+}
+
+class _FinanceLockGateState extends State<_FinanceLockGate> {
+  final _ctrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final pin = _ctrl.text.trim();
+    if (pin.length < 4) return;
+    final ok = await widget.vm.verifyFinancePin(pin);
+    _ctrl.clear();
+    if (ok) {
+      await widget.vm.loadAfterUnlock();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = widget.c;
+    final vm = widget.vm;
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.lock_rounded, size: 64, color: _fOrange),
+            const SizedBox(height: 20),
+            Text(
+              'finance.lock.enterTitle'.tr(),
+              style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: c.textPrimary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'finance.lock.enterSub'.tr(),
+              style: TextStyle(fontSize: 14, color: c.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 28),
+            SizedBox(
+              width: 220,
+              child: TextField(
+                controller: _ctrl,
+                keyboardType: TextInputType.number,
+                obscureText: true,
+                maxLength: 12,
+                textAlign: TextAlign.center,
+                autofocus: true,
+                style: TextStyle(
+                    fontSize: 28,
+                    letterSpacing: 10,
+                    fontWeight: FontWeight.w700,
+                    color: c.textPrimary),
+                decoration: InputDecoration(
+                  counterText: '',
+                  filled: true,
+                  fillColor: c.card,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+                onSubmitted: (_) => _submit(),
+              ),
+            ),
+            if (vm.pinError != null) ...[
+              const SizedBox(height: 12),
+              Text(vm.pinError!,
+                  style: const TextStyle(color: Colors.red, fontSize: 13)),
+            ],
+            const SizedBox(height: 24),
+            SizedBox(
+              width: 220,
+              child: ElevatedButton(
+                onPressed: vm.pinBusy ? null : _submit,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _fOrange,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: vm.pinBusy
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white))
+                    : Text('finance.lock.unlock'.tr(),
+                        style: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.w700)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// PIN kurma / değiştirme / kaldırma sheet'i.
+class _FinanceLockSettingsSheet extends StatefulWidget {
+  final FinanceViewModel vm;
+  final bool isDark;
+  const _FinanceLockSettingsSheet({required this.vm, required this.isDark});
+
+  @override
+  State<_FinanceLockSettingsSheet> createState() =>
+      _FinanceLockSettingsSheetState();
+}
+
+class _FinanceLockSettingsSheetState extends State<_FinanceLockSettingsSheet> {
+  final _current = TextEditingController();
+  final _pin = TextEditingController();
+  final _confirm = TextEditingController();
+  String? _error;
+
+  @override
+  void dispose() {
+    _current.dispose();
+    _pin.dispose();
+    _confirm.dispose();
+    super.dispose();
+  }
+
+  void _toast(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  Future<void> _save() async {
+    final vm = widget.vm;
+    final hasPin = vm.financeHasPin;
+    final pin = _pin.text.trim();
+    if (pin.length < 4) {
+      setState(() => _error = 'finance.lock.minLen'.tr());
+      return;
+    }
+    if (pin != _confirm.text.trim()) {
+      setState(() => _error = 'finance.lock.mismatch'.tr());
+      return;
+    }
+    setState(() => _error = null);
+    final ok = await vm.setFinancePin(pin,
+        currentPin: hasPin ? _current.text.trim() : null);
+    if (ok) {
+      if (mounted) Navigator.pop(context);
+      _toast('finance.lock.saved'.tr());
+    } else {
+      setState(() => _error = 'finance.lock.saveFailed'.tr());
+    }
+  }
+
+  Future<void> _remove() async {
+    final ok = await widget.vm.removeFinancePin(_current.text.trim());
+    if (ok) {
+      if (mounted) Navigator.pop(context);
+      _toast('finance.lock.removed'.tr());
+    } else {
+      setState(() => _error = 'finance.lock.wrongPin'.tr());
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = widget.isDark;
+    final vm = widget.vm;
+    final hasPin = vm.financeHasPin;
+    final Color txtPrimary = isDark
+        ? ColorConstant.textPrimaryDark
+        : ColorConstant.textPrimaryLight;
+    InputDecoration dec(String label) => InputDecoration(
+          labelText: label,
+          filled: true,
+          fillColor:
+              isDark ? ColorConstant.bgColorDark : ColorConstant.bgColorLight,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide.none,
+          ),
+        );
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? ColorConstant.cardColorDark : ColorConstant.white,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(28),
+          topRight: Radius.circular(28),
+        ),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 20,
+            bottom: 24 + MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                hasPin
+                    ? 'finance.lock.changeTitle'.tr()
+                    : 'finance.lock.setTitle'.tr(),
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: txtPrimary),
+              ),
+              const SizedBox(height: 20),
+              if (hasPin) ...[
+                TextField(
+                  controller: _current,
+                  keyboardType: TextInputType.number,
+                  obscureText: true,
+                  maxLength: 12,
+                  style: TextStyle(color: txtPrimary),
+                  decoration: dec('finance.lock.currentPin'.tr())
+                      .copyWith(counterText: ''),
+                ),
+                const SizedBox(height: 12),
+              ],
+              TextField(
+                controller: _pin,
+                keyboardType: TextInputType.number,
+                obscureText: true,
+                maxLength: 12,
+                style: TextStyle(color: txtPrimary),
+                decoration:
+                    dec('finance.lock.newPin'.tr()).copyWith(counterText: ''),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _confirm,
+                keyboardType: TextInputType.number,
+                obscureText: true,
+                maxLength: 12,
+                style: TextStyle(color: txtPrimary),
+                decoration: dec('finance.lock.confirmPin'.tr())
+                    .copyWith(counterText: ''),
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: 10),
+                Text(_error!,
+                    style: const TextStyle(color: Colors.red, fontSize: 13)),
+              ],
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: vm.pinBusy ? null : _save,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _fOrange,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                child: Text('common.save'.tr(),
+                    style: const TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.w700)),
+              ),
+              if (hasPin) ...[
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: vm.pinBusy ? null : _remove,
+                  child: Text('finance.lock.remove'.tr(),
+                      style: const TextStyle(color: Colors.red)),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

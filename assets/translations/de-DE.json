@@ -724,6 +724,27 @@
       "amount": "Betrag",
       "currency": "Währung",
       "description": "Beschreibung"
+    },
+    "lock": {
+      "title": "Finanzsperre",
+      "on": "An",
+      "off": "Aus",
+      "enterTitle": "PIN eingeben",
+      "enterSub": "Finanzbereich ist gesperrt",
+      "unlock": "Entsperren",
+      "setTitle": "Finanz-PIN festlegen",
+      "changeTitle": "Finanz-PIN ändern",
+      "currentPin": "Aktuelle PIN",
+      "newPin": "Neue PIN (min. 4 Ziffern)",
+      "confirmPin": "PIN bestätigen",
+      "minLen": "PIN muss mindestens 4 Ziffern haben",
+      "mismatch": "PINs stimmen nicht überein",
+      "saved": "PIN gespeichert",
+      "saveFailed": "PIN konnte nicht gespeichert werden (aktuelle PIN evtl. falsch)",
+      "removed": "Sperre entfernt",
+      "wrongPin": "Falsche PIN",
+      "tooManyAttempts": "Zu viele Versuche, später erneut",
+      "remove": "Sperre entfernen"
     }
   },
   "notes": {

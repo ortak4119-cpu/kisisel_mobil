@@ -724,6 +724,27 @@
       "amount": "Amount",
       "currency": "Currency",
       "description": "Description"
+    },
+    "lock": {
+      "title": "Finance Lock",
+      "on": "On",
+      "off": "Off",
+      "enterTitle": "Enter PIN",
+      "enterSub": "Finance section is locked",
+      "unlock": "Unlock",
+      "setTitle": "Set Finance PIN",
+      "changeTitle": "Change Finance PIN",
+      "currentPin": "Current PIN",
+      "newPin": "New PIN (min 4 digits)",
+      "confirmPin": "Confirm PIN",
+      "minLen": "PIN must be at least 4 digits",
+      "mismatch": "PINs do not match",
+      "saved": "PIN saved",
+      "saveFailed": "Could not save PIN (current PIN may be wrong)",
+      "removed": "Lock removed",
+      "wrongPin": "Wrong PIN",
+      "tooManyAttempts": "Too many attempts, try again later",
+      "remove": "Remove Lock"
     }
   },
   "notes": {

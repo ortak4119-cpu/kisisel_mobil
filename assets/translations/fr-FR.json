@@ -724,6 +724,27 @@
       "amount": "Montant",
       "currency": "Devise",
       "description": "Description"
+    },
+    "lock": {
+      "title": "Verrou finances",
+      "on": "Activé",
+      "off": "Désactivé",
+      "enterTitle": "Saisir le code PIN",
+      "enterSub": "La section finances est verrouillée",
+      "unlock": "Déverrouiller",
+      "setTitle": "Définir le code PIN",
+      "changeTitle": "Modifier le code PIN",
+      "currentPin": "Code PIN actuel",
+      "newPin": "Nouveau code (min 4 chiffres)",
+      "confirmPin": "Confirmer le code",
+      "minLen": "Le code doit comporter au moins 4 chiffres",
+      "mismatch": "Les codes ne correspondent pas",
+      "saved": "Code enregistré",
+      "saveFailed": "Impossible d'enregistrer (code actuel peut-être erroné)",
+      "removed": "Verrou supprimé",
+      "wrongPin": "Code incorrect",
+      "tooManyAttempts": "Trop de tentatives, réessayez plus tard",
+      "remove": "Supprimer le verrou"
     }
   },
   "notes": {

@@ -12,6 +12,7 @@ import '../../../service/subscription/subscription_service.dart';
 import '../../../service/budget/budget_service.dart';
 import '../../../service/expense/expense_service.dart';
 import '../../../service/income/income_service.dart';
+import '../../../service/security/security_pin_service.dart';
 import '../../../service/profile/profile_service.dart';
 import '../../../models/subscription/subscription_models.dart';
 import '../../../models/budget/buget_models.dart';
@@ -93,7 +94,79 @@ class FinanceViewModel extends ChangeNotifier {
   final IBudgetService _budgetService = locator.get<IBudgetService>();
   final IExpenseService _expenseService = locator.get<IExpenseService>();
   final IIncomeService _incomeService = locator.get<IIncomeService>();
+  final ISecurityPinService _pinService = locator.get<ISecurityPinService>();
   final IProfileService _profileService = locator.get<IProfileService>();
+
+  // ---- Finans Kilidi ----
+  // Kilit "bu oturumda açıldı" bilgisi static: ekran/viewmodel her
+  // yeniden oluştuğunda korunur, uygulama soğuk başlayınca sıfırlanır.
+  static bool _financeUnlockedSession = false;
+  bool _financeHasPin = false;
+  bool get financeHasPin => _financeHasPin;
+  bool _financeLocked = false;
+  bool get financeLocked => _financeLocked;
+  bool _pinBusy = false;
+  bool get pinBusy => _pinBusy;
+  String? _pinError;
+  String? get pinError => _pinError;
+
+  Future<void> _checkFinanceLock() async {
+    try {
+      final st = await _pinService.getStatus(type: 'finance');
+      _financeHasPin = st.hasPin;
+      _financeLocked = st.hasPin && !_financeUnlockedSession;
+    } catch (_) {
+      _financeHasPin = false;
+      _financeLocked = false;
+    }
+  }
+
+  Future<bool> verifyFinancePin(String pin) async {
+    _pinBusy = true;
+    _pinError = null;
+    notifyListeners();
+    final res = await _pinService.verifyPin(pin, type: 'finance');
+    _pinBusy = false;
+    if (res['verified'] == true) {
+      _financeUnlockedSession = true;
+      _financeLocked = false;
+      _pinError = null;
+      notifyListeners();
+      return true;
+    }
+    _pinError = res['locked'] == true
+        ? 'finance.lock.tooManyAttempts'.tr()
+        : 'finance.lock.wrongPin'.tr();
+    notifyListeners();
+    return false;
+  }
+
+  Future<bool> setFinancePin(String pin, {String? currentPin}) async {
+    _pinBusy = true;
+    notifyListeners();
+    final ok = await _pinService.setPin(pin, currentPin: currentPin, type: 'finance');
+    _pinBusy = false;
+    if (ok) {
+      _financeHasPin = true;
+      _financeUnlockedSession = true;
+      _financeLocked = false;
+    }
+    notifyListeners();
+    return ok;
+  }
+
+  Future<bool> removeFinancePin(String pin) async {
+    _pinBusy = true;
+    notifyListeners();
+    final ok = await _pinService.removePin(pin, type: 'finance');
+    _pinBusy = false;
+    if (ok) {
+      _financeHasPin = false;
+      _financeLocked = false;
+    }
+    notifyListeners();
+    return ok;
+  }
 
   User? _currentUser;
   User? get currentUser => _currentUser;
@@ -1035,13 +1108,28 @@ class FinanceViewModel extends ChangeNotifier {
 
   Future<void> refreshAll() async {
     await loadCurrentUser();
+    await _checkFinanceLock();
+    // Kilitliyken diğer verileri çekmeye gerek yok.
+    if (!_financeLocked) {
+      await Future.wait([
+        loadSubscriptions(),
+        loadBudgetStats(),
+        loadIncome(),
+        loadSavingsGoal(),
+      ]);
+    }
+    _isInitialLoading = false;
+    notifyListeners();
+  }
+
+  /// Kilit açıldıktan sonra veriyi yükler.
+  Future<void> loadAfterUnlock() async {
     await Future.wait([
       loadSubscriptions(),
       loadBudgetStats(),
       loadIncome(),
       loadSavingsGoal(),
     ]);
-    _isInitialLoading = false;
     notifyListeners();
   }
 

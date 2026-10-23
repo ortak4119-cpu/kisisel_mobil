@@ -724,6 +724,27 @@
       "amount": "Tutar",
       "currency": "Para birimi",
       "description": "Açıklama"
+    },
+    "lock": {
+      "title": "Finans Kilidi",
+      "on": "Açık",
+      "off": "Kapalı",
+      "enterTitle": "PIN Girin",
+      "enterSub": "Finans bölümü kilitli",
+      "unlock": "Kilidi Aç",
+      "setTitle": "Finans PIN'i Oluştur",
+      "changeTitle": "Finans PIN'ini Değiştir",
+      "currentPin": "Mevcut PIN",
+      "newPin": "Yeni PIN (en az 4 hane)",
+      "confirmPin": "PIN'i Tekrarla",
+      "minLen": "PIN en az 4 haneli olmalı",
+      "mismatch": "PIN'ler eşleşmiyor",
+      "saved": "PIN kaydedildi",
+      "saveFailed": "PIN kaydedilemedi (mevcut PIN hatalı olabilir)",
+      "removed": "Kilit kaldırıldı",
+      "wrongPin": "PIN hatalı",
+      "tooManyAttempts": "Çok fazla deneme, bir süre bekleyin",
+      "remove": "Kilidi Kaldır"
     }
   },
   "notes": {

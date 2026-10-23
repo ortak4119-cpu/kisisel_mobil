@@ -724,6 +724,27 @@
       "amount": "المبلغ",
       "currency": "العملة",
       "description": "الوصف"
+    },
+    "lock": {
+      "title": "قفل المالية",
+      "on": "مفعّل",
+      "off": "معطّل",
+      "enterTitle": "أدخل رمز PIN",
+      "enterSub": "قسم المالية مقفل",
+      "unlock": "فتح القفل",
+      "setTitle": "إنشاء رمز PIN المالي",
+      "changeTitle": "تغيير رمز PIN المالي",
+      "currentPin": "رمز PIN الحالي",
+      "newPin": "رمز PIN جديد (4 أرقام على الأقل)",
+      "confirmPin": "تأكيد رمز PIN",
+      "minLen": "يجب أن يكون رمز PIN 4 أرقام على الأقل",
+      "mismatch": "رمزا PIN غير متطابقين",
+      "saved": "تم حفظ رمز PIN",
+      "saveFailed": "تعذّر حفظ رمز PIN (قد يكون الرمز الحالي خاطئًا)",
+      "removed": "تمت إزالة القفل",
+      "wrongPin": "رمز PIN خاطئ",
+      "tooManyAttempts": "محاولات كثيرة، حاول لاحقًا",
+      "remove": "إزالة القفل"
     }
   },
   "notes": {
