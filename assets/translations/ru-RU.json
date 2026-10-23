@@ -834,7 +834,8 @@
       "editTitle": "Изменить папку",
       "deleteTitle": "Удалить папку",
       "deleteConfirm": "Удалить папку «{name}»?"
-    }
+    },
+    "enterPinToLock": "Введите 4-значный PIN-код"
   },
   "diary": {
     "title": "Мой Дневник",
@@ -1145,5 +1146,17 @@
   "notifications": {
     "channelName": "Важные уведомления",
     "channelDescription": "Этот канал используется для важных уведомлений"
+  },
+  "time": {
+    "justNow": "только что",
+    "minuteAgo": "1 мин назад",
+    "minutesAgo": "{count} мин назад",
+    "hourAgo": "1 ч назад",
+    "hoursAgo": "{count} ч назад",
+    "dayAgo": "1 дн назад",
+    "daysAgo": "{count} дн назад",
+    "yearAgo": "1 г назад",
+    "yearsAgo": "{count} г назад",
+    "aWhileAgo": "некоторое время назад"
   }
 }

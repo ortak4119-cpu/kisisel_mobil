@@ -834,7 +834,8 @@
       "editTitle": "Editar pasta",
       "deleteTitle": "Excluir pasta",
       "deleteConfirm": "Tem certeza de que deseja excluir a pasta \"{name}\"?"
-    }
+    },
+    "enterPinToLock": "Introduza um PIN de 4 dígitos"
   },
   "diary": {
     "title": "Meu Diário",
@@ -1145,5 +1146,17 @@
   "notifications": {
     "channelName": "Notificações importantes",
     "channelDescription": "Este canal é usado para notificações importantes"
+  },
+  "time": {
+    "justNow": "agora mesmo",
+    "minuteAgo": "há 1 min",
+    "minutesAgo": "há {count} min",
+    "hourAgo": "há 1 h",
+    "hoursAgo": "há {count} h",
+    "dayAgo": "há 1 dia",
+    "daysAgo": "há {count} dias",
+    "yearAgo": "há 1 ano",
+    "yearsAgo": "há {count} anos",
+    "aWhileAgo": "há algum tempo"
   }
 }

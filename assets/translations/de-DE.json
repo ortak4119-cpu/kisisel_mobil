@@ -834,7 +834,8 @@
       "editTitle": "Ordner bearbeiten",
       "deleteTitle": "Ordner löschen",
       "deleteConfirm": "Möchten Sie den Ordner „{name}\" wirklich löschen?"
-    }
+    },
+    "enterPinToLock": "Gib einen 4-stelligen PIN-Code ein"
   },
   "diary": {
     "title": "Mein Tagebuch",
@@ -1145,5 +1146,17 @@
   "notifications": {
     "channelName": "Wichtige Benachrichtigungen",
     "channelDescription": "Dieser Kanal wird für wichtige Benachrichtigungen verwendet"
+  },
+  "time": {
+    "justNow": "gerade eben",
+    "minuteAgo": "vor 1 Min.",
+    "minutesAgo": "vor {count} Min.",
+    "hourAgo": "vor 1 Std.",
+    "hoursAgo": "vor {count} Std.",
+    "dayAgo": "vor 1 Tag",
+    "daysAgo": "vor {count} Tagen",
+    "yearAgo": "vor 1 Jahr",
+    "yearsAgo": "vor {count} Jahren",
+    "aWhileAgo": "vor einiger Zeit"
   }
 }

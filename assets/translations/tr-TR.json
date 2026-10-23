@@ -834,7 +834,8 @@
       "editTitle": "Klasörü Düzenle",
       "deleteTitle": "Klasörü Sil",
       "deleteConfirm": "\"{name}\" klasörünü silmek istediğinizden emin misiniz?"
-    }
+    },
+    "enterPinToLock": "4 haneli bir PIN kodu girin"
   },
   "diary": {
     "title": "Günlüğüm",
@@ -1145,5 +1146,17 @@
   "notifications": {
     "channelName": "Önemli Bildirimler",
     "channelDescription": "Bu kanal önemli bildirimler için kullanılır"
+  },
+  "time": {
+    "justNow": "az önce",
+    "minuteAgo": "1dk önce",
+    "minutesAgo": "{count}dk önce",
+    "hourAgo": "1s önce",
+    "hoursAgo": "{count}s önce",
+    "dayAgo": "1g önce",
+    "daysAgo": "{count}g önce",
+    "yearAgo": "1y önce",
+    "yearsAgo": "{count}y önce",
+    "aWhileAgo": "bir süre önce"
   }
 }

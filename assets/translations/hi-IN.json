@@ -834,7 +834,8 @@
       "editTitle": "फ़ोल्डर संपादित करें",
       "deleteTitle": "फ़ोल्डर हटाएं",
       "deleteConfirm": "क्या आप वाकई \"{name}\" फ़ोल्डर हटाना चाहते हैं?"
-    }
+    },
+    "enterPinToLock": "4 अंकों का पिन कोड दर्ज करें"
   },
   "diary": {
     "title": "मेरी डायरी",
@@ -1145,5 +1146,17 @@
   "notifications": {
     "channelName": "महत्वपूर्ण सूचनाएं",
     "channelDescription": "यह चैनल महत्वपूर्ण सूचनाओं के लिए उपयोग किया जाता है"
+  },
+  "time": {
+    "justNow": "अभी",
+    "minuteAgo": "1 मिनट पहले",
+    "minutesAgo": "{count} मिनट पहले",
+    "hourAgo": "1 घंटा पहले",
+    "hoursAgo": "{count} घंटे पहले",
+    "dayAgo": "1 दिन पहले",
+    "daysAgo": "{count} दिन पहले",
+    "yearAgo": "1 साल पहले",
+    "yearsAgo": "{count} साल पहले",
+    "aWhileAgo": "कुछ समय पहले"
   }
 }

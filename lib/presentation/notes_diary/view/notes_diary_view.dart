@@ -1294,8 +1294,8 @@ class _CategoryManagerSheet extends StatelessWidget {
               vm.deleteCategory(context, categoryId);
               Navigator.pop(context);
             },
-            child: const Text(
-              'Sil',
+            child: Text(
+              'common.delete'.tr(),
               style: TextStyle(
                 color: Colors.red,
                 fontWeight: FontWeight.w700,
@@ -1992,8 +1992,8 @@ class _DiaryDetailSheet extends StatelessWidget {
               Navigator.pop(context);
               viewModel.deleteDiary(date, context);
             },
-            child: const Text(
-              'Sil',
+            child: Text(
+              'common.delete'.tr(),
               style: TextStyle(
                 color: Colors.red,
                 fontWeight: FontWeight.w700,
@@ -2949,16 +2949,16 @@ class _NotesContent extends StatelessWidget {
                     );
                   },
                   child: Row(
-                    children: const [
-                      Icon(
+                    children: [
+                      const Icon(
                         Icons.delete_rounded,
                         size: 20,
                         color: Colors.red,
                       ),
-                      SizedBox(width: 12),
+                      const SizedBox(width: 12),
                       Text(
-                        'Sil',
-                        style: TextStyle(color: Colors.red),
+                        'common.delete'.tr(),
+                        style: const TextStyle(color: Colors.red),
                       ),
                     ],
                   ),
@@ -3630,7 +3630,7 @@ class _NotesContent extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              '4 haneli bir PIN kodu girin',
+              'notes.enterPinToLock'.tr(),
               style: TextStyle(
                 color: isDarkMode
                     ? ColorConstant.textSecondaryDark
@@ -3878,8 +3878,8 @@ class _NotesContent extends StatelessWidget {
               Navigator.pop(context);
               viewModel.deleteNote(noteId, context);
             },
-            child: const Text(
-              'Sil',
+            child: Text(
+              'common.delete'.tr(),
               style: TextStyle(
                 color: Colors.red,
                 fontWeight: FontWeight.w700,

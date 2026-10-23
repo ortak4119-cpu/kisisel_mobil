@@ -834,7 +834,8 @@
       "editTitle": "编辑文件夹",
       "deleteTitle": "删除文件夹",
       "deleteConfirm": "确定要删除文件夹“{name}”吗？"
-    }
+    },
+    "enterPinToLock": "输入4位PIN码"
   },
   "diary": {
     "title": "我的日记",
@@ -1145,5 +1146,17 @@
   "notifications": {
     "channelName": "重要通知",
     "channelDescription": "此频道用于重要通知"
+  },
+  "time": {
+    "justNow": "刚刚",
+    "minuteAgo": "1分钟前",
+    "minutesAgo": "{count}分钟前",
+    "hourAgo": "1小时前",
+    "hoursAgo": "{count}小时前",
+    "dayAgo": "1天前",
+    "daysAgo": "{count}天前",
+    "yearAgo": "1年前",
+    "yearsAgo": "{count}年前",
+    "aWhileAgo": "一段时间前"
   }
 }

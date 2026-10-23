@@ -834,7 +834,8 @@
       "editTitle": "Modifier le dossier",
       "deleteTitle": "Supprimer le dossier",
       "deleteConfirm": "Voulez-vous vraiment supprimer le dossier « {name} » ?"
-    }
+    },
+    "enterPinToLock": "Saisissez un code PIN à 4 chiffres"
   },
   "diary": {
     "title": "Mon Journal",
@@ -1145,5 +1146,17 @@
   "notifications": {
     "channelName": "Notifications importantes",
     "channelDescription": "Ce canal est utilisé pour les notifications importantes"
+  },
+  "time": {
+    "justNow": "à l'instant",
+    "minuteAgo": "il y a 1 min",
+    "minutesAgo": "il y a {count} min",
+    "hourAgo": "il y a 1 h",
+    "hoursAgo": "il y a {count} h",
+    "dayAgo": "il y a 1 j",
+    "daysAgo": "il y a {count} j",
+    "yearAgo": "il y a 1 an",
+    "yearsAgo": "il y a {count} ans",
+    "aWhileAgo": "il y a un moment"
   }
 }

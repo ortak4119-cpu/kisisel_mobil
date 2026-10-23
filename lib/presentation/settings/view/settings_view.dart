@@ -1220,8 +1220,8 @@ class SettingsView extends StatelessWidget {
               style: TextButton.styleFrom(
                 foregroundColor: ColorConstant.primaryPurple,
               ),
-              child: const Text(
-                'Kapat',
+              child: Text(
+                'common.close'.tr(),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,

@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Cihaz için benzersiz ID döndürür (SharedPreferences'ta saklanır)
@@ -104,28 +105,28 @@ String formatTimeAgo(DateTime dateTime) {
   Duration difference = now.difference(dateTime);
 
   if (difference.inMinutes < 1) {
-    return " • az önce";
+    return " • ${'time.justNow'.tr()}";
   } else if (difference.inMinutes == 1) {
-    return " • 1dk önce";
+    return " • ${'time.minuteAgo'.tr()}";
   } else if (difference.inMinutes < 60) {
-    return " • ${difference.inMinutes}dk önce";
+    return " • ${'time.minutesAgo'.tr(namedArgs: {'count': '${difference.inMinutes}'})}";
   } else if (difference.inHours == 1) {
-    return " • 1s önce";
+    return " • ${'time.hourAgo'.tr()}";
   } else if (difference.inHours < 24) {
-    return " • ${difference.inHours}s önce";
+    return " • ${'time.hoursAgo'.tr(namedArgs: {'count': '${difference.inHours}'})}";
   } else if (difference.inDays == 1) {
-    return " • 1g önce";
+    return " • ${'time.dayAgo'.tr()}";
   } else if (difference.inDays < 365) {
-    return " • ${difference.inDays}g önce";
+    return " • ${'time.daysAgo'.tr(namedArgs: {'count': '${difference.inDays}'})}";
   } else if (difference.inDays > 365) {
     int years = (difference.inDays / 365).floor();
     if (years == 1) {
-      return " • 1y önce";
+      return " • ${'time.yearAgo'.tr()}";
     } else {
-      return " • ${years}y önce";
+      return " • ${'time.yearsAgo'.tr(namedArgs: {'count': '$years'})}";
     }
   } else {
-    return " • bir süre önce";
+    return " • ${'time.aWhileAgo'.tr()}";
   }
 }
 

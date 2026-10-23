@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../../models/auth/auth_models.dart';
@@ -161,7 +162,7 @@ class ProfileService implements IProfileService {
 
       return ServiceResponse.error(
         statusCode: 500,
-        message: 'Stats yüklenirken hata: $e',
+        message: '${'errors.general'.tr()}: $e',
       );
     }
   }

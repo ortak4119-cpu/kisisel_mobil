@@ -2659,7 +2659,7 @@ class _BudgetSettingsBottomSheet extends StatelessWidget {
                                   ),
                                 ),
                                 child: Text(
-                                  'Kaydet',
+                                  'common.save'.tr(),
                                   style: TextStyle(
                                     color: ColorConstant.white,
                                     fontWeight: FontWeight.w700,

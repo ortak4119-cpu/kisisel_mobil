@@ -834,7 +834,8 @@
       "editTitle": "تعديل المجلد",
       "deleteTitle": "حذف المجلد",
       "deleteConfirm": "هل أنت متأكد من حذف المجلد \"{name}\"؟"
-    }
+    },
+    "enterPinToLock": "أدخل رمز PIN مكوّن من 4 أرقام"
   },
   "diary": {
     "title": "مذكراتي",
@@ -1145,5 +1146,17 @@
   "notifications": {
     "channelName": "إشعارات مهمة",
     "channelDescription": "تُستخدم هذه القناة للإشعارات المهمة"
+  },
+  "time": {
+    "justNow": "الآن",
+    "minuteAgo": "قبل دقيقة",
+    "minutesAgo": "قبل {count} دقيقة",
+    "hourAgo": "قبل ساعة",
+    "hoursAgo": "قبل {count} ساعة",
+    "dayAgo": "قبل يوم",
+    "daysAgo": "قبل {count} يوم",
+    "yearAgo": "قبل سنة",
+    "yearsAgo": "قبل {count} سنة",
+    "aWhileAgo": "منذ فترة"
   }
 }

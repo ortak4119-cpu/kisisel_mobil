@@ -834,7 +834,8 @@
       "editTitle": "フォルダーを編集",
       "deleteTitle": "フォルダーを削除",
       "deleteConfirm": "「{name}」フォルダーを削除してもよろしいですか？"
-    }
+    },
+    "enterPinToLock": "4桁のPINコードを入力"
   },
   "diary": {
     "title": "マイダイアリー",
@@ -1145,5 +1146,17 @@
   "notifications": {
     "channelName": "重要な通知",
     "channelDescription": "このチャンネルは重要な通知に使用されます"
+  },
+  "time": {
+    "justNow": "たった今",
+    "minuteAgo": "1分前",
+    "minutesAgo": "{count}分前",
+    "hourAgo": "1時間前",
+    "hoursAgo": "{count}時間前",
+    "dayAgo": "1日前",
+    "daysAgo": "{count}日前",
+    "yearAgo": "1年前",
+    "yearsAgo": "{count}年前",
+    "aWhileAgo": "しばらく前"
   }
 }

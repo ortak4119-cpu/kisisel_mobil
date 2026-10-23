@@ -834,7 +834,8 @@
       "editTitle": "Edit Folder",
       "deleteTitle": "Delete Folder",
       "deleteConfirm": "Are you sure you want to delete the \"{name}\" folder?"
-    }
+    },
+    "enterPinToLock": "Enter a 4-digit PIN code"
   },
   "diary": {
     "title": "My Diary",
@@ -1145,5 +1146,17 @@
   "notifications": {
     "channelName": "Important Notifications",
     "channelDescription": "This channel is used for important notifications"
+  },
+  "time": {
+    "justNow": "just now",
+    "minuteAgo": "1 min ago",
+    "minutesAgo": "{count} min ago",
+    "hourAgo": "1 hr ago",
+    "hoursAgo": "{count} hr ago",
+    "dayAgo": "1 day ago",
+    "daysAgo": "{count} days ago",
+    "yearAgo": "1 yr ago",
+    "yearsAgo": "{count} yrs ago",
+    "aWhileAgo": "a while ago"
   }
 }

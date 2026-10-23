@@ -834,7 +834,8 @@
       "editTitle": "Editar carpeta",
       "deleteTitle": "Eliminar carpeta",
       "deleteConfirm": "¿Seguro que quieres eliminar la carpeta \"{name}\"?"
-    }
+    },
+    "enterPinToLock": "Introduce un PIN de 4 dígitos"
   },
   "diary": {
     "title": "Mi Diario",
@@ -1145,5 +1146,17 @@
   "notifications": {
     "channelName": "Notificaciones importantes",
     "channelDescription": "Este canal se usa para notificaciones importantes"
+  },
+  "time": {
+    "justNow": "justo ahora",
+    "minuteAgo": "hace 1 min",
+    "minutesAgo": "hace {count} min",
+    "hourAgo": "hace 1 h",
+    "hoursAgo": "hace {count} h",
+    "dayAgo": "hace 1 día",
+    "daysAgo": "hace {count} días",
+    "yearAgo": "hace 1 año",
+    "yearsAgo": "hace {count} años",
+    "aWhileAgo": "hace un tiempo"
   }
 }
