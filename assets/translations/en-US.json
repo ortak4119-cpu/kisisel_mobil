@@ -745,6 +745,12 @@
       "wrongPin": "Wrong PIN",
       "tooManyAttempts": "Too many attempts, try again later",
       "remove": "Remove Lock"
+    },
+    "catBudget": {
+      "title": "Category Budgets",
+      "sub": "Set a monthly limit for each category",
+      "none": "No limits yet",
+      "count": "{count} categories limited"
     }
   },
   "notes": {

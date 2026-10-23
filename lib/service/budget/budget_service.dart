@@ -11,6 +11,9 @@ abstract class IBudgetService {
     int? month,
     int? year,
   });
+  Future<ServiceResponse<List<CategoryBudget>>> getCategoryBudgets();
+  Future<ServiceResponse<void>> setCategoryBudget(String category, double limit);
+  Future<ServiceResponse<void>> deleteCategoryBudget(String category);
 }
 
 class BudgetService implements IBudgetService {
@@ -86,6 +89,47 @@ class BudgetService implements IBudgetService {
       queryParameters: queryParams,
       requiresAuth: true,
       fromJson: (json) => MonthlyReport.fromJson(json as Map<String, dynamic>),
+    );
+  }
+
+  @override
+  Future<ServiceResponse<List<CategoryBudget>>> getCategoryBudgets() async {
+    final response = await BaseApiService.get<Map<String, dynamic>>(
+      '/budget/categories',
+      requiresAuth: true,
+    );
+    if (response.isSuccess && response.data != null) {
+      final list = (response.data!['categories'] as List? ?? [])
+          .map((e) => CategoryBudget.fromJson(e as Map<String, dynamic>))
+          .toList();
+      return ServiceResponse.success(
+        statusCode: response.statusCode,
+        data: list,
+        message: response.message,
+      );
+    }
+    return ServiceResponse.error(
+      statusCode: response.statusCode,
+      message: response.message,
+      errors: response.errors,
+    );
+  }
+
+  @override
+  Future<ServiceResponse<void>> setCategoryBudget(
+      String category, double limit) async {
+    return await BaseApiService.put<void>(
+      '/budget/categories',
+      body: {'category': category, 'monthly_limit': limit},
+      requiresAuth: true,
+    );
+  }
+
+  @override
+  Future<ServiceResponse<void>> deleteCategoryBudget(String category) async {
+    return await BaseApiService.delete<void>(
+      '/budget/categories/$category',
+      requiresAuth: true,
     );
   }
 }

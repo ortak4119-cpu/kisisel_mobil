@@ -745,6 +745,12 @@
       "wrongPin": "PIN错误",
       "tooManyAttempts": "尝试次数过多，请稍后再试",
       "remove": "移除锁"
+    },
+    "catBudget": {
+      "title": "分类预算",
+      "sub": "为每个类别设置每月上限",
+      "none": "暂无上限",
+      "count": "{count} 个类别已限额"
     }
   },
   "notes": {

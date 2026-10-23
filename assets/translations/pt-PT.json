@@ -745,6 +745,12 @@
       "wrongPin": "PIN incorreto",
       "tooManyAttempts": "Demasiadas tentativas, tente mais tarde",
       "remove": "Remover bloqueio"
+    },
+    "catBudget": {
+      "title": "Orçamentos por categoria",
+      "sub": "Defina um limite mensal por categoria",
+      "none": "Ainda sem limites",
+      "count": "{count} categorias com limite"
     }
   },
   "notes": {

@@ -196,6 +196,11 @@ class FinanceViewModel extends ChangeNotifier {
   List<Expense> _expenses = [];
   List<Expense> get expenses => _expenses;
 
+  // Kategori bazlı bütçeler (category -> aylık limit)
+  Map<String, double> _categoryBudgets = {};
+  Map<String, double> get categoryBudgets => _categoryBudgets;
+  double categoryLimit(String category) => _categoryBudgets[category] ?? 0;
+
   // Monthly Statistics
   Map<String, dynamic>? _monthlyStatistics;
   Map<String, dynamic>? get monthlyStatistics => _monthlyStatistics;
@@ -603,12 +608,46 @@ class FinanceViewModel extends ChangeNotifier {
 
       // Load recent expenses
       await loadExpenses();
+      await loadCategoryBudgets();
     } catch (e) {
       debugPrint('Error loading budget stats: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> loadCategoryBudgets() async {
+    try {
+      final resp = await _budgetService.getCategoryBudgets();
+      if (resp.isSuccess && resp.data != null) {
+        _categoryBudgets = {
+          for (final c in resp.data!) c.category: c.monthlyLimit
+        };
+      }
+    } catch (e) {
+      debugPrint('loadCategoryBudgets error: $e');
+    }
+  }
+
+  Future<bool> setCategoryBudget(String category, double limit) async {
+    final resp = await _budgetService.setCategoryBudget(category, limit);
+    if (resp.isSuccess) {
+      _categoryBudgets[category] = limit;
+      notifyListeners();
+      return true;
+    }
+    return false;
+  }
+
+  Future<bool> removeCategoryBudget(String category) async {
+    final resp = await _budgetService.deleteCategoryBudget(category);
+    if (resp.isSuccess) {
+      _categoryBudgets.remove(category);
+      notifyListeners();
+      return true;
+    }
+    return false;
   }
 
   Future<void> updateBudget(BuildContext context) async {

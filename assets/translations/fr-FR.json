@@ -745,6 +745,12 @@
       "wrongPin": "Code incorrect",
       "tooManyAttempts": "Trop de tentatives, réessayez plus tard",
       "remove": "Supprimer le verrou"
+    },
+    "catBudget": {
+      "title": "Budgets par catégorie",
+      "sub": "Définissez une limite mensuelle par catégorie",
+      "none": "Aucune limite pour l'instant",
+      "count": "{count} catégories limitées"
     }
   },
   "notes": {

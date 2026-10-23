@@ -2703,6 +2703,65 @@ class _BudgetSettingsBottomSheet extends StatelessWidget {
                             ),
                           ),
                         ),
+                        const SizedBox(height: 12),
+                        InkWell(
+                          onTap: () => _showCategoryBudgetsDialog(
+                              context, vm, isDarkMode),
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: isDarkMode
+                                  ? ColorConstant.bgColorDark
+                                  : ColorConstant.bgColorLight,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.pie_chart_outline_rounded,
+                                    color: _fOrange),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'finance.catBudget.title'.tr(),
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          color: isDarkMode
+                                              ? ColorConstant.textPrimaryDark
+                                              : ColorConstant.textPrimaryLight,
+                                        ),
+                                      ),
+                                      Text(
+                                        vm.categoryBudgets.isEmpty
+                                            ? 'finance.catBudget.none'.tr()
+                                            : 'finance.catBudget.count'.tr(
+                                                namedArgs: {
+                                                    'count':
+                                                        '${vm.categoryBudgets.length}'
+                                                  }),
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: isDarkMode
+                                              ? ColorConstant.textSecondaryDark
+                                              : ColorConstant
+                                                  .textSecondaryLight,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Icon(Icons.chevron_right,
+                                    color: isDarkMode
+                                        ? ColorConstant.textSecondaryDark
+                                        : ColorConstant.textSecondaryLight),
+                              ],
+                            ),
+                          ),
+                        ),
                         const SizedBox(height: 24),
                         Row(
                           children: [
@@ -4308,6 +4367,207 @@ class _FinanceLockSettingsSheetState extends State<_FinanceLockSettingsSheet> {
                 ),
               ],
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ==================== KATEGORİ BÜTÇELERİ ====================
+
+void _showCategoryBudgetsDialog(
+    BuildContext context, FinanceViewModel vm, bool isDark) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => _CategoryBudgetsSheet(vm: vm, isDark: isDark),
+  );
+}
+
+class _CategoryBudgetsSheet extends StatefulWidget {
+  final FinanceViewModel vm;
+  final bool isDark;
+  const _CategoryBudgetsSheet({required this.vm, required this.isDark});
+
+  @override
+  State<_CategoryBudgetsSheet> createState() => _CategoryBudgetsSheetState();
+}
+
+class _CategoryBudgetsSheetState extends State<_CategoryBudgetsSheet> {
+  late final Map<String, TextEditingController> _ctrls;
+  bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrls = {
+      for (final c in kFinCats)
+        c.id: TextEditingController(
+          text: widget.vm.categoryLimit(c.id) > 0
+              ? widget.vm.categoryLimit(c.id).toStringAsFixed(0)
+              : '',
+        )
+    };
+  }
+
+  @override
+  void dispose() {
+    for (final c in _ctrls.values) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    setState(() => _saving = true);
+    for (final c in kFinCats) {
+      final txt = _ctrls[c.id]!.text.trim().replaceAll(',', '.');
+      final val = double.tryParse(txt) ?? 0;
+      final existing = widget.vm.categoryLimit(c.id);
+      if (val > 0 && val != existing) {
+        await widget.vm.setCategoryBudget(c.id, val);
+      } else if (val <= 0 && existing > 0) {
+        await widget.vm.removeCategoryBudget(c.id);
+      }
+    }
+    setState(() => _saving = false);
+    if (mounted) Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = widget.isDark;
+    final vm = widget.vm;
+    final totals = vm.categoryTotals;
+    final Color txtPrimary = isDark
+        ? ColorConstant.textPrimaryDark
+        : ColorConstant.textPrimaryLight;
+    final Color txtSec = isDark
+        ? ColorConstant.textSecondaryDark
+        : ColorConstant.textSecondaryLight;
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? ColorConstant.cardColorDark : ColorConstant.white,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(28),
+          topRight: Radius.circular(28),
+        ),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 20,
+            bottom: 20 + MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text('finance.catBudget.title'.tr(),
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: txtPrimary)),
+                const SizedBox(height: 4),
+                Text('finance.catBudget.sub'.tr(),
+                    style: TextStyle(fontSize: 13, color: txtSec)),
+                const SizedBox(height: 16),
+                ...kFinCats.map((c) {
+                  final spent = totals[c.id] ?? 0;
+                  final limit = double.tryParse(
+                          _ctrls[c.id]!.text.replaceAll(',', '.')) ??
+                      0;
+                  final ratio = limit > 0 ? (spent / limit).clamp(0.0, 1.0) : 0.0;
+                  final over = limit > 0 && spent > limit;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(c.icon, size: 20, color: c.color),
+                            const SizedBox(width: 8),
+                            Expanded(
+                                child: Text(c.labelKey.tr(),
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        color: txtPrimary))),
+                            SizedBox(
+                              width: 120,
+                              child: TextField(
+                                controller: _ctrls[c.id],
+                                keyboardType: TextInputType.number,
+                                textAlign: TextAlign.end,
+                                style: TextStyle(color: txtPrimary),
+                                onChanged: (_) => setState(() {}),
+                                decoration: InputDecoration(
+                                  isDense: true,
+                                  prefixText: '₺ ',
+                                  hintText: '0',
+                                  filled: true,
+                                  fillColor: isDark
+                                      ? ColorConstant.bgColorDark
+                                      : ColorConstant.bgColorLight,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: LinearProgressIndicator(
+                            value: ratio,
+                            minHeight: 6,
+                            backgroundColor: isDark
+                                ? ColorConstant.bgColorDark
+                                : ColorConstant.bgColorLight,
+                            color: over ? Colors.red : c.color,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${tl0(spent)} / ${limit > 0 ? tl0(limit) : '—'}',
+                          style: TextStyle(
+                              fontSize: 11, color: over ? Colors.red : txtSec),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+                const SizedBox(height: 8),
+                ElevatedButton(
+                  onPressed: _saving ? null : _save,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _fOrange,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: _saving
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white))
+                      : Text('common.save'.tr(),
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700)),
+                ),
+              ],
+            ),
           ),
         ),
       ),

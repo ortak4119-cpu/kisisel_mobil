@@ -745,6 +745,12 @@
       "wrongPin": "Falsche PIN",
       "tooManyAttempts": "Zu viele Versuche, später erneut",
       "remove": "Sperre entfernen"
+    },
+    "catBudget": {
+      "title": "Kategoriebudgets",
+      "sub": "Monatliches Limit je Kategorie festlegen",
+      "none": "Noch keine Limits",
+      "count": "{count} Kategorien begrenzt"
     }
   },
   "notes": {

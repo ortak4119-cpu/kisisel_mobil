@@ -185,6 +185,33 @@ class Expense {
   }
 }
 
+// Category Budget Model (backend: /budget/categories)
+class CategoryBudget {
+  final String category;
+  final double monthlyLimit;
+  final String currency;
+
+  CategoryBudget({
+    required this.category,
+    required this.monthlyLimit,
+    this.currency = 'TRY',
+  });
+
+  factory CategoryBudget.fromJson(Map<String, dynamic> json) {
+    double parseDouble(dynamic v) {
+      if (v is num) return v.toDouble();
+      if (v is String) return double.tryParse(v) ?? 0.0;
+      return 0.0;
+    }
+
+    return CategoryBudget(
+      category: json['category'] as String? ?? 'other',
+      monthlyLimit: parseDouble(json['monthly_limit']),
+      currency: json['currency'] as String? ?? 'TRY',
+    );
+  }
+}
+
 // Budget Request
 class BudgetRequest {
   final double monthlyBudget;

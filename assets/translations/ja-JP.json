@@ -745,6 +745,12 @@
       "wrongPin": "PINが違います",
       "tooManyAttempts": "試行回数が多すぎます。後で再試行",
       "remove": "ロックを解除"
+    },
+    "catBudget": {
+      "title": "カテゴリー予算",
+      "sub": "各カテゴリーに月間上限を設定",
+      "none": "上限はまだありません",
+      "count": "{count}カテゴリーに上限"
     }
   },
   "notes": {
