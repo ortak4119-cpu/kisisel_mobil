@@ -952,7 +952,10 @@
     "habitNotFound": "Habitude à modifier non trouvée",
     "habitAddFailed": "Échec de l'ajout de l'habitude",
     "habitUpdateFailed": "Échec de la mise à jour de l'habitude",
-    "habitDeleteFailed": "Échec de la suppression de l'habitude"
+    "habitDeleteFailed": "Échec de la suppression de l'habitude",
+    "timeout": "La requête a expiré",
+    "connectionFailed": "Impossible de se connecter au serveur",
+    "unexpected": "Une erreur inattendue s'est produite"
   },
   "success": {
     "saved": "Enregistré",

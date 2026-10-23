@@ -952,7 +952,10 @@
     "habitNotFound": "لم يتم العثور على العادة المراد تعديلها",
     "habitAddFailed": "فشل إضافة العادة",
     "habitUpdateFailed": "فشل تحديث العادة",
-    "habitDeleteFailed": "فشل حذف العادة"
+    "habitDeleteFailed": "فشل حذف العادة",
+    "timeout": "انتهت مهلة الطلب",
+    "connectionFailed": "تعذّر الاتصال بالخادم",
+    "unexpected": "حدث خطأ غير متوقع"
   },
   "success": {
     "saved": "تم الحفظ",

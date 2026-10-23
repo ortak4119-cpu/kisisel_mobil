@@ -952,7 +952,10 @@
     "habitNotFound": "Düzenlenecek alışkanlık bulunamadı",
     "habitAddFailed": "Alışkanlık eklenemedi",
     "habitUpdateFailed": "Alışkanlık güncellenemedi",
-    "habitDeleteFailed": "Alışkanlık silinemedi"
+    "habitDeleteFailed": "Alışkanlık silinemedi",
+    "timeout": "İstek zaman aşımına uğradı",
+    "connectionFailed": "Sunucuya bağlanılamadı",
+    "unexpected": "Beklenmeyen bir hata oluştu"
   },
   "success": {
     "saved": "Kaydedildi",

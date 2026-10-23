@@ -952,7 +952,10 @@
     "habitNotFound": "編集する習慣が見つかりません",
     "habitAddFailed": "習慣の追加に失敗しました",
     "habitUpdateFailed": "習慣の更新に失敗しました",
-    "habitDeleteFailed": "習慣の削除に失敗しました"
+    "habitDeleteFailed": "習慣の削除に失敗しました",
+    "timeout": "リクエストがタイムアウトしました",
+    "connectionFailed": "サーバーに接続できませんでした",
+    "unexpected": "予期しないエラーが発生しました"
   },
   "success": {
     "saved": "保存しました",

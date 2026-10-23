@@ -952,7 +952,10 @@
     "habitNotFound": "Zu bearbeitende Gewohnheit nicht gefunden",
     "habitAddFailed": "Fehler beim Hinzufügen der Gewohnheit",
     "habitUpdateFailed": "Fehler beim Aktualisieren der Gewohnheit",
-    "habitDeleteFailed": "Fehler beim Löschen der Gewohnheit"
+    "habitDeleteFailed": "Fehler beim Löschen der Gewohnheit",
+    "timeout": "Zeitüberschreitung der Anfrage",
+    "connectionFailed": "Verbindung zum Server fehlgeschlagen",
+    "unexpected": "Ein unerwarteter Fehler ist aufgetreten"
   },
   "success": {
     "saved": "Gespeichert",

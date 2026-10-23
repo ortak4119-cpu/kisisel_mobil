@@ -952,7 +952,10 @@
     "habitNotFound": "Habit to edit not found",
     "habitAddFailed": "Failed to add habit",
     "habitUpdateFailed": "Failed to update habit",
-    "habitDeleteFailed": "Failed to delete habit"
+    "habitDeleteFailed": "Failed to delete habit",
+    "timeout": "The request timed out",
+    "connectionFailed": "Could not connect to the server",
+    "unexpected": "An unexpected error occurred"
   },
   "success": {
     "saved": "Saved",

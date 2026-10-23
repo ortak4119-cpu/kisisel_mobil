@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -92,22 +93,22 @@ abstract class BaseApiService {
     } on SocketException {
       return ServiceResponse.error(
         statusCode: 503,
-        message: 'İnternet bağlantınızı kontrol edin',
+        message: 'errors.networkError'.tr(),
       );
     } on TimeoutException {
       return ServiceResponse.error(
         statusCode: 408,
-        message: 'İstek zaman aşımına uğradı',
+        message: 'errors.timeout'.tr(),
       );
     } on http.ClientException {
       return ServiceResponse.error(
         statusCode: 500,
-        message: 'Sunucuya bağlanılamadı',
+        message: 'errors.connectionFailed'.tr(),
       );
     } catch (e) {
       return ServiceResponse.error(
         statusCode: 500,
-        message: 'Bir hata oluştu: ${e.toString()}',
+        message: '${'errors.general'.tr()}: ${e.toString()}',
       );
     }
   }
@@ -135,22 +136,22 @@ abstract class BaseApiService {
     } on SocketException {
       return ServiceResponse.error(
         statusCode: 503,
-        message: 'İnternet bağlantınızı kontrol edin',
+        message: 'errors.networkError'.tr(),
       );
     } on TimeoutException {
       return ServiceResponse.error(
         statusCode: 408,
-        message: 'İstek zaman aşımına uğradı',
+        message: 'errors.timeout'.tr(),
       );
     } on http.ClientException {
       return ServiceResponse.error(
         statusCode: 500,
-        message: 'Sunucuya bağlanılamadı',
+        message: 'errors.connectionFailed'.tr(),
       );
     } catch (e) {
       return ServiceResponse.error(
         statusCode: 500,
-        message: 'Bir hata oluştu: ${e.toString()}',
+        message: '${'errors.general'.tr()}: ${e.toString()}',
       );
     }
   }
@@ -178,22 +179,22 @@ abstract class BaseApiService {
     } on SocketException {
       return ServiceResponse.error(
         statusCode: 503,
-        message: 'İnternet bağlantınızı kontrol edin',
+        message: 'errors.networkError'.tr(),
       );
     } on TimeoutException {
       return ServiceResponse.error(
         statusCode: 408,
-        message: 'İstek zaman aşımına uğradı',
+        message: 'errors.timeout'.tr(),
       );
     } on http.ClientException {
       return ServiceResponse.error(
         statusCode: 500,
-        message: 'Sunucuya bağlanılamadı',
+        message: 'errors.connectionFailed'.tr(),
       );
     } catch (e) {
       return ServiceResponse.error(
         statusCode: 500,
-        message: 'Bir hata oluştu: ${e.toString()}',
+        message: '${'errors.general'.tr()}: ${e.toString()}',
       );
     }
   }
@@ -221,22 +222,22 @@ abstract class BaseApiService {
     } on SocketException {
       return ServiceResponse.error(
         statusCode: 503,
-        message: 'İnternet bağlantınızı kontrol edin',
+        message: 'errors.networkError'.tr(),
       );
     } on TimeoutException {
       return ServiceResponse.error(
         statusCode: 408,
-        message: 'İstek zaman aşımına uğradı',
+        message: 'errors.timeout'.tr(),
       );
     } on http.ClientException {
       return ServiceResponse.error(
         statusCode: 500,
-        message: 'Sunucuya bağlanılamadı',
+        message: 'errors.connectionFailed'.tr(),
       );
     } catch (e) {
       return ServiceResponse.error(
         statusCode: 500,
-        message: 'Bir hata oluştu: ${e.toString()}',
+        message: '${'errors.general'.tr()}: ${e.toString()}',
       );
     }
   }
@@ -276,22 +277,22 @@ abstract class BaseApiService {
     } on SocketException {
       return ServiceResponse.error(
         statusCode: 503,
-        message: 'İnternet bağlantınızı kontrol edin',
+        message: 'errors.networkError'.tr(),
       );
     } on TimeoutException {
       return ServiceResponse.error(
         statusCode: 408,
-        message: 'İstek zaman aşımına uğradı',
+        message: 'errors.timeout'.tr(),
       );
     } on http.ClientException {
       return ServiceResponse.error(
         statusCode: 500,
-        message: 'Sunucuya bağlanılamadı',
+        message: 'errors.connectionFailed'.tr(),
       );
     } catch (e) {
       return ServiceResponse.error(
         statusCode: 500,
-        message: 'Bir hata oluştu: ${e.toString()}',
+        message: '${'errors.general'.tr()}: ${e.toString()}',
       );
     }
   }
@@ -338,7 +339,7 @@ abstract class BaseApiService {
         // Error
         return ServiceResponse.error(
           statusCode: statusCode,
-          message: message ?? 'Bir hata oluştu',
+          message: message ?? 'errors.general'.tr(),
           errors: jsonResponse['errors'] as Map<String, dynamic>?,
         );
       }
@@ -347,7 +348,7 @@ abstract class BaseApiService {
         statusCode: statusCode,
         message: response.body.isNotEmpty
             ? response.body
-            : 'Beklenmeyen bir hata oluştu',
+            : 'errors.unexpected'.tr(),
       );
     }
   }
@@ -404,17 +405,17 @@ abstract class BaseApiService {
     } on SocketException {
       return ServiceResponse.error(
         statusCode: 503,
-        message: 'İnternet bağlantınızı kontrol edin',
+        message: 'errors.networkError'.tr(),
       );
     } on TimeoutException {
       return ServiceResponse.error(
         statusCode: 408,
-        message: 'İstek zaman aşımına uğradı',
+        message: 'errors.timeout'.tr(),
       );
     } catch (e) {
       return ServiceResponse.error(
         statusCode: 500,
-        message: 'Bir hata oluştu: ${e.toString()}',
+        message: '${'errors.general'.tr()}: ${e.toString()}',
       );
     }
   }

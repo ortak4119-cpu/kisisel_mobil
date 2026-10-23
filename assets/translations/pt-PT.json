@@ -952,7 +952,10 @@
     "habitNotFound": "Hábito a editar não encontrado",
     "habitAddFailed": "Falha ao adicionar o hábito",
     "habitUpdateFailed": "Falha ao atualizar o hábito",
-    "habitDeleteFailed": "Falha ao eliminar o hábito"
+    "habitDeleteFailed": "Falha ao eliminar o hábito",
+    "timeout": "O pedido expirou",
+    "connectionFailed": "Não foi possível ligar ao servidor",
+    "unexpected": "Ocorreu um erro inesperado"
   },
   "success": {
     "saved": "Guardado",

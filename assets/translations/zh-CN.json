@@ -952,7 +952,10 @@
     "habitNotFound": "未找到要编辑的习惯",
     "habitAddFailed": "添加习惯失败",
     "habitUpdateFailed": "更新习惯失败",
-    "habitDeleteFailed": "删除习惯失败"
+    "habitDeleteFailed": "删除习惯失败",
+    "timeout": "请求超时",
+    "connectionFailed": "无法连接到服务器",
+    "unexpected": "发生意外错误"
   },
   "success": {
     "saved": "已保存",

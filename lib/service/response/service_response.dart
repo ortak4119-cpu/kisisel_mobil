@@ -1,3 +1,5 @@
+import 'package:easy_localization/easy_localization.dart';
+
 class ServiceResponse<T> {
   final int statusCode;
   final T? data;
@@ -32,7 +34,7 @@ class ServiceResponse<T> {
       return errorList.join(', ');
     }
 
-    return 'Bir hata oluştu';
+    return 'errors.general'.tr();
   }
 
   factory ServiceResponse.fromJson(

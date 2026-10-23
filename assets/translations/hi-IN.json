@@ -952,7 +952,10 @@
     "habitNotFound": "संपादित करने के लिए आदत नहीं मिली",
     "habitAddFailed": "आदत जोड़ने में विफल",
     "habitUpdateFailed": "आदत अपडेट करने में विफल",
-    "habitDeleteFailed": "आदत हटाने में विफल"
+    "habitDeleteFailed": "आदत हटाने में विफल",
+    "timeout": "अनुरोध का समय समाप्त हो गया",
+    "connectionFailed": "सर्वर से कनेक्ट नहीं हो सका",
+    "unexpected": "एक अप्रत्याशित त्रुटि हुई"
   },
   "success": {
     "saved": "सहेजा गया",
