@@ -716,7 +716,15 @@
       "yearly": "Anual"
     },
     "noExpensesInFilter": "No hay gastos en las categorías seleccionadas",
-    "paymentReminderSub": "Recibe un aviso antes de la fecha de renovación"
+    "paymentReminderSub": "Recibe un aviso antes de la fecha de renovación",
+    "export": {
+      "date": "Fecha",
+      "type": "Tipo",
+      "category": "Categoría",
+      "amount": "Importe",
+      "currency": "Moneda",
+      "description": "Descripción"
+    }
   },
   "notes": {
     "title": "Mis Notas",

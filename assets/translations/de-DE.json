@@ -716,7 +716,15 @@
       "yearly": "Jährlich"
     },
     "noExpensesInFilter": "Keine Ausgaben in den ausgewählten Kategorien",
-    "paymentReminderSub": "Vor dem Verlängerungsdatum benachrichtigt werden"
+    "paymentReminderSub": "Vor dem Verlängerungsdatum benachrichtigt werden",
+    "export": {
+      "date": "Datum",
+      "type": "Typ",
+      "category": "Kategorie",
+      "amount": "Betrag",
+      "currency": "Währung",
+      "description": "Beschreibung"
+    }
   },
   "notes": {
     "title": "Meine Notizen",

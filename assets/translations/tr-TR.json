@@ -716,7 +716,15 @@
       "monthly": "Her ay",
       "yearly": "Her yıl"
     },
-    "paymentReminderSub": "Yenileme gününden önce bildirim al"
+    "paymentReminderSub": "Yenileme gününden önce bildirim al",
+    "export": {
+      "date": "Tarih",
+      "type": "Tür",
+      "category": "Kategori",
+      "amount": "Tutar",
+      "currency": "Para birimi",
+      "description": "Açıklama"
+    }
   },
   "notes": {
     "title": "Notlarım",

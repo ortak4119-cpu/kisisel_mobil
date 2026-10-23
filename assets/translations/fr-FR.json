@@ -716,7 +716,15 @@
       "yearly": "Annuel"
     },
     "noExpensesInFilter": "Aucune dépense dans les catégories sélectionnées",
-    "paymentReminderSub": "Soyez averti avant la date de renouvellement"
+    "paymentReminderSub": "Soyez averti avant la date de renouvellement",
+    "export": {
+      "date": "Date",
+      "type": "Type",
+      "category": "Catégorie",
+      "amount": "Montant",
+      "currency": "Devise",
+      "description": "Description"
+    }
   },
   "notes": {
     "title": "Mes Notes",

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -929,6 +930,87 @@ class FinanceViewModel extends ChangeNotifier {
       _isLoadingStatistics = false;
       notifyListeners();
       debugPrint('🏁 [Finance] Loading completed');
+    }
+  }
+
+  // ==================== DIŞA AKTARMA (CSV) ====================
+
+  /// Tüm harcamaları (+ yerel gelirleri) CSV olarak paylaşır.
+  Future<void> exportCsv(BuildContext context) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      String esc(String? s) {
+        final v = s ?? '';
+        if (v.contains(',') || v.contains('"') || v.contains('\n')) {
+          return '"${v.replaceAll('"', '""')}"';
+        }
+        return v;
+      }
+
+      String two(int n) => n.toString().padLeft(2, '0');
+
+      final rows = <String>[];
+      // Başlık (lokalize)
+      rows.add([
+        'finance.export.date'.tr(),
+        'finance.export.type'.tr(),
+        'finance.export.category'.tr(),
+        'finance.export.amount'.tr(),
+        'finance.export.currency'.tr(),
+        'finance.export.description'.tr(),
+      ].map(esc).join(','));
+
+      // Harcamalar — tüm kayıtları çek
+      final resp = await _expenseService.getAllExpenses(perPage: 1000);
+      final exps = (resp.isSuccess && resp.data != null)
+          ? resp.data!.data
+          : _expenses;
+      for (final e in exps) {
+        final d =
+            '${e.expenseDate.year}-${two(e.expenseDate.month)}-${two(e.expenseDate.day)}';
+        rows.add([
+          d,
+          'finance.expense'.tr(),
+          getCategoryLabel(e.category),
+          e.amount.toStringAsFixed(2),
+          e.currency,
+          e.description ?? '',
+        ].map(esc).join(','));
+      }
+
+      // Gelirler (yerel)
+      for (final i in _income) {
+        rows.add([
+          i.date,
+          'finance.income'.tr(),
+          getCategoryLabel(i.category),
+          i.amount.toStringAsFixed(2),
+          'TRY',
+          i.description ?? '',
+        ].map(esc).join(','));
+      }
+
+      // Excel'in Türkçe/UTF-8 karakterleri doğru açması için BOM ekle
+      final csv = '﻿${rows.join('\r\n')}';
+      final dir = await getTemporaryDirectory();
+      final file = File(
+          '${dir.path}/lifesync_finance_${DateTime.now().millisecondsSinceEpoch}.csv');
+      await file.writeAsString(csv, encoding: utf8);
+
+      await Share.shareXFiles(
+        [XFile(file.path, mimeType: 'text/csv')],
+        subject: 'LifeSync Finance Export',
+      );
+    } catch (e) {
+      if (context.mounted) {
+        CustomSnackBar.showError(context, 'errors.general'.tr());
+      }
+      debugPrint('CSV export error: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 

@@ -716,7 +716,15 @@
       "yearly": "Yearly"
     },
     "noExpensesInFilter": "No expenses in the selected categories",
-    "paymentReminderSub": "Get notified before the renewal date"
+    "paymentReminderSub": "Get notified before the renewal date",
+    "export": {
+      "date": "Date",
+      "type": "Type",
+      "category": "Category",
+      "amount": "Amount",
+      "currency": "Currency",
+      "description": "Description"
+    }
   },
   "notes": {
     "title": "My Notes",

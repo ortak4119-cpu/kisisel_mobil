@@ -716,7 +716,15 @@
       "yearly": "वार्षिक"
     },
     "noExpensesInFilter": "चयनित श्रेणियों में कोई व्यय नहीं",
-    "paymentReminderSub": "नवीनीकरण तिथि से पहले सूचना पाएं"
+    "paymentReminderSub": "नवीनीकरण तिथि से पहले सूचना पाएं",
+    "export": {
+      "date": "तारीख",
+      "type": "प्रकार",
+      "category": "श्रेणी",
+      "amount": "राशि",
+      "currency": "मुद्रा",
+      "description": "विवरण"
+    }
   },
   "notes": {
     "title": "मेरे नोट्स",

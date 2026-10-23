@@ -716,7 +716,15 @@
       "yearly": "Ежегодно"
     },
     "noExpensesInFilter": "Нет расходов в выбранных категориях",
-    "paymentReminderSub": "Получайте уведомление перед датой продления"
+    "paymentReminderSub": "Получайте уведомление перед датой продления",
+    "export": {
+      "date": "Дата",
+      "type": "Тип",
+      "category": "Категория",
+      "amount": "Сумма",
+      "currency": "Валюта",
+      "description": "Описание"
+    }
   },
   "notes": {
     "title": "Мои Заметки",

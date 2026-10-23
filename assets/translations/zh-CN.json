@@ -716,7 +716,15 @@
       "yearly": "每年"
     },
     "noExpensesInFilter": "所选类别中没有支出",
-    "paymentReminderSub": "在续订日期前收到通知"
+    "paymentReminderSub": "在续订日期前收到通知",
+    "export": {
+      "date": "日期",
+      "type": "类型",
+      "category": "类别",
+      "amount": "金额",
+      "currency": "货币",
+      "description": "描述"
+    }
   },
   "notes": {
     "title": "我的笔记",

@@ -716,7 +716,15 @@
       "yearly": "毎年"
     },
     "noExpensesInFilter": "選択したカテゴリーに支出がありません",
-    "paymentReminderSub": "更新日の前に通知を受け取る"
+    "paymentReminderSub": "更新日の前に通知を受け取る",
+    "export": {
+      "date": "日付",
+      "type": "種類",
+      "category": "カテゴリー",
+      "amount": "金額",
+      "currency": "通貨",
+      "description": "説明"
+    }
   },
   "notes": {
     "title": "マイノート",

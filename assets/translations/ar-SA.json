@@ -716,7 +716,15 @@
       "yearly": "سنوي"
     },
     "noExpensesInFilter": "لا توجد مصروفات في الفئات المحددة",
-    "paymentReminderSub": "احصل على إشعار قبل تاريخ التجديد"
+    "paymentReminderSub": "احصل على إشعار قبل تاريخ التجديد",
+    "export": {
+      "date": "التاريخ",
+      "type": "النوع",
+      "category": "الفئة",
+      "amount": "المبلغ",
+      "currency": "العملة",
+      "description": "الوصف"
+    }
   },
   "notes": {
     "title": "ملاحظاتي",
