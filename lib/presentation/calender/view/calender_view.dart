@@ -12,6 +12,8 @@ import '../../../core/utils/premium_helper.dart';
 import '../../../core/route/app_router.gr.dart';
 import '../../../models/calender/calendar_models.dart';
 import '../../../models/note/note_models.dart';
+import '../../../models/subscription/subscription_models.dart';
+import '../../../models/installment/installment_models.dart';
 import '../viewmodel/calender_viewmodel.dart';
 
 // ==================== ETKİNLİK KATEGORİLERİ ====================
@@ -27,6 +29,8 @@ const List<_EvCat> kEvCats = [
   _EvCat('is', 'calendar.cat.work', Color(0xFF9F7AEA)),
   _EvCat('kisisel', 'calendar.cat.personal', Color(0xFF4C9AFF)),
   _EvCat('saglik', 'calendar.cat.health', Color(0xFF48BB78)),
+  _EvCat('subscription', 'finance.subscriptions', Color(0xFFB794F6)),
+  _EvCat('installment', 'finance.installment.title', Color(0xFFF6524B)),
   _EvCat('diger', 'calendar.cat.other', Color(0xFFF6A821)),
 ];
 
@@ -673,6 +677,10 @@ class _CalendarViewState extends State<CalendarView> {
     final events = vm.eventsForDate(date);
     final allDay = events.where((e) => vm.metaForEvent(e.id).allDay).toList();
     final timed = events.where((e) => !vm.metaForEvent(e.id).allDay).toList();
+    // Bu güne düşen finans ödemeleri (abonelik + taksit)
+    final List<Subscription> subs = vm.subscriptionsForSelectedDate;
+    final List<Installment> insts = vm.installmentsForSelectedDate;
+    final hasFinance = subs.isNotEmpty || insts.isNotEmpty;
     return [
       Row(
         children: [
@@ -699,7 +707,27 @@ class _CalendarViewState extends State<CalendarView> {
         ],
       ),
       const SizedBox(height: 12),
-      if (events.isEmpty)
+      for (final s in subs) ...[
+        _financeDayCard(
+          c,
+          Icons.autorenew_rounded,
+          const Color(0xFFB794F6),
+          s.name,
+          '₺${s.amount.toStringAsFixed(0)} · ${'finance.subscriptions'.tr()}',
+        ),
+        const SizedBox(height: 10),
+      ],
+      for (final it in insts) ...[
+        _financeDayCard(
+          c,
+          Icons.credit_card_rounded,
+          const Color(0xFFF6524B),
+          it.name,
+          '₺${it.monthlyAmount.toStringAsFixed(0)} · ${'finance.installment.title'.tr()}',
+        ),
+        const SizedBox(height: 10),
+      ],
+      if (events.isEmpty && !hasFinance)
         _emptyDay(c)
       else ...[
         for (final e in allDay) ...[
@@ -712,6 +740,45 @@ class _CalendarViewState extends State<CalendarView> {
         ],
       ],
     ];
+  }
+
+  Widget _financeDayCard(
+      AppColors c, IconData icon, Color color, String title, String subtitle) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: c.card,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withOpacity(0.4)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, size: 20, color: color),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title,
+                    style: TextStyle(
+                        fontWeight: FontWeight.w700, color: c.textPrimary)),
+                Text(subtitle,
+                    style: TextStyle(fontSize: 12, color: c.textSecondary)),
+              ],
+            ),
+          ),
+          Icon(Icons.payments_outlined, size: 18, color: color),
+        ],
+      ),
+    );
   }
 
   Widget _emptyDay(AppColors c) {

@@ -11,11 +11,13 @@ import '../../../service/diary/diary_service.dart';
 import '../../../service/task/task_service.dart';
 import '../../../service/subscription/subscription_service.dart';
 import '../../../service/expense/expense_service.dart';
+import '../../../service/installment/installment_service.dart';
 import '../../../service/profile/profile_service.dart';
 import '../../../models/note/note_models.dart';
 import '../../../models/diary/diary_models.dart';
 import '../../../models/task/task_models.dart';
 import '../../../models/subscription/subscription_models.dart';
+import '../../../models/installment/installment_models.dart';
 import '../../../models/budget/buget_models.dart';
 import '../../../models/auth/auth_models.dart';
 
@@ -78,6 +80,8 @@ class CalendarViewModel extends ChangeNotifier {
   final ITaskService _taskService = locator.get<ITaskService>();
   final ISubscriptionService _subscriptionService = locator.get<ISubscriptionService>();
   final IExpenseService _expenseService = locator.get<IExpenseService>();
+  final IInstallmentService _installmentService =
+      locator.get<IInstallmentService>();
   final ICalendarService _calendarService = locator.get<ICalendarService>();
   final IProfileService _profileService = locator.get<IProfileService>();
 
@@ -108,6 +112,8 @@ class CalendarViewModel extends ChangeNotifier {
   List<Diary> _diaryEntries = [];
   List<Task> _tasks = [];
   List<Subscription> _subscriptions = [];
+  List<Installment> _installments = [];
+  List<Installment> get installments => _installments;
   List<Expense> _expenses = [];
   List<CalendarEvent> _calendarEvents = [];
 
@@ -339,6 +345,20 @@ class CalendarViewModel extends ChangeNotifier {
       }
     }
 
+    // Taksit ödeme günlerini ekle (odak ayına düşen kalan ödemeler)
+    for (var it in _installments) {
+      for (final due in installmentDueDates(it)) {
+        if (due.year == _focusedMonth.year &&
+            due.month == _focusedMonth.month) {
+          final date = DateTime(due.year, due.month, due.day);
+          (events[date] ??= []);
+          if (!events[date]!.contains('installment')) {
+            events[date]!.add('installment');
+          }
+        }
+      }
+    }
+
     debugPrint('📅 Calendar: Total event days in month: ${events.length}');
     return events;
   }
@@ -435,6 +455,7 @@ class CalendarViewModel extends ChangeNotifier {
         _loadDiaryEntries(year, month),
         _loadTasks(),
         _loadSubscriptions(),
+        _loadInstallments(),
         _loadExpenses(year, month),
         _loadCalendarEvents(year, month),
         loadEventMeta(),
@@ -522,6 +543,40 @@ class CalendarViewModel extends ChangeNotifier {
     } catch (e) {
       debugPrint('❌ Calendar: Error loading subscriptions: $e');
     }
+  }
+
+  Future<void> _loadInstallments() async {
+    try {
+      _installments = await _installmentService.getInstallments();
+      debugPrint('🧾 Calendar: Loaded ${_installments.length} installments');
+    } catch (e) {
+      debugPrint('❌ Calendar: Error loading installments: $e');
+    }
+  }
+
+  /// Bir taksidin kalan (ödenmemiş) ödeme tarihleri.
+  List<DateTime> installmentDueDates(Installment it) {
+    final out = <DateTime>[];
+    DateTime base;
+    try {
+      base = DateTime.parse(it.startDate);
+    } catch (_) {
+      return out;
+    }
+    for (int k = it.paidCount; k < it.installmentCount; k++) {
+      out.add(DateTime(base.year, base.month + k, base.day));
+    }
+    return out;
+  }
+
+  /// Seçili günde ödeme günü olan taksitler.
+  List<Installment> get installmentsForSelectedDate {
+    return _installments.where((it) {
+      return installmentDueDates(it).any((d) =>
+          d.year == _selectedDate.year &&
+          d.month == _selectedDate.month &&
+          d.day == _selectedDate.day);
+    }).toList();
   }
 
   Future<void> _loadExpenses(int year, int month) async {
@@ -1058,6 +1113,27 @@ class CalendarViewModel extends ChangeNotifier {
         final cat = metaForEvent(e.id).category;
         (map[d] ??= <String>{}).add(cat);
       } catch (_) {}
+    }
+    // Abonelik ödeme günleri (odak ayında billingDate'e göre)
+    final monthEnd =
+        DateTime(_focusedMonth.year, _focusedMonth.month + 1, 0).day;
+    for (final sub in _subscriptions) {
+      if (!sub.isActive) continue;
+      if (sub.billingDate >= 1 && sub.billingDate <= monthEnd) {
+        final d = DateTime(
+            _focusedMonth.year, _focusedMonth.month, sub.billingDate);
+        (map[d] ??= <String>{}).add('subscription');
+      }
+    }
+    // Taksit ödeme günleri (odak ayına düşen kalan ödemeler)
+    for (final it in _installments) {
+      for (final due in installmentDueDates(it)) {
+        if (due.year == _focusedMonth.year &&
+            due.month == _focusedMonth.month) {
+          final d = DateTime(due.year, due.month, due.day);
+          (map[d] ??= <String>{}).add('installment');
+        }
+      }
     }
     return map;
   }
