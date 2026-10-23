@@ -90,7 +90,9 @@
       "orange": "برتقالي",
       "red": "أحمر",
       "gray": "رمادي"
-    }
+    },
+    "showAll": "عرض الكل",
+    "showLess": "عرض أقل"
   },
   "auth": {
     "welcomeBack": "أهلاً بعودتك! 👋",
@@ -137,7 +139,18 @@
       "registerSuccess": "تم التسجيل بنجاح! مرحباً بك في LifeSync 🎉",
       "googleRegisterSuccess": "تم التسجيل باستخدام Google بنجاح! 🎉",
       "appleRegisterSuccess": "تم التسجيل باستخدام Apple بنجاح! 🎉"
-    }
+    },
+    "codeInvalid": "يجب أن يتكون الرمز من 6 أرقام",
+    "codeRequired": "الرمز مطلوب",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "forgotPasswordDescription": "أدخل عنوان بريدك الإلكتروني وسنرسل لك رمز إعادة تعيين كلمة المرور",
+    "newPassword": "كلمة مرور جديدة",
+    "passwordsDoNotMatch": "كلمتا المرور غير متطابقتين",
+    "resetCode": "رمز إعادة التعيين",
+    "resetCodeHint": "123456",
+    "resetPassword": "إعادة تعيين كلمة المرور",
+    "resetPasswordDescription": "أدخل الرمز المكون من 6 أرقام المرسل إلى بريدك الإلكتروني وعيّن كلمة مرور جديدة",
+    "sendCode": "إرسال الرمز"
   },
   "onboarding": {
     "skip": "تخطي",
@@ -323,7 +336,13 @@
     "motivationHint": "لماذا تريد هذه العادة؟",
     "saveHabit": "حفظ العادة",
     "todaySection": "عادات اليوم",
-    "doneToday": "مكتمل"
+    "doneToday": "مكتمل",
+    "reminderTime": "وقت التذكير",
+    "time": {
+      "morning": "صباحًا",
+      "noon": "ظهرًا",
+      "evening": "مساءً"
+    }
   },
   "profile": {
     "title": "الملف الشخصي",
@@ -655,7 +674,8 @@
       "weekly": "أسبوعي",
       "monthly": "شهري",
       "yearly": "سنوي"
-    }
+    },
+    "noExpensesInFilter": "لا توجد مصروفات في الفئات المحددة"
   },
   "notes": {
     "title": "ملاحظاتي",

@@ -139,7 +139,18 @@
       "registerSuccess": "Registration successful! Welcome to LifeSync 🎉",
       "googleRegisterSuccess": "Google registration successful! 🎉",
       "appleRegisterSuccess": "Apple registration successful! 🎉"
-    }
+    },
+    "codeInvalid": "The code must be 6 digits",
+    "codeRequired": "Code is required",
+    "confirmPassword": "Confirm Password",
+    "forgotPasswordDescription": "Enter your email address and we'll send you a password reset code",
+    "newPassword": "New Password",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "resetCode": "Reset Code",
+    "resetCodeHint": "123456",
+    "resetPassword": "Reset Password",
+    "resetPasswordDescription": "Enter the 6-digit code sent to your email and set your new password",
+    "sendCode": "Send Code"
   },
   "onboarding": {
     "skip": "Skip",
@@ -663,7 +674,8 @@
       "weekly": "Weekly",
       "monthly": "Monthly",
       "yearly": "Yearly"
-    }
+    },
+    "noExpensesInFilter": "No expenses in the selected categories"
   },
   "notes": {
     "title": "My Notes",

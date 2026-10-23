@@ -90,7 +90,9 @@
       "orange": "オレンジ",
       "red": "赤",
       "gray": "グレー"
-    }
+    },
+    "showAll": "すべて表示",
+    "showLess": "表示を減らす"
   },
   "auth": {
     "welcomeBack": "おかえりなさい！ 👋",
@@ -137,7 +139,18 @@
       "registerSuccess": "登録に成功しました！LifeSyncへようこそ 🎉",
       "googleRegisterSuccess": "Google登録に成功しました！ 🎉",
       "appleRegisterSuccess": "Apple登録に成功しました！ 🎉"
-    }
+    },
+    "codeInvalid": "コードは6桁である必要があります",
+    "codeRequired": "コードが必要です",
+    "confirmPassword": "パスワードを確認",
+    "forgotPasswordDescription": "メールアドレスを入力してください。パスワードリセットコードをお送りします",
+    "newPassword": "新しいパスワード",
+    "passwordsDoNotMatch": "パスワードが一致しません",
+    "resetCode": "リセットコード",
+    "resetCodeHint": "123456",
+    "resetPassword": "パスワードをリセット",
+    "resetPasswordDescription": "メールに送信された6桁のコードを入力し、新しいパスワードを設定してください",
+    "sendCode": "コードを送信"
   },
   "onboarding": {
     "skip": "スキップ",
@@ -323,7 +336,13 @@
     "motivationHint": "なぜこの習慣を?",
     "saveHabit": "習慣を保存",
     "todaySection": "今日の習慣",
-    "doneToday": "完了"
+    "doneToday": "完了",
+    "reminderTime": "リマインダー時刻",
+    "time": {
+      "morning": "朝",
+      "noon": "昼",
+      "evening": "夜"
+    }
   },
   "profile": {
     "title": "プロフィール",
@@ -655,7 +674,8 @@
       "weekly": "毎週",
       "monthly": "毎月",
       "yearly": "毎年"
-    }
+    },
+    "noExpensesInFilter": "選択したカテゴリーに支出がありません"
   },
   "notes": {
     "title": "マイノート",

@@ -90,7 +90,9 @@
       "orange": "Оранжевый",
       "red": "Красный",
       "gray": "Серый"
-    }
+    },
+    "showAll": "Показать все",
+    "showLess": "Показать меньше"
   },
   "auth": {
     "welcomeBack": "С возвращением! 👋",
@@ -137,7 +139,18 @@
       "registerSuccess": "Регистрация успешна! Добро пожаловать в LifeSync 🎉",
       "googleRegisterSuccess": "Регистрация через Google успешна! 🎉",
       "appleRegisterSuccess": "Регистрация через Apple успешна! 🎉"
-    }
+    },
+    "codeInvalid": "Код должен состоять из 6 цифр",
+    "codeRequired": "Требуется код",
+    "confirmPassword": "Подтвердите пароль",
+    "forgotPasswordDescription": "Введите адрес электронной почты, и мы отправим вам код для сброса пароля",
+    "newPassword": "Новый пароль",
+    "passwordsDoNotMatch": "Пароли не совпадают",
+    "resetCode": "Код сброса",
+    "resetCodeHint": "123456",
+    "resetPassword": "Сбросить пароль",
+    "resetPasswordDescription": "Введите 6-значный код, отправленный на вашу почту, и задайте новый пароль",
+    "sendCode": "Отправить код"
   },
   "onboarding": {
     "skip": "Пропустить",
@@ -323,7 +336,13 @@
     "motivationHint": "Зачем вам эта привычка?",
     "saveHabit": "Сохранить привычку",
     "todaySection": "Привычки на сегодня",
-    "doneToday": "Выполнено"
+    "doneToday": "Выполнено",
+    "reminderTime": "Время напоминания",
+    "time": {
+      "morning": "Утро",
+      "noon": "Полдень",
+      "evening": "Вечер"
+    }
   },
   "profile": {
     "title": "Профиль",
@@ -655,7 +674,8 @@
       "weekly": "Еженедельно",
       "monthly": "Ежемесячно",
       "yearly": "Ежегодно"
-    }
+    },
+    "noExpensesInFilter": "Нет расходов в выбранных категориях"
   },
   "notes": {
     "title": "Мои Заметки",

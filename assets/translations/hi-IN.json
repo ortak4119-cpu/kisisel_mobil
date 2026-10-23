@@ -90,7 +90,9 @@
       "orange": "नारंगी",
       "red": "लाल",
       "gray": "ग्रे"
-    }
+    },
+    "showAll": "सभी दिखाएं",
+    "showLess": "कम दिखाएं"
   },
   "auth": {
     "welcomeBack": "वापस स्वागत है! 👋",
@@ -137,7 +139,18 @@
       "registerSuccess": "पंजीकरण सफल! LifeSync में आपका स्वागत है 🎉",
       "googleRegisterSuccess": "Google पंजीकरण सफल! 🎉",
       "appleRegisterSuccess": "Apple पंजीकरण सफल! 🎉"
-    }
+    },
+    "codeInvalid": "कोड 6 अंकों का होना चाहिए",
+    "codeRequired": "कोड आवश्यक है",
+    "confirmPassword": "पासवर्ड की पुष्टि करें",
+    "forgotPasswordDescription": "अपना ईमेल पता दर्ज करें, हम आपको पासवर्ड रीसेट कोड भेजेंगे",
+    "newPassword": "नया पासवर्ड",
+    "passwordsDoNotMatch": "पासवर्ड मेल नहीं खाते",
+    "resetCode": "रीसेट कोड",
+    "resetCodeHint": "123456",
+    "resetPassword": "पासवर्ड रीसेट करें",
+    "resetPasswordDescription": "अपने ईमेल पर भेजा गया 6 अंकों का कोड दर्ज करें और नया पासवर्ड सेट करें",
+    "sendCode": "कोड भेजें"
   },
   "onboarding": {
     "skip": "छोड़ें",
@@ -323,7 +336,13 @@
     "motivationHint": "आप यह आदत क्यों चाहते हैं?",
     "saveHabit": "आदत सहेजें",
     "todaySection": "आज की आदतें",
-    "doneToday": "पूर्ण"
+    "doneToday": "पूर्ण",
+    "reminderTime": "अनुस्मारक समय",
+    "time": {
+      "morning": "सुबह",
+      "noon": "दोपहर",
+      "evening": "शाम"
+    }
   },
   "profile": {
     "title": "प्रोफ़ाइल",
@@ -655,7 +674,8 @@
       "weekly": "साप्ताहिक",
       "monthly": "मासिक",
       "yearly": "वार्षिक"
-    }
+    },
+    "noExpensesInFilter": "चयनित श्रेणियों में कोई व्यय नहीं"
   },
   "notes": {
     "title": "मेरे नोट्स",

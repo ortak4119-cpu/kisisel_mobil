@@ -90,7 +90,9 @@
       "orange": "Orange",
       "red": "Rot",
       "gray": "Grau"
-    }
+    },
+    "showAll": "Alle anzeigen",
+    "showLess": "Weniger anzeigen"
   },
   "auth": {
     "welcomeBack": "Willkommen zurück! 👋",
@@ -137,7 +139,18 @@
       "registerSuccess": "Registrierung erfolgreich! Willkommen bei LifeSync 🎉",
       "googleRegisterSuccess": "Google-Registrierung erfolgreich! 🎉",
       "appleRegisterSuccess": "Apple-Registrierung erfolgreich! 🎉"
-    }
+    },
+    "codeInvalid": "Der Code muss 6-stellig sein",
+    "codeRequired": "Code erforderlich",
+    "confirmPassword": "Passwort bestätigen",
+    "forgotPasswordDescription": "Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen einen Code zum Zurücksetzen des Passworts",
+    "newPassword": "Neues Passwort",
+    "passwordsDoNotMatch": "Passwörter stimmen nicht überein",
+    "resetCode": "Zurücksetzungscode",
+    "resetCodeHint": "123456",
+    "resetPassword": "Passwort zurücksetzen",
+    "resetPasswordDescription": "Geben Sie den 6-stelligen Code aus Ihrer E-Mail ein und legen Sie Ihr neues Passwort fest",
+    "sendCode": "Code senden"
   },
   "onboarding": {
     "skip": "Überspringen",
@@ -323,7 +336,13 @@
     "motivationHint": "Warum willst du diese Gewohnheit?",
     "saveHabit": "Gewohnheit speichern",
     "todaySection": "Heutige Gewohnheiten",
-    "doneToday": "Erledigt"
+    "doneToday": "Erledigt",
+    "reminderTime": "Erinnerungszeit",
+    "time": {
+      "morning": "Morgen",
+      "noon": "Mittag",
+      "evening": "Abend"
+    }
   },
   "profile": {
     "title": "Profil",
@@ -655,7 +674,8 @@
       "weekly": "Wöchentlich",
       "monthly": "Monatlich",
       "yearly": "Jährlich"
-    }
+    },
+    "noExpensesInFilter": "Keine Ausgaben in den ausgewählten Kategorien"
   },
   "notes": {
     "title": "Meine Notizen",
