@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import '../../models/budget/buget_models.dart';
 import '../base/base_api_service.dart';
 import '../response/service_response.dart';
@@ -51,13 +52,13 @@ class BudgetService implements IBudgetService {
       return ServiceResponse.success(
         statusCode: response.statusCode,
         data: budget,
-        message: response.message ?? 'Bütçe başarıyla güncellendi',
+        message: response.message ?? 'messages.budgetUpdated'.tr(),
       );
     }
 
     return ServiceResponse.error(
       statusCode: response.statusCode,
-      message: response.message ?? 'Bütçe güncellenemedi',
+      message: response.message ?? 'messages.budgetUpdateFailed'.tr(),
       errors: response.errors,
     );
   }

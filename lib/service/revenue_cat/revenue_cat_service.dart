@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
@@ -204,21 +205,21 @@ class RevenueCatService {
   String getPackageDuration(PackageType packageType) {
     switch (packageType) {
       case PackageType.monthly:
-        return 'Aylık';
+        return 'subscription.monthly'.tr();
       case PackageType.annual:
-        return 'Yıllık';
+        return 'subscription.yearly'.tr();
       case PackageType.lifetime:
-        return 'Sınırsız';
+        return 'subscription.lifetime'.tr();
       case PackageType.weekly:
-        return 'Haftalık';
+        return 'subscription.weekly'.tr();
       case PackageType.sixMonth:
-        return '6 Aylık';
+        return 'subscription.sixMonths'.tr();
       case PackageType.threeMonth:
-        return '3 Aylık';
+        return 'subscription.threeMonths'.tr();
       case PackageType.twoMonth:
-        return '2 Aylık';
+        return 'subscription.twoMonths'.tr();
       default:
-        return 'Özel';
+        return 'subscription.custom'.tr();
     }
   }
 

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../../models/notification/notification_models.dart';
 import '../notification/notification_service.dart';
@@ -103,14 +104,14 @@ class FCMService {
 
     // Android için notification channel oluştur
     if (Platform.isAndroid) {
-      const AndroidNotificationChannel channel = AndroidNotificationChannel(
+      final AndroidNotificationChannel channel = AndroidNotificationChannel(
         'high_importance_channel',
-        'Önemli Bildirimler',
-        description: 'Bu kanal önemli bildirimler için kullanılır',
+        'notifications.channelName'.tr(),
+        description: 'notifications.channelDescription'.tr(),
         importance: Importance.high,
         playSound: true,
         enableVibration: true,
-        sound: RawResourceAndroidNotificationSound('notification'),
+        sound: const RawResourceAndroidNotificationSound('notification'),
       );
 
       await flutterLocalNotificationsPlugin
@@ -220,10 +221,10 @@ class FCMService {
     if (notification == null) return;
 
     // Android notification detayları
-    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+    final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
       'high_importance_channel',
-      'Önemli Bildirimler',
-      channelDescription: 'Bu kanal önemli bildirimler için kullanılır',
+      'notifications.channelName'.tr(),
+      channelDescription: 'notifications.channelDescription'.tr(),
       importance: Importance.high,
       priority: Priority.high,
       playSound: true,
@@ -239,7 +240,7 @@ class FCMService {
       sound: 'default',
     );
 
-    const NotificationDetails notificationDetails = NotificationDetails(
+    final NotificationDetails notificationDetails = NotificationDetails(
       android: androidDetails,
       iOS: iosDetails,
     );

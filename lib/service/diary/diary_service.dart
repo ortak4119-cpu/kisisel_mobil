@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../models/diary/diary_models.dart';
 import '../base/base_api_service.dart';
 import '../response/service_response.dart';
@@ -97,7 +98,7 @@ class DiaryService implements IDiaryService {
       return ServiceResponse.success(
         statusCode: response.statusCode,
         data: response.data!,
-        message: response.message ?? 'Günlük başarıyla oluşturuldu',
+        message: response.message ?? 'messages.diaryCreated'.tr(),
       );
     }
 
@@ -137,7 +138,7 @@ class DiaryService implements IDiaryService {
       return ServiceResponse.success(
         statusCode: response.statusCode,
         data: response.data!,
-        message: response.message ?? 'Günlük güncellendi',
+        message: response.message ?? 'messages.diaryUpdated'.tr(),
       );
     }
 
@@ -159,7 +160,7 @@ class DiaryService implements IDiaryService {
       return ServiceResponse.success(
         statusCode: response.statusCode,
         data: null,
-        message: response.message ?? 'Günlük silindi',
+        message: response.message ?? 'messages.diaryDeleted'.tr(),
       );
     }
 

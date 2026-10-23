@@ -150,7 +150,13 @@
     "resetCodeHint": "123456",
     "resetPassword": "Réinitialiser le mot de passe",
     "resetPasswordDescription": "Saisissez le code à 6 chiffres envoyé à votre e-mail et définissez votre nouveau mot de passe",
-    "sendCode": "Envoyer le code"
+    "sendCode": "Envoyer le code",
+    "codeSent": "Un code a été envoyé à votre e-mail",
+    "passwordChanged": "Votre mot de passe a été modifié avec succès",
+    "googleLoginFailed": "Échec de la connexion avec Google",
+    "appleLoginFailed": "Échec de la connexion avec Apple",
+    "googleRegisterFailed": "Échec de l'inscription avec Google",
+    "appleRegisterFailed": "Échec de l'inscription avec Apple"
   },
   "onboarding": {
     "skip": "Passer",
@@ -431,7 +437,41 @@
         "inProgress": "En Cours",
         "locked": "Verrouillé"
       }
-    }
+    },
+    "qrComingSoon": "Code QR bientôt disponible",
+    "memberSince": "Membre depuis {date}",
+    "editProfile": "Modifier le profil",
+    "chips": {
+      "friends": "Amis",
+      "achievement": "Succès",
+      "daysActive": "Jours actifs"
+    },
+    "levelLabel": "Niveau {count}",
+    "xpLeft": "{count} XP restants",
+    "badgeCount": "{count} badges",
+    "details": "Détails",
+    "monthlyProgress": "Progression du mois",
+    "completedTasks": "Tâches terminées",
+    "habitRate": "Taux d'habitudes",
+    "dayStreak": "Série de {count} jours",
+    "dailyNote": "Note quotidienne",
+    "thisMonthSub": "ce mois-ci",
+    "createdNotes": "Notes créées",
+    "pinnedCount": "{count} épinglées",
+    "recentAchievements": "Succès récents",
+    "seeAll": "Tout voir",
+    "personalGoals": "Objectifs personnels",
+    "editGoals": "Modifier les objectifs",
+    "dailyTasksGoal": "{count} tâches par jour",
+    "monthlySavings": "Épargne mensuelle",
+    "accountInfo": "Informations du compte",
+    "notifications": "Notifications",
+    "appearanceTheme": "Apparence et thème",
+    "privacySecurity": "Confidentialité et sécurité",
+    "backupSync": "Sauvegarde et synchro",
+    "backupOn": "Activé",
+    "helpSupport": "Aide et assistance",
+    "aboutApp": "À propos de l'app"
   },
   "calendar": {
     "screenTitle": "Calendrier",
@@ -1055,5 +1095,55 @@
       "years": "ans"
     },
     "trial_disclosure": "Gratuit pendant {{duration}}, puis {{price}}/an. Annulez à tout moment."
+  },
+  "subscription": {
+    "monthly": "Mensuel",
+    "yearly": "Annuel",
+    "weekly": "Hebdomadaire",
+    "lifetime": "À vie",
+    "sixMonths": "6 mois",
+    "threeMonths": "3 mois",
+    "twoMonths": "2 mois",
+    "custom": "Personnalisé"
+  },
+  "premium": {
+    "featureTitle": "Fonctionnalité premium",
+    "limitInfo": "La version gratuite a une limite de {limit} pour {feature}.",
+    "currentUsage": "Vous utilisez actuellement {current}/{limit}.",
+    "unlockCta": "Passez à Premium pour un usage illimité !",
+    "goCta": "Passer à Premium"
+  },
+  "messages": {
+    "noteCreated": "Note ajoutée avec succès",
+    "noteCreateFailed": "Impossible de créer la note",
+    "noteUpdated": "Note mise à jour",
+    "noteUpdateFailed": "Impossible de mettre à jour la note",
+    "noteUnlocked": "Note déverrouillée",
+    "noteUnlockFailed": "Impossible de déverrouiller la note",
+    "noteDataError": "Impossible de traiter les données de la note",
+    "categoryCreated": "Catégorie créée",
+    "categoryCreateFailed": "Impossible de créer la catégorie",
+    "categoryDataError": "Impossible de traiter les données de la catégorie",
+    "taskCreated": "Tâche créée",
+    "taskCreateFailed": "Impossible de créer la tâche",
+    "taskDataError": "Impossible de traiter les données de la tâche",
+    "expenseAdded": "Dépense ajoutée avec succès",
+    "expenseCreateFailed": "Impossible de créer la dépense",
+    "eventCreated": "Événement créé",
+    "eventCreateFailed": "Impossible de créer l'événement",
+    "eventUpdated": "Événement mis à jour",
+    "eventDeleted": "Événement supprimé",
+    "budgetUpdated": "Budget mis à jour avec succès",
+    "budgetUpdateFailed": "Impossible de mettre à jour le budget",
+    "diaryCreated": "Entrée de journal créée avec succès",
+    "diaryUpdated": "Entrée de journal mise à jour",
+    "diaryDeleted": "Entrée de journal supprimée",
+    "searchError": "Erreur lors de la recherche",
+    "subscriptionAdded": "Abonnement ajouté avec succès",
+    "subscriptionCreateFailed": "Impossible de créer l'abonnement"
+  },
+  "notifications": {
+    "channelName": "Notifications importantes",
+    "channelDescription": "Ce canal est utilisé pour les notifications importantes"
   }
 }

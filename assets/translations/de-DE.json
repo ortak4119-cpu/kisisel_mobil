@@ -150,7 +150,13 @@
     "resetCodeHint": "123456",
     "resetPassword": "Passwort zurücksetzen",
     "resetPasswordDescription": "Geben Sie den 6-stelligen Code aus Ihrer E-Mail ein und legen Sie Ihr neues Passwort fest",
-    "sendCode": "Code senden"
+    "sendCode": "Code senden",
+    "codeSent": "Ein Code wurde an Ihre E-Mail gesendet",
+    "passwordChanged": "Ihr Passwort wurde erfolgreich geändert",
+    "googleLoginFailed": "Google-Anmeldung fehlgeschlagen",
+    "appleLoginFailed": "Apple-Anmeldung fehlgeschlagen",
+    "googleRegisterFailed": "Google-Registrierung fehlgeschlagen",
+    "appleRegisterFailed": "Apple-Registrierung fehlgeschlagen"
   },
   "onboarding": {
     "skip": "Überspringen",
@@ -431,7 +437,41 @@
         "inProgress": "In Bearbeitung",
         "locked": "Gesperrt"
       }
-    }
+    },
+    "qrComingSoon": "QR-Code bald verfügbar",
+    "memberSince": "Mitglied seit {date}",
+    "editProfile": "Profil bearbeiten",
+    "chips": {
+      "friends": "Freunde",
+      "achievement": "Erfolg",
+      "daysActive": "Tage aktiv"
+    },
+    "levelLabel": "Level {count}",
+    "xpLeft": "Noch {count} XP",
+    "badgeCount": "{count} Abzeichen",
+    "details": "Details",
+    "monthlyProgress": "Fortschritt diesen Monat",
+    "completedTasks": "Erledigte Aufgaben",
+    "habitRate": "Gewohnheitsrate",
+    "dayStreak": "{count} Tage Serie",
+    "dailyNote": "Tägliche Notiz",
+    "thisMonthSub": "diesen Monat",
+    "createdNotes": "Erstellte Notizen",
+    "pinnedCount": "{count} angeheftet",
+    "recentAchievements": "Neueste Erfolge",
+    "seeAll": "Alle ansehen",
+    "personalGoals": "Persönliche Ziele",
+    "editGoals": "Ziele bearbeiten",
+    "dailyTasksGoal": "{count} Aufgaben täglich",
+    "monthlySavings": "Monatliche Ersparnis",
+    "accountInfo": "Kontoinformationen",
+    "notifications": "Benachrichtigungen",
+    "appearanceTheme": "Darstellung und Design",
+    "privacySecurity": "Datenschutz und Sicherheit",
+    "backupSync": "Backup und Sync",
+    "backupOn": "An",
+    "helpSupport": "Hilfe und Support",
+    "aboutApp": "Über die App"
   },
   "calendar": {
     "screenTitle": "Kalender",
@@ -1055,5 +1095,55 @@
       "years": "Jahre"
     },
     "trial_disclosure": "{{duration}} kostenlos, dann {{price}}/Jahr. Jederzeit kündbar."
+  },
+  "subscription": {
+    "monthly": "Monatlich",
+    "yearly": "Jährlich",
+    "weekly": "Wöchentlich",
+    "lifetime": "Lebenslang",
+    "sixMonths": "6 Monate",
+    "threeMonths": "3 Monate",
+    "twoMonths": "2 Monate",
+    "custom": "Individuell"
+  },
+  "premium": {
+    "featureTitle": "Premium-Funktion",
+    "limitInfo": "In der kostenlosen Version gilt für {feature} ein Limit von {limit}.",
+    "currentUsage": "Sie nutzen derzeit {current}/{limit}.",
+    "unlockCta": "Für unbegrenzte Nutzung auf Premium upgraden!",
+    "goCta": "Zu Premium"
+  },
+  "messages": {
+    "noteCreated": "Notiz erfolgreich hinzugefügt",
+    "noteCreateFailed": "Notiz konnte nicht erstellt werden",
+    "noteUpdated": "Notiz aktualisiert",
+    "noteUpdateFailed": "Notiz konnte nicht aktualisiert werden",
+    "noteUnlocked": "Notiz entsperrt",
+    "noteUnlockFailed": "Notiz konnte nicht entsperrt werden",
+    "noteDataError": "Notizdaten konnten nicht verarbeitet werden",
+    "categoryCreated": "Kategorie erstellt",
+    "categoryCreateFailed": "Kategorie konnte nicht erstellt werden",
+    "categoryDataError": "Kategoriedaten konnten nicht verarbeitet werden",
+    "taskCreated": "Aufgabe erstellt",
+    "taskCreateFailed": "Aufgabe konnte nicht erstellt werden",
+    "taskDataError": "Aufgabendaten konnten nicht verarbeitet werden",
+    "expenseAdded": "Ausgabe erfolgreich hinzugefügt",
+    "expenseCreateFailed": "Ausgabe konnte nicht erstellt werden",
+    "eventCreated": "Ereignis erstellt",
+    "eventCreateFailed": "Ereignis konnte nicht erstellt werden",
+    "eventUpdated": "Ereignis aktualisiert",
+    "eventDeleted": "Ereignis gelöscht",
+    "budgetUpdated": "Budget erfolgreich aktualisiert",
+    "budgetUpdateFailed": "Budget konnte nicht aktualisiert werden",
+    "diaryCreated": "Tagebucheintrag erfolgreich erstellt",
+    "diaryUpdated": "Tagebucheintrag aktualisiert",
+    "diaryDeleted": "Tagebucheintrag gelöscht",
+    "searchError": "Fehler bei der Suche",
+    "subscriptionAdded": "Abonnement erfolgreich hinzugefügt",
+    "subscriptionCreateFailed": "Abonnement konnte nicht erstellt werden"
+  },
+  "notifications": {
+    "channelName": "Wichtige Benachrichtigungen",
+    "channelDescription": "Dieser Kanal wird für wichtige Benachrichtigungen verwendet"
   }
 }

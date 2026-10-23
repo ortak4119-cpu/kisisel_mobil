@@ -138,7 +138,7 @@ class LoginViewModel extends ChangeNotifier {
       if (context.mounted) {
         CustomSnackBar.showError(
           context,
-          'Google ile giriş başarısız: ${e.toString()}',
+          '${'auth.googleLoginFailed'.tr()}: ${e.toString()}',
         );
       }
       return false;
@@ -204,7 +204,7 @@ class LoginViewModel extends ChangeNotifier {
       if (context.mounted) {
         CustomSnackBar.showError(
           context,
-          'Apple ile giriş başarısız: ${e.toString()}',
+          '${'auth.appleLoginFailed'.tr()}: ${e.toString()}',
         );
       }
       return false;

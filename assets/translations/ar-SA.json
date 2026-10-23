@@ -150,7 +150,13 @@
     "resetCodeHint": "123456",
     "resetPassword": "إعادة تعيين كلمة المرور",
     "resetPasswordDescription": "أدخل الرمز المكون من 6 أرقام المرسل إلى بريدك الإلكتروني وعيّن كلمة مرور جديدة",
-    "sendCode": "إرسال الرمز"
+    "sendCode": "إرسال الرمز",
+    "codeSent": "تم إرسال رمز إلى بريدك الإلكتروني",
+    "passwordChanged": "تم تغيير كلمة المرور بنجاح",
+    "googleLoginFailed": "فشل تسجيل الدخول عبر Google",
+    "appleLoginFailed": "فشل تسجيل الدخول عبر Apple",
+    "googleRegisterFailed": "فشل التسجيل عبر Google",
+    "appleRegisterFailed": "فشل التسجيل عبر Apple"
   },
   "onboarding": {
     "skip": "تخطي",
@@ -431,7 +437,41 @@
         "inProgress": "قيد التقدم",
         "locked": "مغلق"
       }
-    }
+    },
+    "qrComingSoon": "رمز QR قريبًا",
+    "memberSince": "عضو منذ {date}",
+    "editProfile": "تعديل الملف الشخصي",
+    "chips": {
+      "friends": "الأصدقاء",
+      "achievement": "إنجاز",
+      "daysActive": "أيام نشطة"
+    },
+    "levelLabel": "المستوى {count}",
+    "xpLeft": "{count} XP متبقية",
+    "badgeCount": "{count} شارة",
+    "details": "التفاصيل",
+    "monthlyProgress": "تقدم هذا الشهر",
+    "completedTasks": "المهام المكتملة",
+    "habitRate": "معدل العادات",
+    "dayStreak": "سلسلة {count} يوم",
+    "dailyNote": "ملاحظة يومية",
+    "thisMonthSub": "هذا الشهر",
+    "createdNotes": "الملاحظات المنشأة",
+    "pinnedCount": "{count} مثبتة",
+    "recentAchievements": "أحدث الإنجازات",
+    "seeAll": "عرض الكل",
+    "personalGoals": "الأهداف الشخصية",
+    "editGoals": "تعديل الأهداف",
+    "dailyTasksGoal": "{count} مهام يوميًا",
+    "monthlySavings": "المدخرات الشهرية",
+    "accountInfo": "معلومات الحساب",
+    "notifications": "الإشعارات",
+    "appearanceTheme": "المظهر والسمة",
+    "privacySecurity": "الخصوصية والأمان",
+    "backupSync": "النسخ الاحتياطي والمزامنة",
+    "backupOn": "مفعّل",
+    "helpSupport": "المساعدة والدعم",
+    "aboutApp": "حول التطبيق"
   },
   "calendar": {
     "screenTitle": "التقويم",
@@ -1055,5 +1095,55 @@
       "years": "سنوات"
     },
     "trial_disclosure": "مجاني لمدة {{duration}}، ثم {{price}}/سنة. يمكنك الإلغاء في أي وقت."
+  },
+  "subscription": {
+    "monthly": "شهري",
+    "yearly": "سنوي",
+    "weekly": "أسبوعي",
+    "lifetime": "مدى الحياة",
+    "sixMonths": "6 أشهر",
+    "threeMonths": "3 أشهر",
+    "twoMonths": "شهران",
+    "custom": "مخصص"
+  },
+  "premium": {
+    "featureTitle": "ميزة بريميوم",
+    "limitInfo": "في النسخة المجانية هناك حد أقصى {limit} لـ {feature}.",
+    "currentUsage": "تستخدم حاليًا {current}/{limit}.",
+    "unlockCta": "ترقَّ إلى بريميوم للاستخدام غير المحدود!",
+    "goCta": "الانتقال إلى بريميوم"
+  },
+  "messages": {
+    "noteCreated": "تمت إضافة الملاحظة بنجاح",
+    "noteCreateFailed": "تعذّر إنشاء الملاحظة",
+    "noteUpdated": "تم تحديث الملاحظة",
+    "noteUpdateFailed": "تعذّر تحديث الملاحظة",
+    "noteUnlocked": "تم فتح قفل الملاحظة",
+    "noteUnlockFailed": "تعذّر فتح قفل الملاحظة",
+    "noteDataError": "تعذّر معالجة بيانات الملاحظة",
+    "categoryCreated": "تم إنشاء الفئة",
+    "categoryCreateFailed": "تعذّر إنشاء الفئة",
+    "categoryDataError": "تعذّر معالجة بيانات الفئة",
+    "taskCreated": "تم إنشاء المهمة",
+    "taskCreateFailed": "تعذّر إنشاء المهمة",
+    "taskDataError": "تعذّر معالجة بيانات المهمة",
+    "expenseAdded": "تمت إضافة المصروف بنجاح",
+    "expenseCreateFailed": "تعذّر إنشاء المصروف",
+    "eventCreated": "تم إنشاء الحدث",
+    "eventCreateFailed": "تعذّر إنشاء الحدث",
+    "eventUpdated": "تم تحديث الحدث",
+    "eventDeleted": "تم حذف الحدث",
+    "budgetUpdated": "تم تحديث الميزانية بنجاح",
+    "budgetUpdateFailed": "تعذّر تحديث الميزانية",
+    "diaryCreated": "تم إنشاء مدخل اليوميات بنجاح",
+    "diaryUpdated": "تم تحديث مدخل اليوميات",
+    "diaryDeleted": "تم حذف مدخل اليوميات",
+    "searchError": "خطأ أثناء البحث",
+    "subscriptionAdded": "تمت إضافة الاشتراك بنجاح",
+    "subscriptionCreateFailed": "تعذّر إنشاء الاشتراك"
+  },
+  "notifications": {
+    "channelName": "إشعارات مهمة",
+    "channelDescription": "تُستخدم هذه القناة للإشعارات المهمة"
   }
 }

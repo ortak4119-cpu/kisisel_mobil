@@ -588,14 +588,14 @@ class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Kod email adresinize gönderildi'),
+          content: Text('auth.codeSent'.tr()),
           backgroundColor: ColorConstant.successGreen,
         ),
       );
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(response.message ?? 'Bir hata oluştu'),
+          content: Text(response.message ?? 'errors.general'.tr()),
           backgroundColor: ColorConstant.errorRed,
         ),
       );
@@ -608,7 +608,7 @@ class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
     if (_passwordController.text != _passwordConfirmController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Şifreler eşleşmiyor'),
+          content: Text('auth.passwordsDoNotMatch'.tr()),
           backgroundColor: ColorConstant.errorRed,
         ),
       );
@@ -631,14 +631,14 @@ class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Şifreniz başarıyla değiştirildi'),
+          content: Text('auth.passwordChanged'.tr()),
           backgroundColor: ColorConstant.successGreen,
         ),
       );
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(response.message ?? 'Bir hata oluştu'),
+          content: Text(response.message ?? 'errors.general'.tr()),
           backgroundColor: ColorConstant.errorRed,
         ),
       );

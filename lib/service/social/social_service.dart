@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import '../../models/social/social_model.dart';
 import '../base/base_api_service.dart';
@@ -232,7 +233,7 @@ class SocialService implements ISocialService {
 
       return ServiceResponse.error(
         statusCode: 500,
-        message: 'Arama sırasında hata: $e',
+        message: '${'messages.searchError'.tr()}: $e',
       );
     }
   }

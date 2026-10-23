@@ -150,7 +150,13 @@
     "resetCodeHint": "123456",
     "resetPassword": "Restablecer contraseña",
     "resetPasswordDescription": "Introduce el código de 6 dígitos enviado a tu correo y establece tu nueva contraseña",
-    "sendCode": "Enviar código"
+    "sendCode": "Enviar código",
+    "codeSent": "Se envió un código a tu correo",
+    "passwordChanged": "Tu contraseña se cambió correctamente",
+    "googleLoginFailed": "Error al iniciar sesión con Google",
+    "appleLoginFailed": "Error al iniciar sesión con Apple",
+    "googleRegisterFailed": "Error al registrarse con Google",
+    "appleRegisterFailed": "Error al registrarse con Apple"
   },
   "onboarding": {
     "skip": "Omitir",
@@ -431,7 +437,41 @@
         "inProgress": "En Progreso",
         "locked": "Bloqueado"
       }
-    }
+    },
+    "qrComingSoon": "Código QR próximamente",
+    "memberSince": "Miembro desde {date}",
+    "editProfile": "Editar perfil",
+    "chips": {
+      "friends": "Amigos",
+      "achievement": "Logro",
+      "daysActive": "Días activo"
+    },
+    "levelLabel": "Nivel {count}",
+    "xpLeft": "{count} XP restantes",
+    "badgeCount": "{count} insignias",
+    "details": "Detalles",
+    "monthlyProgress": "Progreso de este mes",
+    "completedTasks": "Tareas completadas",
+    "habitRate": "Tasa de hábitos",
+    "dayStreak": "Racha de {count} días",
+    "dailyNote": "Nota diaria",
+    "thisMonthSub": "este mes",
+    "createdNotes": "Notas creadas",
+    "pinnedCount": "{count} fijadas",
+    "recentAchievements": "Logros recientes",
+    "seeAll": "Ver todo",
+    "personalGoals": "Objetivos personales",
+    "editGoals": "Editar objetivos",
+    "dailyTasksGoal": "{count} tareas al día",
+    "monthlySavings": "Ahorro mensual",
+    "accountInfo": "Información de la cuenta",
+    "notifications": "Notificaciones",
+    "appearanceTheme": "Apariencia y tema",
+    "privacySecurity": "Privacidad y seguridad",
+    "backupSync": "Copia y sincronización",
+    "backupOn": "Activado",
+    "helpSupport": "Ayuda y soporte",
+    "aboutApp": "Acerca de la app"
   },
   "calendar": {
     "screenTitle": "Calendario",
@@ -1055,5 +1095,55 @@
       "years": "años"
     },
     "trial_disclosure": "Gratis por {{duration}}, luego {{price}}/año. Cancela en cualquier momento."
+  },
+  "subscription": {
+    "monthly": "Mensual",
+    "yearly": "Anual",
+    "weekly": "Semanal",
+    "lifetime": "De por vida",
+    "sixMonths": "6 meses",
+    "threeMonths": "3 meses",
+    "twoMonths": "2 meses",
+    "custom": "Personalizado"
+  },
+  "premium": {
+    "featureTitle": "Función premium",
+    "limitInfo": "La versión gratuita tiene un límite de {limit} para {feature}.",
+    "currentUsage": "Actualmente usas {current}/{limit}.",
+    "unlockCta": "¡Hazte Premium para uso ilimitado!",
+    "goCta": "Pasar a Premium"
+  },
+  "messages": {
+    "noteCreated": "Nota añadida correctamente",
+    "noteCreateFailed": "No se pudo crear la nota",
+    "noteUpdated": "Nota actualizada",
+    "noteUpdateFailed": "No se pudo actualizar la nota",
+    "noteUnlocked": "Nota desbloqueada",
+    "noteUnlockFailed": "No se pudo desbloquear la nota",
+    "noteDataError": "No se pudieron procesar los datos de la nota",
+    "categoryCreated": "Categoría creada",
+    "categoryCreateFailed": "No se pudo crear la categoría",
+    "categoryDataError": "No se pudieron procesar los datos de la categoría",
+    "taskCreated": "Tarea creada",
+    "taskCreateFailed": "No se pudo crear la tarea",
+    "taskDataError": "No se pudieron procesar los datos de la tarea",
+    "expenseAdded": "Gasto añadido correctamente",
+    "expenseCreateFailed": "No se pudo crear el gasto",
+    "eventCreated": "Evento creado",
+    "eventCreateFailed": "No se pudo crear el evento",
+    "eventUpdated": "Evento actualizado",
+    "eventDeleted": "Evento eliminado",
+    "budgetUpdated": "Presupuesto actualizado correctamente",
+    "budgetUpdateFailed": "No se pudo actualizar el presupuesto",
+    "diaryCreated": "Entrada de diario creada correctamente",
+    "diaryUpdated": "Entrada de diario actualizada",
+    "diaryDeleted": "Entrada de diario eliminada",
+    "searchError": "Error durante la búsqueda",
+    "subscriptionAdded": "Suscripción añadida correctamente",
+    "subscriptionCreateFailed": "No se pudo crear la suscripción"
+  },
+  "notifications": {
+    "channelName": "Notificaciones importantes",
+    "channelDescription": "Este canal se usa para notificaciones importantes"
   }
 }

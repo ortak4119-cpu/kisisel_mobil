@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../models/auth/auth_models.dart';
 import '../route/app_router.gr.dart';
@@ -156,11 +157,11 @@ class PremiumHelper {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.workspace_premium, color: Colors.amber),
-            SizedBox(width: 8),
-            Text('Premium Özellik'),
+            const Icon(Icons.workspace_premium, color: Colors.amber),
+            const SizedBox(width: 8),
+            Text('premium.featureTitle'.tr()),
           ],
         ),
         content: Column(
@@ -168,21 +169,25 @@ class PremiumHelper {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Ücretsiz sürümde $featureName için $limit adet limit vardır.',
+              'premium.limitInfo'.tr(
+                namedArgs: {'feature': featureName, 'limit': '$limit'},
+              ),
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 12),
             Text(
-              'Şu an $currentCount/$limit kullanıyorsunuz.',
+              'premium.currentUsage'.tr(
+                namedArgs: {'current': '$currentCount', 'limit': '$limit'},
+              ),
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 12),
-            const Text(
-              'Sınırsız kullanım için Premium\'a geçin!',
-              style: TextStyle(
+            Text(
+              'premium.unlockCta'.tr(),
+              style: const TextStyle(
                 fontSize: 14,
                 color: Colors.grey,
               ),
@@ -192,7 +197,7 @@ class PremiumHelper {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('İptal'),
+            child: Text('common.cancel'.tr()),
           ),
           ElevatedButton(
             onPressed: () {
@@ -202,7 +207,7 @@ class PremiumHelper {
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.amber,
             ),
-            child: const Text('Premium\'a Geç'),
+            child: Text('premium.goCta'.tr()),
           ),
         ],
       ),

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import '../../models/subscription/subscription_models.dart';
 import '../base/base_api_service.dart';
 import '../response/service_response.dart';
@@ -79,13 +80,13 @@ class SubscriptionService implements ISubscriptionService {
       return ServiceResponse.success(
         statusCode: response.statusCode,
         data: subscription,
-        message: response.message ?? 'Abonelik başarıyla eklendi',
+        message: response.message ?? 'messages.subscriptionAdded'.tr(),
       );
     }
 
     return ServiceResponse.error(
       statusCode: response.statusCode,
-      message: response.message ?? 'Abonelik oluşturulamadı',
+      message: response.message ?? 'messages.subscriptionCreateFailed'.tr(),
       errors: response.errors,
     );
   }

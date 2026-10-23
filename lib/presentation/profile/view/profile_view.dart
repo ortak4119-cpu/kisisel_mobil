@@ -109,7 +109,7 @@ class _ProfileViewState extends State<ProfileView> with SingleTickerProviderStat
       elevation: 0,
       surfaceTintColor: Colors.transparent,
       title: Text(
-        'Profil',
+        'profile.title'.tr(),
         style: TextStyle(
           fontSize: 28,
           fontWeight: FontWeight.w900,
@@ -120,7 +120,7 @@ class _ProfileViewState extends State<ProfileView> with SingleTickerProviderStat
         IconButton(
           icon: Icon(Icons.qr_code_rounded,
               color: isDark ? ColorConstant.textPrimaryDark : ColorConstant.textPrimaryLight),
-          onPressed: () => CustomSnackBar.showInfo(context, 'QR kodu yakında gelecek'),
+          onPressed: () => CustomSnackBar.showInfo(context, 'profile.qrComingSoon'.tr()),
         ),
         IconButton(
           icon: Icon(Icons.settings_rounded,
@@ -146,21 +146,20 @@ class _ProfileViewState extends State<ProfileView> with SingleTickerProviderStat
           isDark ? ColorConstant.textSecondaryDark : ColorConstant.textSecondaryLight,
       labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
       unselectedLabelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-      tabs: const [
-        Tab(text: 'İstatistikler'),
-        Tab(text: 'Başarılar'),
-        Tab(text: 'Arkadaşlar'),
+      tabs: [
+        Tab(text: 'profile.tabs.statistics'.tr()),
+        Tab(text: 'profile.tabs.achievements'.tr()),
+        Tab(text: 'profile.tabs.friends'.tr()),
       ],
     );
   }
 
   Widget _buildProfileCard(BuildContext context, ProfileViewModel vm, bool isDark) {
     final user = vm.currentUser!;
-    const months = [
-      'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
-      'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
-    ];
-    final joined = "${months[user.createdAt.month - 1]} ${user.createdAt.year}'dan beri üye";
+    final joined = 'profile.memberSince'.tr(namedArgs: {
+      'date': DateFormat('MMMM yyyy', context.locale.toLanguageTag())
+          .format(user.createdAt)
+    });
 
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -260,8 +259,8 @@ class _ProfileViewState extends State<ProfileView> with SingleTickerProviderStat
                 OutlinedButton.icon(
                   onPressed: () => context.router.push(const SettingsRoute()),
                   icon: const Icon(Icons.edit_rounded, size: 14),
-                  label: const Text('Profili Düzenle',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                  label: Text('profile.editProfile'.tr(),
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     side: BorderSide(
@@ -300,11 +299,11 @@ class _ProfileViewState extends State<ProfileView> with SingleTickerProviderStat
       ),
       child: Row(
         children: [
-          _statChip(Icons.people_rounded, '$friendCount', 'Arkadaş', isDark),
+          _statChip(Icons.people_rounded, '$friendCount', 'profile.chips.friends'.tr(), isDark),
           _vDivider(isDark),
-          _statChip(Icons.emoji_events_rounded, '$badgeCount', 'Başarı', isDark),
+          _statChip(Icons.emoji_events_rounded, '$badgeCount', 'profile.chips.achievement'.tr(), isDark),
           _vDivider(isDark),
-          _statChip(Icons.check_box_rounded, '$daysActive', 'Gün aktif', isDark),
+          _statChip(Icons.check_box_rounded, '$daysActive', 'profile.chips.daysActive'.tr(), isDark),
         ],
       ),
     );
@@ -387,7 +386,7 @@ class _ProfileViewState extends State<ProfileView> with SingleTickerProviderStat
                 children: [
                   Row(
                     children: [
-                      Text('Seviye $level',
+                      Text('profile.levelLabel'.tr(namedArgs: {'count': '$level'}),
                           style: const TextStyle(
                               fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white)),
                       const SizedBox(width: 4),
@@ -414,12 +413,12 @@ class _ProfileViewState extends State<ProfileView> with SingleTickerProviderStat
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('$remaining XP kaldı',
+                      Text('profile.xpLeft'.tr(namedArgs: {'count': '$remaining'}),
                           style: TextStyle(
                               fontSize: 11,
                               color: Colors.white.withValues(alpha: 0.85),
                               fontWeight: FontWeight.w500)),
-                      Text('Seviye ${level + 1}',
+                      Text('profile.levelLabel'.tr(namedArgs: {'count': '${level + 1}'}),
                           style: TextStyle(
                               fontSize: 11,
                               color: Colors.white.withValues(alpha: 0.85),
@@ -435,7 +434,7 @@ class _ProfileViewState extends State<ProfileView> with SingleTickerProviderStat
               children: [
                 const Text('⭐', style: TextStyle(fontSize: 22)),
                 const SizedBox(height: 2),
-                Text('$badgeCount rozet',
+                Text('profile.badgeCount'.tr(namedArgs: {'count': '$badgeCount'}),
                     style: const TextStyle(
                         fontSize: 11, color: Colors.white, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 8),
@@ -445,8 +444,8 @@ class _ProfileViewState extends State<ProfileView> with SingleTickerProviderStat
                   decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8)),
-                  child: const Text('Detaylar >',
-                      style: TextStyle(
+                  child: Text('${'profile.details'.tr()} >',
+                      style: const TextStyle(
                           fontSize: 11,
                           color: Colors.white,
                           fontWeight: FontWeight.w600)),
@@ -682,7 +681,7 @@ class _StatsContent extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Bu ayki ilerleme',
+                'profile.monthlyProgress'.tr(),
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
@@ -705,7 +704,8 @@ class _StatsContent extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      _currentMonth(),
+                      DateFormat('MMMM', context.locale.toLanguageTag())
+                          .format(DateTime.now()),
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -735,7 +735,7 @@ class _StatsContent extends StatelessWidget {
                   icon: Icons.check_box_rounded,
                   iconColor: orange,
                   iconBg: orange.withValues(alpha: 0.1),
-                  label: 'Tamamlanan görev',
+                  label: 'profile.completedTasks'.tr(),
                   value: '${stats.tasks.completed}',
                   sub: '↑%12',
                   subColor: Colors.green,
@@ -748,9 +748,9 @@ class _StatsContent extends StatelessWidget {
                   icon: Icons.track_changes_rounded,
                   iconColor: orange,
                   iconBg: orange.withValues(alpha: 0.1),
-                  label: 'Alışkanlık oranı',
+                  label: 'profile.habitRate'.tr(),
                   value: '$habitRate%',
-                  sub: '${stats.habits.currentStreak} gün seri',
+                  sub: 'profile.dayStreak'.tr(namedArgs: {'count': '${stats.habits.currentStreak}'}),
                   subColor: isDark
                       ? ColorConstant.textSecondaryDark
                       : ColorConstant.textSecondaryLight,
@@ -767,9 +767,9 @@ class _StatsContent extends StatelessWidget {
                   icon: Icons.calendar_month_rounded,
                   iconColor: ColorConstant.accentBlue,
                   iconBg: ColorConstant.accentBlue.withValues(alpha: 0.1),
-                  label: 'Günlük not',
+                  label: 'profile.dailyNote'.tr(),
                   value: '${stats.diary.thisMonth}',
-                  sub: 'bu ay',
+                  sub: 'profile.thisMonthSub'.tr(),
                   subColor: isDark
                       ? ColorConstant.textSecondaryDark
                       : ColorConstant.textSecondaryLight,
@@ -782,9 +782,9 @@ class _StatsContent extends StatelessWidget {
                   icon: Icons.sticky_note_2_rounded,
                   iconColor: const Color(0xFF9C27B0),
                   iconBg: const Color(0xFF9C27B0).withValues(alpha: 0.1),
-                  label: 'Oluşturulan not',
+                  label: 'profile.createdNotes'.tr(),
                   value: '${stats.notes.total}',
-                  sub: '${stats.notes.locked} sabitlenmiş',
+                  sub: 'profile.pinnedCount'.tr(namedArgs: {'count': '${stats.notes.locked}'}),
                   subColor: isDark
                       ? ColorConstant.textSecondaryDark
                       : ColorConstant.textSecondaryLight,
@@ -802,7 +802,7 @@ class _StatsContent extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Son başarılar',
+                  'profile.recentAchievements'.tr(),
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
@@ -813,8 +813,8 @@ class _StatsContent extends StatelessWidget {
                 ),
                 GestureDetector(
                   onTap: onViewAchievements,
-                  child: const Text('Tümünü gör >',
-                      style: TextStyle(
+                  child: Text('${'profile.seeAll'.tr()} >',
+                      style: const TextStyle(
                           fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFFF6A821))),
                 ),
               ],
@@ -840,7 +840,7 @@ class _StatsContent extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Kişisel hedefler',
+                'profile.personalGoals'.tr(),
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
@@ -851,8 +851,8 @@ class _StatsContent extends StatelessWidget {
               ),
               GestureDetector(
                 onTap: () => context.router.push(const SettingsRoute()),
-                child: const Text('Hedefleri düzenle >',
-                    style: TextStyle(
+                child: Text('${'profile.editGoals'.tr()} >',
+                    style: const TextStyle(
                         fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFFF6A821))),
               ),
             ],
@@ -862,7 +862,7 @@ class _StatsContent extends StatelessWidget {
             context,
             icon: Icons.track_changes_rounded,
             iconColor: orange,
-            label: 'Günlük $taskGoal görev',
+            label: 'profile.dailyTasksGoal'.tr(namedArgs: {'count': '$taskGoal'}),
             progress: taskProgress,
             progressColor: orange,
             rightText: '${stats.tasks.completed.clamp(0, taskGoal)}/$taskGoal',
@@ -873,7 +873,7 @@ class _StatsContent extends StatelessWidget {
             context,
             icon: Icons.savings_rounded,
             iconColor: ColorConstant.accentGreen,
-            label: 'Aylık tasarruf',
+            label: 'profile.monthlySavings'.tr(),
             progress: (1 - budgetProgress).clamp(0.0, 1.0),
             progressColor: ColorConstant.accentGreen,
             rightText: '%$savingsRate/%30',
@@ -884,25 +884,28 @@ class _StatsContent extends StatelessWidget {
           const SizedBox(height: 24),
 
           // ─── Ayarlar ───
-          _settingsRow(context, Icons.person_outline_rounded, 'Hesap bilgileri',
+          _settingsRow(context, Icons.person_outline_rounded, 'profile.accountInfo'.tr(),
               isDark: isDark),
-          _settingsRow(context, Icons.notifications_outlined, 'Bildirimler',
+          _settingsRow(context, Icons.notifications_outlined, 'profile.notifications'.tr(),
               isDark: isDark,
               badge: vm.friendRequests.isNotEmpty ? '${vm.friendRequests.length}' : null),
-          _settingsRow(context, Icons.palette_outlined, 'Görünüm ve tema',
-              isDark: isDark, trailing: isDark ? 'Koyu' : 'Açık'),
-          _settingsRow(context, Icons.shield_outlined, 'Gizlilik ve güvenlik',
-              isDark: isDark),
-          _settingsRow(context, Icons.cloud_outlined, 'Yedekleme ve senkronizasyon',
+          _settingsRow(context, Icons.palette_outlined, 'profile.appearanceTheme'.tr(),
               isDark: isDark,
-              trailing: 'Açık',
+              trailing: isDark
+                  ? 'settings.appearance.themeDark'.tr()
+                  : 'settings.appearance.themeLight'.tr()),
+          _settingsRow(context, Icons.shield_outlined, 'profile.privacySecurity'.tr(),
+              isDark: isDark),
+          _settingsRow(context, Icons.cloud_outlined, 'profile.backupSync'.tr(),
+              isDark: isDark,
+              trailing: 'profile.backupOn'.tr(),
               trailingColor: ColorConstant.accentGreen),
           const SizedBox(height: 4),
-          _settingsRow(context, Icons.help_outline_rounded, 'Yardım ve destek',
+          _settingsRow(context, Icons.help_outline_rounded, 'profile.helpSupport'.tr(),
               isDark: isDark, muted: true),
-          _settingsRow(context, Icons.info_outline_rounded, 'Uygulama hakkında',
+          _settingsRow(context, Icons.info_outline_rounded, 'profile.aboutApp'.tr(),
               isDark: isDark, muted: true),
-          _settingsRow(context, Icons.logout_rounded, 'Çıkış yap',
+          _settingsRow(context, Icons.logout_rounded, 'settings.account.logout'.tr(),
               isDark: isDark, isLogout: true),
         ],
       ),
@@ -979,7 +982,7 @@ class _StatsContent extends StatelessWidget {
           Text(achievement.icon ?? '🏆', style: const TextStyle(fontSize: 28)),
           const SizedBox(height: 6),
           Text(
-            achievement.titleKey ?? 'Başarı',
+            achievement.titleKey ?? 'profile.chips.achievement'.tr(),
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
@@ -1151,13 +1154,6 @@ class _StatsContent extends StatelessWidget {
     );
   }
 
-  String _currentMonth() {
-    const months = [
-      'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
-      'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
-    ];
-    return months[DateTime.now().month - 1];
-  }
 }
 
 // ==================== ARKADAŞLAR TAB ====================

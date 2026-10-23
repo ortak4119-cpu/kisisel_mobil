@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../models/note/note_models.dart';
 import '../base/base_api_service.dart';
 import '../response/service_response.dart';
@@ -90,13 +91,13 @@ class NoteService implements INoteService {
       return ServiceResponse.success(
         statusCode: response.statusCode,
         data: note,
-        message: response.message ?? 'Not başarıyla eklendi',
+        message: response.message ?? 'messages.noteCreated'.tr(),
       );
     }
 
     return ServiceResponse.error(
       statusCode: response.statusCode,
-      message: response.message ?? 'Not oluşturulamadı',
+      message: response.message ?? 'messages.noteCreateFailed'.tr(),
       errors: response.errors,
     );
   }
@@ -114,13 +115,13 @@ class NoteService implements INoteService {
       return ServiceResponse.success(
         statusCode: response.statusCode,
         data: note,
-        message: response.message ?? 'Not güncellendi',
+        message: response.message ?? 'messages.noteUpdated'.tr(),
       );
     }
 
     return ServiceResponse.error(
       statusCode: response.statusCode,
-      message: response.message ?? 'Not güncellenemedi',
+      message: response.message ?? 'messages.noteUpdateFailed'.tr(),
       errors: response.errors,
     );
   }
@@ -168,14 +169,14 @@ class NoteService implements INoteService {
         return ServiceResponse.success(
           statusCode: response.statusCode,
           data: note,
-          message: response.message ?? 'Not kilidi açıldı',
+          message: response.message ?? 'messages.noteUnlocked'.tr(),
         );
       } catch (e, stackTrace) {
         debugPrint('❌ Error parsing note: $e');
         debugPrint('❌ StackTrace: $stackTrace');
         return ServiceResponse.error(
           statusCode: 500,
-          message: 'Not verisi işlenemedi: $e',
+          message: '${'messages.noteDataError'.tr()}: $e',
         );
       }
     }
@@ -183,7 +184,7 @@ class NoteService implements INoteService {
     debugPrint('❌ Unlock failed - StatusCode: ${response.statusCode}');
     return ServiceResponse.error(
       statusCode: response.statusCode,
-      message: response.message ?? 'Not kilidi açılamadı',
+      message: response.message ?? 'messages.noteUnlockFailed'.tr(),
       errors: response.errors,
     );
   }
@@ -276,14 +277,14 @@ class NoteService implements INoteService {
         return ServiceResponse.success(
           statusCode: response.statusCode,
           data: category,
-          message: response.message ?? 'Kategori oluşturuldu',
+          message: response.message ?? 'messages.categoryCreated'.tr(),
         );
       } catch (e, stackTrace) {
         debugPrint('🔧 ❌ Error parsing category: $e');
         debugPrint('🔧 ❌ StackTrace: $stackTrace');
         return ServiceResponse.error(
           statusCode: 500,
-          message: 'Kategori verisi işlenemedi: $e',
+          message: '${'messages.categoryDataError'.tr()}: $e',
         );
       }
     }
@@ -291,7 +292,7 @@ class NoteService implements INoteService {
     debugPrint('🔧 ❌ Create category failed');
     return ServiceResponse.error(
       statusCode: response.statusCode,
-      message: response.message ?? 'Kategori oluşturulamadı',
+      message: response.message ?? 'messages.categoryCreateFailed'.tr(),
       errors: response.errors,
     );
   }

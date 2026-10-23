@@ -1,4 +1,6 @@
 // Subscription Model
+import 'package:easy_localization/easy_localization.dart';
+
 class Subscription {
   final int id;
   final int userId;
@@ -101,11 +103,11 @@ class Subscription {
   String get billingCycleLabel {
     switch (billingCycle) {
       case 'monthly':
-        return 'Aylık';
+        return 'subscription.monthly'.tr();
       case 'yearly':
-        return 'Yıllık';
+        return 'subscription.yearly'.tr();
       case 'weekly':
-        return 'Haftalık';
+        return 'subscription.weekly'.tr();
       default:
         return billingCycle;
     }

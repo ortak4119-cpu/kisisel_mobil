@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../models/calender/calendar_models.dart';
 import '../base/base_api_service.dart';
 import '../response/service_response.dart';
@@ -129,13 +130,13 @@ class CalendarService implements ICalendarService {
       return ServiceResponse.success(
         statusCode: response.statusCode,
         data: event,
-        message: response.message ?? 'Etkinlik oluşturuldu',
+        message: response.message ?? 'messages.eventCreated'.tr(),
       );
     }
 
     return ServiceResponse.error(
       statusCode: response.statusCode,
-      message: response.message ?? 'Etkinlik oluşturulamadı',
+      message: response.message ?? 'messages.eventCreateFailed'.tr(),
       errors: response.errors,
     );
   }
@@ -169,7 +170,7 @@ class CalendarService implements ICalendarService {
       return ServiceResponse.success(
         statusCode: response.statusCode,
         data: response.data!,
-        message: response.message ?? 'Etkinlik güncellendi',
+        message: response.message ?? 'messages.eventUpdated'.tr(),
       );
     }
 
@@ -191,7 +192,7 @@ class CalendarService implements ICalendarService {
       return ServiceResponse.success(
         statusCode: response.statusCode,
         data: null,
-        message: response.message ?? 'Etkinlik silindi',
+        message: response.message ?? 'messages.eventDeleted'.tr(),
       );
     }
 

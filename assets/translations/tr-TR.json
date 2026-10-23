@@ -150,7 +150,13 @@
       "registerSuccess": "Kayıt başarılı! LifeSync'e hoş geldiniz 🎉",
       "googleRegisterSuccess": "Google kaydı başarılı! 🎉",
       "appleRegisterSuccess": "Apple kaydı başarılı! 🎉"
-    }
+    },
+    "codeSent": "Kod email adresinize gönderildi",
+    "passwordChanged": "Şifreniz başarıyla değiştirildi",
+    "googleLoginFailed": "Google ile giriş başarısız",
+    "appleLoginFailed": "Apple ile giriş başarısız",
+    "googleRegisterFailed": "Google ile kayıt başarısız",
+    "appleRegisterFailed": "Apple ile kayıt başarısız"
   },
   "onboarding": {
     "skip": "Atla",
@@ -348,6 +354,40 @@
     "title": "Profil",
     "loading": "✨ Profil yükleniyor...",
     "userNotFound": "Kullanıcı bulunamadı",
+    "qrComingSoon": "QR kodu yakında gelecek",
+    "memberSince": "{date} tarihinden beri üye",
+    "editProfile": "Profili Düzenle",
+    "chips": {
+      "friends": "Arkadaş",
+      "achievement": "Başarı",
+      "daysActive": "Gün aktif"
+    },
+    "levelLabel": "Seviye {count}",
+    "xpLeft": "{count} XP kaldı",
+    "badgeCount": "{count} rozet",
+    "details": "Detaylar",
+    "monthlyProgress": "Bu ayki ilerleme",
+    "completedTasks": "Tamamlanan görev",
+    "habitRate": "Alışkanlık oranı",
+    "dayStreak": "{count} gün seri",
+    "dailyNote": "Günlük not",
+    "thisMonthSub": "bu ay",
+    "createdNotes": "Oluşturulan not",
+    "pinnedCount": "{count} sabitlenmiş",
+    "recentAchievements": "Son başarılar",
+    "seeAll": "Tümünü gör",
+    "personalGoals": "Kişisel hedefler",
+    "editGoals": "Hedefleri düzenle",
+    "dailyTasksGoal": "Günlük {count} görev",
+    "monthlySavings": "Aylık tasarruf",
+    "accountInfo": "Hesap bilgileri",
+    "notifications": "Bildirimler",
+    "appearanceTheme": "Görünüm ve tema",
+    "privacySecurity": "Gizlilik ve güvenlik",
+    "backupSync": "Yedekleme ve senkronizasyon",
+    "backupOn": "Açık",
+    "helpSupport": "Yardım ve destek",
+    "aboutApp": "Uygulama hakkında",
     "tabs": {
       "statistics": "İstatistikler",
       "friends": "Arkadaşlar",
@@ -1055,5 +1095,55 @@
       "years": "yıl"
     },
     "trial_disclosure": "{{duration}} ücretsiz, sonra {{price}}/yıl. İstediğiniz zaman iptal edebilirsiniz."
+  },
+  "subscription": {
+    "monthly": "Aylık",
+    "yearly": "Yıllık",
+    "weekly": "Haftalık",
+    "lifetime": "Sınırsız",
+    "sixMonths": "6 Aylık",
+    "threeMonths": "3 Aylık",
+    "twoMonths": "2 Aylık",
+    "custom": "Özel"
+  },
+  "premium": {
+    "featureTitle": "Premium Özellik",
+    "limitInfo": "Ücretsiz sürümde {feature} için {limit} adet limit vardır.",
+    "currentUsage": "Şu an {current}/{limit} kullanıyorsunuz.",
+    "unlockCta": "Sınırsız kullanım için Premium'a geçin!",
+    "goCta": "Premium'a Geç"
+  },
+  "messages": {
+    "noteCreated": "Not başarıyla eklendi",
+    "noteCreateFailed": "Not oluşturulamadı",
+    "noteUpdated": "Not güncellendi",
+    "noteUpdateFailed": "Not güncellenemedi",
+    "noteUnlocked": "Not kilidi açıldı",
+    "noteUnlockFailed": "Not kilidi açılamadı",
+    "noteDataError": "Not verisi işlenemedi",
+    "categoryCreated": "Kategori oluşturuldu",
+    "categoryCreateFailed": "Kategori oluşturulamadı",
+    "categoryDataError": "Kategori verisi işlenemedi",
+    "taskCreated": "Görev oluşturuldu",
+    "taskCreateFailed": "Görev oluşturulamadı",
+    "taskDataError": "Görev verisi işlenemedi",
+    "expenseAdded": "Harcama başarıyla eklendi",
+    "expenseCreateFailed": "Harcama oluşturulamadı",
+    "eventCreated": "Etkinlik oluşturuldu",
+    "eventCreateFailed": "Etkinlik oluşturulamadı",
+    "eventUpdated": "Etkinlik güncellendi",
+    "eventDeleted": "Etkinlik silindi",
+    "budgetUpdated": "Bütçe başarıyla güncellendi",
+    "budgetUpdateFailed": "Bütçe güncellenemedi",
+    "diaryCreated": "Günlük başarıyla oluşturuldu",
+    "diaryUpdated": "Günlük güncellendi",
+    "diaryDeleted": "Günlük silindi",
+    "searchError": "Arama sırasında hata",
+    "subscriptionAdded": "Abonelik başarıyla eklendi",
+    "subscriptionCreateFailed": "Abonelik oluşturulamadı"
+  },
+  "notifications": {
+    "channelName": "Önemli Bildirimler",
+    "channelDescription": "Bu kanal önemli bildirimler için kullanılır"
   }
 }

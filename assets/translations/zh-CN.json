@@ -150,7 +150,13 @@
     "resetCodeHint": "123456",
     "resetPassword": "重置密码",
     "resetPasswordDescription": "输入发送到您邮箱的6位验证码并设置新密码",
-    "sendCode": "发送验证码"
+    "sendCode": "发送验证码",
+    "codeSent": "验证码已发送到您的邮箱",
+    "passwordChanged": "密码修改成功",
+    "googleLoginFailed": "Google 登录失败",
+    "appleLoginFailed": "Apple 登录失败",
+    "googleRegisterFailed": "Google 注册失败",
+    "appleRegisterFailed": "Apple 注册失败"
   },
   "onboarding": {
     "skip": "跳过",
@@ -431,7 +437,41 @@
         "inProgress": "进行中",
         "locked": "已锁定"
       }
-    }
+    },
+    "qrComingSoon": "二维码即将推出",
+    "memberSince": "自 {date} 起的会员",
+    "editProfile": "编辑资料",
+    "chips": {
+      "friends": "好友",
+      "achievement": "成就",
+      "daysActive": "活跃天数"
+    },
+    "levelLabel": "等级 {count}",
+    "xpLeft": "还差 {count} XP",
+    "badgeCount": "{count} 个徽章",
+    "details": "详情",
+    "monthlyProgress": "本月进度",
+    "completedTasks": "已完成任务",
+    "habitRate": "习惯完成率",
+    "dayStreak": "连续 {count} 天",
+    "dailyNote": "每日笔记",
+    "thisMonthSub": "本月",
+    "createdNotes": "已创建笔记",
+    "pinnedCount": "{count} 个已置顶",
+    "recentAchievements": "最近的成就",
+    "seeAll": "查看全部",
+    "personalGoals": "个人目标",
+    "editGoals": "编辑目标",
+    "dailyTasksGoal": "每天 {count} 个任务",
+    "monthlySavings": "每月储蓄",
+    "accountInfo": "账户信息",
+    "notifications": "通知",
+    "appearanceTheme": "外观与主题",
+    "privacySecurity": "隐私与安全",
+    "backupSync": "备份与同步",
+    "backupOn": "已开启",
+    "helpSupport": "帮助与支持",
+    "aboutApp": "关于应用"
   },
   "calendar": {
     "screenTitle": "日历",
@@ -1055,5 +1095,55 @@
       "years": "年"
     },
     "trial_disclosure": "{{duration}}免费，然后{{price}}/年。随时取消。"
+  },
+  "subscription": {
+    "monthly": "每月",
+    "yearly": "每年",
+    "weekly": "每周",
+    "lifetime": "终身",
+    "sixMonths": "6个月",
+    "threeMonths": "3个月",
+    "twoMonths": "2个月",
+    "custom": "自定义"
+  },
+  "premium": {
+    "featureTitle": "高级功能",
+    "limitInfo": "免费版本中 {feature} 的上限为 {limit} 个。",
+    "currentUsage": "您当前使用 {current}/{limit}。",
+    "unlockCta": "升级到高级版即可无限使用！",
+    "goCta": "升级高级版"
+  },
+  "messages": {
+    "noteCreated": "笔记添加成功",
+    "noteCreateFailed": "无法创建笔记",
+    "noteUpdated": "笔记已更新",
+    "noteUpdateFailed": "无法更新笔记",
+    "noteUnlocked": "笔记已解锁",
+    "noteUnlockFailed": "无法解锁笔记",
+    "noteDataError": "无法处理笔记数据",
+    "categoryCreated": "已创建类别",
+    "categoryCreateFailed": "无法创建类别",
+    "categoryDataError": "无法处理类别数据",
+    "taskCreated": "已创建任务",
+    "taskCreateFailed": "无法创建任务",
+    "taskDataError": "无法处理任务数据",
+    "expenseAdded": "支出添加成功",
+    "expenseCreateFailed": "无法创建支出",
+    "eventCreated": "已创建活动",
+    "eventCreateFailed": "无法创建活动",
+    "eventUpdated": "活动已更新",
+    "eventDeleted": "活动已删除",
+    "budgetUpdated": "预算更新成功",
+    "budgetUpdateFailed": "无法更新预算",
+    "diaryCreated": "日记创建成功",
+    "diaryUpdated": "日记已更新",
+    "diaryDeleted": "日记已删除",
+    "searchError": "搜索时出错",
+    "subscriptionAdded": "订阅添加成功",
+    "subscriptionCreateFailed": "无法创建订阅"
+  },
+  "notifications": {
+    "channelName": "重要通知",
+    "channelDescription": "此频道用于重要通知"
   }
 }

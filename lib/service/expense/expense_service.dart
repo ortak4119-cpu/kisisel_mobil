@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../models/budget/buget_models.dart';
 import '../base/base_api_service.dart';
 import '../response/service_response.dart';
@@ -70,13 +71,13 @@ class ExpenseService implements IExpenseService {
       return ServiceResponse.success(
         statusCode: response.statusCode,
         data: expense,
-        message: response.message ?? 'Harcama başarıyla eklendi',
+        message: response.message ?? 'messages.expenseAdded'.tr(),
       );
     }
 
     return ServiceResponse.error(
       statusCode: response.statusCode,
-      message: response.message ?? 'Harcama oluşturulamadı',
+      message: response.message ?? 'messages.expenseCreateFailed'.tr(),
       errors: response.errors,
     );
   }

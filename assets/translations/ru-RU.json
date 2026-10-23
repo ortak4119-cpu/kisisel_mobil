@@ -150,7 +150,13 @@
     "resetCodeHint": "123456",
     "resetPassword": "Сбросить пароль",
     "resetPasswordDescription": "Введите 6-значный код, отправленный на вашу почту, и задайте новый пароль",
-    "sendCode": "Отправить код"
+    "sendCode": "Отправить код",
+    "codeSent": "Код отправлен на вашу почту",
+    "passwordChanged": "Пароль успешно изменён",
+    "googleLoginFailed": "Не удалось войти через Google",
+    "appleLoginFailed": "Не удалось войти через Apple",
+    "googleRegisterFailed": "Не удалось зарегистрироваться через Google",
+    "appleRegisterFailed": "Не удалось зарегистрироваться через Apple"
   },
   "onboarding": {
     "skip": "Пропустить",
@@ -431,7 +437,41 @@
         "inProgress": "В Процессе",
         "locked": "Заблокировано"
       }
-    }
+    },
+    "qrComingSoon": "QR-код скоро",
+    "memberSince": "Участник с {date}",
+    "editProfile": "Редактировать профиль",
+    "chips": {
+      "friends": "Друзья",
+      "achievement": "Достижение",
+      "daysActive": "Дней активен"
+    },
+    "levelLabel": "Уровень {count}",
+    "xpLeft": "Осталось {count} XP",
+    "badgeCount": "{count} значков",
+    "details": "Подробнее",
+    "monthlyProgress": "Прогресс за месяц",
+    "completedTasks": "Выполненные задачи",
+    "habitRate": "Процент привычек",
+    "dayStreak": "Серия {count} дней",
+    "dailyNote": "Ежедневная заметка",
+    "thisMonthSub": "в этом месяце",
+    "createdNotes": "Созданные заметки",
+    "pinnedCount": "{count} закреплено",
+    "recentAchievements": "Недавние достижения",
+    "seeAll": "Смотреть все",
+    "personalGoals": "Личные цели",
+    "editGoals": "Изменить цели",
+    "dailyTasksGoal": "{count} задач в день",
+    "monthlySavings": "Ежемесячная экономия",
+    "accountInfo": "Информация об аккаунте",
+    "notifications": "Уведомления",
+    "appearanceTheme": "Внешний вид и тема",
+    "privacySecurity": "Конфиденциальность и безопасность",
+    "backupSync": "Резервная копия и синхронизация",
+    "backupOn": "Вкл",
+    "helpSupport": "Помощь и поддержка",
+    "aboutApp": "О приложении"
   },
   "calendar": {
     "screenTitle": "Календарь",
@@ -1055,5 +1095,55 @@
       "years": "лет"
     },
     "trial_disclosure": "Бесплатно {{duration}}, затем {{price}}/год. Отменить в любое время."
+  },
+  "subscription": {
+    "monthly": "Ежемесячно",
+    "yearly": "Ежегодно",
+    "weekly": "Еженедельно",
+    "lifetime": "Навсегда",
+    "sixMonths": "6 месяцев",
+    "threeMonths": "3 месяца",
+    "twoMonths": "2 месяца",
+    "custom": "Особый"
+  },
+  "premium": {
+    "featureTitle": "Премиум-функция",
+    "limitInfo": "В бесплатной версии лимит {limit} для {feature}.",
+    "currentUsage": "Сейчас вы используете {current}/{limit}.",
+    "unlockCta": "Перейдите на Премиум для безлимитного использования!",
+    "goCta": "Перейти на Премиум"
+  },
+  "messages": {
+    "noteCreated": "Заметка успешно добавлена",
+    "noteCreateFailed": "Не удалось создать заметку",
+    "noteUpdated": "Заметка обновлена",
+    "noteUpdateFailed": "Не удалось обновить заметку",
+    "noteUnlocked": "Заметка разблокирована",
+    "noteUnlockFailed": "Не удалось разблокировать заметку",
+    "noteDataError": "Не удалось обработать данные заметки",
+    "categoryCreated": "Категория создана",
+    "categoryCreateFailed": "Не удалось создать категорию",
+    "categoryDataError": "Не удалось обработать данные категории",
+    "taskCreated": "Задача создана",
+    "taskCreateFailed": "Не удалось создать задачу",
+    "taskDataError": "Не удалось обработать данные задачи",
+    "expenseAdded": "Расход успешно добавлен",
+    "expenseCreateFailed": "Не удалось создать расход",
+    "eventCreated": "Событие создано",
+    "eventCreateFailed": "Не удалось создать событие",
+    "eventUpdated": "Событие обновлено",
+    "eventDeleted": "Событие удалено",
+    "budgetUpdated": "Бюджет успешно обновлён",
+    "budgetUpdateFailed": "Не удалось обновить бюджет",
+    "diaryCreated": "Запись дневника успешно создана",
+    "diaryUpdated": "Запись дневника обновлена",
+    "diaryDeleted": "Запись дневника удалена",
+    "searchError": "Ошибка при поиске",
+    "subscriptionAdded": "Подписка успешно добавлена",
+    "subscriptionCreateFailed": "Не удалось создать подписку"
+  },
+  "notifications": {
+    "channelName": "Важные уведомления",
+    "channelDescription": "Этот канал используется для важных уведомлений"
   }
 }

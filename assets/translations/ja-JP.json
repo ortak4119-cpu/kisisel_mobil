@@ -150,7 +150,13 @@
     "resetCodeHint": "123456",
     "resetPassword": "パスワードをリセット",
     "resetPasswordDescription": "メールに送信された6桁のコードを入力し、新しいパスワードを設定してください",
-    "sendCode": "コードを送信"
+    "sendCode": "コードを送信",
+    "codeSent": "コードをメールに送信しました",
+    "passwordChanged": "パスワードを変更しました",
+    "googleLoginFailed": "Googleログインに失敗しました",
+    "appleLoginFailed": "Appleログインに失敗しました",
+    "googleRegisterFailed": "Google登録に失敗しました",
+    "appleRegisterFailed": "Apple登録に失敗しました"
   },
   "onboarding": {
     "skip": "スキップ",
@@ -431,7 +437,41 @@
         "inProgress": "進行中",
         "locked": "ロック済み"
       }
-    }
+    },
+    "qrComingSoon": "QRコードは近日公開",
+    "memberSince": "{date}から利用",
+    "editProfile": "プロフィールを編集",
+    "chips": {
+      "friends": "友達",
+      "achievement": "実績",
+      "daysActive": "アクティブ日数"
+    },
+    "levelLabel": "レベル {count}",
+    "xpLeft": "残り{count} XP",
+    "badgeCount": "{count}個のバッジ",
+    "details": "詳細",
+    "monthlyProgress": "今月の進捗",
+    "completedTasks": "完了したタスク",
+    "habitRate": "習慣達成率",
+    "dayStreak": "{count}日連続",
+    "dailyNote": "毎日のメモ",
+    "thisMonthSub": "今月",
+    "createdNotes": "作成したメモ",
+    "pinnedCount": "{count}件ピン留め",
+    "recentAchievements": "最近の実績",
+    "seeAll": "すべて見る",
+    "personalGoals": "個人目標",
+    "editGoals": "目標を編集",
+    "dailyTasksGoal": "1日{count}タスク",
+    "monthlySavings": "月間の貯蓄",
+    "accountInfo": "アカウント情報",
+    "notifications": "通知",
+    "appearanceTheme": "外観とテーマ",
+    "privacySecurity": "プライバシーとセキュリティ",
+    "backupSync": "バックアップと同期",
+    "backupOn": "オン",
+    "helpSupport": "ヘルプとサポート",
+    "aboutApp": "アプリについて"
   },
   "calendar": {
     "screenTitle": "カレンダー",
@@ -1055,5 +1095,55 @@
       "years": "年"
     },
     "trial_disclosure": "{{duration}}無料、その後{{price}}/年。いつでもキャンセル可能。"
+  },
+  "subscription": {
+    "monthly": "月額",
+    "yearly": "年額",
+    "weekly": "週額",
+    "lifetime": "無制限",
+    "sixMonths": "6か月",
+    "threeMonths": "3か月",
+    "twoMonths": "2か月",
+    "custom": "カスタム"
+  },
+  "premium": {
+    "featureTitle": "プレミアム機能",
+    "limitInfo": "無料版では{feature}の上限は{limit}件です。",
+    "currentUsage": "現在 {current}/{limit} を使用中です。",
+    "unlockCta": "無制限で使うにはプレミアムにアップグレード！",
+    "goCta": "プレミアムへ"
+  },
+  "messages": {
+    "noteCreated": "メモを追加しました",
+    "noteCreateFailed": "メモを作成できませんでした",
+    "noteUpdated": "メモを更新しました",
+    "noteUpdateFailed": "メモを更新できませんでした",
+    "noteUnlocked": "メモのロックを解除しました",
+    "noteUnlockFailed": "メモのロックを解除できませんでした",
+    "noteDataError": "メモデータを処理できませんでした",
+    "categoryCreated": "カテゴリーを作成しました",
+    "categoryCreateFailed": "カテゴリーを作成できませんでした",
+    "categoryDataError": "カテゴリーデータを処理できませんでした",
+    "taskCreated": "タスクを作成しました",
+    "taskCreateFailed": "タスクを作成できませんでした",
+    "taskDataError": "タスクデータを処理できませんでした",
+    "expenseAdded": "支出を追加しました",
+    "expenseCreateFailed": "支出を作成できませんでした",
+    "eventCreated": "イベントを作成しました",
+    "eventCreateFailed": "イベントを作成できませんでした",
+    "eventUpdated": "イベントを更新しました",
+    "eventDeleted": "イベントを削除しました",
+    "budgetUpdated": "予算を更新しました",
+    "budgetUpdateFailed": "予算を更新できませんでした",
+    "diaryCreated": "日記を作成しました",
+    "diaryUpdated": "日記を更新しました",
+    "diaryDeleted": "日記を削除しました",
+    "searchError": "検索中にエラーが発生しました",
+    "subscriptionAdded": "サブスクリプションを追加しました",
+    "subscriptionCreateFailed": "サブスクリプションを作成できませんでした"
+  },
+  "notifications": {
+    "channelName": "重要な通知",
+    "channelDescription": "このチャンネルは重要な通知に使用されます"
   }
 }

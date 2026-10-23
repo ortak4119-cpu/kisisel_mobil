@@ -145,7 +145,7 @@ class RegisterViewModel extends ChangeNotifier {
       if (context.mounted) {
         CustomSnackBar.showError(
           context,
-          'Google ile kayıt başarısız: ${e.toString()}',
+          '${'auth.googleRegisterFailed'.tr()}: ${e.toString()}',
         );
       }
       return false;
@@ -212,7 +212,7 @@ class RegisterViewModel extends ChangeNotifier {
       if (context.mounted) {
         CustomSnackBar.showError(
           context,
-          'Apple ile kayıt başarısız: ${e.toString()}',
+          '${'auth.appleRegisterFailed'.tr()}: ${e.toString()}',
         );
       }
       return false;

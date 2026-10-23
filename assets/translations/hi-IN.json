@@ -150,7 +150,13 @@
     "resetCodeHint": "123456",
     "resetPassword": "पासवर्ड रीसेट करें",
     "resetPasswordDescription": "अपने ईमेल पर भेजा गया 6 अंकों का कोड दर्ज करें और नया पासवर्ड सेट करें",
-    "sendCode": "कोड भेजें"
+    "sendCode": "कोड भेजें",
+    "codeSent": "आपके ईमेल पर एक कोड भेजा गया",
+    "passwordChanged": "आपका पासवर्ड सफलतापूर्वक बदल दिया गया",
+    "googleLoginFailed": "Google साइन-इन विफल",
+    "appleLoginFailed": "Apple साइन-इन विफल",
+    "googleRegisterFailed": "Google साइन-अप विफल",
+    "appleRegisterFailed": "Apple साइन-अप विफल"
   },
   "onboarding": {
     "skip": "छोड़ें",
@@ -431,7 +437,41 @@
         "inProgress": "प्रगति में",
         "locked": "लॉक किया गया"
       }
-    }
+    },
+    "qrComingSoon": "QR कोड जल्द आ रहा है",
+    "memberSince": "{date} से सदस्य",
+    "editProfile": "प्रोफ़ाइल संपादित करें",
+    "chips": {
+      "friends": "मित्र",
+      "achievement": "उपलब्धि",
+      "daysActive": "सक्रिय दिन"
+    },
+    "levelLabel": "स्तर {count}",
+    "xpLeft": "{count} XP शेष",
+    "badgeCount": "{count} बैज",
+    "details": "विवरण",
+    "monthlyProgress": "इस महीने की प्रगति",
+    "completedTasks": "पूर्ण किए गए कार्य",
+    "habitRate": "आदत दर",
+    "dayStreak": "{count} दिन की लकीर",
+    "dailyNote": "दैनिक नोट",
+    "thisMonthSub": "इस महीने",
+    "createdNotes": "बनाए गए नोट",
+    "pinnedCount": "{count} पिन किए गए",
+    "recentAchievements": "हाल की उपलब्धियाँ",
+    "seeAll": "सभी देखें",
+    "personalGoals": "व्यक्तिगत लक्ष्य",
+    "editGoals": "लक्ष्य संपादित करें",
+    "dailyTasksGoal": "रोज़ {count} कार्य",
+    "monthlySavings": "मासिक बचत",
+    "accountInfo": "खाता जानकारी",
+    "notifications": "सूचनाएं",
+    "appearanceTheme": "रूप और थीम",
+    "privacySecurity": "गोपनीयता और सुरक्षा",
+    "backupSync": "बैकअप और सिंक",
+    "backupOn": "चालू",
+    "helpSupport": "सहायता और समर्थन",
+    "aboutApp": "ऐप के बारे में"
   },
   "calendar": {
     "screenTitle": "कैलेंडर",
@@ -1055,5 +1095,55 @@
       "years": "साल"
     },
     "trial_disclosure": "{{duration}} के लिए मुफ़्त, फिर {{price}}/वर्ष। कभी भी रद्द करें।"
+  },
+  "subscription": {
+    "monthly": "मासिक",
+    "yearly": "वार्षिक",
+    "weekly": "साप्ताहिक",
+    "lifetime": "आजीवन",
+    "sixMonths": "6 महीने",
+    "threeMonths": "3 महीने",
+    "twoMonths": "2 महीने",
+    "custom": "कस्टम"
+  },
+  "premium": {
+    "featureTitle": "प्रीमियम सुविधा",
+    "limitInfo": "मुफ़्त संस्करण में {feature} के लिए {limit} की सीमा है।",
+    "currentUsage": "आप वर्तमान में {current}/{limit} उपयोग कर रहे हैं।",
+    "unlockCta": "असीमित उपयोग के लिए प्रीमियम लें!",
+    "goCta": "प्रीमियम लें"
+  },
+  "messages": {
+    "noteCreated": "नोट सफलतापूर्वक जोड़ा गया",
+    "noteCreateFailed": "नोट नहीं बनाया जा सका",
+    "noteUpdated": "नोट अपडेट किया गया",
+    "noteUpdateFailed": "नोट अपडेट नहीं किया जा सका",
+    "noteUnlocked": "नोट अनलॉक किया गया",
+    "noteUnlockFailed": "नोट अनलॉक नहीं किया जा सका",
+    "noteDataError": "नोट डेटा संसाधित नहीं किया जा सका",
+    "categoryCreated": "श्रेणी बनाई गई",
+    "categoryCreateFailed": "श्रेणी नहीं बनाई जा सकी",
+    "categoryDataError": "श्रेणी डेटा संसाधित नहीं किया जा सका",
+    "taskCreated": "कार्य बनाया गया",
+    "taskCreateFailed": "कार्य नहीं बनाया जा सका",
+    "taskDataError": "कार्य डेटा संसाधित नहीं किया जा सका",
+    "expenseAdded": "व्यय सफलतापूर्वक जोड़ा गया",
+    "expenseCreateFailed": "व्यय नहीं बनाया जा सका",
+    "eventCreated": "इवेंट बनाया गया",
+    "eventCreateFailed": "इवेंट नहीं बनाया जा सका",
+    "eventUpdated": "इवेंट अपडेट किया गया",
+    "eventDeleted": "इवेंट हटाया गया",
+    "budgetUpdated": "बजट सफलतापूर्वक अपडेट किया गया",
+    "budgetUpdateFailed": "बजट अपडेट नहीं किया जा सका",
+    "diaryCreated": "डायरी प्रविष्टि सफलतापूर्वक बनाई गई",
+    "diaryUpdated": "डायरी प्रविष्टि अपडेट की गई",
+    "diaryDeleted": "डायरी प्रविष्टि हटाई गई",
+    "searchError": "खोज के दौरान त्रुटि",
+    "subscriptionAdded": "सदस्यता सफलतापूर्वक जोड़ी गई",
+    "subscriptionCreateFailed": "सदस्यता नहीं बनाई जा सकी"
+  },
+  "notifications": {
+    "channelName": "महत्वपूर्ण सूचनाएं",
+    "channelDescription": "यह चैनल महत्वपूर्ण सूचनाओं के लिए उपयोग किया जाता है"
   }
 }
