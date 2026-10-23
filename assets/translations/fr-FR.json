@@ -771,6 +771,21 @@
       "balance": "Solde",
       "rate": "Taux annuel",
       "add": "Ajouter une dette"
+    },
+    "installment": {
+      "title": "Échéances",
+      "none": "Aucune échéance",
+      "monthly": "Mensualité: {amount}",
+      "done": "Terminé",
+      "month": "mois",
+      "remaining": "reste {amount}",
+      "next": "Prochaine",
+      "pay": "Payer",
+      "name": "Nom",
+      "total": "Total",
+      "count": "Nb",
+      "start": "Début",
+      "add": "Ajouter"
     }
   },
   "notes": {

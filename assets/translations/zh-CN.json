@@ -771,6 +771,21 @@
       "balance": "余额",
       "rate": "年利率",
       "add": "添加债务"
+    },
+    "installment": {
+      "title": "分期付款",
+      "none": "暂无分期",
+      "monthly": "每月分期: {amount}",
+      "done": "已完成",
+      "month": "月",
+      "remaining": "剩余 {amount}",
+      "next": "下次",
+      "pay": "支付",
+      "name": "名称",
+      "total": "总额",
+      "count": "期数",
+      "start": "开始",
+      "add": "添加分期"
     }
   },
   "notes": {

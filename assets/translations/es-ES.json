@@ -771,6 +771,21 @@
       "balance": "Saldo",
       "rate": "Interés anual",
       "add": "Añadir deuda"
+    },
+    "installment": {
+      "title": "Cuotas",
+      "none": "Sin cuotas aún",
+      "monthly": "Cuota mensual: {amount}",
+      "done": "Completado",
+      "month": "mes",
+      "remaining": "quedan {amount}",
+      "next": "Próxima",
+      "pay": "Pagar",
+      "name": "Nombre",
+      "total": "Total",
+      "count": "Nº cuotas",
+      "start": "Inicio",
+      "add": "Añadir cuota"
     }
   },
   "notes": {

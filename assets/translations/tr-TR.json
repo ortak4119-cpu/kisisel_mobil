@@ -771,6 +771,21 @@
       "balance": "Bakiye",
       "rate": "Yıllık faiz",
       "add": "Borç Ekle"
+    },
+    "installment": {
+      "title": "Taksitler",
+      "none": "Henüz taksit yok",
+      "monthly": "Aylık taksit: {amount}",
+      "done": "Tamamlandı",
+      "month": "ay",
+      "remaining": "kalan {amount}",
+      "next": "Sonraki",
+      "pay": "Öde",
+      "name": "Taksit adı",
+      "total": "Toplam tutar",
+      "count": "Taksit sayısı",
+      "start": "Başlangıç",
+      "add": "Taksit Ekle"
     }
   },
   "notes": {

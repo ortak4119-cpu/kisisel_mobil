@@ -13,10 +13,12 @@ import '../../../service/budget/budget_service.dart';
 import '../../../service/expense/expense_service.dart';
 import '../../../service/income/income_service.dart';
 import '../../../service/debt/debt_service.dart';
+import '../../../service/installment/installment_service.dart';
 import '../../../service/savings/savings_service.dart';
 import '../../../service/security/security_pin_service.dart';
 import '../../../service/profile/profile_service.dart';
 import '../../../models/debt/debt_models.dart';
+import '../../../models/installment/installment_models.dart';
 import '../../../models/subscription/subscription_models.dart';
 import '../../../models/budget/buget_models.dart';
 import '../../../models/income/income_models.dart';
@@ -98,6 +100,8 @@ class FinanceViewModel extends ChangeNotifier {
   final IExpenseService _expenseService = locator.get<IExpenseService>();
   final IIncomeService _incomeService = locator.get<IIncomeService>();
   final IDebtService _debtService = locator.get<IDebtService>();
+  final IInstallmentService _installmentService =
+      locator.get<IInstallmentService>();
   final ISavingsService _savingsService = locator.get<ISavingsService>();
   final ISecurityPinService _pinService = locator.get<ISecurityPinService>();
   final IProfileService _profileService = locator.get<IProfileService>();
@@ -1168,6 +1172,69 @@ class FinanceViewModel extends ChangeNotifier {
     );
   }
 
+  // ==================== TAKSİTLER ====================
+  List<Installment> _installments = [];
+  List<Installment> get installments => _installments;
+
+  /// Bu ay ödenecek aktif taksitlerin aylık toplamı.
+  double get monthlyInstallmentTotal => _installments
+      .where((i) => !i.isDone)
+      .fold(0.0, (s, i) => s + i.monthlyAmount);
+
+  Future<void> loadInstallments() async {
+    try {
+      _installments = await _installmentService.getInstallments();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('loadInstallments error: $e');
+    }
+  }
+
+  Future<bool> addInstallment(
+      String name, double total, int count, int paid, String startDate) async {
+    final item = await _installmentService.createInstallment(InstallmentRequest(
+      name: name,
+      totalAmount: total,
+      installmentCount: count,
+      paidCount: paid,
+      startDate: startDate,
+    ));
+    if (item != null) {
+      _installments.insert(0, item);
+      notifyListeners();
+      return true;
+    }
+    return false;
+  }
+
+  Future<void> markInstallmentPaid(int id) async {
+    final idx = _installments.indexWhere((i) => i.id == id);
+    if (idx == -1) return;
+    final cur = _installments[idx];
+    if (cur.isDone) return;
+    final newPaid = cur.paidCount + 1;
+    final ok = await _installmentService.updatePaidCount(id, newPaid);
+    if (ok) {
+      _installments[idx] = Installment(
+        id: cur.id,
+        name: cur.name,
+        totalAmount: cur.totalAmount,
+        installmentCount: cur.installmentCount,
+        paidCount: newPaid,
+        startDate: cur.startDate,
+        currency: cur.currency,
+      );
+      notifyListeners();
+    }
+  }
+
+  Future<void> deleteInstallment(int id) async {
+    if (await _installmentService.deleteInstallment(id)) {
+      _installments.removeWhere((i) => i.id == id);
+      notifyListeners();
+    }
+  }
+
   // ==================== DIŞA AKTARMA (CSV) ====================
 
   /// Tüm harcamaları (+ yerel gelirleri) CSV olarak paylaşır.
@@ -1276,6 +1343,7 @@ class FinanceViewModel extends ChangeNotifier {
         loadIncome(),
         loadSavingsGoal(),
         loadDebts(),
+        loadInstallments(),
       ]);
     }
     _isInitialLoading = false;
@@ -1290,6 +1358,7 @@ class FinanceViewModel extends ChangeNotifier {
       loadIncome(),
       loadSavingsGoal(),
       loadDebts(),
+      loadInstallments(),
     ]);
     notifyListeners();
   }

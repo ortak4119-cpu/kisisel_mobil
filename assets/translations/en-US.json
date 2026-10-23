@@ -771,6 +771,21 @@
       "balance": "Balance",
       "rate": "Annual rate",
       "add": "Add Debt"
+    },
+    "installment": {
+      "title": "Installments",
+      "none": "No installments yet",
+      "monthly": "Monthly installments: {amount}",
+      "done": "Completed",
+      "month": "mo",
+      "remaining": "{amount} left",
+      "next": "Next",
+      "pay": "Pay",
+      "name": "Name",
+      "total": "Total",
+      "count": "Count",
+      "start": "Start",
+      "add": "Add Installment"
     }
   },
   "notes": {

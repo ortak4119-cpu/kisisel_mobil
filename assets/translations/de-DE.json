@@ -771,6 +771,21 @@
       "balance": "Saldo",
       "rate": "Jährl. Zins",
       "add": "Schuld hinzufügen"
+    },
+    "installment": {
+      "title": "Raten",
+      "none": "Noch keine Raten",
+      "monthly": "Monatliche Rate: {amount}",
+      "done": "Abgeschlossen",
+      "month": "Mon.",
+      "remaining": "Rest {amount}",
+      "next": "Nächste",
+      "pay": "Zahlen",
+      "name": "Name",
+      "total": "Gesamt",
+      "count": "Anzahl",
+      "start": "Start",
+      "add": "Rate hinzufügen"
     }
   },
   "notes": {

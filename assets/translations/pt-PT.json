@@ -771,6 +771,21 @@
       "balance": "Saldo",
       "rate": "Juro anual",
       "add": "Adicionar dívida"
+    },
+    "installment": {
+      "title": "Prestações",
+      "none": "Sem prestações ainda",
+      "monthly": "Mensalidade: {amount}",
+      "done": "Concluído",
+      "month": "mês",
+      "remaining": "resta {amount}",
+      "next": "Próxima",
+      "pay": "Pagar",
+      "name": "Nome",
+      "total": "Total",
+      "count": "Nº",
+      "start": "Início",
+      "add": "Adicionar prestação"
     }
   },
   "notes": {

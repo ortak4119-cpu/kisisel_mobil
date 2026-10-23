@@ -771,6 +771,21 @@
       "balance": "残高",
       "rate": "年利",
       "add": "負債を追加"
+    },
+    "installment": {
+      "title": "分割払い",
+      "none": "分割払いはまだありません",
+      "monthly": "月々: {amount}",
+      "done": "完了",
+      "month": "月",
+      "remaining": "残り {amount}",
+      "next": "次回",
+      "pay": "支払う",
+      "name": "名称",
+      "total": "合計",
+      "count": "回数",
+      "start": "開始",
+      "add": "分割払いを追加"
     }
   },
   "notes": {

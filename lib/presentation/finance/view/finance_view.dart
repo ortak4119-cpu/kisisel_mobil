@@ -2830,6 +2830,64 @@ class _BudgetSettingsBottomSheet extends StatelessWidget {
                             ),
                           ),
                         ),
+                        const SizedBox(height: 12),
+                        InkWell(
+                          onTap: () =>
+                              _showInstallmentsDialog(context, vm, isDarkMode),
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: isDarkMode
+                                  ? ColorConstant.bgColorDark
+                                  : ColorConstant.bgColorLight,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.credit_card_rounded, color: _fOrange),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'finance.installment.title'.tr(),
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          color: isDarkMode
+                                              ? ColorConstant.textPrimaryDark
+                                              : ColorConstant.textPrimaryLight,
+                                        ),
+                                      ),
+                                      Text(
+                                        vm.installments.isEmpty
+                                            ? 'finance.installment.none'.tr()
+                                            : 'finance.installment.monthly'.tr(
+                                                namedArgs: {
+                                                    'amount': tl0(
+                                                        vm.monthlyInstallmentTotal)
+                                                  }),
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: isDarkMode
+                                              ? ColorConstant.textSecondaryDark
+                                              : ColorConstant
+                                                  .textSecondaryLight,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Icon(Icons.chevron_right,
+                                    color: isDarkMode
+                                        ? ColorConstant.textSecondaryDark
+                                        : ColorConstant.textSecondaryLight),
+                              ],
+                            ),
+                          ),
+                        ),
                         const SizedBox(height: 24),
                         Row(
                           children: [
@@ -4922,6 +4980,276 @@ class _DebtPlannerSheetState extends State<_DebtPlannerSheet> {
                     onPressed: () => setState(() => _adding = true),
                     icon: const Icon(Icons.add, color: _fOrange),
                     label: Text('finance.debt.add'.tr(),
+                        style: const TextStyle(color: _fOrange)),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      side: const BorderSide(color: _fOrange),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ==================== TAKSİTLER ====================
+
+void _showInstallmentsDialog(
+    BuildContext context, FinanceViewModel vm, bool isDark) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => _InstallmentsSheet(vm: vm, isDark: isDark),
+  );
+}
+
+String _fmtDmy(DateTime d) =>
+    '${d.day.toString().padLeft(2, '0')}.${d.month.toString().padLeft(2, '0')}.${d.year}';
+
+class _InstallmentsSheet extends StatefulWidget {
+  final FinanceViewModel vm;
+  final bool isDark;
+  const _InstallmentsSheet({required this.vm, required this.isDark});
+
+  @override
+  State<_InstallmentsSheet> createState() => _InstallmentsSheetState();
+}
+
+class _InstallmentsSheetState extends State<_InstallmentsSheet> {
+  bool _adding = false;
+  final _name = TextEditingController();
+  final _total = TextEditingController();
+  final _count = TextEditingController();
+  DateTime _start = DateTime.now();
+
+  @override
+  void dispose() {
+    _name.dispose();
+    _total.dispose();
+    _count.dispose();
+    super.dispose();
+  }
+
+  Future<void> _add() async {
+    final name = _name.text.trim();
+    final total = double.tryParse(_total.text.trim().replaceAll(',', '.')) ?? 0;
+    final count = int.tryParse(_count.text.trim()) ?? 0;
+    if (name.isEmpty || total <= 0 || count < 1) return;
+    final startStr =
+        '${_start.year}-${_start.month.toString().padLeft(2, '0')}-${_start.day.toString().padLeft(2, '0')}';
+    final ok = await widget.vm.addInstallment(name, total, count, 0, startStr);
+    if (ok) {
+      _name.clear();
+      _total.clear();
+      _count.clear();
+      setState(() => _adding = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = widget.isDark;
+    final vm = widget.vm;
+    final Color txtPrimary = isDark
+        ? ColorConstant.textPrimaryDark
+        : ColorConstant.textPrimaryLight;
+    final Color txtSec = isDark
+        ? ColorConstant.textSecondaryDark
+        : ColorConstant.textSecondaryLight;
+    final Color bg =
+        isDark ? ColorConstant.bgColorDark : ColorConstant.bgColorLight;
+
+    InputDecoration dec(String label) => InputDecoration(
+          labelText: label,
+          isDense: true,
+          filled: true,
+          fillColor: bg,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+        );
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? ColorConstant.cardColorDark : ColorConstant.white,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(28),
+          topRight: Radius.circular(28),
+        ),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 20,
+            bottom: 20 + MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text('finance.installment.title'.tr(),
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: txtPrimary)),
+                const SizedBox(height: 4),
+                Text(
+                  'finance.installment.monthly'.tr(
+                      namedArgs: {'amount': tl0(vm.monthlyInstallmentTotal)}),
+                  style: TextStyle(fontSize: 13, color: txtSec),
+                ),
+                const SizedBox(height: 16),
+                ...vm.installments.map((it) {
+                  final ratio = it.installmentCount > 0
+                      ? (it.paidCount / it.installmentCount).clamp(0.0, 1.0)
+                      : 0.0;
+                  final next = it.nextDueDate;
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: bg,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(it.name,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      color: txtPrimary)),
+                            ),
+                            Text('${it.paidCount}/${it.installmentCount}',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    color: txtSec)),
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline,
+                                  color: Colors.red, size: 20),
+                              onPressed: () => vm.deleteInstallment(it.id),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: LinearProgressIndicator(
+                            value: ratio,
+                            minHeight: 6,
+                            backgroundColor: isDark
+                                ? ColorConstant.cardColorDark
+                                : ColorConstant.white,
+                            color: it.isDone ? Colors.green : _fOrange,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                it.isDone
+                                    ? '${tl0(it.monthlyAmount)} · ${'finance.installment.done'.tr()}'
+                                    : '${tl0(it.monthlyAmount)}/${'finance.installment.month'.tr()} · ${'finance.installment.remaining'.tr(namedArgs: {
+                                            'amount': tl0(it.remainingAmount)
+                                          })}${next != null ? ' · ${'finance.installment.next'.tr()} ${_fmtDmy(next)}' : ''}',
+                                style:
+                                    TextStyle(fontSize: 11, color: txtSec),
+                              ),
+                            ),
+                            if (!it.isDone)
+                              TextButton(
+                                onPressed: () => vm.markInstallmentPaid(it.id),
+                                child: Text('finance.installment.pay'.tr(),
+                                    style: const TextStyle(
+                                        color: _fOrange,
+                                        fontWeight: FontWeight.w700)),
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+                if (_adding) ...[
+                  TextField(
+                      controller: _name,
+                      style: TextStyle(color: txtPrimary),
+                      decoration: dec('finance.installment.name'.tr())),
+                  const SizedBox(height: 8),
+                  Row(children: [
+                    Expanded(
+                        child: TextField(
+                            controller: _total,
+                            keyboardType: TextInputType.number,
+                            style: TextStyle(color: txtPrimary),
+                            decoration: dec('finance.installment.total'.tr())
+                                .copyWith(prefixText: '₺ '))),
+                    const SizedBox(width: 8),
+                    Expanded(
+                        child: TextField(
+                            controller: _count,
+                            keyboardType: TextInputType.number,
+                            style: TextStyle(color: txtPrimary),
+                            decoration:
+                                dec('finance.installment.count'.tr()))),
+                  ]),
+                  const SizedBox(height: 8),
+                  InkWell(
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: _start,
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime(2035),
+                      );
+                      if (picked != null) setState(() => _start = picked);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                          color: bg,
+                          borderRadius: BorderRadius.circular(12)),
+                      child: Row(children: [
+                        Icon(Icons.calendar_today_rounded,
+                            size: 18, color: txtSec),
+                        const SizedBox(width: 10),
+                        Text(
+                            '${'finance.installment.start'.tr()}: ${_fmtDmy(_start)}',
+                            style: TextStyle(color: txtPrimary)),
+                      ]),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  ElevatedButton(
+                    onPressed: _add,
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: _fOrange,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12))),
+                    child: Text('common.save'.tr(),
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700)),
+                  ),
+                ] else
+                  OutlinedButton.icon(
+                    onPressed: () => setState(() => _adding = true),
+                    icon: const Icon(Icons.add, color: _fOrange),
+                    label: Text('finance.installment.add'.tr(),
                         style: const TextStyle(color: _fOrange)),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 12),
