@@ -752,7 +752,26 @@
       "none": "No limits yet",
       "count": "{count} categories limited"
     },
-    "safeToSpend": "Safe to spend/day"
+    "safeToSpend": "Safe to spend/day",
+    "debt": {
+      "title": "Debt Planner",
+      "none": "No debts yet",
+      "total": "Total debt {amount}",
+      "minTotal": "monthly min {amount}",
+      "avalanche": "Avalanche (High rate)",
+      "snowball": "Snowball (Low balance)",
+      "avalancheSub": "Highest-interest debt is paid first",
+      "snowballSub": "Smallest-balance debt is paid first",
+      "extra": "Monthly extra payment",
+      "unpayable": "Debt won't be cleared at this rate, add extra payment",
+      "result": "Paid off in {months} months · total interest {interest}",
+      "order": "Order",
+      "min": "min",
+      "name": "Debt name",
+      "balance": "Balance",
+      "rate": "Annual rate",
+      "add": "Add Debt"
+    }
   },
   "notes": {
     "title": "My Notes",

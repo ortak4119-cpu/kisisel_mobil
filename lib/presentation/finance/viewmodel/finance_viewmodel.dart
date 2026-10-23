@@ -12,9 +12,11 @@ import '../../../service/subscription/subscription_service.dart';
 import '../../../service/budget/budget_service.dart';
 import '../../../service/expense/expense_service.dart';
 import '../../../service/income/income_service.dart';
+import '../../../service/debt/debt_service.dart';
 import '../../../service/savings/savings_service.dart';
 import '../../../service/security/security_pin_service.dart';
 import '../../../service/profile/profile_service.dart';
+import '../../../models/debt/debt_models.dart';
 import '../../../models/subscription/subscription_models.dart';
 import '../../../models/budget/buget_models.dart';
 import '../../../models/income/income_models.dart';
@@ -95,6 +97,7 @@ class FinanceViewModel extends ChangeNotifier {
   final IBudgetService _budgetService = locator.get<IBudgetService>();
   final IExpenseService _expenseService = locator.get<IExpenseService>();
   final IIncomeService _incomeService = locator.get<IIncomeService>();
+  final IDebtService _debtService = locator.get<IDebtService>();
   final ISavingsService _savingsService = locator.get<ISavingsService>();
   final ISecurityPinService _pinService = locator.get<ISecurityPinService>();
   final IProfileService _profileService = locator.get<IProfileService>();
@@ -1050,6 +1053,121 @@ class FinanceViewModel extends ChangeNotifier {
     }
   }
 
+  // ==================== BORÇ PLANLAYICI ====================
+  List<Debt> _debts = [];
+  List<Debt> get debts => _debts;
+  double get totalDebt => _debts.fold(0.0, (s, d) => s + d.balance);
+  double get totalMinPayment => _debts.fold(0.0, (s, d) => s + d.minPayment);
+
+  Future<void> loadDebts() async {
+    try {
+      _debts = await _debtService.getDebts();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('loadDebts error: $e');
+    }
+  }
+
+  Future<bool> addDebt(
+      String name, double balance, double rate, double minPayment) async {
+    final d = await _debtService.createDebt(DebtRequest(
+      name: name,
+      balance: balance,
+      interestRate: rate,
+      minPayment: minPayment,
+    ));
+    if (d != null) {
+      _debts.insert(0, d);
+      notifyListeners();
+      return true;
+    }
+    return false;
+  }
+
+  Future<void> deleteDebt(int id) async {
+    if (await _debtService.deleteDebt(id)) {
+      _debts.removeWhere((d) => d.id == id);
+      notifyListeners();
+    }
+  }
+
+  /// Borç ödeme planını hesaplar.
+  /// strategy: 'avalanche' (yüksek faiz önce) | 'snowball' (düşük bakiye önce)
+  DebtPlan computeDebtPlan({required double extra, required String strategy}) {
+    if (_debts.isEmpty) {
+      return DebtPlan(months: 0, totalInterest: 0, unpayable: false, order: []);
+    }
+    final work = _debts
+        .map((d) => <String, dynamic>{
+              'name': d.name,
+              'bal': d.balance,
+              'rate': d.interestRate / 100 / 12,
+              'min': d.minPayment,
+            })
+        .toList();
+    final totalBudget =
+        work.fold<double>(0, (s, d) => s + (d['min'] as double)) + extra;
+    double totalInterest = 0;
+    int months = 0;
+    final order = <String>[];
+    final paid = <int>{};
+
+    while (work.any((d) => (d['bal'] as double) > 0.005) && months < 600) {
+      months++;
+      // Faiz tahakkuku
+      for (final d in work) {
+        final bal = d['bal'] as double;
+        if (bal > 0) {
+          final interest = bal * (d['rate'] as double);
+          d['bal'] = bal + interest;
+          totalInterest += interest;
+        }
+      }
+      double pool = totalBudget;
+      // Önce tüm asgari ödemeler
+      for (final d in work) {
+        final bal = d['bal'] as double;
+        if (bal <= 0) continue;
+        final p = (d['min'] as double).clamp(0.0, bal).toDouble();
+        d['bal'] = bal - p;
+        pool -= p;
+      }
+      if (pool < 0) pool = 0;
+      // Kalan havuz stratejiye göre öncelikli borçlara
+      final unpaid = [
+        for (int i = 0; i < work.length; i++)
+          if ((work[i]['bal'] as double) > 0) i
+      ];
+      unpaid.sort((a, b) {
+        if (strategy == 'snowball') {
+          return (work[a]['bal'] as double).compareTo(work[b]['bal'] as double);
+        }
+        return (work[b]['rate'] as double).compareTo(work[a]['rate'] as double);
+      });
+      for (final i in unpaid) {
+        if (pool <= 0) break;
+        final bal = work[i]['bal'] as double;
+        final p = pool.clamp(0.0, bal).toDouble();
+        work[i]['bal'] = bal - p;
+        pool -= p;
+      }
+      // Yeni biten borçlar
+      for (int i = 0; i < work.length; i++) {
+        if (!paid.contains(i) && (work[i]['bal'] as double) <= 0.005) {
+          paid.add(i);
+          order.add(work[i]['name'] as String);
+        }
+      }
+    }
+    final unpayable = work.any((d) => (d['bal'] as double) > 0.005);
+    return DebtPlan(
+      months: months,
+      totalInterest: totalInterest,
+      unpayable: unpayable,
+      order: order,
+    );
+  }
+
   // ==================== DIŞA AKTARMA (CSV) ====================
 
   /// Tüm harcamaları (+ yerel gelirleri) CSV olarak paylaşır.
@@ -1157,6 +1275,7 @@ class FinanceViewModel extends ChangeNotifier {
         loadBudgetStats(),
         loadIncome(),
         loadSavingsGoal(),
+        loadDebts(),
       ]);
     }
     _isInitialLoading = false;
@@ -1170,6 +1289,7 @@ class FinanceViewModel extends ChangeNotifier {
       loadBudgetStats(),
       loadIncome(),
       loadSavingsGoal(),
+      loadDebts(),
     ]);
     notifyListeners();
   }

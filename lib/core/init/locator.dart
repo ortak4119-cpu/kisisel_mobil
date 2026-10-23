@@ -12,6 +12,7 @@ import '../../service/note/note_service.dart';
 import '../../service/budget/budget_service.dart';
 import '../../service/expense/expense_service.dart';
 import '../../service/income/income_service.dart';
+import '../../service/debt/debt_service.dart';
 import '../../service/savings/savings_service.dart';
 import '../../service/security/security_pin_service.dart';
 import '../../service/subscription/subscription_service.dart';
@@ -41,6 +42,7 @@ void setupLocator() {
   locator.registerLazySingleton<IBudgetService>(() => BudgetService());
   locator.registerLazySingleton<IExpenseService>(() => ExpenseService());
   locator.registerLazySingleton<IIncomeService>(() => IncomeService());
+  locator.registerLazySingleton<IDebtService>(() => DebtService());
   locator.registerLazySingleton<ISavingsService>(() => SavingsService());
   locator.registerLazySingleton<ISecurityPinService>(() => SecurityPinService());
   locator.registerLazySingleton<ISubscriptionService>(() => SubscriptionService());

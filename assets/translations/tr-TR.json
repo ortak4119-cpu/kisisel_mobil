@@ -752,7 +752,26 @@
       "none": "Henüz limit yok",
       "count": "{count} kategori limitli"
     },
-    "safeToSpend": "Günlük harcanabilir"
+    "safeToSpend": "Günlük harcanabilir",
+    "debt": {
+      "title": "Borç Planlayıcı",
+      "none": "Henüz borç yok",
+      "total": "Toplam borç {amount}",
+      "minTotal": "aylık asgari {amount}",
+      "avalanche": "Çığ (Yüksek faiz)",
+      "snowball": "Kar Topağı (Düşük bakiye)",
+      "avalancheSub": "En yüksek faizli borç önce kapatılır",
+      "snowballSub": "En düşük bakiyeli borç önce kapatılır",
+      "extra": "Aylık ekstra ödeme",
+      "unpayable": "Mevcut ödemeyle borç kapanmıyor, ekstra ödeme ekleyin",
+      "result": "{months} ayda biter · toplam faiz {interest}",
+      "order": "Sıra",
+      "min": "asgari",
+      "name": "Borç adı",
+      "balance": "Bakiye",
+      "rate": "Yıllık faiz",
+      "add": "Borç Ekle"
+    }
   },
   "notes": {
     "title": "Notlarım",

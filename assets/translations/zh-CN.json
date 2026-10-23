@@ -752,7 +752,26 @@
       "none": "暂无上限",
       "count": "{count} 个类别已限额"
     },
-    "safeToSpend": "每日可用"
+    "safeToSpend": "每日可用",
+    "debt": {
+      "title": "债务规划",
+      "none": "暂无债务",
+      "total": "总债务 {amount}",
+      "minTotal": "每月最低 {amount}",
+      "avalanche": "雪崩（高利率）",
+      "snowball": "滚雪球（低余额）",
+      "avalancheSub": "先还最高利率的债务",
+      "snowballSub": "先还最小余额的债务",
+      "extra": "每月额外还款",
+      "unpayable": "按此还款无法清偿，请增加额外还款",
+      "result": "{months} 个月还清 · 利息 {interest}",
+      "order": "顺序",
+      "min": "最低",
+      "name": "债务名称",
+      "balance": "余额",
+      "rate": "年利率",
+      "add": "添加债务"
+    }
   },
   "notes": {
     "title": "我的笔记",

@@ -752,7 +752,26 @@
       "none": "Aucune limite pour l'instant",
       "count": "{count} catégories limitées"
     },
-    "safeToSpend": "Dispo par jour"
+    "safeToSpend": "Dispo par jour",
+    "debt": {
+      "title": "Planificateur de dettes",
+      "none": "Aucune dette",
+      "total": "Dette totale {amount}",
+      "minTotal": "min mensuel {amount}",
+      "avalanche": "Avalanche (Taux élevé)",
+      "snowball": "Boule de neige (Petit solde)",
+      "avalancheSub": "La dette au taux le plus élevé d'abord",
+      "snowballSub": "La plus petite dette d'abord",
+      "extra": "Paiement supplémentaire mensuel",
+      "unpayable": "Non remboursable à ce rythme, ajoutez un extra",
+      "result": "Remboursée en {months} mois · intérêts {interest}",
+      "order": "Ordre",
+      "min": "min",
+      "name": "Nom de la dette",
+      "balance": "Solde",
+      "rate": "Taux annuel",
+      "add": "Ajouter une dette"
+    }
   },
   "notes": {
     "title": "Mes Notes",

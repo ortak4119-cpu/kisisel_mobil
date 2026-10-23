@@ -752,7 +752,26 @@
       "none": "Noch keine Limits",
       "count": "{count} Kategorien begrenzt"
     },
-    "safeToSpend": "Täglich verfügbar"
+    "safeToSpend": "Täglich verfügbar",
+    "debt": {
+      "title": "Schuldenplaner",
+      "none": "Noch keine Schulden",
+      "total": "Gesamtschuld {amount}",
+      "minTotal": "Mindestrate {amount}",
+      "avalanche": "Lawine (Hoher Zins)",
+      "snowball": "Schneeball (Niedriger Saldo)",
+      "avalancheSub": "Schuld mit höchstem Zins zuerst",
+      "snowballSub": "Kleinster Saldo zuerst",
+      "extra": "Monatliche Extrazahlung",
+      "unpayable": "Mit dieser Rate nicht tilgbar, Extrazahlung nötig",
+      "result": "In {months} Monaten getilgt · Zinsen {interest}",
+      "order": "Reihenfolge",
+      "min": "Min.",
+      "name": "Name der Schuld",
+      "balance": "Saldo",
+      "rate": "Jährl. Zins",
+      "add": "Schuld hinzufügen"
+    }
   },
   "notes": {
     "title": "Meine Notizen",

@@ -752,7 +752,26 @@
       "none": "Sin límites aún",
       "count": "{count} categorías con límite"
     },
-    "safeToSpend": "Disponible al día"
+    "safeToSpend": "Disponible al día",
+    "debt": {
+      "title": "Planificador de deudas",
+      "none": "Sin deudas aún",
+      "total": "Deuda total {amount}",
+      "minTotal": "mínimo mensual {amount}",
+      "avalanche": "Avalancha (Interés alto)",
+      "snowball": "Bola de nieve (Saldo bajo)",
+      "avalancheSub": "Primero la deuda con mayor interés",
+      "snowballSub": "Primero la deuda más pequeña",
+      "extra": "Pago extra mensual",
+      "unpayable": "No se salda con este pago, añade un extra",
+      "result": "Saldada en {months} meses · interés {interest}",
+      "order": "Orden",
+      "min": "mín.",
+      "name": "Nombre de la deuda",
+      "balance": "Saldo",
+      "rate": "Interés anual",
+      "add": "Añadir deuda"
+    }
   },
   "notes": {
     "title": "Mis Notas",

@@ -2773,6 +2773,63 @@ class _BudgetSettingsBottomSheet extends StatelessWidget {
                             ),
                           ),
                         ),
+                        const SizedBox(height: 12),
+                        InkWell(
+                          onTap: () =>
+                              _showDebtPlannerDialog(context, vm, isDarkMode),
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: isDarkMode
+                                  ? ColorConstant.bgColorDark
+                                  : ColorConstant.bgColorLight,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.trending_down_rounded,
+                                    color: _fOrange),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'finance.debt.title'.tr(),
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          color: isDarkMode
+                                              ? ColorConstant.textPrimaryDark
+                                              : ColorConstant.textPrimaryLight,
+                                        ),
+                                      ),
+                                      Text(
+                                        vm.debts.isEmpty
+                                            ? 'finance.debt.none'.tr()
+                                            : 'finance.debt.total'.tr(namedArgs: {
+                                                'amount': tl0(vm.totalDebt)
+                                              }),
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: isDarkMode
+                                              ? ColorConstant.textSecondaryDark
+                                              : ColorConstant
+                                                  .textSecondaryLight,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Icon(Icons.chevron_right,
+                                    color: isDarkMode
+                                        ? ColorConstant.textSecondaryDark
+                                        : ColorConstant.textSecondaryLight),
+                              ],
+                            ),
+                          ),
+                        ),
                         const SizedBox(height: 24),
                         Row(
                           children: [
@@ -4577,6 +4634,302 @@ class _CategoryBudgetsSheetState extends State<_CategoryBudgetsSheet> {
                               color: Colors.white,
                               fontWeight: FontWeight.w700)),
                 ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ==================== BORÇ PLANLAYICI ====================
+
+void _showDebtPlannerDialog(
+    BuildContext context, FinanceViewModel vm, bool isDark) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => _DebtPlannerSheet(vm: vm, isDark: isDark),
+  );
+}
+
+class _DebtPlannerSheet extends StatefulWidget {
+  final FinanceViewModel vm;
+  final bool isDark;
+  const _DebtPlannerSheet({required this.vm, required this.isDark});
+
+  @override
+  State<_DebtPlannerSheet> createState() => _DebtPlannerSheetState();
+}
+
+class _DebtPlannerSheetState extends State<_DebtPlannerSheet> {
+  String _strategy = 'avalanche';
+  final _extra = TextEditingController();
+  bool _adding = false;
+  final _name = TextEditingController();
+  final _balance = TextEditingController();
+  final _rate = TextEditingController();
+  final _min = TextEditingController();
+
+  @override
+  void dispose() {
+    _extra.dispose();
+    _name.dispose();
+    _balance.dispose();
+    _rate.dispose();
+    _min.dispose();
+    super.dispose();
+  }
+
+  double get _extraVal =>
+      double.tryParse(_extra.text.trim().replaceAll(',', '.')) ?? 0;
+
+  Future<void> _add() async {
+    final name = _name.text.trim();
+    final bal = double.tryParse(_balance.text.trim().replaceAll(',', '.')) ?? 0;
+    if (name.isEmpty || bal <= 0) return;
+    final rate = double.tryParse(_rate.text.trim().replaceAll(',', '.')) ?? 0;
+    final min = double.tryParse(_min.text.trim().replaceAll(',', '.')) ?? 0;
+    final ok = await widget.vm.addDebt(name, bal, rate, min);
+    if (ok) {
+      _name.clear();
+      _balance.clear();
+      _rate.clear();
+      _min.clear();
+      setState(() => _adding = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = widget.isDark;
+    final vm = widget.vm;
+    final Color txtPrimary = isDark
+        ? ColorConstant.textPrimaryDark
+        : ColorConstant.textPrimaryLight;
+    final Color txtSec = isDark
+        ? ColorConstant.textSecondaryDark
+        : ColorConstant.textSecondaryLight;
+    final Color bg =
+        isDark ? ColorConstant.bgColorDark : ColorConstant.bgColorLight;
+    final plan = vm.computeDebtPlan(extra: _extraVal, strategy: _strategy);
+
+    InputDecoration dec(String label) => InputDecoration(
+          labelText: label,
+          isDense: true,
+          filled: true,
+          fillColor: bg,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+        );
+
+    Widget stratChip(String id, String label) {
+      final sel = _strategy == id;
+      return Expanded(
+        child: GestureDetector(
+          onTap: () => setState(() => _strategy = id),
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            decoration: BoxDecoration(
+              color: sel ? _fOrange : bg,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: sel ? Colors.white : txtSec)),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? ColorConstant.cardColorDark : ColorConstant.white,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(28),
+          topRight: Radius.circular(28),
+        ),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 20,
+            bottom: 20 + MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text('finance.debt.title'.tr(),
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: txtPrimary)),
+                const SizedBox(height: 4),
+                Text(
+                  '${'finance.debt.total'.tr(namedArgs: {
+                        'amount': tl0(vm.totalDebt)
+                      })} · ${'finance.debt.minTotal'.tr(namedArgs: {
+                        'amount': tl0(vm.totalMinPayment)
+                      })}',
+                  style: TextStyle(fontSize: 13, color: txtSec),
+                ),
+                const SizedBox(height: 16),
+                // Strateji
+                Row(children: [
+                  stratChip('avalanche', 'finance.debt.avalanche'.tr()),
+                  stratChip('snowball', 'finance.debt.snowball'.tr()),
+                ]),
+                const SizedBox(height: 6),
+                Text(
+                  _strategy == 'avalanche'
+                      ? 'finance.debt.avalancheSub'.tr()
+                      : 'finance.debt.snowballSub'.tr(),
+                  style: TextStyle(fontSize: 11, color: txtSec),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _extra,
+                  keyboardType: TextInputType.number,
+                  style: TextStyle(color: txtPrimary),
+                  onChanged: (_) => setState(() {}),
+                  decoration: dec('finance.debt.extra'.tr())
+                      .copyWith(prefixText: '₺ '),
+                ),
+                const SizedBox(height: 16),
+                // Plan sonucu
+                if (vm.debts.isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: _fOrange.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          plan.unpayable
+                              ? 'finance.debt.unpayable'.tr()
+                              : 'finance.debt.result'.tr(namedArgs: {
+                                  'months': '${plan.months}',
+                                  'interest': tl0(plan.totalInterest),
+                                }),
+                          style: TextStyle(
+                              fontWeight: FontWeight.w700, color: txtPrimary),
+                        ),
+                        if (!plan.unpayable && plan.order.isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          Text(
+                            '${'finance.debt.order'.tr()}: ${plan.order.join(' → ')}',
+                            style: TextStyle(fontSize: 12, color: txtSec),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                const SizedBox(height: 16),
+                // Borç listesi
+                ...vm.debts.map((d) => Container(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: bg,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(d.name,
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        color: txtPrimary)),
+                                Text(
+                                  '${tl0(d.balance)} · %${d.interestRate.toStringAsFixed(d.interestRate.truncateToDouble() == d.interestRate ? 0 : 1)} · ${'finance.debt.min'.tr()} ${tl0(d.minPayment)}',
+                                  style:
+                                      TextStyle(fontSize: 11, color: txtSec),
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline,
+                                color: Colors.red, size: 20),
+                            onPressed: () => vm.deleteDebt(d.id),
+                          ),
+                        ],
+                      ),
+                    )),
+                // Borç ekleme
+                if (_adding) ...[
+                  TextField(
+                      controller: _name,
+                      style: TextStyle(color: txtPrimary),
+                      decoration: dec('finance.debt.name'.tr())),
+                  const SizedBox(height: 8),
+                  TextField(
+                      controller: _balance,
+                      keyboardType: TextInputType.number,
+                      style: TextStyle(color: txtPrimary),
+                      decoration: dec('finance.debt.balance'.tr())
+                          .copyWith(prefixText: '₺ ')),
+                  const SizedBox(height: 8),
+                  Row(children: [
+                    Expanded(
+                        child: TextField(
+                            controller: _rate,
+                            keyboardType: TextInputType.number,
+                            style: TextStyle(color: txtPrimary),
+                            decoration: dec('finance.debt.rate'.tr())
+                                .copyWith(suffixText: '%'))),
+                    const SizedBox(width: 8),
+                    Expanded(
+                        child: TextField(
+                            controller: _min,
+                            keyboardType: TextInputType.number,
+                            style: TextStyle(color: txtPrimary),
+                            decoration: dec('finance.debt.min'.tr())
+                                .copyWith(prefixText: '₺ '))),
+                  ]),
+                  const SizedBox(height: 10),
+                  ElevatedButton(
+                    onPressed: _add,
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: _fOrange,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12))),
+                    child: Text('common.save'.tr(),
+                        style: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.w700)),
+                  ),
+                ] else
+                  OutlinedButton.icon(
+                    onPressed: () => setState(() => _adding = true),
+                    icon: const Icon(Icons.add, color: _fOrange),
+                    label: Text('finance.debt.add'.tr(),
+                        style: const TextStyle(color: _fOrange)),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      side: const BorderSide(color: _fOrange),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
               ],
             ),
           ),

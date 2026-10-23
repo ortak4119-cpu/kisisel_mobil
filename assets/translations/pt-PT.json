@@ -752,7 +752,26 @@
       "none": "Ainda sem limites",
       "count": "{count} categorias com limite"
     },
-    "safeToSpend": "Disponível por dia"
+    "safeToSpend": "Disponível por dia",
+    "debt": {
+      "title": "Planeador de dívidas",
+      "none": "Sem dívidas ainda",
+      "total": "Dívida total {amount}",
+      "minTotal": "mínimo mensal {amount}",
+      "avalanche": "Avalanche (Juro alto)",
+      "snowball": "Bola de neve (Saldo baixo)",
+      "avalancheSub": "Primeiro a dívida de maior juro",
+      "snowballSub": "Primeiro a menor dívida",
+      "extra": "Pagamento extra mensal",
+      "unpayable": "Não quita com este valor, adicione um extra",
+      "result": "Quitada em {months} meses · juros {interest}",
+      "order": "Ordem",
+      "min": "mín.",
+      "name": "Nome da dívida",
+      "balance": "Saldo",
+      "rate": "Juro anual",
+      "add": "Adicionar dívida"
+    }
   },
   "notes": {
     "title": "Minhas Notas",

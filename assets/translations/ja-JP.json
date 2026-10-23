@@ -752,7 +752,26 @@
       "none": "上限はまだありません",
       "count": "{count}カテゴリーに上限"
     },
-    "safeToSpend": "1日の使える額"
+    "safeToSpend": "1日の使える額",
+    "debt": {
+      "title": "返済プランナー",
+      "none": "負債はまだありません",
+      "total": "総負債 {amount}",
+      "minTotal": "月々最低 {amount}",
+      "avalanche": "雪崩（高金利）",
+      "snowball": "雪だるま（低残高）",
+      "avalancheSub": "最も金利の高い負債を先に",
+      "snowballSub": "最も残高の少ない負債を先に",
+      "extra": "月々の追加返済",
+      "unpayable": "この返済では完済できません。追加返済を",
+      "result": "{months}か月で完済 · 利息 {interest}",
+      "order": "順序",
+      "min": "最低",
+      "name": "負債名",
+      "balance": "残高",
+      "rate": "年利",
+      "add": "負債を追加"
+    }
   },
   "notes": {
     "title": "マイノート",
