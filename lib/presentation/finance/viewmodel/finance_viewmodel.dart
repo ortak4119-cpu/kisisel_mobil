@@ -11,9 +11,11 @@ import '../../../core/init/locator.dart';
 import '../../../service/subscription/subscription_service.dart';
 import '../../../service/budget/budget_service.dart';
 import '../../../service/expense/expense_service.dart';
+import '../../../service/income/income_service.dart';
 import '../../../service/profile/profile_service.dart';
 import '../../../models/subscription/subscription_models.dart';
 import '../../../models/budget/buget_models.dart';
+import '../../../models/income/income_models.dart';
 import '../../../models/auth/auth_models.dart';
 import '../../../core/utils/custom_snackbar.dart';
 import '../../../core/utils/premium_helper.dart';
@@ -90,6 +92,7 @@ class FinanceViewModel extends ChangeNotifier {
   final ISubscriptionService _subscriptionService = locator.get<ISubscriptionService>();
   final IBudgetService _budgetService = locator.get<IBudgetService>();
   final IExpenseService _expenseService = locator.get<IExpenseService>();
+  final IIncomeService _incomeService = locator.get<IIncomeService>();
   final IProfileService _profileService = locator.get<IProfileService>();
 
   User? _currentUser;
@@ -1044,30 +1047,66 @@ class FinanceViewModel extends ChangeNotifier {
 
   // ==================== YENİ TASARIM: GELİR + TASARRUF + FORM ====================
 
-  // ---- Gelir (yerel) ----
+  // ---- Gelir (backend: /api/incomes) ----
+  // Eskiden gelir yalnız cihazda (SharedPreferences) tutuluyordu; artık
+  // backend'de. İlk yüklemede eski yerel kayıtlar bir kez sunucuya taşınır.
   static const String _kIncomeKey = 'finance_income_v1';
+  static const String _kIncomeMigratedKey = 'finance_income_migrated_v1';
   List<IncomeEntry> _income = [];
   List<IncomeEntry> get income => _income;
 
   Future<void> loadIncome() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString(_kIncomeKey);
-      _income = [];
-      if (raw == null || raw.isEmpty) return;
-      final list = jsonDecode(raw) as List;
-      _income = list
-          .map((e) => IncomeEntry.fromJson(e as Map<String, dynamic>))
-          .toList();
-    } catch (_) {}
+      await _migrateLocalIncomeIfNeeded();
+      final now = DateTime.now();
+      final start = DateTime(now.year - 1, now.month, 1);
+      String fmt(DateTime d) =>
+          '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+      final resp = await _incomeService.getAllIncomes(
+        startDate: fmt(start),
+        endDate: fmt(now),
+        perPage: 500,
+      );
+      if (resp.isSuccess && resp.data != null) {
+        _income = resp.data!.data
+            .map((e) => IncomeEntry(
+                  id: e.id,
+                  amount: e.amount,
+                  description: e.description,
+                  category: e.category,
+                  date: e.incomeDate,
+                ))
+            .toList();
+      }
+    } catch (e) {
+      debugPrint('Error loading income: $e');
+    }
   }
 
-  Future<void> _persistIncome() async {
+  /// Eski yerel gelir kayıtlarını bir kez backend'e taşır, sonra siler.
+  Future<void> _migrateLocalIncomeIfNeeded() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(
-          _kIncomeKey, jsonEncode(_income.map((e) => e.toJson()).toList()));
-    } catch (_) {}
+      if (prefs.getBool(_kIncomeMigratedKey) == true) return;
+      final raw = prefs.getString(_kIncomeKey);
+      if (raw != null && raw.isNotEmpty) {
+        final list = jsonDecode(raw) as List;
+        for (final e in list) {
+          final m = e as Map<String, dynamic>;
+          await _incomeService.createIncome(IncomeRequest(
+            amount: (m['amount'] as num).toDouble(),
+            currency: 'TRY',
+            category: m['category'] as String? ?? 'other',
+            description: m['description'] as String?,
+            incomeDate: m['date'] as String,
+          ));
+        }
+      }
+      await prefs.setBool(_kIncomeMigratedKey, true);
+      await prefs.remove(_kIncomeKey);
+    } catch (e) {
+      debugPrint('Income migration error: $e');
+    }
   }
 
   bool _sameMonth(DateTime d) {
@@ -1085,24 +1124,37 @@ class FinanceViewModel extends ChangeNotifier {
     return t;
   }
 
-  Future<void> addIncome(double amount, String? desc, String category,
+  Future<bool> addIncome(double amount, String? desc, String category,
       String date, int idSeed) async {
-    _income.insert(
-        0,
-        IncomeEntry(
-            id: idSeed,
-            amount: amount,
-            description: desc,
-            category: category,
-            date: date));
-    await _persistIncome();
-    notifyListeners();
+    final resp = await _incomeService.createIncome(IncomeRequest(
+      amount: amount,
+      currency: 'TRY',
+      category: category,
+      description: desc,
+      incomeDate: date,
+    ));
+    if (resp.isSuccess && resp.data != null) {
+      final e = resp.data!;
+      _income.insert(
+          0,
+          IncomeEntry(
+              id: e.id,
+              amount: e.amount,
+              description: e.description,
+              category: e.category,
+              date: e.incomeDate));
+      notifyListeners();
+      return true;
+    }
+    return false;
   }
 
   Future<void> deleteIncome(int id) async {
-    _income.removeWhere((e) => e.id == id);
-    await _persistIncome();
-    notifyListeners();
+    final resp = await _incomeService.deleteIncome(id);
+    if (resp.isSuccess) {
+      _income.removeWhere((e) => e.id == id);
+      notifyListeners();
+    }
   }
 
   // ---- Tasarruf hedefi (yerel) ----
@@ -1406,12 +1458,20 @@ class FinanceViewModel extends ChangeNotifier {
     final desc = expenseDescriptionController.text.trim();
 
     if (_isIncomeForm) {
+      _isLoading = true;
+      notifyListeners();
       final id = DateTime.now().microsecondsSinceEpoch ~/ 1000;
-      await addIncome(amount, desc.isEmpty ? null : desc, _formExpCategory,
-          _fmtDate(_formExpDate), id);
+      final ok = await addIncome(amount, desc.isEmpty ? null : desc,
+          _formExpCategory, _fmtDate(_formExpDate), id);
+      _isLoading = false;
+      notifyListeners();
       if (context.mounted) {
-        CustomSnackBar.showSuccess(context, 'success.incomeAdded'.tr());
-        Navigator.pop(context);
+        if (ok) {
+          CustomSnackBar.showSuccess(context, 'success.incomeAdded'.tr());
+          Navigator.pop(context);
+        } else {
+          CustomSnackBar.showError(context, 'errors.general'.tr());
+        }
       }
       return;
     }
