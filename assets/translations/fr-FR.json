@@ -786,6 +786,10 @@
       "count": "Nb",
       "start": "Début",
       "add": "Ajouter"
+    },
+    "currency": {
+      "title": "Devise",
+      "sub": "Devise d'affichage des montants"
     }
   },
   "notes": {

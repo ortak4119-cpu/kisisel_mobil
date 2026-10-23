@@ -10,6 +10,7 @@ import 'dart:io';
 import '../../firebase_options.dart';
 import '../constant/constants.dart';
 import 'locator.dart';
+import '../utils/currency.dart';
 import '../../service/firebase/fcm_service.dart';
 
 class AppInitializer {
@@ -31,6 +32,9 @@ class AppInitializer {
 
     // GetIt (Dependency Injection) setup
     setupLocator();
+
+    // Para birimi: kayıtlı tercih yoksa cihaz ülkesine göre varsayılan
+    await AppCurrency.init();
 
     // RevenueCat ve FCM ağ gerektirir ve UI'nin ilk karesi için gerekli degil.
     // Bunlari await ETMEDEN arka planda baslat; boylece uygulama aninda acilir.

@@ -8,6 +8,7 @@ import '../../../core/design/app_design.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/utils/subscription_icons.dart';
 import '../../../core/utils/premium_helper.dart';
+import '../../../core/utils/currency.dart';
 import '../../../core/route/app_router.gr.dart';
 import '../viewmodel/finance_viewmodel.dart';
 
@@ -59,29 +60,13 @@ _FinCat finCatById(String? id) {
 
 const _fOrange = Color(0xFFF6A821);
 
+// Tutar biçimlendirme artık seçili para birimine (AppCurrency) göre yapılır.
 String tl(double v) {
   final neg = v < 0;
-  v = v.abs();
-  final s = v.toStringAsFixed(2);
-  final parts = s.split('.');
-  final intp = parts[0];
-  final buf = StringBuffer();
-  for (int i = 0; i < intp.length; i++) {
-    if (i > 0 && (intp.length - i) % 3 == 0) buf.write('.');
-    buf.write(intp[i]);
-  }
-  return '${neg ? '-' : ''}₺$buf,${parts[1]}';
+  return '${neg ? '-' : ''}${AppCurrency.format(v.abs(), decimals: 2)}';
 }
 
-String tl0(double v) {
-  final s = v.abs().toStringAsFixed(0);
-  final buf = StringBuffer();
-  for (int i = 0; i < s.length; i++) {
-    if (i > 0 && (s.length - i) % 3 == 0) buf.write('.');
-    buf.write(s[i]);
-  }
-  return '₺$buf';
-}
+String tl0(double v) => AppCurrency.format(v.abs(), decimals: 0);
 
 /// Gider/gelir ekleme formunu açar.
 void showFinanceFormSheet(BuildContext context, FinanceViewModel vm, bool isDark,
@@ -1771,7 +1756,7 @@ class _FinanceFormSheet extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text('₺',
+            Text(AppCurrency.symbol,
                 style: TextStyle(
                     fontSize: 34,
                     fontWeight: FontWeight.w900,
@@ -1807,7 +1792,7 @@ class _FinanceFormSheet extends StatelessWidget {
               color: c.card,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: c.border.withOpacity(0.7))),
-          child: Text('TRY ₺',
+          child: Text('${AppCurrency.code} ${AppCurrency.symbol}',
               style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -2639,7 +2624,7 @@ class _BudgetSettingsBottomSheet extends StatelessWidget {
                           decoration: InputDecoration(
                             labelText: 'finance.monthlyBudget'.tr(),
                             hintText: 'finance.hints.budgetExample'.tr(),
-                            prefixText: '₺ ',
+                            prefixText: '${AppCurrency.symbol} ',
                             hintStyle: TextStyle(
                               color: isDarkMode
                                   ? ColorConstant.textMutedDark
@@ -2888,6 +2873,52 @@ class _BudgetSettingsBottomSheet extends StatelessWidget {
                             ),
                           ),
                         ),
+                        const SizedBox(height: 12),
+                        InkWell(
+                          onTap: () =>
+                              _showCurrencyDialog(context, vm, isDarkMode),
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: isDarkMode
+                                  ? ColorConstant.bgColorDark
+                                  : ColorConstant.bgColorLight,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.payments_rounded, color: _fOrange),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    'finance.currency.title'.tr(),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      color: isDarkMode
+                                          ? ColorConstant.textPrimaryDark
+                                          : ColorConstant.textPrimaryLight,
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  '${AppCurrency.code} ${AppCurrency.symbol}',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    color: isDarkMode
+                                        ? ColorConstant.textSecondaryDark
+                                        : ColorConstant.textSecondaryLight,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Icon(Icons.chevron_right,
+                                    color: isDarkMode
+                                        ? ColorConstant.textSecondaryDark
+                                        : ColorConstant.textSecondaryLight),
+                              ],
+                            ),
+                          ),
+                        ),
                         const SizedBox(height: 24),
                         Row(
                           children: [
@@ -3099,7 +3130,7 @@ class _MonthlyStatisticsBottomSheetState
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          '₺${totalYearSpending.toStringAsFixed(0)}',
+                          '${AppCurrency.symbol}${totalYearSpending.toStringAsFixed(0)}',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
@@ -3199,7 +3230,7 @@ class _MonthlyStatisticsBottomSheetState
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  '₺${total.toStringAsFixed(2)}',
+                  '${AppCurrency.symbol}${total.toStringAsFixed(2)}',
                   style: TextStyle(
                     color: ColorConstant.white,
                     fontSize: 36,
@@ -3324,7 +3355,7 @@ class _MonthlyStatisticsBottomSheetState
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
-                              '₺${categoryTotal.toStringAsFixed(0)}',
+                              '${AppCurrency.symbol}${categoryTotal.toStringAsFixed(0)}',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w800,
@@ -4634,7 +4665,7 @@ class _CategoryBudgetsSheetState extends State<_CategoryBudgetsSheet> {
                                 onChanged: (_) => setState(() {}),
                                 decoration: InputDecoration(
                                   isDense: true,
-                                  prefixText: '₺ ',
+                                  prefixText: '${AppCurrency.symbol} ',
                                   hintText: '0',
                                   filled: true,
                                   fillColor: isDark
@@ -4862,7 +4893,7 @@ class _DebtPlannerSheetState extends State<_DebtPlannerSheet> {
                   style: TextStyle(color: txtPrimary),
                   onChanged: (_) => setState(() {}),
                   decoration: dec('finance.debt.extra'.tr())
-                      .copyWith(prefixText: '₺ '),
+                      .copyWith(prefixText: '${AppCurrency.symbol} '),
                 ),
                 const SizedBox(height: 16),
                 // Plan sonucu
@@ -4944,7 +4975,7 @@ class _DebtPlannerSheetState extends State<_DebtPlannerSheet> {
                       keyboardType: TextInputType.number,
                       style: TextStyle(color: txtPrimary),
                       decoration: dec('finance.debt.balance'.tr())
-                          .copyWith(prefixText: '₺ ')),
+                          .copyWith(prefixText: '${AppCurrency.symbol} ')),
                   const SizedBox(height: 8),
                   Row(children: [
                     Expanded(
@@ -4961,7 +4992,7 @@ class _DebtPlannerSheetState extends State<_DebtPlannerSheet> {
                             keyboardType: TextInputType.number,
                             style: TextStyle(color: txtPrimary),
                             decoration: dec('finance.debt.min'.tr())
-                                .copyWith(prefixText: '₺ '))),
+                                .copyWith(prefixText: '${AppCurrency.symbol} '))),
                   ]),
                   const SizedBox(height: 10),
                   ElevatedButton(
@@ -5196,7 +5227,7 @@ class _InstallmentsSheetState extends State<_InstallmentsSheet> {
                             keyboardType: TextInputType.number,
                             style: TextStyle(color: txtPrimary),
                             decoration: dec('finance.installment.total'.tr())
-                                .copyWith(prefixText: '₺ '))),
+                                .copyWith(prefixText: '${AppCurrency.symbol} '))),
                     const SizedBox(width: 8),
                     Expanded(
                         child: TextField(
@@ -5265,4 +5296,106 @@ class _InstallmentsSheetState extends State<_InstallmentsSheet> {
       ),
     );
   }
+}
+
+// ==================== PARA BİRİMİ ====================
+
+void _showCurrencyDialog(
+    BuildContext context, FinanceViewModel vm, bool isDark) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (sheetCtx) {
+      final Color txtPrimary = isDark
+          ? ColorConstant.textPrimaryDark
+          : ColorConstant.textPrimaryLight;
+      final Color txtSec = isDark
+          ? ColorConstant.textSecondaryDark
+          : ColorConstant.textSecondaryLight;
+      return Container(
+        decoration: BoxDecoration(
+          color: isDark ? ColorConstant.cardColorDark : ColorConstant.white,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(28),
+            topRight: Radius.circular(28),
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text('finance.currency.title'.tr(),
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: txtPrimary)),
+                const SizedBox(height: 4),
+                Text('finance.currency.sub'.tr(),
+                    style: TextStyle(fontSize: 13, color: txtSec)),
+                const SizedBox(height: 12),
+                Flexible(
+                  child: ListView(
+                    shrinkWrap: true,
+                    children: AppCurrency.currencies.entries.map((e) {
+                      final sel = e.key == AppCurrency.code;
+                      return InkWell(
+                        onTap: () async {
+                          await AppCurrency.setCode(e.key);
+                          vm.refreshFormatting();
+                          if (sheetCtx.mounted) Navigator.pop(sheetCtx);
+                          if (context.mounted) Navigator.pop(context);
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: sel
+                                ? _fOrange.withValues(alpha: 0.14)
+                                : (isDark
+                                    ? ColorConstant.bgColorDark
+                                    : ColorConstant.bgColorLight),
+                            borderRadius: BorderRadius.circular(12),
+                            border: sel
+                                ? Border.all(color: _fOrange, width: 1.5)
+                                : null,
+                          ),
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                width: 34,
+                                child: Text(e.value[0],
+                                    style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w800,
+                                        color: txtPrimary)),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text('${e.key} · ${e.value[2]}',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        color: txtPrimary)),
+                              ),
+                              if (sel)
+                                const Icon(Icons.check_circle,
+                                    color: _fOrange, size: 20),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
 }

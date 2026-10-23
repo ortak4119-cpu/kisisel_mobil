@@ -786,6 +786,10 @@
       "count": "Anzahl",
       "start": "Start",
       "add": "Rate hinzufügen"
+    },
+    "currency": {
+      "title": "Währung",
+      "sub": "Anzeigewährung für Beträge"
     }
   },
   "notes": {

@@ -786,6 +786,10 @@
       "count": "Taksit sayısı",
       "start": "Başlangıç",
       "add": "Taksit Ekle"
+    },
+    "currency": {
+      "title": "Para Birimi",
+      "sub": "Tutarların gösterileceği para birimi"
     }
   },
   "notes": {

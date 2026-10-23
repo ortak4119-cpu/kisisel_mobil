@@ -786,6 +786,10 @@
       "count": "Count",
       "start": "Start",
       "add": "Add Installment"
+    },
+    "currency": {
+      "title": "Currency",
+      "sub": "Currency amounts are shown in"
     }
   },
   "notes": {

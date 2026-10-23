@@ -786,6 +786,10 @@
       "count": "Nº cuotas",
       "start": "Inicio",
       "add": "Añadir cuota"
+    },
+    "currency": {
+      "title": "Moneda",
+      "sub": "Moneda en que se muestran los importes"
     }
   },
   "notes": {

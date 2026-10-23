@@ -786,6 +786,10 @@
       "count": "Nº",
       "start": "Início",
       "add": "Adicionar prestação"
+    },
+    "currency": {
+      "title": "Moeda",
+      "sub": "Moeda de exibição dos valores"
     }
   },
   "notes": {

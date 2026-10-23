@@ -786,6 +786,10 @@
       "count": "期数",
       "start": "开始",
       "add": "添加分期"
+    },
+    "currency": {
+      "title": "货币",
+      "sub": "金额显示货币"
     }
   },
   "notes": {

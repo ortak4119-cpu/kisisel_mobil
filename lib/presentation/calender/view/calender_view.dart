@@ -14,6 +14,7 @@ import '../../../models/calender/calendar_models.dart';
 import '../../../models/note/note_models.dart';
 import '../../../models/subscription/subscription_models.dart';
 import '../../../models/installment/installment_models.dart';
+import '../../../core/utils/currency.dart';
 import '../viewmodel/calender_viewmodel.dart';
 
 // ==================== ETKİNLİK KATEGORİLERİ ====================
@@ -713,7 +714,7 @@ class _CalendarViewState extends State<CalendarView> {
           Icons.autorenew_rounded,
           const Color(0xFFB794F6),
           s.name,
-          '₺${s.amount.toStringAsFixed(0)} · ${'finance.subscriptions'.tr()}',
+          '${AppCurrency.symbol}${s.amount.toStringAsFixed(0)} · ${'finance.subscriptions'.tr()}',
         ),
         const SizedBox(height: 10),
       ],
@@ -723,7 +724,7 @@ class _CalendarViewState extends State<CalendarView> {
           Icons.credit_card_rounded,
           const Color(0xFFF6524B),
           it.name,
-          '₺${it.monthlyAmount.toStringAsFixed(0)} · ${'finance.installment.title'.tr()}',
+          '${AppCurrency.symbol}${it.monthlyAmount.toStringAsFixed(0)} · ${'finance.installment.title'.tr()}',
         ),
         const SizedBox(height: 10),
       ],

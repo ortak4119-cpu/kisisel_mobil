@@ -25,6 +25,7 @@ import '../../../models/income/income_models.dart';
 import '../../../models/auth/auth_models.dart';
 import '../../../core/utils/custom_snackbar.dart';
 import '../../../core/utils/premium_helper.dart';
+import '../../../core/utils/currency.dart';
 
 /// Gelir kaydı — backend'de gelir modeli yok, cihazda yerel saklanır.
 class IncomeEntry {
@@ -429,7 +430,7 @@ class FinanceViewModel extends ChangeNotifier {
         platform: subscriptionNameController.text.trim(),
         iconUrl: null,
         amount: amount,
-        currency: 'TRY',
+        currency: AppCurrency.code,
         billingCycle: _subscriptionBillingCycle,
         billingDate: billingDate,
         nextBillingDate: nextBilling.toIso8601String().split('T')[0],
@@ -561,7 +562,7 @@ class FinanceViewModel extends ChangeNotifier {
         platform: subscriptionNameController.text.trim(),
         iconUrl: null,
         amount: amount,
-        currency: 'TRY',
+        currency: AppCurrency.code,
         billingCycle: _subscriptionBillingCycle,
         billingDate: billingDate,
         nextBillingDate: nextBilling.toIso8601String().split('T')[0],
@@ -677,7 +678,7 @@ class FinanceViewModel extends ChangeNotifier {
 
       final request = BudgetRequest(
         monthlyBudget: amount,
-        currency: 'TRY',
+        currency: AppCurrency.code,
       );
 
       final response = await _budgetService.updateBudget(request);
@@ -762,7 +763,7 @@ class FinanceViewModel extends ChangeNotifier {
       final request = ExpenseRequest(
         category: _expenseCategory,
         amount: amount,
-        currency: 'TRY',
+        currency: AppCurrency.code,
         description: expenseDescriptionController.text.trim().isEmpty
             ? null
             : expenseDescriptionController.text.trim(),
@@ -854,7 +855,7 @@ class FinanceViewModel extends ChangeNotifier {
       final request = ExpenseRequest(
         category: _expenseCategory,
         amount: amount,
-        currency: 'TRY',
+        currency: AppCurrency.code,
         description: expenseDescriptionController.text.trim().isEmpty
             ? null
             : expenseDescriptionController.text.trim(),
@@ -1350,6 +1351,9 @@ class FinanceViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Para birimi gibi global ayar değişiminde UI'yı yeniler.
+  void refreshFormatting() => notifyListeners();
+
   /// Kilit açıldıktan sonra veriyi yükler.
   Future<void> loadAfterUnlock() async {
     await Future.wait([
@@ -1413,7 +1417,7 @@ class FinanceViewModel extends ChangeNotifier {
           final m = e as Map<String, dynamic>;
           await _incomeService.createIncome(IncomeRequest(
             amount: (m['amount'] as num).toDouble(),
-            currency: 'TRY',
+            currency: AppCurrency.code,
             category: m['category'] as String? ?? 'other',
             description: m['description'] as String?,
             incomeDate: m['date'] as String,
@@ -1446,7 +1450,7 @@ class FinanceViewModel extends ChangeNotifier {
       String date, int idSeed) async {
     final resp = await _incomeService.createIncome(IncomeRequest(
       amount: amount,
-      currency: 'TRY',
+      currency: AppCurrency.code,
       category: category,
       description: desc,
       incomeDate: date,
@@ -1833,7 +1837,7 @@ class FinanceViewModel extends ChangeNotifier {
       final request = ExpenseRequest(
         category: _formExpCategory,
         amount: amount,
-        currency: 'TRY',
+        currency: AppCurrency.code,
         description: desc.isEmpty ? null : desc,
         expenseDate: _fmtDate(_formExpDate),
         paymentMethod: null,
