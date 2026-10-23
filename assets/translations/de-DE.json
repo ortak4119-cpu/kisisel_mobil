@@ -1,4 +1,10 @@
 {
+  "update": {
+    "title": "Neue Version verfügbar",
+    "message": "Eine neue Version von LifeSync ist verfügbar. Wir empfehlen ein Update für das beste Erlebnis.",
+    "update": "Aktualisieren",
+    "later": "Später"
+  },
   "app": {
     "name": "LifeSync",
     "tagline": "Synchronisiere Dein Leben",

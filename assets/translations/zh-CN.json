@@ -1,4 +1,10 @@
 {
+  "update": {
+    "title": "有新版本可用",
+    "message": "LifeSync 有新版本可用。建议您更新以获得最佳体验。",
+    "update": "更新",
+    "later": "以后再说"
+  },
   "app": {
     "name": "LifeSync",
     "tagline": "同步您的生活",
