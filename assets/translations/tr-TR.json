@@ -751,7 +751,8 @@
       "sub": "Her kategori için aylık limit belirleyin",
       "none": "Henüz limit yok",
       "count": "{count} kategori limitli"
-    }
+    },
+    "safeToSpend": "Günlük harcanabilir"
   },
   "notes": {
     "title": "Notlarım",

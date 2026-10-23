@@ -751,7 +751,8 @@
       "sub": "Monatliches Limit je Kategorie festlegen",
       "none": "Noch keine Limits",
       "count": "{count} Kategorien begrenzt"
-    }
+    },
+    "safeToSpend": "Täglich verfügbar"
   },
   "notes": {
     "title": "Meine Notizen",

@@ -751,7 +751,8 @@
       "sub": "Set a monthly limit for each category",
       "none": "No limits yet",
       "count": "{count} categories limited"
-    }
+    },
+    "safeToSpend": "Safe to spend/day"
   },
   "notes": {
     "title": "My Notes",

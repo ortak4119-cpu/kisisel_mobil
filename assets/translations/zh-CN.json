@@ -751,7 +751,8 @@
       "sub": "为每个类别设置每月上限",
       "none": "暂无上限",
       "count": "{count} 个类别已限额"
-    }
+    },
+    "safeToSpend": "每日可用"
   },
   "notes": {
     "title": "我的笔记",

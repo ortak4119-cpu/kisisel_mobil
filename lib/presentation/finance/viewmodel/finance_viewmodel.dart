@@ -1350,6 +1350,27 @@ class FinanceViewModel extends ChangeNotifier {
 
   double get availableBalance => monthIncomeTotal - monthExpensesTotal;
 
+  /// Ayın kalan gün sayısı (bugün dahil).
+  int get daysRemainingInMonth {
+    final n = DateTime.now();
+    final lastDay = DateTime(n.year, n.month + 1, 0).day;
+    return (lastDay - n.day) + 1;
+  }
+
+  /// "Günlük harcanabilir": kalan bakiyeyi ayın kalan günlerine böler.
+  /// Aylık bütçe tanımlıysa bütçeden kalan, değilse gelir-gider bakiyesi
+  /// esas alınır. Negatifse 0 döner.
+  double get safeToSpendPerDay {
+    final days = daysRemainingInMonth;
+    if (days <= 0) return 0;
+    final budget = _budgetStats?.monthlyBudget ?? 0;
+    final base = budget > 0
+        ? (budget - monthExpensesTotal)
+        : availableBalance;
+    final perDay = base / days;
+    return perDay < 0 ? 0 : perDay;
+  }
+
   /// Kategoriye göre bu ayın harcama toplamları (halka grafik).
   Map<String, double> get categoryTotals {
     final m = <String, double>{};

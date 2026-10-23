@@ -751,7 +751,8 @@
       "sub": "Defina um limite mensal por categoria",
       "none": "Ainda sem limites",
       "count": "{count} categorias com limite"
-    }
+    },
+    "safeToSpend": "Disponível por dia"
   },
   "notes": {
     "title": "Minhas Notas",

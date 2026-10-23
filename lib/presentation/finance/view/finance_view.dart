@@ -323,6 +323,17 @@ class _FinanceViewState extends State<FinanceView> {
                   fontSize: 34,
                   fontWeight: FontWeight.w900,
                   color: Colors.white)),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              const Icon(Icons.bolt_rounded, size: 15, color: Colors.white70),
+              const SizedBox(width: 4),
+              Text(
+                '${'finance.safeToSpend'.tr()}: ${tl0(vm.safeToSpendPerDay)}',
+                style: const TextStyle(fontSize: 13, color: Colors.white),
+              ),
+            ],
+          ),
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
