@@ -715,7 +715,8 @@
       "monthly": "मासिक",
       "yearly": "वार्षिक"
     },
-    "noExpensesInFilter": "चयनित श्रेणियों में कोई व्यय नहीं"
+    "noExpensesInFilter": "चयनित श्रेणियों में कोई व्यय नहीं",
+    "paymentReminderSub": "नवीनीकरण तिथि से पहले सूचना पाएं"
   },
   "notes": {
     "title": "मेरे नोट्स",

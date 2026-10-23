@@ -715,7 +715,8 @@
       "monthly": "Monatlich",
       "yearly": "Jährlich"
     },
-    "noExpensesInFilter": "Keine Ausgaben in den ausgewählten Kategorien"
+    "noExpensesInFilter": "Keine Ausgaben in den ausgewählten Kategorien",
+    "paymentReminderSub": "Vor dem Verlängerungsdatum benachrichtigt werden"
   },
   "notes": {
     "title": "Meine Notizen",

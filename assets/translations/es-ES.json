@@ -715,7 +715,8 @@
       "monthly": "Mensual",
       "yearly": "Anual"
     },
-    "noExpensesInFilter": "No hay gastos en las categorías seleccionadas"
+    "noExpensesInFilter": "No hay gastos en las categorías seleccionadas",
+    "paymentReminderSub": "Recibe un aviso antes de la fecha de renovación"
   },
   "notes": {
     "title": "Mis Notas",

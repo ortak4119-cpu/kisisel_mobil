@@ -715,7 +715,8 @@
       "monthly": "Monthly",
       "yearly": "Yearly"
     },
-    "noExpensesInFilter": "No expenses in the selected categories"
+    "noExpensesInFilter": "No expenses in the selected categories",
+    "paymentReminderSub": "Get notified before the renewal date"
   },
   "notes": {
     "title": "My Notes",

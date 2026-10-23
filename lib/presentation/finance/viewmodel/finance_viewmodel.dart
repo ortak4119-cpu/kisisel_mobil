@@ -132,6 +132,16 @@ class FinanceViewModel extends ChangeNotifier {
   String _subscriptionBillingCycle = 'monthly';
   String get subscriptionBillingCycle => _subscriptionBillingCycle;
 
+  // Abonelik hatırlatma: backend reminder_enabled alanını okur ve
+  // yaklaşan ödeme için bildirim gönderir.
+  bool _subscriptionReminder = true;
+  bool get subscriptionReminder => _subscriptionReminder;
+
+  void setSubscriptionReminder(bool v) {
+    _subscriptionReminder = v;
+    notifyListeners();
+  }
+
   void setSubscriptionBillingCycle(String cycle) {
     _subscriptionBillingCycle = cycle;
     notifyListeners();
@@ -142,6 +152,18 @@ class FinanceViewModel extends ChangeNotifier {
     subscriptionAmountController.clear();
     subscriptionBillingDateController.clear();
     _subscriptionBillingCycle = 'monthly';
+    _subscriptionReminder = true;
+    notifyListeners();
+  }
+
+  /// Düzenleme formunu mevcut abonelik verisiyle doldurur.
+  void prefillSubscriptionForm(Subscription s) {
+    subscriptionNameController.text = s.name;
+    subscriptionAmountController.text =
+        s.amount.toStringAsFixed(s.amount.truncateToDouble() == s.amount ? 0 : 2);
+    subscriptionBillingDateController.text = s.billingDate.toString();
+    _subscriptionBillingCycle = s.billingCycle;
+    _subscriptionReminder = s.reminderEnabled;
     notifyListeners();
   }
 
@@ -320,7 +342,7 @@ class FinanceViewModel extends ChangeNotifier {
         billingCycle: _subscriptionBillingCycle,
         billingDate: billingDate,
         nextBillingDate: nextBilling.toIso8601String().split('T')[0],
-        reminderEnabled: false,
+        reminderEnabled: _subscriptionReminder,
         isActive: true,
         notes: null,
       );
@@ -452,7 +474,7 @@ class FinanceViewModel extends ChangeNotifier {
         billingCycle: _subscriptionBillingCycle,
         billingDate: billingDate,
         nextBillingDate: nextBilling.toIso8601String().split('T')[0],
-        reminderEnabled: false,
+        reminderEnabled: _subscriptionReminder,
         isActive: true,
         notes: null,
       );
@@ -563,8 +585,20 @@ class FinanceViewModel extends ChangeNotifier {
 
   Future<void> loadExpenses() async {
     try {
+      // Aylık toplamlar ve grafikler (_expenses üzerinden hesaplanır) doğru
+      // olsun diye yalnız "son 20" yerine içinde bulunulan ayın tamamını +
+      // 7 günlük grafik için önceki aydan taşan günleri de çekiyoruz.
+      final now = DateTime.now();
+      final monthStart = DateTime(now.year, now.month, 1);
+      final weekLookback = DateTime(now.year, now.month, now.day - 6);
+      final start = weekLookback.isBefore(monthStart) ? weekLookback : monthStart;
+      String fmt(DateTime d) =>
+          '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
       final response = await _expenseService.getAllExpenses(
-        perPage: 20, // Son 20 harcamayı getir
+        startDate: fmt(start),
+        endDate: fmt(now),
+        perPage: 500,
       );
 
       if (response.isSuccess && response.data != null) {
@@ -742,8 +776,34 @@ class FinanceViewModel extends ChangeNotifier {
 
   // ==================== HELPERS ====================
 
+  // NOT: Gider ekleme formu yeni kategori kümesini kullanıyor
+  // (market/bills/transport/health/other + gelir: salary/freelance/...).
+  // Liste ve istatistik gösterimi de aynı kümeyi tanımalı; aksi halde
+  // 'market' gibi id'ler çevrilmeden ham görünür. Eski id'ler
+  // (food/transportation/...) geriye dönük uyum için korunur.
   String getCategoryLabel(String category) {
     switch (category) {
+      // Yeni gider kategorileri
+      case 'market':
+        return 'finance.cat.market'.tr();
+      case 'transport':
+        return 'finance.cat.transport'.tr();
+      // Gelir kategorileri
+      case 'salary':
+        return 'finance.inc.salary'.tr();
+      case 'freelance':
+        return 'finance.inc.freelance'.tr();
+      case 'investment':
+        return 'finance.inc.investment'.tr();
+      case 'gift':
+        return 'finance.inc.gift'.tr();
+      // Ortak + eski kategoriler
+      case 'bills':
+        return 'finance.cat.bills'.tr();
+      case 'health':
+        return 'finance.cat.health'.tr();
+      case 'other':
+        return 'finance.cat.other'.tr();
       case 'food':
         return 'finance.categories.food'.tr();
       case 'transportation':
@@ -752,14 +812,8 @@ class FinanceViewModel extends ChangeNotifier {
         return 'finance.categories.entertainment'.tr();
       case 'shopping':
         return 'finance.categories.shopping'.tr();
-      case 'bills':
-        return 'finance.categories.bills'.tr();
-      case 'health':
-        return 'finance.categories.health'.tr();
       case 'education':
         return 'finance.categories.education'.tr();
-      case 'other':
-        return 'finance.categories.other'.tr();
       default:
         return category;
     }
@@ -767,6 +821,22 @@ class FinanceViewModel extends ChangeNotifier {
 
   String getCategoryEmoji(String category) {
     switch (category) {
+      case 'market':
+        return '🛒';
+      case 'transport':
+        return '🚌';
+      case 'salary':
+        return '💼';
+      case 'freelance':
+        return '💻';
+      case 'investment':
+        return '📈';
+      case 'gift':
+        return '🎁';
+      case 'bills':
+        return '📄';
+      case 'health':
+        return '❤️';
       case 'food':
         return '🍔';
       case 'transportation':
@@ -775,10 +845,6 @@ class FinanceViewModel extends ChangeNotifier {
         return '🎬';
       case 'shopping':
         return '🛍️';
-      case 'bills':
-        return '📄';
-      case 'health':
-        return '💊';
       case 'education':
         return '📚';
       case 'other':
@@ -790,6 +856,22 @@ class FinanceViewModel extends ChangeNotifier {
 
   Color getCategoryColor(String category) {
     switch (category) {
+      case 'market':
+        return const Color(0xFFF6A821);
+      case 'transport':
+        return const Color(0xFF48BB78);
+      case 'salary':
+        return const Color(0xFF48BB78);
+      case 'freelance':
+        return const Color(0xFF4C9AFF);
+      case 'investment':
+        return const Color(0xFF9F7AEA);
+      case 'gift':
+        return const Color(0xFFED64A6);
+      case 'bills':
+        return const Color(0xFF4C9AFF);
+      case 'health':
+        return const Color(0xFFF6524B);
       case 'food':
         return const Color(0xFFFF6B6B);
       case 'transportation':
@@ -798,14 +880,10 @@ class FinanceViewModel extends ChangeNotifier {
         return const Color(0xFFB794F6);
       case 'shopping':
         return const Color(0xFFFFA07A);
-      case 'bills':
-        return const Color(0xFF95E1D3);
-      case 'health':
-        return const Color(0xFFFF5252);
       case 'education':
         return const Color(0xFF667EEA);
       case 'other':
-        return const Color(0xFF7EC8F5);
+        return const Color(0xFF9AA0A6);
       default:
         return const Color(0xFF7EC8F5);
     }
@@ -1268,7 +1346,7 @@ class FinanceViewModel extends ChangeNotifier {
         paymentMethod: null,
         receiptImageUrl: null,
         isRecurring: _formRecurring,
-        recurringPattern: null,
+        recurringPattern: _formRecurring ? _formRecurPattern : null,
         location: _formLocation,
         merchant: null,
       );

@@ -715,7 +715,8 @@
       "weekly": "Her hafta",
       "monthly": "Her ay",
       "yearly": "Her yıl"
-    }
+    },
+    "paymentReminderSub": "Yenileme gününden önce bildirim al"
   },
   "notes": {
     "title": "Notlarım",

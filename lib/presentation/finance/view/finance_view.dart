@@ -1495,7 +1495,32 @@ class _AddSubscriptionBottomSheet extends StatelessWidget {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 8),
+                        SwitchListTile(
+                          contentPadding: EdgeInsets.zero,
+                          value: vm.subscriptionReminder,
+                          onChanged: vm.setSubscriptionReminder,
+                          title: Text(
+                            'finance.paymentReminder'.tr(),
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: isDarkMode
+                                  ? ColorConstant.textPrimaryDark
+                                  : ColorConstant.textPrimaryLight,
+                            ),
+                          ),
+                          subtitle: Text(
+                            'finance.paymentReminderSub'.tr(),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: isDarkMode
+                                  ? ColorConstant.textSecondaryDark
+                                  : ColorConstant.textSecondaryLight,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
                         Row(
                           children: [
                             Expanded(
@@ -3407,7 +3432,32 @@ class _EditSubscriptionBottomSheet extends StatelessWidget {
                           icon: Icons.calendar_today,
                           keyboardType: TextInputType.number,
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 8),
+                        SwitchListTile(
+                          contentPadding: EdgeInsets.zero,
+                          value: vm.subscriptionReminder,
+                          onChanged: vm.setSubscriptionReminder,
+                          title: Text(
+                            'finance.paymentReminder'.tr(),
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: isDarkMode
+                                  ? ColorConstant.textPrimaryDark
+                                  : ColorConstant.textPrimaryLight,
+                            ),
+                          ),
+                          subtitle: Text(
+                            'finance.paymentReminderSub'.tr(),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: isDarkMode
+                                  ? ColorConstant.textSecondaryDark
+                                  : ColorConstant.textSecondaryLight,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(

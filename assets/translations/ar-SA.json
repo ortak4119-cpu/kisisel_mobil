@@ -715,7 +715,8 @@
       "monthly": "شهري",
       "yearly": "سنوي"
     },
-    "noExpensesInFilter": "لا توجد مصروفات في الفئات المحددة"
+    "noExpensesInFilter": "لا توجد مصروفات في الفئات المحددة",
+    "paymentReminderSub": "احصل على إشعار قبل تاريخ التجديد"
   },
   "notes": {
     "title": "ملاحظاتي",
