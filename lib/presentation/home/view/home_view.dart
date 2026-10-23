@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/route/app_router.gr.dart';
+import '../../../service/update/update_service.dart';
 
 @RoutePage()
 class HomeView extends StatefulWidget {
@@ -19,6 +20,19 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView> {
   int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // Ana ekran acilinca App Store'da yeni surum var mi kontrol et.
+    // Ilk kare cizildikten sonra, kisa bir gecikmeyle (acilisi yavaslatmaz).
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await Future.delayed(const Duration(seconds: 2));
+      if (mounted) {
+        UpdateService.checkForUpdate(context);
+      }
+    });
+  }
 
   // Sayfalar
   final List<Widget> _pages = [

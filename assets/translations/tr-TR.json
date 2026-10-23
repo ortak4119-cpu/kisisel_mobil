@@ -1,4 +1,10 @@
 {
+  "update": {
+    "title": "Yeni Sürüm Mevcut",
+    "message": "LifeSync'in yeni bir sürümü yayınlandı. En iyi deneyim için güncellemeni öneririz.",
+    "update": "Güncelle",
+    "later": "Daha Sonra"
+  },
   "app": {
     "name": "LifeSync",
     "tagline": "Hayatınızı Senkronize Edin",
