@@ -12,6 +12,7 @@ import '../../../service/subscription/subscription_service.dart';
 import '../../../service/budget/budget_service.dart';
 import '../../../service/expense/expense_service.dart';
 import '../../../service/income/income_service.dart';
+import '../../../service/savings/savings_service.dart';
 import '../../../service/security/security_pin_service.dart';
 import '../../../service/profile/profile_service.dart';
 import '../../../models/subscription/subscription_models.dart';
@@ -94,6 +95,7 @@ class FinanceViewModel extends ChangeNotifier {
   final IBudgetService _budgetService = locator.get<IBudgetService>();
   final IExpenseService _expenseService = locator.get<IExpenseService>();
   final IIncomeService _incomeService = locator.get<IIncomeService>();
+  final ISavingsService _savingsService = locator.get<ISavingsService>();
   final ISecurityPinService _pinService = locator.get<ISecurityPinService>();
   final IProfileService _profileService = locator.get<IProfileService>();
 
@@ -1295,42 +1297,54 @@ class FinanceViewModel extends ChangeNotifier {
   double get savingsPercent =>
       _savingsTarget <= 0 ? 0 : (_savingsCurrent / _savingsTarget * 100);
 
+  static const String _kSavingsMigratedKey = 'finance_savings_migrated_v1';
+
   Future<void> loadSavingsGoal() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString(_kSavingsKey);
-      if (raw == null) return;
-      final j = jsonDecode(raw) as Map<String, dynamic>;
-      _savingsTarget = (j['target'] as num?)?.toDouble() ?? 25000;
-      _savingsCurrent = (j['current'] as num?)?.toDouble() ?? 0;
-      _savingsTitle = j['title'] as String? ?? '';
-    } catch (_) {}
+      await _migrateLocalSavingsIfNeeded();
+      final data = await _savingsService.getSavings();
+      if (data != null) {
+        _savingsTitle = data.title;
+        _savingsTarget = data.target > 0 ? data.target : _savingsTarget;
+        _savingsCurrent = data.current;
+      }
+    } catch (e) {
+      debugPrint('loadSavingsGoal error: $e');
+    }
   }
 
-  Future<void> _persistSavings() async {
+  /// Eski yerel tasarruf hedefini bir kez backend'e taşır.
+  Future<void> _migrateLocalSavingsIfNeeded() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(
-          _kSavingsKey,
-          jsonEncode({
-            'target': _savingsTarget,
-            'current': _savingsCurrent,
-            'title': _savingsTitle,
-          }));
-    } catch (_) {}
+      if (prefs.getBool(_kSavingsMigratedKey) == true) return;
+      final raw = prefs.getString(_kSavingsKey);
+      if (raw != null) {
+        final j = jsonDecode(raw) as Map<String, dynamic>;
+        await _savingsService.updateSavings(
+          title: j['title'] as String? ?? '',
+          target: (j['target'] as num?)?.toDouble() ?? 0,
+          current: (j['current'] as num?)?.toDouble() ?? 0,
+        );
+      }
+      await prefs.setBool(_kSavingsMigratedKey, true);
+      await prefs.remove(_kSavingsKey);
+    } catch (e) {
+      debugPrint('Savings migration error: $e');
+    }
   }
 
   Future<void> setSavingsGoal(String title, double target) async {
     _savingsTitle = title;
     _savingsTarget = target;
-    await _persistSavings();
     notifyListeners();
+    await _savingsService.updateSavings(title: title, target: target);
   }
 
   Future<void> addToSavings(double amount) async {
     _savingsCurrent += amount;
-    await _persistSavings();
     notifyListeners();
+    await _savingsService.updateSavings(current: _savingsCurrent);
   }
 
   // ---- Aylık toplamlar / grafik verileri ----
