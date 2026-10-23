@@ -60,7 +60,8 @@ class _SplashViewState extends State<SplashView> with SingleTickerProviderStateM
   }
 
   Future<void> _navigateToNextScreen() async {
-    await Future.delayed(const Duration(milliseconds: 2500));
+    // Kisa bir marka gosterimi; animasyon (1800ms) zaten devam ediyor.
+    await Future.delayed(const Duration(milliseconds: 1000));
 
     final prefs = await SharedPreferences.getInstance();
     final isFirstTime = prefs.getBool('isFirstTime') ?? true;
@@ -71,9 +72,9 @@ class _SplashViewState extends State<SplashView> with SingleTickerProviderStateM
     // Firebase Auth kontrolü
     final user = FirebaseAuth.instance.currentUser;
 
-    // Kullanıcı bilgilerini logla (token varsa)
+    // Premium log'u yalnizca debug amacli; navigasyonu BLOKE ETMESIN (arka planda).
     if (token != null && token.isNotEmpty) {
-      await _logUserPremiumStatus();
+      _logUserPremiumStatus();
     }
 
     if (mounted) {

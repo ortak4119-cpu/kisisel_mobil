@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
+import 'dart:async';
 import 'dart:io';
 
 import '../../firebase_options.dart';
@@ -31,11 +32,11 @@ class AppInitializer {
     // GetIt (Dependency Injection) setup
     setupLocator();
 
-    // RevenueCat'i başlat
-    await _initRevenueCat();
-
-    // FCM'i başlat
-    await _initFCM();
+    // RevenueCat ve FCM ağ gerektirir ve UI'nin ilk karesi için gerekli degil.
+    // Bunlari await ETMEDEN arka planda baslat; boylece uygulama aninda acilir.
+    // (Her iki metot kendi icinde try/catch ile korunuyor.)
+    unawaited(_initRevenueCat());
+    unawaited(_initFCM());
   }
 
   static Future<void> _initFirebase() async {
