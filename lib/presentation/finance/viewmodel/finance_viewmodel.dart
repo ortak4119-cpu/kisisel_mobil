@@ -241,7 +241,12 @@ class FinanceViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  int? _editingSubscriptionId;
+  bool get isEditingSubscription => _editingSubscriptionId != null;
+  int? get editingSubscriptionId => _editingSubscriptionId;
+
   void resetSubscriptionForm() {
+    _editingSubscriptionId = null;
     subscriptionNameController.clear();
     subscriptionAmountController.clear();
     subscriptionBillingDateController.clear();
@@ -258,6 +263,13 @@ class FinanceViewModel extends ChangeNotifier {
     subscriptionBillingDateController.text = s.billingDate.toString();
     _subscriptionBillingCycle = s.billingCycle;
     _subscriptionReminder = s.reminderEnabled;
+    notifyListeners();
+  }
+
+  /// Aboneliği düzenleme için formu doldurur ve düzenleme kimliğini ayarlar.
+  void startEditSubscription(Subscription s) {
+    prefillSubscriptionForm(s);
+    _editingSubscriptionId = s.id;
     notifyListeners();
   }
 
@@ -1911,7 +1923,12 @@ class FinanceViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ---- Düzenleme modu ----
+  int? _editTxnId;
+  bool get isEditingTxn => _editTxnId != null;
+
   void resetFinanceForm({bool income = false}) {
+    _editTxnId = null;
     expenseAmountController.clear();
     expenseDescriptionController.clear();
     _isIncomeForm = income;
@@ -1927,6 +1944,35 @@ class FinanceViewModel extends ChangeNotifier {
     _formLocation = null;
     _formReminder = false;
     _formReceipt = null;
+    notifyListeners();
+  }
+
+  /// Finans formunu düzenleme için mevcut işlem verisiyle doldurur.
+  void startEditFinance({
+    required int id,
+    required bool income,
+    required double amount,
+    required String category,
+    String? description,
+    required DateTime date,
+  }) {
+    _editTxnId = id;
+    _isIncomeForm = income;
+    _formExpCategory = category;
+    _formExpDate = date;
+    _formExpTime = TimeOfDay.now();
+    _formPayMethod = 'card';
+    _formAccount = 'daily';
+    _formRecurring = false;
+    _formRecurPattern = 'monthly';
+    _formTags.clear();
+    _formNote = null;
+    _formLocation = null;
+    _formReminder = false;
+    _formReceipt = null;
+    expenseAmountController.text =
+        amount.toStringAsFixed(amount.truncateToDouble() == amount ? 0 : 2);
+    expenseDescriptionController.text = description ?? '';
     notifyListeners();
   }
 
@@ -1958,17 +2004,49 @@ class FinanceViewModel extends ChangeNotifier {
     }
     final desc = expenseDescriptionController.text.trim();
 
+    final editing = _editTxnId != null;
+
     if (_isIncomeForm) {
       _isLoading = true;
       notifyListeners();
-      final id = DateTime.now().microsecondsSinceEpoch ~/ 1000;
-      final ok = await addIncome(amount, desc.isEmpty ? null : desc,
-          _formExpCategory, _fmtDate(_formExpDate), id);
+      bool ok;
+      final req = IncomeRequest(
+        amount: amount,
+        currency: AppCurrency.code,
+        category: _formExpCategory,
+        description: desc.isEmpty ? null : desc,
+        incomeDate: _fmtDate(_formExpDate),
+      );
+      if (editing) {
+        final resp = await _incomeService.updateIncome(_editTxnId!, req);
+        ok = resp.isSuccess && resp.data != null;
+        if (ok) {
+          final e = resp.data!;
+          final idx = _income.indexWhere((i) => i.id == _editTxnId);
+          final entry = IncomeEntry(
+              id: e.id,
+              amount: e.amount,
+              description: e.description,
+              category: e.category,
+              date: e.incomeDate);
+          if (idx != -1) {
+            _income[idx] = entry;
+          }
+        }
+      } else {
+        final id = DateTime.now().microsecondsSinceEpoch ~/ 1000;
+        ok = await addIncome(amount, desc.isEmpty ? null : desc,
+            _formExpCategory, _fmtDate(_formExpDate), id);
+      }
       _isLoading = false;
       notifyListeners();
       if (context.mounted) {
         if (ok) {
-          CustomSnackBar.showSuccess(context, 'success.incomeAdded'.tr());
+          CustomSnackBar.showSuccess(
+              context,
+              editing
+                  ? 'success.incomeUpdated'.tr()
+                  : 'success.incomeAdded'.tr());
           Navigator.pop(context);
         } else {
           CustomSnackBar.showError(context, 'errors.general'.tr());
@@ -1993,6 +2071,29 @@ class FinanceViewModel extends ChangeNotifier {
         location: _formLocation,
         merchant: null,
       );
+
+      // Düzenleme modu: mevcut gideri güncelle
+      if (editing) {
+        final resp = await _expenseService.updateExpense(_editTxnId!, request);
+        _isLoading = false;
+        if (resp.isSuccess && resp.data != null) {
+          final idx = _expenses.indexWhere((e) => e.id == _editTxnId);
+          if (idx != -1) {
+            _expenses[idx] = resp.data!;
+          }
+          await loadBudgetStats();
+          if (context.mounted) {
+            CustomSnackBar.showSuccess(context, 'success.expenseUpdated'.tr());
+            Navigator.pop(context);
+          }
+        } else if (context.mounted) {
+          CustomSnackBar.showError(
+              context, resp.errorMessage ?? 'errors.unknownError'.tr());
+        }
+        notifyListeners();
+        return;
+      }
+
       final response = await _expenseService.createExpense(request);
       if (response.isSuccess && response.data != null) {
         final exp = response.data!;

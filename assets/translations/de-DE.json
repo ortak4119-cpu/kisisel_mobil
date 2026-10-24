@@ -799,7 +799,8 @@
       "found": "Betrag gefunden",
       "notFound": "Betrag nicht gefunden, manuell eingeben",
       "failed": "Scan fehlgeschlagen"
-    }
+    },
+    "editIncome": "Einnahme bearbeiten"
   },
   "notes": {
     "title": "Meine Notizen",
@@ -1124,7 +1125,8 @@
     "habitDeleted": "Gewohnheit gelöscht",
     "habitCompleted": "Großartig! Gewohnheit abgeschlossen 🎉",
     "habitCancelled": "Gewohnheit abgebrochen",
-    "incomeAdded": "Einnahme hinzugefügt"
+    "incomeAdded": "Einnahme hinzugefügt",
+    "incomeUpdated": "Einnahme aktualisiert"
   },
   "paywall": {
     "loading": "Pakete werden geladen...",

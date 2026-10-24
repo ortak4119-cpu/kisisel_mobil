@@ -879,7 +879,7 @@ class _FinanceViewState extends State<FinanceView> {
             Row(
               children: [
                 for (final s in subs.take(2)) ...[
-                  Expanded(child: _subMini(s, c)),
+                  Expanded(child: _subMini(context, vm, s, c)),
                   const SizedBox(width: 12),
                 ],
                 if (subs.length < 2) const Expanded(child: SizedBox()),
@@ -913,8 +913,12 @@ class _FinanceViewState extends State<FinanceView> {
     );
   }
 
-  Widget _subMini(dynamic s, AppColors c) {
-    return Container(
+  Widget _subMini(
+      BuildContext context, FinanceViewModel vm, dynamic s, AppColors c) {
+    return GestureDetector(
+      onTap: () => _openEditSubscription(context, vm, s, c.isDark),
+      onLongPress: () => _subMenu(context, vm, s, c),
+      child: Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
           color: c.bg, borderRadius: BorderRadius.circular(14)),
@@ -943,6 +947,7 @@ class _FinanceViewState extends State<FinanceView> {
           Text('${tl(s.amount)} ${'finance.perMonth'.tr()}',
               style: TextStyle(fontSize: 12, color: c.textMuted)),
         ],
+      ),
       ),
     );
   }
@@ -1154,31 +1159,8 @@ class _FinanceViewState extends State<FinanceView> {
     final cat = finCatById(t.category);
     final month = 'calendar.monthNames'.tr().split(',');
     return GestureDetector(
-      onLongPress: () => showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          backgroundColor: c.card,
-          title: Text('finance.deleteExpense'.tr(),
-              style: TextStyle(color: c.textPrimary)),
-          content: Text(t.title, style: TextStyle(color: c.textSecondary)),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: Text('common.cancel'.tr())),
-            TextButton(
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  if (t.income) {
-                    vm.deleteIncome(t.id);
-                  } else {
-                    vm.deleteExpense(t.id, context);
-                  }
-                },
-                child: Text('common.delete'.tr(),
-                    style: const TextStyle(color: Color(0xFFE53E3E)))),
-          ],
-        ),
-      ),
+      onTap: () => _openEditFinance(context, vm, t, c.isDark),
+      onLongPress: () => _txnMenu(context, vm, t, c),
       child: Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(children: [
@@ -1295,12 +1277,59 @@ class _FinanceViewState extends State<FinanceView> {
   // ---------- Diğer sheet açıcılar (mevcut sheet'leri kullanır) ----------
   void _showAddSubscriptionDialog(
       BuildContext context, FinanceViewModel viewModel, bool isDarkMode) {
+    viewModel.resetSubscriptionForm();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => _AddSubscriptionBottomSheet(
           viewModel: viewModel, isDarkMode: isDarkMode),
+    );
+  }
+
+  void _openEditSubscription(BuildContext context, FinanceViewModel vm,
+      dynamic s, bool isDarkMode) {
+    vm.startEditSubscription(s);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) =>
+          _AddSubscriptionBottomSheet(viewModel: vm, isDarkMode: isDarkMode),
+    );
+  }
+
+  void _subMenu(
+      BuildContext context, FinanceViewModel vm, dynamic s, AppColors c) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: c.card,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
+      builder: (ctx) => SafeArea(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          ListTile(
+            leading: const Icon(Icons.edit_rounded, color: Color(0xFF9F7AEA)),
+            title:
+                Text('common.edit'.tr(), style: TextStyle(color: c.textPrimary)),
+            onTap: () {
+              Navigator.pop(ctx);
+              _openEditSubscription(context, vm, s, c.isDark);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.delete_outline_rounded,
+                color: Color(0xFFE53E3E)),
+            title: Text('common.delete'.tr(),
+                style: TextStyle(color: c.textPrimary)),
+            onTap: () {
+              Navigator.pop(ctx);
+              vm.deleteSubscription(s.id, context);
+            },
+          ),
+          const SizedBox(height: 8),
+        ]),
+      ),
     );
   }
 
@@ -1344,6 +1373,91 @@ class _Txn {
   final String category;
   final bool income;
   _Txn(this.id, this.title, this.date, this.amount, this.category, this.income);
+}
+
+void _txnMenu(
+    BuildContext context, FinanceViewModel vm, _Txn t, AppColors c) {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: c.card,
+    shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
+    builder: (ctx) => SafeArea(
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        ListTile(
+          leading: const Icon(Icons.edit_rounded, color: _fOrange),
+          title: Text('common.edit'.tr(),
+              style: TextStyle(color: c.textPrimary)),
+          onTap: () {
+            Navigator.pop(ctx);
+            _openEditFinance(context, vm, t, c.isDark);
+          },
+        ),
+        ListTile(
+          leading:
+              const Icon(Icons.delete_outline_rounded, color: Color(0xFFE53E3E)),
+          title: Text('common.delete'.tr(),
+              style: TextStyle(color: c.textPrimary)),
+          onTap: () {
+            Navigator.pop(ctx);
+            showDialog(
+              context: context,
+              builder: (d) => AlertDialog(
+                backgroundColor: c.card,
+                title: Text('finance.deleteExpense'.tr(),
+                    style: TextStyle(color: c.textPrimary)),
+                content:
+                    Text(t.title, style: TextStyle(color: c.textSecondary)),
+                actions: [
+                  TextButton(
+                      onPressed: () => Navigator.pop(d),
+                      child: Text('common.cancel'.tr())),
+                  TextButton(
+                      onPressed: () {
+                        Navigator.pop(d);
+                        if (t.income) {
+                          vm.deleteIncome(t.id);
+                        } else {
+                          vm.deleteExpense(t.id, context);
+                        }
+                      },
+                      child: Text('common.delete'.tr(),
+                          style: const TextStyle(color: Color(0xFFE53E3E)))),
+                ],
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 8),
+      ]),
+    ),
+  );
+}
+
+void _openEditFinance(
+    BuildContext context, FinanceViewModel vm, _Txn t, bool isDark) {
+  String? desc;
+  if (t.income) {
+    final matches = vm.income.where((i) => i.id == t.id);
+    if (matches.isNotEmpty) desc = matches.first.description;
+  } else {
+    final matches = vm.expenses.where((e) => e.id == t.id);
+    if (matches.isNotEmpty) desc = matches.first.description;
+  }
+  vm.startEditFinance(
+    id: t.id,
+    income: t.income,
+    amount: t.amount.abs(),
+    category: t.category,
+    description: desc,
+    date: t.date,
+  );
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => _FinanceFormSheet(viewModel: vm, isDarkMode: isDark),
+  );
 }
 
 // ==================== BOTTOM SHEETS & DIALOGS ====================
@@ -1400,7 +1514,9 @@ class _AddSubscriptionBottomSheet extends StatelessWidget {
                         ),
                         const SizedBox(height: 24),
                         Text(
-                          'finance.newSubscription'.tr(),
+                          vm.isEditingSubscription
+                              ? 'finance.editSubscription'.tr()
+                              : 'finance.newSubscription'.tr(),
                           style: TextStyle(
                             color: isDarkMode
                                 ? ColorConstant.textPrimaryDark
@@ -1601,7 +1717,10 @@ class _AddSubscriptionBottomSheet extends StatelessWidget {
                             const SizedBox(width: 12),
                             Expanded(
                               child: ElevatedButton(
-                                onPressed: () => vm.createSubscription(context),
+                                onPressed: () => vm.isEditingSubscription
+                                    ? vm.updateSubscription(
+                                        vm.editingSubscriptionId!, context)
+                                    : vm.createSubscription(context),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: ColorConstant.accentBlue,
                                   padding:
@@ -1611,7 +1730,9 @@ class _AddSubscriptionBottomSheet extends StatelessWidget {
                                   ),
                                 ),
                                 child: Text(
-                                  'finance.add'.tr(),
+                                  vm.isEditingSubscription
+                                      ? 'finance.update'.tr()
+                                      : 'finance.add'.tr(),
                                   style: TextStyle(
                                     color: ColorConstant.white,
                                     fontWeight: FontWeight.w700,
@@ -1768,7 +1889,13 @@ class _FinanceFormSheet extends StatelessWidget {
           ),
           Expanded(
             child: Text(
-                income ? 'finance.newIncome'.tr() : 'finance.newExpense'.tr(),
+                vm.isEditingTxn
+                    ? (income
+                        ? 'finance.editIncome'.tr()
+                        : 'finance.editExpense'.tr())
+                    : (income
+                        ? 'finance.newIncome'.tr()
+                        : 'finance.newExpense'.tr()),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     fontSize: 18,

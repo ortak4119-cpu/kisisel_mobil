@@ -799,7 +799,8 @@
       "found": "Tutar bulundu",
       "notFound": "Tutar bulunamadı, elle girin",
       "failed": "Tarama başarısız"
-    }
+    },
+    "editIncome": "Geliri Düzenle"
   },
   "notes": {
     "title": "Notlarım",
@@ -1124,7 +1125,8 @@
     "habitDeleted": "Alışkanlık silindi",
     "habitCompleted": "Harika! Alışkanlık tamamlandı 🎉",
     "habitCancelled": "Alışkanlık iptal edildi",
-    "incomeAdded": "Gelir eklendi"
+    "incomeAdded": "Gelir eklendi",
+    "incomeUpdated": "Gelir güncellendi"
   },
   "paywall": {
     "loading": "Paketler yükleniyor...",

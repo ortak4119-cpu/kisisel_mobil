@@ -799,7 +799,8 @@
       "found": "Amount found",
       "notFound": "Amount not found, enter manually",
       "failed": "Scan failed"
-    }
+    },
+    "editIncome": "Edit Income"
   },
   "notes": {
     "title": "My Notes",
@@ -1124,7 +1125,8 @@
     "habitDeleted": "Habit deleted",
     "habitCompleted": "Great! Habit completed 🎉",
     "habitCancelled": "Habit cancelled",
-    "incomeAdded": "Income added"
+    "incomeAdded": "Income added",
+    "incomeUpdated": "Income updated"
   },
   "paywall": {
     "loading": "Loading packages...",

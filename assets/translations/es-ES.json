@@ -799,7 +799,8 @@
       "found": "Importe encontrado",
       "notFound": "Importe no encontrado, introdúcelo manualmente",
       "failed": "Error al escanear"
-    }
+    },
+    "editIncome": "Editar ingreso"
   },
   "notes": {
     "title": "Mis Notas",
@@ -1124,7 +1125,8 @@
     "habitDeleted": "Hábito eliminado",
     "habitCompleted": "¡Genial! Hábito completado 🎉",
     "habitCancelled": "Hábito cancelado",
-    "incomeAdded": "Ingreso añadido"
+    "incomeAdded": "Ingreso añadido",
+    "incomeUpdated": "Ingreso actualizado"
   },
   "paywall": {
     "loading": "Cargando paquetes...",

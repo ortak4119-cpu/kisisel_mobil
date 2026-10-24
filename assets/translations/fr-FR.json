@@ -799,7 +799,8 @@
       "found": "Montant trouvé",
       "notFound": "Montant introuvable, saisissez-le manuellement",
       "failed": "Échec du scan"
-    }
+    },
+    "editIncome": "Modifier le revenu"
   },
   "notes": {
     "title": "Mes Notes",
@@ -1124,7 +1125,8 @@
     "habitDeleted": "Habitude supprimée",
     "habitCompleted": "Génial! Habitude terminée 🎉",
     "habitCancelled": "Habitude annulée",
-    "incomeAdded": "Revenu ajouté"
+    "incomeAdded": "Revenu ajouté",
+    "incomeUpdated": "Revenu mis à jour"
   },
   "paywall": {
     "loading": "Chargement des forfaits...",

@@ -799,7 +799,8 @@
       "found": "金額を検出",
       "notFound": "金額が見つかりません。手動で入力",
       "failed": "スキャンに失敗"
-    }
+    },
+    "editIncome": "収入を編集"
   },
   "notes": {
     "title": "マイノート",
@@ -1124,7 +1125,8 @@
     "habitDeleted": "習慣を削除しました",
     "habitCompleted": "素晴らしい！習慣完了 🎉",
     "habitCancelled": "習慣をキャンセルしました",
-    "incomeAdded": "収入を追加しました"
+    "incomeAdded": "収入を追加しました",
+    "incomeUpdated": "収入を更新しました"
   },
   "paywall": {
     "loading": "パッケージを読み込み中...",

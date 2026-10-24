@@ -9,6 +9,7 @@ abstract class IIncomeService {
     int? perPage,
   });
   Future<ServiceResponse<ApiIncome>> createIncome(IncomeRequest request);
+  Future<ServiceResponse<ApiIncome>> updateIncome(int id, IncomeRequest request);
   Future<ServiceResponse<void>> deleteIncome(int id);
 }
 
@@ -36,6 +37,30 @@ class IncomeService implements IIncomeService {
   Future<ServiceResponse<ApiIncome>> createIncome(IncomeRequest request) async {
     final response = await BaseApiService.post<Map<String, dynamic>>(
       '/incomes',
+      body: request.toJson(),
+      requiresAuth: true,
+    );
+
+    if (response.isSuccess && response.data != null) {
+      return ServiceResponse.success(
+        statusCode: response.statusCode,
+        data: ApiIncome.fromJson(response.data!),
+        message: response.message,
+      );
+    }
+
+    return ServiceResponse.error(
+      statusCode: response.statusCode,
+      message: response.message,
+      errors: response.errors,
+    );
+  }
+
+  @override
+  Future<ServiceResponse<ApiIncome>> updateIncome(
+      int id, IncomeRequest request) async {
+    final response = await BaseApiService.put<Map<String, dynamic>>(
+      '/incomes/$id',
       body: request.toJson(),
       requiresAuth: true,
     );

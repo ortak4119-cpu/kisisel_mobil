@@ -799,7 +799,8 @@
       "found": "已找到金额",
       "notFound": "未找到金额，请手动输入",
       "failed": "扫描失败"
-    }
+    },
+    "editIncome": "编辑收入"
   },
   "notes": {
     "title": "我的笔记",
@@ -1124,7 +1125,8 @@
     "habitDeleted": "习惯已删除",
     "habitCompleted": "太棒了! 习惯已完成 🎉",
     "habitCancelled": "习惯已取消",
-    "incomeAdded": "已添加收入"
+    "incomeAdded": "已添加收入",
+    "incomeUpdated": "收入已更新"
   },
   "paywall": {
     "loading": "正在加载套餐...",

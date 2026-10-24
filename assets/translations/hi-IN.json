@@ -799,7 +799,8 @@
       "found": "राशि मिली",
       "notFound": "राशि नहीं मिली, मैन्युअल रूप से दर्ज करें",
       "failed": "स्कैन विफल"
-    }
+    },
+    "editIncome": "आय संपादित करें"
   },
   "notes": {
     "title": "मेरे नोट्स",
@@ -1124,7 +1125,8 @@
     "habitDeleted": "आदत हटाई गई",
     "habitCompleted": "बहुत बढ़िया! आदत पूरी हुई 🎉",
     "habitCancelled": "आदत रद्द की गई",
-    "incomeAdded": "आय जोड़ी गई"
+    "incomeAdded": "आय जोड़ी गई",
+    "incomeUpdated": "आय अपडेट की गई"
   },
   "paywall": {
     "loading": "पैकेज लोड हो रहे हैं...",

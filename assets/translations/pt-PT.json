@@ -799,7 +799,8 @@
       "found": "Valor encontrado",
       "notFound": "Valor não encontrado, introduza manualmente",
       "failed": "Falha ao digitalizar"
-    }
+    },
+    "editIncome": "Editar receita"
   },
   "notes": {
     "title": "Minhas Notas",
@@ -1124,7 +1125,8 @@
     "habitDeleted": "Hábito eliminado",
     "habitCompleted": "Ótimo! Hábito concluído 🎉",
     "habitCancelled": "Hábito cancelado",
-    "incomeAdded": "Receita adicionada"
+    "incomeAdded": "Receita adicionada",
+    "incomeUpdated": "Receita atualizada"
   },
   "paywall": {
     "loading": "A carregar pacotes...",
