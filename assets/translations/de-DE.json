@@ -790,7 +790,8 @@
     "currency": {
       "title": "Währung",
       "sub": "Anzeigewährung für Beträge"
-    }
+    },
+    "goToday": "Zu heute"
   },
   "notes": {
     "title": "Meine Notizen",

@@ -711,19 +711,16 @@ class FinanceViewModel extends ChangeNotifier {
 
   Future<void> loadExpenses() async {
     try {
-      // Aylık toplamlar ve grafikler (_expenses üzerinden hesaplanır) doğru
-      // olsun diye yalnız "son 20" yerine içinde bulunulan ayın tamamını +
-      // 7 günlük grafik için önceki aydan taşan günleri de çekiyoruz.
-      final now = DateTime.now();
-      final monthStart = DateTime(now.year, now.month, 1);
-      final weekLookback = DateTime(now.year, now.month, now.day - 6);
-      final start = weekLookback.isBefore(monthStart) ? weekLookback : monthStart;
+      // Görüntülenen ayın tamamını çek (grafik için birkaç gün öncesiyle).
+      final monthStart = DateTime(_viewMonth.year, _viewMonth.month, 1);
+      final monthEnd = DateTime(_viewMonth.year, _viewMonth.month + 1, 0);
+      final start = monthStart.subtract(const Duration(days: 7));
       String fmt(DateTime d) =>
           '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
       final response = await _expenseService.getAllExpenses(
         startDate: fmt(start),
-        endDate: fmt(now),
+        endDate: fmt(monthEnd),
         perPage: 500,
       );
 
@@ -1431,9 +1428,38 @@ class FinanceViewModel extends ChangeNotifier {
     }
   }
 
-  bool _sameMonth(DateTime d) {
+  // ---- Görüntülenen ay (ay değiştirici) ----
+  DateTime _viewMonth = DateTime(DateTime.now().year, DateTime.now().month);
+  DateTime get viewMonth => _viewMonth;
+  bool get isCurrentMonth {
     final n = DateTime.now();
-    return d.year == n.year && d.month == n.month;
+    return _viewMonth.year == n.year && _viewMonth.month == n.month;
+  }
+
+  bool get isFutureMonth {
+    final n = DateTime(DateTime.now().year, DateTime.now().month);
+    return _viewMonth.isAfter(n);
+  }
+
+  /// Görüntülenen ayı değiştirir ve o ayın verilerini yükler.
+  Future<void> changeMonth(int delta) async {
+    _viewMonth = DateTime(_viewMonth.year, _viewMonth.month + delta);
+    notifyListeners();
+    await Future.wait([loadExpenses(), loadIncome()]);
+    notifyListeners();
+  }
+
+  Future<void> goToCurrentMonth() async {
+    final n = DateTime.now();
+    if (isCurrentMonth) return;
+    _viewMonth = DateTime(n.year, n.month);
+    notifyListeners();
+    await Future.wait([loadExpenses(), loadIncome()]);
+    notifyListeners();
+  }
+
+  bool _sameMonth(DateTime d) {
+    return d.year == _viewMonth.year && d.month == _viewMonth.month;
   }
 
   double get monthIncomeTotal {
@@ -1557,11 +1583,12 @@ class FinanceViewModel extends ChangeNotifier {
 
   double get availableBalance => monthIncomeTotal - monthExpensesTotal;
 
-  /// Ayın kalan gün sayısı (bugün dahil).
+  /// Görüntülenen ayın kalan gün sayısı (bugün dahil).
   int get daysRemainingInMonth {
-    final n = DateTime.now();
-    final lastDay = DateTime(n.year, n.month + 1, 0).day;
-    return (lastDay - n.day) + 1;
+    final lastDay = DateTime(_viewMonth.year, _viewMonth.month + 1, 0).day;
+    if (isCurrentMonth) return (lastDay - DateTime.now().day) + 1;
+    if (isFutureMonth) return lastDay;
+    return 0; // geçmiş ay
   }
 
   /// "Günlük harcanabilir": kalan bakiyeyi ayın kalan günlerine böler.
@@ -1588,12 +1615,13 @@ class FinanceViewModel extends ChangeNotifier {
     return m;
   }
 
-  /// Son 7 günün günlük harcama toplamları (çubuk grafik).
+  /// Görüntülenen ayda son 7 günün günlük harcama toplamları (çubuk grafik).
   List<MapEntry<DateTime, double>> get dailyExpenseSeries {
-    final now = DateTime.now();
+    final lastDay = DateTime(_viewMonth.year, _viewMonth.month + 1, 0).day;
+    final anchorDay = isCurrentMonth ? DateTime.now().day : lastDay;
     final out = <MapEntry<DateTime, double>>[];
     for (int i = 6; i >= 0; i--) {
-      final day = DateTime(now.year, now.month, now.day - i);
+      final day = DateTime(_viewMonth.year, _viewMonth.month, anchorDay - i);
       double t = 0;
       for (final e in _expenses) {
         if (e.expenseDate.year == day.year &&
@@ -1608,8 +1636,8 @@ class FinanceViewModel extends ChangeNotifier {
   }
 
   double get dailyAverage {
-    final n = DateTime.now();
-    final days = n.day;
+    final lastDay = DateTime(_viewMonth.year, _viewMonth.month + 1, 0).day;
+    final days = isCurrentMonth ? DateTime.now().day : lastDay;
     return days == 0 ? 0 : monthExpensesTotal / days;
   }
 

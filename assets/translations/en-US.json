@@ -790,7 +790,8 @@
     "currency": {
       "title": "Currency",
       "sub": "Currency amounts are shown in"
-    }
+    },
+    "goToday": "Go to today"
   },
   "notes": {
     "title": "My Notes",

@@ -790,7 +790,8 @@
     "currency": {
       "title": "Moneda",
       "sub": "Moneda en que se muestran los importes"
-    }
+    },
+    "goToday": "Ir a hoy"
   },
   "notes": {
     "title": "Mis Notas",

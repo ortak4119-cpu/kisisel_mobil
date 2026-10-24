@@ -790,7 +790,8 @@
     "currency": {
       "title": "货币",
       "sub": "金额显示货币"
-    }
+    },
+    "goToday": "回到今天"
   },
   "notes": {
     "title": "我的笔记",

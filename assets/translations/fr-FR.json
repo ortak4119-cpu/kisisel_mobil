@@ -790,7 +790,8 @@
     "currency": {
       "title": "Devise",
       "sub": "Devise d'affichage des montants"
-    }
+    },
+    "goToday": "Aller à aujourd'hui"
   },
   "notes": {
     "title": "Mes Notes",

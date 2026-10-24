@@ -152,7 +152,9 @@ class _FinanceViewState extends State<FinanceView> {
                         padding: const EdgeInsets.fromLTRB(20, 12, 20, 130),
                         children: [
                           _header(context, vm, c),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 14),
+                          _monthSwitcher(context, vm, c),
+                          const SizedBox(height: 14),
                           _balanceCard(vm, c),
                           const SizedBox(height: 14),
                           _actionButtons(context, vm, c),
@@ -224,39 +226,78 @@ class _FinanceViewState extends State<FinanceView> {
 
   // ---------- Başlık ----------
   Widget _header(BuildContext context, FinanceViewModel vm, AppColors c) {
-    final now = DateTime.now();
-    final month = 'calendar.monthNames'.tr().split(',');
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('finance.title'.tr(),
-                  style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -0.5,
-                      color: c.textPrimary)),
-              const SizedBox(height: 2),
-              Text(
-                  '${now.month <= month.length ? month[now.month - 1] : ''} ${now.year}',
-                  style: TextStyle(fontSize: 14, color: c.textSecondary)),
-            ],
-          ),
+          child: Text('finance.title'.tr(),
+              style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.5,
+                  color: c.textPrimary)),
         ),
         _iconBtn(c, Icons.notifications_none_rounded,
             () => _showUpcomingSheet(context, vm, c)),
         const SizedBox(width: 10),
-        _iconBtn(c, Icons.ios_share_rounded,
-            () => vm.exportCsv(context)),
+        _iconBtn(c, Icons.ios_share_rounded, () => vm.exportCsv(context)),
         const SizedBox(width: 10),
         _iconBtn(c, Icons.settings_outlined,
             () => _showBudgetSettingsDialog(context, vm, c.isDark)),
       ],
     );
   }
+
+  // ---------- Ay değiştirici ----------
+  Widget _monthSwitcher(BuildContext context, FinanceViewModel vm, AppColors c) {
+    final months = 'calendar.monthNames'.tr().split(',');
+    final m = vm.viewMonth;
+    final label =
+        '${m.month <= months.length ? months[m.month - 1] : ''} ${m.year}';
+    return Container(
+      decoration: BoxDecoration(
+        color: c.card,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: c.border.withOpacity(0.6)),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      child: Row(
+        children: [
+          _monthArrow(c, Icons.chevron_left_rounded, () => vm.changeMonth(-1)),
+          Expanded(
+            child: GestureDetector(
+              onTap: vm.isCurrentMonth ? null : () => vm.goToCurrentMonth(),
+              child: Column(
+                children: [
+                  Text(label,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: c.textPrimary)),
+                  if (!vm.isCurrentMonth)
+                    Text('finance.goToday'.tr(),
+                        style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: _fOrange)),
+                ],
+              ),
+            ),
+          ),
+          _monthArrow(c, Icons.chevron_right_rounded, () => vm.changeMonth(1)),
+        ],
+      ),
+    );
+  }
+
+  Widget _monthArrow(AppColors c, IconData icon, VoidCallback onTap) => InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Icon(icon, size: 26, color: c.textSecondary)),
+      );
 
   Widget _iconBtn(AppColors c, IconData icon, VoidCallback onTap) => Material(
         color: c.card,
@@ -435,7 +476,11 @@ class _FinanceViewState extends State<FinanceView> {
   Widget _budgetCard(BuildContext context, FinanceViewModel vm, AppColors c) {
     final b = vm.budgetStats;
     final budget = b?.monthlyBudget ?? 0;
-    final spent = b?.totalSpent ?? vm.monthExpensesTotal;
+    // Geçmiş/ileri aylarda backend "bu ay" verisi yerine o ayın client
+    // toplamını kullan.
+    final spent = vm.isCurrentMonth
+        ? (b?.totalSpent ?? vm.monthExpensesTotal)
+        : vm.monthExpensesTotal;
     final pct = budget <= 0 ? 0.0 : (spent / budget).clamp(0.0, 1.0);
     final over = spent > budget && budget > 0;
     return Container(

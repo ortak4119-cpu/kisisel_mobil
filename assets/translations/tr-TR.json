@@ -790,7 +790,8 @@
     "currency": {
       "title": "Para Birimi",
       "sub": "Tutarların gösterileceği para birimi"
-    }
+    },
+    "goToday": "Bugüne dön"
   },
   "notes": {
     "title": "Notlarım",

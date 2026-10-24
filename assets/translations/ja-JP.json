@@ -790,7 +790,8 @@
     "currency": {
       "title": "通貨",
       "sub": "金額の表示通貨"
-    }
+    },
+    "goToday": "今日へ"
   },
   "notes": {
     "title": "マイノート",
