@@ -1507,7 +1507,7 @@ class FinanceViewModel extends ChangeNotifier {
     for (final i in _income) {
       try {
         if (_sameMonth(DateTime.parse(i.date))) {
-          t += AppCurrency.convert(i.amount, i.currency, AppCurrency.code);
+          t += i.amount;
         }
       } catch (_) {}
     }
@@ -1614,7 +1614,7 @@ class FinanceViewModel extends ChangeNotifier {
     double t = 0;
     for (final e in _expenses) {
       if (_sameMonth(e.expenseDate)) {
-        t += AppCurrency.convert(e.amount, e.currency, AppCurrency.code);
+        t += e.amount;
       }
     }
     return t;
@@ -1655,8 +1655,7 @@ class FinanceViewModel extends ChangeNotifier {
     final m = <String, double>{};
     for (final e in _expenses) {
       if (!_sameMonth(e.expenseDate)) continue;
-      m[e.category] = (m[e.category] ?? 0) +
-          AppCurrency.convert(e.amount, e.currency, AppCurrency.code);
+      m[e.category] = (m[e.category] ?? 0) + e.amount;
     }
     return m;
   }
@@ -1673,7 +1672,7 @@ class FinanceViewModel extends ChangeNotifier {
         if (e.expenseDate.year == day.year &&
             e.expenseDate.month == day.month &&
             e.expenseDate.day == day.day) {
-          t += AppCurrency.convert(e.amount, e.currency, AppCurrency.code);
+          t += e.amount;
         }
       }
       out.add(MapEntry(day, t));

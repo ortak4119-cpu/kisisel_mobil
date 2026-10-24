@@ -1,13 +1,13 @@
-import 'dart:convert';
 import 'package:flutter/widgets.dart';
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Uygulama para birimi yönetimi.
 /// - İlk açılışta cihazın ülkesine göre varsayılan belirlenir.
 /// - Kullanıcı ayarlardan değiştirebilir (yerel olarak saklanır).
-/// - tl()/tl0() biçimlendirmeleri ve yeni kayıtların para birimi buradan gelir.
+/// - Para birimi bir görüntüleme/etiket tercihidir: tutarlar girildikleri
+///   değerde saklanır, birim değişince yalnızca sembol/biçim değişir (kur
+///   dönüşümü yapılmaz).
 class AppCurrency {
   static const String _kKey = 'app_currency_code_v1';
 
@@ -89,55 +89,6 @@ class AppCurrency {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_kKey, c);
-    } catch (_) {}
-  }
-
-  // ---- Kur (FX) dönüşümü ----
-  // EUR tabanlı kurlar: currency -> 1 EUR karşılığı.
-  static Map<String, double> _rates = {'EUR': 1.0};
-  static const String _kRatesKey = 'app_currency_rates_v1';
-  static const String _kRatesDateKey = 'app_currency_rates_date_v1';
-
-  /// Tutarı [from] para biriminden [to]'ya çevirir. Kur yoksa aynen döner.
-  static double convert(double amount, String from, String to) {
-    if (from == to) return amount;
-    final rf = _rates[from];
-    final rt = _rates[to];
-    if (rf == null || rt == null || rf == 0) return amount;
-    return amount * (rt / rf);
-  }
-
-  /// Tutarı, verilen kaynak para biriminden seçili görüntüleme birimine
-  /// çevirip biçimlendirir.
-  static String formatFrom(double amount, String fromCode, {int decimals = 2}) {
-    return format(convert(amount, fromCode, code), decimals: decimals);
-  }
-
-  /// Kurları yükler (günlük önbellek + frankfurter.app).
-  static Future<void> loadRates() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final cached = prefs.getString(_kRatesKey);
-      if (cached != null) {
-        final m = jsonDecode(cached) as Map<String, dynamic>;
-        _rates = m.map((k, v) => MapEntry(k, (v as num).toDouble()));
-      }
-      final today = DateTime.now().toIso8601String().split('T').first;
-      if (prefs.getString(_kRatesDateKey) == today && _rates.length > 1) {
-        return; // bugün zaten güncellendi
-      }
-      final resp = await http
-          .get(Uri.parse('https://api.frankfurter.app/latest?from=EUR'))
-          .timeout(const Duration(seconds: 8));
-      if (resp.statusCode == 200) {
-        final data = jsonDecode(resp.body) as Map<String, dynamic>;
-        final rates = data['rates'] as Map<String, dynamic>;
-        final m = <String, double>{'EUR': 1.0};
-        rates.forEach((k, v) => m[k] = (v as num).toDouble());
-        _rates = m;
-        await prefs.setString(_kRatesKey, jsonEncode(m));
-        await prefs.setString(_kRatesDateKey, today);
-      }
     } catch (_) {}
   }
 

@@ -36,8 +36,6 @@ class AppInitializer {
 
     // Para birimi: kayıtlı tercih yoksa cihaz ülkesine göre varsayılan
     await AppCurrency.init();
-    // Döviz kurlarını arka planda yükle (FX dönüşümü için)
-    unawaited(AppCurrency.loadRates());
 
     // Ana ekran widget'ı (iOS için app group; Android'de zararsız)
     try {
