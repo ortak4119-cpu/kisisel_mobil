@@ -36,12 +36,14 @@ class IncomeEntry {
   final String? description;
   final String category; // salary | freelance | investment | gift | other
   final String date; // yyyy-MM-dd
+  final String currency;
   IncomeEntry({
     required this.id,
     required this.amount,
     this.description,
     required this.category,
     required this.date,
+    this.currency = 'TRY',
   });
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -49,6 +51,7 @@ class IncomeEntry {
         'description': description,
         'category': category,
         'date': date,
+        'currency': currency,
       };
   factory IncomeEntry.fromJson(Map<String, dynamic> j) => IncomeEntry(
         id: j['id'] as int,
@@ -56,6 +59,7 @@ class IncomeEntry {
         description: j['description'] as String?,
         category: j['category'] as String? ?? 'other',
         date: j['date'] as String,
+        currency: j['currency'] as String? ?? 'TRY',
       );
 }
 
@@ -467,7 +471,7 @@ class FinanceViewModel extends ChangeNotifier {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'errors.unknownError'.tr(),
+            'errors.unknownError'.tr(),
           );
         }
       }
@@ -495,7 +499,7 @@ class FinanceViewModel extends ChangeNotifier {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'errors.general'.tr(),
+            'errors.general'.tr(),
           );
         }
       }
@@ -523,7 +527,7 @@ class FinanceViewModel extends ChangeNotifier {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'errors.general'.tr(),
+            'errors.general'.tr(),
           );
         }
       }
@@ -602,7 +606,7 @@ class FinanceViewModel extends ChangeNotifier {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'errors.unknownError'.tr(),
+            'errors.unknownError'.tr(),
           );
         }
       }
@@ -708,7 +712,7 @@ class FinanceViewModel extends ChangeNotifier {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'errors.unknownError'.tr(),
+            'errors.unknownError'.tr(),
           );
         }
       }
@@ -801,7 +805,7 @@ class FinanceViewModel extends ChangeNotifier {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'errors.unknownError'.tr(),
+            'errors.unknownError'.tr(),
           );
         }
       }
@@ -833,7 +837,7 @@ class FinanceViewModel extends ChangeNotifier {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'errors.general'.tr(),
+            'errors.general'.tr(),
           );
         }
       }
@@ -896,7 +900,7 @@ class FinanceViewModel extends ChangeNotifier {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'errors.unknownError'.tr(),
+            'errors.unknownError'.tr(),
           );
         }
       }
@@ -1301,7 +1305,7 @@ class FinanceViewModel extends ChangeNotifier {
           'finance.income'.tr(),
           getCategoryLabel(i.category),
           i.amount.toStringAsFixed(2),
-          'TRY',
+          AppCurrency.code,
           i.description ?? '',
         ].map(esc).join(','));
       }
@@ -1429,6 +1433,7 @@ class FinanceViewModel extends ChangeNotifier {
                   description: e.description,
                   category: e.category,
                   date: e.incomeDate,
+                  currency: e.currency,
                 ))
             .toList();
       }
@@ -1501,7 +1506,9 @@ class FinanceViewModel extends ChangeNotifier {
     double t = 0;
     for (final i in _income) {
       try {
-        if (_sameMonth(DateTime.parse(i.date))) t += i.amount;
+        if (_sameMonth(DateTime.parse(i.date))) {
+          t += AppCurrency.convert(i.amount, i.currency, AppCurrency.code);
+        }
       } catch (_) {}
     }
     return t;
@@ -1525,7 +1532,8 @@ class FinanceViewModel extends ChangeNotifier {
               amount: e.amount,
               description: e.description,
               category: e.category,
-              date: e.incomeDate));
+              date: e.incomeDate,
+              currency: e.currency));
       notifyListeners();
       return true;
     }
@@ -1605,7 +1613,9 @@ class FinanceViewModel extends ChangeNotifier {
   double get monthExpensesTotal {
     double t = 0;
     for (final e in _expenses) {
-      if (_sameMonth(e.expenseDate)) t += e.amount;
+      if (_sameMonth(e.expenseDate)) {
+        t += AppCurrency.convert(e.amount, e.currency, AppCurrency.code);
+      }
     }
     return t;
   }
@@ -1645,7 +1655,8 @@ class FinanceViewModel extends ChangeNotifier {
     final m = <String, double>{};
     for (final e in _expenses) {
       if (!_sameMonth(e.expenseDate)) continue;
-      m[e.category] = (m[e.category] ?? 0) + e.amount;
+      m[e.category] = (m[e.category] ?? 0) +
+          AppCurrency.convert(e.amount, e.currency, AppCurrency.code);
     }
     return m;
   }
@@ -1662,7 +1673,7 @@ class FinanceViewModel extends ChangeNotifier {
         if (e.expenseDate.year == day.year &&
             e.expenseDate.month == day.month &&
             e.expenseDate.day == day.day) {
-          t += e.amount;
+          t += AppCurrency.convert(e.amount, e.currency, AppCurrency.code);
         }
       }
       out.add(MapEntry(day, t));
@@ -2028,7 +2039,8 @@ class FinanceViewModel extends ChangeNotifier {
               amount: e.amount,
               description: e.description,
               category: e.category,
-              date: e.incomeDate);
+              date: e.incomeDate,
+              currency: e.currency);
           if (idx != -1) {
             _income[idx] = entry;
           }
@@ -2088,7 +2100,7 @@ class FinanceViewModel extends ChangeNotifier {
           }
         } else if (context.mounted) {
           CustomSnackBar.showError(
-              context, resp.errorMessage ?? 'errors.unknownError'.tr());
+              context, 'errors.unknownError'.tr());
         }
         notifyListeners();
         return;
@@ -2119,7 +2131,7 @@ class FinanceViewModel extends ChangeNotifier {
         }
       } else if (context.mounted) {
         CustomSnackBar.showError(
-            context, response.errorMessage ?? 'errors.unknownError'.tr());
+            context, 'errors.unknownError'.tr());
       }
     } catch (e) {
       if (context.mounted) {

@@ -1159,6 +1159,7 @@ class _FinanceViewState extends State<FinanceView> {
     final cat = finCatById(t.category);
     final month = 'calendar.monthNames'.tr().split(',');
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () => _openEditFinance(context, vm, t, c.isDark),
       onLongPress: () => _txnMenu(context, vm, t, c),
       child: Padding(
