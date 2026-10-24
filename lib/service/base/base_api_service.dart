@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../response/service_response.dart';
+import '../../core/utils/app_locale.dart';
 
 abstract class BaseApiService {
   static const String baseUrl = 'https://goodlifesync.com/api';
@@ -46,6 +47,8 @@ abstract class BaseApiService {
     final headers = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
+      // Backend mesajlarını kullanıcının seçtiği dile göre döndürmek için.
+      'Accept-Language': AppLocale.code,
     };
 
     if (requiresAuth) {

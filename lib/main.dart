@@ -7,6 +7,7 @@ import 'core/utils/theme_provider.dart';
 import 'core/theme/app_theme.dart';
 import 'core/init/app_initializer.dart';
 import 'core/init/app_providers.dart';
+import 'core/utils/app_locale.dart';
 
 void main() async {
   await AppInitializer.init();
@@ -45,6 +46,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, child) {
+        // API isteklerinde backend'e gönderilecek dil kodunu güncel tut.
+        AppLocale.code = context.locale.languageCode;
         return MaterialApp.router(
           title: Constants.appName,
           debugShowCheckedModeBanner:false,
