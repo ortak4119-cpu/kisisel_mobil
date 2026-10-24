@@ -9,6 +9,7 @@ import 'dart:io';
 
 import '../../firebase_options.dart';
 import '../constant/constants.dart';
+import 'package:home_widget/home_widget.dart';
 import 'locator.dart';
 import '../utils/currency.dart';
 import '../../service/firebase/fcm_service.dart';
@@ -35,6 +36,11 @@ class AppInitializer {
 
     // Para birimi: kayıtlı tercih yoksa cihaz ülkesine göre varsayılan
     await AppCurrency.init();
+
+    // Ana ekran widget'ı (iOS için app group; Android'de zararsız)
+    try {
+      await HomeWidget.setAppGroupId('group.com.aedev.kisisel');
+    } catch (_) {}
 
     // RevenueCat ve FCM ağ gerektirir ve UI'nin ilk karesi için gerekli degil.
     // Bunlari await ETMEDEN arka planda baslat; boylece uygulama aninda acilir.

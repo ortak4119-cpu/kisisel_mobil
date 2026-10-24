@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -1344,6 +1345,7 @@ class FinanceViewModel extends ChangeNotifier {
         loadDebts(),
         loadInstallments(),
       ]);
+      await _updateHomeWidget();
     }
     _isInitialLoading = false;
     notifyListeners();
@@ -1351,6 +1353,26 @@ class FinanceViewModel extends ChangeNotifier {
 
   /// Para birimi gibi global ayar değişiminde UI'yı yeniler.
   void refreshFormatting() => notifyListeners();
+
+  /// Ana ekran widget'ına güncel finans özetini yazar.
+  Future<void> _updateHomeWidget() async {
+    try {
+      await HomeWidget.saveWidgetData<String>(
+          'balance', AppCurrency.format(availableBalance, decimals: 2));
+      await HomeWidget.saveWidgetData<String>(
+          'spent', AppCurrency.format(monthExpensesTotal, decimals: 0));
+      await HomeWidget.saveWidgetData<String>(
+          'income', AppCurrency.format(monthIncomeTotal, decimals: 0));
+      await HomeWidget.saveWidgetData<String>(
+          'balance_label', 'finance.availableBalance'.tr());
+      await HomeWidget.updateWidget(
+        androidName: 'FinanceWidgetProvider',
+        iOSName: 'FinanceWidget',
+      );
+    } catch (e) {
+      debugPrint('Home widget update error: $e');
+    }
+  }
 
   /// Kilit açıldıktan sonra veriyi yükler.
   Future<void> loadAfterUnlock() async {
