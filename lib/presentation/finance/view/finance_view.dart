@@ -2533,6 +2533,29 @@ class _FinanceFormSheet extends StatelessWidget {
       builder: (ctx) => SafeArea(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           ListTile(
+            leading: const Icon(Icons.document_scanner_rounded, color: _fOrange),
+            title: Text('finance.ocr.scanCamera'.tr(),
+                style: TextStyle(
+                    color: c.textPrimary, fontWeight: FontWeight.w700)),
+            subtitle: Text('finance.ocr.sub'.tr(),
+                style: TextStyle(color: c.textSecondary, fontSize: 12)),
+            onTap: () {
+              Navigator.pop(ctx);
+              vm.scanReceipt(context, ImageSource.camera);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.image_search_rounded, color: _fOrange),
+            title: Text('finance.ocr.scanGallery'.tr(),
+                style: TextStyle(
+                    color: c.textPrimary, fontWeight: FontWeight.w700)),
+            onTap: () {
+              Navigator.pop(ctx);
+              vm.scanReceipt(context, ImageSource.gallery);
+            },
+          ),
+          Divider(color: c.border.withOpacity(0.5), height: 1),
+          ListTile(
             leading: const Icon(Icons.camera_alt_rounded, color: _accent),
             title: Text('finance.takePhoto'.tr(),
                 style: TextStyle(color: c.textPrimary)),

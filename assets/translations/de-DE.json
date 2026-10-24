@@ -791,7 +791,15 @@
       "title": "Währung",
       "sub": "Anzeigewährung für Beträge"
     },
-    "goToday": "Zu heute"
+    "goToday": "Zu heute",
+    "ocr": {
+      "scanCamera": "Beleg scannen (Kamera)",
+      "scanGallery": "Aus Galerie scannen",
+      "sub": "Erkennt den Betrag automatisch",
+      "found": "Betrag gefunden",
+      "notFound": "Betrag nicht gefunden, manuell eingeben",
+      "failed": "Scan fehlgeschlagen"
+    }
   },
   "notes": {
     "title": "Meine Notizen",

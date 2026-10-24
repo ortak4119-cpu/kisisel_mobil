@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -1786,6 +1787,101 @@ class FinanceViewModel extends ChangeNotifier {
         notifyListeners();
       }
     } catch (_) {}
+  }
+
+  // ---- Fiş OCR (ML Kit) ----
+  bool _ocrBusy = false;
+  bool get ocrBusy => _ocrBusy;
+
+  /// Fiş fotoğrafını tarar, toplam tutarı bulup tutar alanına yazar.
+  Future<void> scanReceipt(BuildContext context, ImageSource source) async {
+    try {
+      final f = await _picker.pickImage(source: source, imageQuality: 90);
+      if (f == null) return;
+      _formReceipt = File(f.path);
+      _ocrBusy = true;
+      notifyListeners();
+
+      final recognizer =
+          TextRecognizer(script: TextRecognitionScript.latin);
+      final result =
+          await recognizer.processImage(InputImage.fromFilePath(f.path));
+      await recognizer.close();
+
+      final amount = _extractReceiptAmount(result.text);
+      _ocrBusy = false;
+      if (amount != null) {
+        expenseAmountController.text =
+            amount.toStringAsFixed(amount.truncateToDouble() == amount ? 0 : 2);
+        notifyListeners();
+        if (context.mounted) {
+          CustomSnackBar.showSuccess(
+              context,
+              '${'finance.ocr.found'.tr()}: '
+              '${AppCurrency.format(amount, decimals: 2)}');
+        }
+      } else {
+        notifyListeners();
+        if (context.mounted) {
+          CustomSnackBar.showInfo(context, 'finance.ocr.notFound'.tr());
+        }
+      }
+    } catch (e) {
+      _ocrBusy = false;
+      notifyListeners();
+      if (context.mounted) {
+        CustomSnackBar.showError(context, 'finance.ocr.failed'.tr());
+      }
+      debugPrint('OCR error: $e');
+    }
+  }
+
+  /// Fiş metninden tutarı çıkarır: önce TOPLAM/TOTAL satırları, yoksa en
+  /// büyük para benzeri sayı.
+  double? _extractReceiptAmount(String text) {
+    final numRe = RegExp(r'\d{1,3}(?:[.,]\d{3})*[.,]\d{2}|\d+[.,]\d{2}');
+    List<double> numsIn(String s) {
+      final out = <double>[];
+      for (final m in numRe.allMatches(s)) {
+        final v = _parseMoney(m.group(0)!);
+        if (v != null && v > 0 && v < 1000000) out.add(v);
+      }
+      return out;
+    }
+
+    // Toplam içeren satırları öncele
+    double? best;
+    for (final line in text.split('\n')) {
+      final up = line.toUpperCase();
+      if (up.contains('TOPLAM') ||
+          up.contains('TOTAL') ||
+          up.contains('TUTAR') ||
+          up.contains('GENEL')) {
+        for (final v in numsIn(line)) {
+          if (best == null || v > best) best = v;
+        }
+      }
+    }
+    if (best != null) return best;
+
+    final all = numsIn(text);
+    if (all.isEmpty) return null;
+    return all.reduce((a, b) => a > b ? a : b);
+  }
+
+  double? _parseMoney(String raw) {
+    raw = raw.trim();
+    final lastComma = raw.lastIndexOf(',');
+    final lastDot = raw.lastIndexOf('.');
+    String norm;
+    if (lastComma > lastDot) {
+      norm = raw.replaceAll('.', '').replaceAll(',', '.');
+    } else if (lastDot > lastComma) {
+      norm = raw.replaceAll(',', '');
+    } else {
+      norm = raw.replaceAll(',', '').replaceAll('.', '');
+    }
+    return double.tryParse(norm);
   }
 
   void removeReceipt() {

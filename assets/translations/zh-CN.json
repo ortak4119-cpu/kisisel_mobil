@@ -791,7 +791,15 @@
       "title": "货币",
       "sub": "金额显示货币"
     },
-    "goToday": "回到今天"
+    "goToday": "回到今天",
+    "ocr": {
+      "scanCamera": "扫描收据（相机）",
+      "scanGallery": "从相册扫描",
+      "sub": "自动识别金额",
+      "found": "已找到金额",
+      "notFound": "未找到金额，请手动输入",
+      "failed": "扫描失败"
+    }
   },
   "notes": {
     "title": "我的笔记",

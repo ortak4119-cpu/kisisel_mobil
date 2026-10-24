@@ -791,7 +791,15 @@
       "title": "Devise",
       "sub": "Devise d'affichage des montants"
     },
-    "goToday": "Aller à aujourd'hui"
+    "goToday": "Aller à aujourd'hui",
+    "ocr": {
+      "scanCamera": "Scanner le reçu (caméra)",
+      "scanGallery": "Scanner depuis la galerie",
+      "sub": "Détecte le montant automatiquement",
+      "found": "Montant trouvé",
+      "notFound": "Montant introuvable, saisissez-le manuellement",
+      "failed": "Échec du scan"
+    }
   },
   "notes": {
     "title": "Mes Notes",

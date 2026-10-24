@@ -791,7 +791,15 @@
       "title": "Currency",
       "sub": "Currency amounts are shown in"
     },
-    "goToday": "Go to today"
+    "goToday": "Go to today",
+    "ocr": {
+      "scanCamera": "Scan receipt (camera)",
+      "scanGallery": "Scan from gallery",
+      "sub": "Auto-detects the amount",
+      "found": "Amount found",
+      "notFound": "Amount not found, enter manually",
+      "failed": "Scan failed"
+    }
   },
   "notes": {
     "title": "My Notes",

@@ -791,7 +791,15 @@
       "title": "Moneda",
       "sub": "Moneda en que se muestran los importes"
     },
-    "goToday": "Ir a hoy"
+    "goToday": "Ir a hoy",
+    "ocr": {
+      "scanCamera": "Escanear recibo (cámara)",
+      "scanGallery": "Escanear desde galería",
+      "sub": "Detecta el importe automáticamente",
+      "found": "Importe encontrado",
+      "notFound": "Importe no encontrado, introdúcelo manualmente",
+      "failed": "Error al escanear"
+    }
   },
   "notes": {
     "title": "Mis Notas",

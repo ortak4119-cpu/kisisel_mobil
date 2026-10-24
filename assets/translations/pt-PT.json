@@ -791,7 +791,15 @@
       "title": "Moeda",
       "sub": "Moeda de exibição dos valores"
     },
-    "goToday": "Ir para hoje"
+    "goToday": "Ir para hoje",
+    "ocr": {
+      "scanCamera": "Digitalizar recibo (câmera)",
+      "scanGallery": "Digitalizar da galeria",
+      "sub": "Deteta o valor automaticamente",
+      "found": "Valor encontrado",
+      "notFound": "Valor não encontrado, introduza manualmente",
+      "failed": "Falha ao digitalizar"
+    }
   },
   "notes": {
     "title": "Minhas Notas",

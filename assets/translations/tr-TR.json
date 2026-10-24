@@ -791,7 +791,15 @@
       "title": "Para Birimi",
       "sub": "Tutarların gösterileceği para birimi"
     },
-    "goToday": "Bugüne dön"
+    "goToday": "Bugüne dön",
+    "ocr": {
+      "scanCamera": "Fiş tara (kamera)",
+      "scanGallery": "Fişten tara (galeri)",
+      "sub": "Tutarı otomatik bulur",
+      "found": "Tutar bulundu",
+      "notFound": "Tutar bulunamadı, elle girin",
+      "failed": "Tarama başarısız"
+    }
   },
   "notes": {
     "title": "Notlarım",
