@@ -134,23 +134,9 @@ class CalendarViewModel extends ChangeNotifier {
   // Calendar events getter
   List<CalendarEvent> get calendarEvents => _calendarEvents;
 
-  // Seçili güne ait calendar events
-  List<CalendarEvent> get calendarEventsForSelectedDate {
-    final filtered = _calendarEvents.where((event) {
-      try {
-        final eventDate = DateTime.parse(event.eventDate);
-        return eventDate.year == _selectedDate.year &&
-            eventDate.month == _selectedDate.month &&
-            eventDate.day == _selectedDate.day;
-      } catch (e) {
-        debugPrint('⚠️ Calendar: Invalid event date format: ${event.eventDate}');
-        return false;
-      }
-    }).toList();
-
-    debugPrint('📅 Calendar: Calendar events for ${_selectedDate.day}/${_selectedDate.month}: ${filtered.length}');
-    return filtered;
-  }
+  // Seçili güne ait calendar events (tekrarlayan etkinlikler dahil)
+  List<CalendarEvent> get calendarEventsForSelectedDate =>
+      eventsForDate(_selectedDate);
 
   // Seçili güne ait veriler
   List<Note> get notesForSelectedDate {
@@ -1147,16 +1133,40 @@ class CalendarViewModel extends ChangeNotifier {
   }
 
   // ---- Yardımcılar ----
+
+  /// Etkinlik (tekrar kuralına göre) verilen günde oluşuyor mu?
+  /// Backend ile (SendCalendarEventReminders.occursOn) aynı mantık.
+  bool occursOn(CalendarEvent e, DateTime day) {
+    DateTime base;
+    try {
+      final p = DateTime.parse(e.eventDate);
+      base = DateTime(p.year, p.month, p.day);
+    } catch (_) {
+      return false;
+    }
+    final d = DateTime(day.year, day.month, day.day);
+    if (d.isBefore(base)) return false;
+    final rec = metaForEvent(e.id).recurrence;
+    switch (rec) {
+      case 'daily':
+        return true;
+      case 'weekly':
+        return d.weekday == base.weekday;
+      case 'monthly':
+        return d.day == base.day;
+      case 'yearly':
+        return d.day == base.day && d.month == base.month;
+      case 'none':
+      default:
+        return d.isAtSameMomentAs(base);
+    }
+  }
+
   List<CalendarEvent> eventsForDate(DateTime date) {
-    return _calendarEvents.where((e) {
-      try {
-        final d = DateTime.parse(e.eventDate);
-        return d.year == date.year &&
-            d.month == date.month &&
-            d.day == date.day;
-      } catch (_) {
-        return false;
-      }
+    final ds = _fmtDate(DateTime(date.year, date.month, date.day));
+    return _calendarEvents.where((e) => occursOn(e, date)).map((e) {
+      // Tekrarlayan etkinliğin bu günkü görünümü doğru tarihi taşısın.
+      return e.eventDate == ds ? e : e.copyWith(eventDate: ds);
     }).toList()
       ..sort((a, b) => (a.eventTime ?? '99:99').compareTo(b.eventTime ?? '99:99'));
   }
@@ -1164,13 +1174,17 @@ class CalendarViewModel extends ChangeNotifier {
   /// Aya ait, o günde etkinlik kategorileri (renk noktaları için).
   Map<DateTime, Set<String>> eventCategoryDots() {
     final map = <DateTime, Set<String>>{};
-    for (final e in _calendarEvents) {
-      try {
-        final d0 = DateTime.parse(e.eventDate);
-        final d = DateTime(d0.year, d0.month, d0.day);
-        final cat = metaForEvent(e.id).category;
-        (map[d] ??= <String>{}).add(cat);
-      } catch (_) {}
+    // Odak ayının her günü için tekrar kuralına göre etkinlik kategorisi ekle
+    // (tekrarlayan etkinlikler artık tüm eşleşen günlerde nokta gösterir).
+    final daysInMonth =
+        DateTime(_focusedMonth.year, _focusedMonth.month + 1, 0).day;
+    for (int i = 1; i <= daysInMonth; i++) {
+      final d = DateTime(_focusedMonth.year, _focusedMonth.month, i);
+      for (final e in _calendarEvents) {
+        if (occursOn(e, d)) {
+          (map[d] ??= <String>{}).add(metaForEvent(e.id).category);
+        }
+      }
     }
     // Abonelik ödeme günleri (odak ayında billingDate'e göre)
     final monthEnd =
