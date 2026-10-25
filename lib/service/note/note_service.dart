@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../models/note/note_models.dart';
@@ -28,6 +29,14 @@ abstract class INoteService {
       NoteCategoryRequest request,
       );
   Future<ServiceResponse<void>> deleteCategory(int id);
+
+  // Ekler (görsel / ses / dosya)
+  Future<ServiceResponse<NoteAttachment>> uploadNoteAttachment(
+    int noteId,
+    File file, {
+    int? durationSeconds,
+  });
+  Future<ServiceResponse<void>> deleteNoteAttachment(int attachmentId);
 }
 
 class NoteService implements INoteService {
@@ -314,6 +323,37 @@ class NoteService implements INoteService {
   Future<ServiceResponse<void>> deleteCategory(int id) async {
     return await BaseApiService.delete<void>(
       '/notes/categories/$id',
+      requiresAuth: true,
+    );
+  }
+
+  // ==================== EKLER ====================
+
+  @override
+  Future<ServiceResponse<NoteAttachment>> uploadNoteAttachment(
+    int noteId,
+    File file, {
+    int? durationSeconds,
+  }) async {
+    final fields = <String, String>{};
+    if (durationSeconds != null) {
+      fields['duration_seconds'] = durationSeconds.toString();
+    }
+
+    return await BaseApiService.uploadFile<NoteAttachment>(
+      '/notes/$noteId/attachments',
+      file: file,
+      fieldName: 'file',
+      additionalFields: fields.isEmpty ? null : fields,
+      requiresAuth: true,
+      fromJson: (json) => NoteAttachment.fromJson(json as Map<String, dynamic>),
+    );
+  }
+
+  @override
+  Future<ServiceResponse<void>> deleteNoteAttachment(int attachmentId) async {
+    return await BaseApiService.delete<void>(
+      '/attachments/$attachmentId',
       requiresAuth: true,
     );
   }

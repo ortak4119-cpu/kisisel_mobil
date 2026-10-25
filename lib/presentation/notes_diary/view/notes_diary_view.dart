@@ -3346,8 +3346,29 @@ class _NotesContent extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 4),
-                  // Küçük görsel önizleme (varsa).
-                  if (imgs.isNotEmpty) ...[
+                  // Küçük görsel önizleme — backend eki öncelikli, yoksa yerel.
+                  if (note.attachments.any((a) => a.isImage)) ...[
+                    Builder(builder: (_) {
+                      final img =
+                          note.attachments.firstWhere((a) => a.isImage);
+                      return ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.network(
+                          img.thumbnailUrl ?? img.fileUrl,
+                          height: 32,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) =>
+                              const SizedBox.shrink(),
+                          loadingBuilder: (ctx, child, progress) =>
+                              progress == null
+                                  ? child
+                                  : const SizedBox(height: 32),
+                        ),
+                      );
+                    }),
+                    const SizedBox(height: 4),
+                  ] else if (imgs.isNotEmpty) ...[
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Image.file(
@@ -3357,6 +3378,24 @@ class _NotesContent extends StatelessWidget {
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => const SizedBox.shrink(),
                       ),
+                    ),
+                    const SizedBox(height: 4),
+                  ],
+                  // Ek göstergeleri (ses / dosya).
+                  if (note.attachments.any((a) => a.isAudio || a.isFile)) ...[
+                    Row(
+                      children: [
+                        if (note.attachments.any((a) => a.isAudio)) ...[
+                          Icon(Icons.mic_rounded,
+                              size: 11, color: c.textMuted),
+                          const SizedBox(width: 3),
+                        ],
+                        if (note.attachments.any((a) => a.isFile)) ...[
+                          Icon(Icons.attach_file_rounded,
+                              size: 11, color: c.textMuted),
+                          const SizedBox(width: 3),
+                        ],
+                      ],
                     ),
                     const SizedBox(height: 4),
                   ],

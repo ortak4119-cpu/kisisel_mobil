@@ -181,6 +181,101 @@ class NotesDiaryViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Editörde seçilen ekleri (görsel/ses/dosya) backend'e yükler. Her yükleme
+  /// ayrı try/catch ile korunur; biri başarısız olursa kayıt bozulmaz.
+  /// En az bir ek yüklendiyse notlar tazelenir (ekler sunucudan gelir).
+  Future<void> _uploadPickedAttachments(int noteId) async {
+    var uploaded = false;
+
+    for (final img in _pickedImages) {
+      try {
+        final r = await _noteService.uploadNoteAttachment(noteId, img);
+        if (r.isSuccess) uploaded = true;
+      } catch (e) {
+        debugPrint('Attachment (image) upload failed: $e');
+      }
+    }
+
+    for (final f in _pickedFiles) {
+      try {
+        final r = await _noteService.uploadNoteAttachment(noteId, f);
+        if (r.isSuccess) uploaded = true;
+      } catch (e) {
+        debugPrint('Attachment (file) upload failed: $e');
+      }
+    }
+
+    if (_voiceNotePath != null) {
+      try {
+        final vf = File(_voiceNotePath!);
+        if (vf.existsSync()) {
+          final r = await _noteService.uploadNoteAttachment(noteId, vf);
+          if (r.isSuccess) uploaded = true;
+        }
+      } catch (e) {
+        debugPrint('Attachment (voice) upload failed: $e');
+      }
+    }
+
+    if (uploaded) {
+      try {
+        await loadNotes();
+      } catch (_) {}
+    }
+  }
+
+  /// Bir notun eklerini döndürür (görünümde kullanım için).
+  List<NoteAttachment> attachmentsFor(Note n) => n.attachments;
+
+  /// Note immutable olduğundan ekleri güncellenmiş yeni bir kopya üretir.
+  Note _noteWithAttachments(Note n, List<NoteAttachment> attachments) {
+    return Note(
+      id: n.id,
+      title: n.title,
+      content: n.content,
+      categoryId: n.categoryId,
+      templateType: n.templateType,
+      color: n.color,
+      reminderDate: n.reminderDate,
+      isLocked: n.isLocked,
+      isPinned: n.isPinned,
+      isArchived: n.isArchived,
+      createdAt: n.createdAt,
+      updatedAt: n.updatedAt,
+      wordCount: n.wordCount,
+      characterCount: n.characterCount,
+      orderIndex: n.orderIndex,
+      version: n.version,
+      reminderEnabled: n.reminderEnabled,
+      attachments: attachments,
+    );
+  }
+
+  /// Bir eki siler ve bellekteki nottan çıkarır.
+  Future<void> removeAttachment(
+      int noteId, int attachmentId, BuildContext context) async {
+    try {
+      final response = await _noteService.deleteNoteAttachment(attachmentId);
+      if (response.isSuccess) {
+        final index = _notes.indexWhere((n) => n.id == noteId);
+        if (index != -1) {
+          final note = _notes[index];
+          final updated =
+              note.attachments.where((a) => a.id != attachmentId).toList();
+          _notes[index] = _noteWithAttachments(note, updated);
+          notifyListeners();
+        }
+      } else if (context.mounted) {
+        CustomSnackBar.showError(context, 'errors.general'.tr());
+      }
+    } catch (e) {
+      if (context.mounted) {
+        CustomSnackBar.showError(context, 'errors.general'.tr());
+      }
+      debugPrint('Remove attachment exception: $e');
+    }
+  }
+
   void removePickedImage(int index) {
     if (index >= 0 && index < _pickedImages.length) {
       _pickedImages.removeAt(index);
@@ -526,13 +621,17 @@ class NotesDiaryViewModel extends ChangeNotifier {
         reminderDate: _noteReminder,
         isLocked: _noteLocked,
         isPinned: _notePinned,
+        reminderEnabled: _noteReminder != null,
       );
 
       final response = await _noteService.createNote(request);
 
       if (response.isSuccess && response.data != null) {
-        await _attachImagesToNote(response.data!.id);
         _notes.insert(0, response.data!);
+        // Görselleri yerel önbelleğe kopyala (geriye dönük uyumluluk) ve
+        // tüm ekleri (görsel/ses/dosya) backend'e yükle.
+        await _attachImagesToNote(response.data!.id);
+        await _uploadPickedAttachments(response.data!.id);
         resetNoteForm();
         if (context.mounted) {
           final cleanMsg = _cleanMessage(response.message);
@@ -585,9 +684,11 @@ class NotesDiaryViewModel extends ChangeNotifier {
         categoryId: note.categoryId,
         templateType: null,
         color: note.color,
-        reminderDate: null,
+        // Checklist işaretlemesi notun hatırlatıcısını silmemeli.
+        reminderDate: note.reminderDate,
         isLocked: note.isLocked,
         isPinned: note.isPinned,
+        reminderEnabled: note.reminderDate != null,
       );
       final response = await _noteService.updateNote(note.id, request);
       if (response.isSuccess && response.data != null && idx != -1) {
@@ -626,6 +727,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
         reminderDate: _noteReminder,
         isLocked: _noteLocked,
         isPinned: _notePinned,
+        reminderEnabled: _noteReminder != null,
       );
 
       final response = await _noteService.updateNote(_editingNoteId!, request);
@@ -637,6 +739,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
         }
         await _attachImagesToNote(_editingNoteId!,
             keepExisting: _editingExistingImages);
+        await _uploadPickedAttachments(_editingNoteId!);
         resetNoteForm();
         if (context.mounted) {
           final cleanMsg = _cleanMessage(response.message);
@@ -733,6 +836,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
             orderIndex: note.orderIndex,
             version: note.version,
             reminderEnabled: note.reminderEnabled,
+            attachments: note.attachments,
           );
           notifyListeners();
 
@@ -812,6 +916,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
             orderIndex: note.orderIndex,
             version: note.version,
             reminderEnabled: note.reminderEnabled,
+            attachments: note.attachments,
           );
           notifyListeners();
 
@@ -930,6 +1035,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
             orderIndex: note.orderIndex,
             version: note.version,
             reminderEnabled: note.reminderEnabled,
+            attachments: note.attachments,
           );
           notifyListeners();
 
