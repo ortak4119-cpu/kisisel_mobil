@@ -471,7 +471,9 @@
       "requestSent": "友達リクエストを送信しました",
       "requestAccepted": "友達リクエストが承認されました 🎉",
       "requestRejected": "友達リクエストが拒否されました",
-      "unfriended": "友達を削除しました"
+      "unfriended": "友達を削除しました",
+      "followed": "フォロー中",
+      "unfollowed": "フォロー解除"
     },
     "achievements": {
       "unlocked": "実績をアンロック！ 🎉",
@@ -1075,7 +1077,9 @@
       "deleteAccountSubtitle": "アカウントを完全に削除します",
       "deleteAccountConfirm": "アカウントを削除しますか？",
       "deleteAccountWarning": "アカウントを削除し、2日間ログインしない場合、すべてのデータが完全に削除されます。この操作は元に戻せません。",
-      "deleteAccountSuccess": "アカウントは削除対象としてマークされました。2日以内にログインしない場合、完全に削除されます。"
+      "deleteAccountSuccess": "アカウントは削除対象としてマークされました。2日以内にログインしない場合、完全に削除されます。",
+      "exportData": "データをエクスポート",
+      "exportDataSubtitle": "プロフィールと設定をJSONで取得"
     },
     "legal": {
       "privacy": "プライバシーポリシー",

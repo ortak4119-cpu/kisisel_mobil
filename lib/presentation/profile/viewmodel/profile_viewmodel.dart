@@ -52,6 +52,10 @@ class ProfileViewModel extends ChangeNotifier {
   List<UserSearchResult> _searchResults = [];
   List<UserSearchResult> get searchResults => _searchResults;
 
+  // Takip edilen kullanıcı id'leri (follow durumunu UI'da göstermek için).
+  final Set<int> _following = {};
+  bool isFollowingUser(int userId) => _following.contains(userId);
+
   // Achievements
   List<Achievement> _achievements = [];
   List<Achievement> get achievements => _achievements;
@@ -93,6 +97,7 @@ class ProfileViewModel extends ChangeNotifier {
         loadFriendRequests(),
         loadAchievements(),
         loadLevelInfo(),
+        loadFollowing(),
       ]);
     } catch (e) {
       debugPrint('Error loading profile: $e');
@@ -456,6 +461,63 @@ class ProfileViewModel extends ChangeNotifier {
         CustomSnackBar.showError(context, 'errors.general'.tr());
       }
       debugPrint('Error unfriending: $e');
+    }
+  }
+
+  /// Takip edilenleri yükle (follow durumu için id kümesi).
+  Future<void> loadFollowing() async {
+    try {
+      final response = await _socialService.getFollowing();
+      if (response.isSuccess && response.data != null) {
+        _following
+          ..clear()
+          ..addAll(response.data!.map((f) => f.id));
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Error loading following: $e');
+    }
+  }
+
+  Future<void> follow(int userId, BuildContext context) async {
+    try {
+      final response = await _socialService.follow(userId);
+      if (response.isSuccess) {
+        _following.add(userId);
+        notifyListeners();
+        if (context.mounted) {
+          CustomSnackBar.showSuccess(context, 'profile.friends.followed'.tr());
+        }
+      } else if (context.mounted) {
+        CustomSnackBar.showError(
+            context, response.errorMessage ?? 'errors.general'.tr());
+      }
+    } catch (e) {
+      debugPrint('Error following user: $e');
+      if (context.mounted) {
+        CustomSnackBar.showError(context, 'errors.general'.tr());
+      }
+    }
+  }
+
+  Future<void> unfollow(int userId, BuildContext context) async {
+    try {
+      final response = await _socialService.unfollow(userId);
+      if (response.isSuccess) {
+        _following.remove(userId);
+        notifyListeners();
+        if (context.mounted) {
+          CustomSnackBar.showInfo(context, 'profile.friends.unfollowed'.tr());
+        }
+      } else if (context.mounted) {
+        CustomSnackBar.showError(
+            context, response.errorMessage ?? 'errors.general'.tr());
+      }
+    } catch (e) {
+      debugPrint('Error unfollowing user: $e');
+      if (context.mounted) {
+        CustomSnackBar.showError(context, 'errors.general'.tr());
+      }
     }
   }
 

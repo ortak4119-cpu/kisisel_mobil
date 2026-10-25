@@ -388,6 +388,19 @@ class SettingsView extends StatelessWidget {
                             ),
                             _buildDivider(isDarkMode),
                             _buildListTile(
+                              title: 'settings.account.exportData'.tr(),
+                              subtitle:
+                                  'settings.account.exportDataSubtitle'.tr(),
+                              icon: Icons.download_rounded,
+                              isDarkMode: isDarkMode,
+                              iconColor: ColorConstant.accentGreen,
+                              iconBgColor: isDarkMode
+                                  ? ColorConstant.cardColorDark
+                                  : ColorConstant.cardGreenLight,
+                              onTap: () => viewModel.exportData(context),
+                            ),
+                            _buildDivider(isDarkMode),
+                            _buildListTile(
                               title: 'settings.account.deleteAccount'.tr(),
                               subtitle:
                                   'settings.account.deleteAccountSubtitle'.tr(),

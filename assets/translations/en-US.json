@@ -514,7 +514,9 @@
       "requestSent": "Friend request sent",
       "requestAccepted": "Friend request accepted 🎉",
       "requestRejected": "Friend request rejected",
-      "unfriended": "Unfriended"
+      "unfriended": "Unfriended",
+      "followed": "Following",
+      "unfollowed": "Unfollowed"
     },
     "achievements": {
       "unlocked": "Achievement Unlocked! 🎉",
@@ -1075,7 +1077,9 @@
       "deleteAccountSubtitle": "Permanently delete your account",
       "deleteAccountConfirm": "Delete Account?",
       "deleteAccountWarning": "If you delete your account and do not log in for 2 days, all your data will be permanently deleted. This action cannot be undone.",
-      "deleteAccountSuccess": "Your account has been marked for deletion. It will be permanently removed if you don't log in within 2 days."
+      "deleteAccountSuccess": "Your account has been marked for deletion. It will be permanently removed if you don't log in within 2 days.",
+      "exportData": "Export my data",
+      "exportDataSubtitle": "Download your profile & settings as JSON"
     },
     "legal": {
       "privacy": "Privacy Policy",

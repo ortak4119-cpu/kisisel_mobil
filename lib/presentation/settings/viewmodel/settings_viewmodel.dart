@@ -4,7 +4,10 @@ import 'package:auto_route/auto_route.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import 'dart:convert';
 import '../../../core/init/locator.dart';
 import '../../../service/auth/auth_service.dart';
 import '../../../service/settings/settings_service.dart';
@@ -216,6 +219,36 @@ class SettingsViewModel extends ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  /// Faz 3: kullanıcının kendi verisini (profil + ayarlar) JSON olarak dışa
+  /// aktarır ve paylaşım sayfasıyla sunar (GDPR/CCPA taşınabilirlik).
+  Future<void> exportData(BuildContext context) async {
+    try {
+      final profileResp = await _profileService.getProfile();
+      final user = profileResp.data ?? _currentUser;
+      final data = {
+        'exported_at': DateTime.now().toIso8601String(),
+        'app': 'LifeSync',
+        'profile': user?.toJson(),
+        'settings': _settings?.toJson(),
+      };
+      final jsonStr = const JsonEncoder.withIndent('  ').convert(data);
+      final dir = await getTemporaryDirectory();
+      final file = File(
+          '${dir.path}/lifesync_data_${DateTime.now().millisecondsSinceEpoch}.json');
+      await file.writeAsString(jsonStr, encoding: utf8);
+
+      await Share.shareXFiles(
+        [XFile(file.path, mimeType: 'application/json')],
+        subject: 'LifeSync data export',
+      );
+    } catch (e) {
+      debugPrint('Data export error: $e');
+      if (context.mounted) {
+        CustomSnackBar.showError(context, 'errors.general'.tr());
+      }
     }
   }
 

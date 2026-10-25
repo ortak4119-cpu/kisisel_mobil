@@ -157,7 +157,7 @@ class _ProfileViewState extends State<ProfileView> with SingleTickerProviderStat
 
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-      padding: const EdgeInsets.all(20),
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: isDark ? ColorConstant.cardColorDark : Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -165,9 +165,15 @@ class _ProfileViewState extends State<ProfileView> with SingleTickerProviderStat
           BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 12, offset: const Offset(0, 4)),
         ],
       ),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          _buildCoverBanner(context, vm, isDark),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
           Stack(
             children: [
               CircleAvatar(
@@ -271,9 +277,63 @@ class _ProfileViewState extends State<ProfileView> with SingleTickerProviderStat
             ),
           ),
         ],
+              ),
+            ),
+        ],
       ),
     );
   }
+
+  Widget _buildCoverBanner(
+      BuildContext context, ProfileViewModel vm, bool isDark) {
+    final url = vm.currentUser?.coverImageUrl;
+    return SizedBox(
+      height: 96,
+      width: double.infinity,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (url != null && url.isNotEmpty)
+            Image.network(url, fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _coverFallback())
+          else
+            _coverFallback(),
+          Positioned(
+            top: 8,
+            right: 8,
+            child: GestureDetector(
+              onTap: () => _showImageSourceDialog(context, vm, isCover: true),
+              child: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.35),
+                  shape: BoxShape.circle,
+                ),
+                child: vm.isUploadingCover
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white))
+                    : const Icon(Icons.photo_camera_rounded,
+                        color: Colors.white, size: 16),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _coverFallback() => Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFF6A821), Color(0xFFE8890B)],
+          ),
+        ),
+      );
 
   Widget _buildThreeStats(ProfileViewModel vm, bool isDark) {
     final friendCount = vm.profileStats?.social.friends ?? vm.friends.length;
@@ -1561,14 +1621,14 @@ class _FriendsTab extends StatelessWidget {
       builder: (context) => UserProfileBottomSheet(
         userProfile: userProfile,
         isFriend: viewModel.isFriend(userId),
-        isFollowing: false,
+        isFollowing: viewModel.isFollowingUser(userId),
         isDarkMode: isDarkMode,
         onSendFriendRequest: () async {
           await viewModel.sendFriendRequest(userId, context);
         },
         onUnfriend: () => viewModel.unfriend(userId, context),
-        onFollow: () {},
-        onUnfollow: () {},
+        onFollow: () => viewModel.follow(userId, context),
+        onUnfollow: () => viewModel.unfollow(userId, context),
       ),
     );
   }
@@ -2189,14 +2249,14 @@ class _FriendSearchBottomSheetState extends State<_FriendSearchBottomSheet> {
           return UserProfileBottomSheet(
             userProfile: snapshot.data!,
             isFriend: viewModel.isFriend(userId),
-            isFollowing: false,
+            isFollowing: viewModel.isFollowingUser(userId),
             isDarkMode: isDarkMode,
             onSendFriendRequest: () async {
               await viewModel.sendFriendRequest(userId, context);
             },
             onUnfriend: () => viewModel.unfriend(userId, context),
-            onFollow: () {},
-            onUnfollow: () {},
+            onFollow: () => viewModel.follow(userId, context),
+            onUnfollow: () => viewModel.unfollow(userId, context),
           );
         },
       ),

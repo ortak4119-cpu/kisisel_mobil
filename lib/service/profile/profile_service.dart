@@ -15,7 +15,7 @@ abstract class IProfileService {
   Future<ServiceResponse<String>> updateAvatar(File file);
   Future<ServiceResponse<String>> updateCover(File file);
   Future<ServiceResponse<ProfileStats>> getStats();
-  Future<ServiceResponse<void>> deleteAccount({String? password});
+  Future<ServiceResponse<void>> deleteAccount({String? password, bool confirm});
 }
 
 class ProfileService implements IProfileService {
@@ -168,10 +168,19 @@ class ProfileService implements IProfileService {
   }
 
   @override
-  Future<ServiceResponse<void>> deleteAccount({String? password}) async {
+  Future<ServiceResponse<void>> deleteAccount(
+      {String? password, bool confirm = false}) async {
+    // Backend DELETE /profile `password` VEYA `confirm:true` ister; ikisi de yoksa
+    // 422 döner. Şifre yoksa confirm:true gönderiyoruz (kullanıcı diyalogla onaylar).
+    final body = <String, dynamic>{};
+    if (password != null) {
+      body['password'] = password;
+    } else {
+      body['confirm'] = true;
+    }
     return await BaseApiService.delete<void>(
       '/profile',
-      body: password != null ? {'password': password} : null,
+      body: body,
       requiresAuth: true,
     );
   }

@@ -514,7 +514,9 @@
       "requestSent": "Arkadaşlık isteği gönderildi",
       "requestAccepted": "Arkadaşlık isteği kabul edildi 🎉",
       "requestRejected": "Arkadaşlık isteği reddedildi",
-      "unfriended": "Arkadaşlıktan çıkarıldı"
+      "unfriended": "Arkadaşlıktan çıkarıldı",
+      "followed": "Takip ediliyor",
+      "unfollowed": "Takip bırakıldı"
     },
     "achievements": {
       "unlocked": "Başarı Kilidi Açıldı! 🎉",
@@ -1075,7 +1077,9 @@
       "deleteAccountSubtitle": "Hesabınızı kalıcı olarak silin",
       "deleteAccountConfirm": "Hesabı Silmek İstediğinizden Emin misiniz?",
       "deleteAccountWarning": "Hesabınızı sil derseniz 2 gün giriş yapmadığınız taktirde tüm verileriniz kalıcı olarak silinecektir. Bu işlem geri alınamaz.",
-      "deleteAccountSuccess": "Hesabınız silinmek üzere işaretlendi. 2 gün içinde giriş yapmazsanız kalıcı olarak silinecek."
+      "deleteAccountSuccess": "Hesabınız silinmek üzere işaretlendi. 2 gün içinde giriş yapmazsanız kalıcı olarak silinecek.",
+      "exportData": "Verilerimi dışa aktar",
+      "exportDataSubtitle": "Profil ve ayar verilerini JSON olarak indir"
     },
     "legal": {
       "privacy": "Gizlilik Politikası",

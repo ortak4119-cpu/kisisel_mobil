@@ -471,7 +471,9 @@
       "requestSent": "Freundschaftsanfrage gesendet",
       "requestAccepted": "Freundschaftsanfrage angenommen 🎉",
       "requestRejected": "Freundschaftsanfrage abgelehnt",
-      "unfriended": "Freund entfernt"
+      "unfriended": "Freund entfernt",
+      "followed": "Wird gefolgt",
+      "unfollowed": "Nicht mehr gefolgt"
     },
     "achievements": {
       "unlocked": "Errungenschaft freigeschaltet! 🎉",
@@ -1075,7 +1077,9 @@
       "deleteAccountSubtitle": "Konto dauerhaft löschen",
       "deleteAccountConfirm": "Konto löschen?",
       "deleteAccountWarning": "Wenn Sie Ihr Konto löschen und sich 2 Tage lang nicht anmelden, werden alle Ihre Daten dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.",
-      "deleteAccountSuccess": "Ihr Konto wurde zur Löschung vorgemerkt. Es wird endgültig entfernt, wenn Sie sich nicht innerhalb von 2 Tagen anmelden."
+      "deleteAccountSuccess": "Ihr Konto wurde zur Löschung vorgemerkt. Es wird endgültig entfernt, wenn Sie sich nicht innerhalb von 2 Tagen anmelden.",
+      "exportData": "Meine Daten exportieren",
+      "exportDataSubtitle": "Profil & Einstellungen als JSON laden"
     },
     "legal": {
       "privacy": "Datenschutzerklärung",

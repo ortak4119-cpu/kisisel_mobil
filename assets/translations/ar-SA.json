@@ -471,7 +471,9 @@
       "requestSent": "تم إرسال طلب الصداقة",
       "requestAccepted": "تم قبول طلب الصداقة 🎉",
       "requestRejected": "تم رفض طلب الصداقة",
-      "unfriended": "تم إلغاء الصداقة"
+      "unfriended": "تم إلغاء الصداقة",
+      "followed": "تتابعه الآن",
+      "unfollowed": "ألغيت المتابعة"
     },
     "achievements": {
       "unlocked": "تم فتح الإنجاز! 🎉",
@@ -1075,7 +1077,9 @@
       "deleteAccountSubtitle": "حذف حسابك بشكل دائم",
       "deleteAccountConfirm": "هل أنت متأكد من حذف الحساب؟",
       "deleteAccountWarning": "إذا قمت بحذف حسابك ولم تسجل الدخول لمدة يومين، سيتم حذف جميع بياناتك بشكل دائم. لا يمكن التراجع عن هذا الإجراء.",
-      "deleteAccountSuccess": "تم وضع علامة على حسابك للحذف. سيتم حذفه نهائيًا إذا لم تسجّل الدخول خلال يومين."
+      "deleteAccountSuccess": "تم وضع علامة على حسابك للحذف. سيتم حذفه نهائيًا إذا لم تسجّل الدخول خلال يومين.",
+      "exportData": "تصدير بياناتي",
+      "exportDataSubtitle": "نزّل ملفك وإعداداتك بصيغة JSON"
     },
     "legal": {
       "privacy": "سياسة الخصوصية",

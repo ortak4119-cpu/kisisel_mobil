@@ -471,7 +471,9 @@
       "requestSent": "Pedido de amizade enviado",
       "requestAccepted": "Pedido de amizade aceite 🎉",
       "requestRejected": "Pedido de amizade rejeitado",
-      "unfriended": "Amizade desfeita"
+      "unfriended": "Amizade desfeita",
+      "followed": "A seguir",
+      "unfollowed": "Deixou de seguir"
     },
     "achievements": {
       "unlocked": "Conquista Desbloqueada! 🎉",
@@ -1075,7 +1077,9 @@
       "deleteAccountSubtitle": "Excluir permanentemente sua conta",
       "deleteAccountConfirm": "Excluir conta?",
       "deleteAccountWarning": "Se você excluir sua conta e não fizer login por 2 dias, todos os seus dados serão excluídos permanentemente. Esta ação não pode ser desfeita.",
-      "deleteAccountSuccess": "A sua conta foi marcada para exclusão. Será removida permanentemente se não iniciar sessão dentro de 2 dias."
+      "deleteAccountSuccess": "A sua conta foi marcada para exclusão. Será removida permanentemente se não iniciar sessão dentro de 2 dias.",
+      "exportData": "Exportar os meus dados",
+      "exportDataSubtitle": "Transfira perfil e definições em JSON"
     },
     "legal": {
       "privacy": "Política de Privacidade",
