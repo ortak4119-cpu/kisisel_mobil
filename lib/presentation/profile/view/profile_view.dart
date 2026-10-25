@@ -7,7 +7,6 @@ import '../../../core/route/app_router.gr.dart';
 import '../../../core/design/app_design.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/utils/custom_snackbar.dart';
-import '../../../core/utils/premium_helper.dart';
 import '../../../models/social/social_model.dart';
 import '../viewmodel/profile_viewmodel.dart';
 import '../widgets/user_profile_bottom_sheet.dart';
@@ -117,11 +116,6 @@ class _ProfileViewState extends State<ProfileView> with SingleTickerProviderStat
         ),
       ),
       actions: [
-        IconButton(
-          icon: Icon(Icons.qr_code_rounded,
-              color: isDark ? ColorConstant.textPrimaryDark : ColorConstant.textPrimaryLight),
-          onPressed: () => CustomSnackBar.showInfo(context, 'profile.qrComingSoon'.tr()),
-        ),
         IconButton(
           icon: Icon(Icons.settings_rounded,
               color: isDark ? ColorConstant.textPrimaryDark : ColorConstant.textPrimaryLight),
@@ -737,8 +731,10 @@ class _StatsContent extends StatelessWidget {
                   iconBg: orange.withValues(alpha: 0.1),
                   label: 'profile.completedTasks'.tr(),
                   value: '${stats.tasks.completed}',
-                  sub: '↑%12',
-                  subColor: Colors.green,
+                  sub: 'profile.thisMonthSub'.tr(),
+                  subColor: isDark
+                      ? ColorConstant.textSecondaryDark
+                      : ColorConstant.textSecondaryLight,
                   isDark: isDark,
                 ),
               ),
@@ -896,10 +892,6 @@ class _StatsContent extends StatelessWidget {
                   : 'settings.appearance.themeLight'.tr()),
           _settingsRow(context, Icons.shield_outlined, 'profile.privacySecurity'.tr(),
               isDark: isDark),
-          _settingsRow(context, Icons.cloud_outlined, 'profile.backupSync'.tr(),
-              isDark: isDark,
-              trailing: 'profile.backupOn'.tr(),
-              trailingColor: ColorConstant.accentGreen),
           const SizedBox(height: 4),
           _settingsRow(context, Icons.help_outline_rounded, 'profile.helpSupport'.tr(),
               isDark: isDark, muted: true),
