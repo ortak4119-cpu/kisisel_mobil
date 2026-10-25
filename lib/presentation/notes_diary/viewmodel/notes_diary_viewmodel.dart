@@ -804,8 +804,6 @@ class NotesDiaryViewModel extends ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
-      // Mevcut notu bul
-      final currentNote = _notes.firstWhere((n) => n.id == _editingNoteId);
 
       final request = NoteRequest(
         title: noteTitleController.text.trim(),

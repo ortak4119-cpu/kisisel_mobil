@@ -2,16 +2,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:auto_route/auto_route.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../models/task/task_models.dart';
 import '../../../models/habit/habit_models.dart';
 import '../../../core/design/app_design.dart';
 import '../../../core/utils/color_constant.dart';
-import '../../../core/utils/premium_helper.dart';
 import '../../../core/utils/nl_task_parser.dart';
 import 'shared_habits_view.dart';
-import '../../../core/route/app_router.gr.dart';
 import '../viewmodel/tasks_habits_viewmodel.dart';
 
 class TasksHabitsView extends StatefulWidget {
@@ -184,7 +181,7 @@ void showEditHabitSheet(BuildContext context, TasksHabitsViewModel viewModel,
 
 class _HabitsTab extends StatelessWidget {
   final TasksHabitsViewModel viewModel;
-  const _HabitsTab({super.key, required this.viewModel});
+  const _HabitsTab({required this.viewModel});
 
   static const _orange = Color(0xFFF6A821);
   static const _red = Color(0xFFF6524B);
@@ -1007,7 +1004,7 @@ void showEditTaskSheet(BuildContext context, TasksHabitsViewModel viewModel,
 
 class _TasksTab extends StatelessWidget {
   final TasksHabitsViewModel viewModel;
-  const _TasksTab({super.key, required this.viewModel});
+  const _TasksTab({required this.viewModel});
 
   static const _orange = Color(0xFFF6A821);
   static const _purple = Color(0xFF9F7AEA);
@@ -1936,26 +1933,6 @@ class _TasksTab extends StatelessWidget {
 }
 /// Boş durum — artık emoji yerine özel SVG illüstrasyon kullanıyor ve
 /// kullanıcıyı doğrudan ilk kaydı oluşturmaya yönlendiren bir buton içeriyor.
-Widget _buildEmptyState({
-  required String illustration,
-  required String message,
-  required String subtitle,
-  required Color color,
-  String? actionLabel,
-  VoidCallback? onAction,
-}) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 32),
-    child: AppEmptyState(
-      illustration: illustration,
-      title: message,
-      message: subtitle,
-      accent: color,
-      actionLabel: actionLabel,
-      onAction: onAction,
-    ),
-  );
-}
 
 // ==================== GÖREV EKLEME/DÜZENLEME BOTTOM SHEET ====================
 
@@ -3789,12 +3766,6 @@ class _AddHabitBottomSheet extends StatelessWidget {
     return '${d.day}.${d.month.toString().padLeft(2, '0')}.${d.year}';
   }
 
-  Future<void> _pickTime(
-      BuildContext context, TasksHabitsViewModel vm) async {
-    final t = await showTimePicker(
-        context: context, initialTime: vm.habitReminderTime);
-    if (t != null) vm.setHabitReminderTime(t);
-  }
 
   Future<void> _pickStart(
       BuildContext context, TasksHabitsViewModel vm) async {
@@ -3845,117 +3816,4 @@ class _AddHabitBottomSheet extends StatelessWidget {
   }
 }
 
-Widget _buildRecurrenceChip(
-  BuildContext context,
-  TasksHabitsViewModel vm,
-  String recurrence,
-  String label,
-  String emoji,
-  Color color,
-  bool isDarkMode,
-) {
-  final isSelected = vm.taskRecurrence == recurrence;
-  return Expanded(
-    child: GestureDetector(
-      onTap: () => vm.setTaskRecurrence(recurrence),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
-        decoration: BoxDecoration(
-          gradient: isSelected
-              ? LinearGradient(
-                  colors: [
-                    color.withValues(alpha: 0.2),
-                    color.withValues(alpha: 0.1),
-                  ],
-                )
-              : null,
-          color: isSelected ? null : Colors.transparent,
-          border: Border.all(
-            color: isSelected
-                ? color
-                : (isDarkMode
-                    ? ColorConstant.borderColorDark
-                    : ColorConstant.borderColorLight),
-            width: isSelected ? 2 : 1,
-          ),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          children: [
-            Text(emoji, style: const TextStyle(fontSize: 16)),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: isSelected
-                    ? color
-                    : (isDarkMode
-                        ? ColorConstant.textSecondaryDark
-                        : ColorConstant.textSecondaryLight),
-                fontWeight: FontWeight.w700,
-                fontSize: 10,
-              ),
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
-}
 
-Widget _buildRecurrenceBadge(String recurringPattern, bool isDarkMode) {
-  Color color;
-  String label;
-  String emoji;
-
-  switch (recurringPattern) {
-    case 'daily':
-      color = Colors.blue;
-      label = 'tasks.recurrence.daily'.tr();
-      emoji = '📅';
-      break;
-    case 'weekly':
-      color = Colors.purple;
-      label = 'tasks.recurrence.weekly'.tr();
-      emoji = '🗓️';
-      break;
-    case 'monthly':
-      color = Colors.orange;
-      label = 'tasks.recurrence.monthly'.tr();
-      emoji = '📆';
-      break;
-    default:
-      return const SizedBox.shrink();
-  }
-
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-    decoration: BoxDecoration(
-      gradient: LinearGradient(
-        colors: [
-          color.withValues(alpha: 0.2),
-          color.withValues(alpha: 0.1),
-        ],
-      ),
-      borderRadius: BorderRadius.circular(6),
-      border: Border.all(color: color.withValues(alpha: 0.4), width: 1.5),
-    ),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(emoji, style: const TextStyle(fontSize: 11)),
-        const SizedBox(width: 3),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-            color: color,
-          ),
-        ),
-      ],
-    ),
-  );
-}

@@ -1,5 +1,4 @@
 import '../base/base_api_service.dart';
-import '../response/service_response.dart';
 
 class SecurityPinStatus {
   final bool hasPin;

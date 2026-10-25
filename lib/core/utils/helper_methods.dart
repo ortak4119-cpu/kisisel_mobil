@@ -1,4 +1,3 @@
-import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -82,8 +81,6 @@ String daysUntilWithDateTime(DateTime givenDate) {
 }
 
 String daysUntilProjectDetail(DateTime givenDate) {
-  DateTime now = DateTime.now();
-  int daysDifference = givenDate.difference(now).inDays;
 
   String formattedDate =
       DateFormat('dd/MM/yyyy - EEEE', 'tr_TR').format(givenDate);

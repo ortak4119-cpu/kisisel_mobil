@@ -311,7 +311,6 @@ abstract class BaseApiService {
       final jsonResponse = json.decode(response.body) as Map<String, dynamic>;
 
       final message = jsonResponse['message'] as String?;
-      final success = jsonResponse['success'] as bool?;
 
       if (statusCode >= 200 && statusCode < 300) {
         // Success
