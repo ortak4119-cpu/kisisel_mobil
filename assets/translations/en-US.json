@@ -920,7 +920,10 @@
       "deleteTitle": "Delete Folder",
       "deleteConfirm": "Are you sure you want to delete the \"{name}\" folder?"
     },
-    "enterPinToLock": "Enter a 4-digit PIN code"
+    "enterPinToLock": "Enter a 4-digit PIN code",
+    "tagsTitle": "Tags",
+    "tagsAdd": "Add tag",
+    "tagsHint": "Tag"
   },
   "diary": {
     "title": "My Diary",

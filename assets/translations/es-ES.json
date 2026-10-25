@@ -920,7 +920,10 @@
       "deleteTitle": "Eliminar carpeta",
       "deleteConfirm": "¿Seguro que quieres eliminar la carpeta \"{name}\"?"
     },
-    "enterPinToLock": "Introduce un PIN de 4 dígitos"
+    "enterPinToLock": "Introduce un PIN de 4 dígitos",
+    "tagsTitle": "Etiquetas",
+    "tagsAdd": "Añadir etiqueta",
+    "tagsHint": "Etiqueta"
   },
   "diary": {
     "title": "Mi Diario",

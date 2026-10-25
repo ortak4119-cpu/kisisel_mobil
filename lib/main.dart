@@ -8,9 +8,13 @@ import 'core/theme/app_theme.dart';
 import 'core/init/app_initializer.dart';
 import 'core/init/app_providers.dart';
 import 'core/utils/app_locale.dart';
+import 'service/share/share_intent_handler.dart';
 
 void main() async {
   await AppInitializer.init();
+
+  // Başka uygulamadan "Paylaş" ile gelen metni not olarak içe aktar.
+  ShareIntentHandler.init();
 
   runApp(
     EasyLocalization(
@@ -51,6 +55,7 @@ class MyApp extends StatelessWidget {
         return MaterialApp.router(
           title: Constants.appName,
           debugShowCheckedModeBanner:false,
+          scaffoldMessengerKey: ShareIntentHandler.messengerKey,
 
           // Theme configuration
           theme: AppTheme.lightTheme,

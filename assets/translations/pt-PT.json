@@ -920,7 +920,10 @@
       "deleteTitle": "Excluir pasta",
       "deleteConfirm": "Tem certeza de que deseja excluir a pasta \"{name}\"?"
     },
-    "enterPinToLock": "Introduza um PIN de 4 dígitos"
+    "enterPinToLock": "Introduza um PIN de 4 dígitos",
+    "tagsTitle": "Etiquetas",
+    "tagsAdd": "Adicionar etiqueta",
+    "tagsHint": "Etiqueta"
   },
   "diary": {
     "title": "Meu Diário",

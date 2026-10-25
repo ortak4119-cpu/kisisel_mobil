@@ -920,7 +920,10 @@
       "deleteTitle": "フォルダーを削除",
       "deleteConfirm": "「{name}」フォルダーを削除してもよろしいですか？"
     },
-    "enterPinToLock": "4桁のPINコードを入力"
+    "enterPinToLock": "4桁のPINコードを入力",
+    "tagsTitle": "タグ",
+    "tagsAdd": "タグを追加",
+    "tagsHint": "タグ"
   },
   "diary": {
     "title": "マイダイアリー",

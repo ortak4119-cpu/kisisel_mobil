@@ -13,6 +13,7 @@ import 'package:home_widget/home_widget.dart';
 import 'locator.dart';
 import '../utils/currency.dart';
 import '../../service/firebase/fcm_service.dart';
+import '../../service/widget/note_widget_service.dart';
 
 class AppInitializer {
   static Future<void> init() async {
@@ -47,6 +48,9 @@ class AppInitializer {
     // (Her iki metot kendi icinde try/catch ile korunuyor.)
     unawaited(_initRevenueCat());
     unawaited(_initFCM());
+
+    // Ana ekran not widget'ını açılışta güncelle (oturum yoksa sessizce geçer).
+    unawaited(NoteWidgetService.update());
   }
 
   static Future<void> _initFirebase() async {

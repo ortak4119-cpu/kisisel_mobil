@@ -920,7 +920,10 @@
       "deleteTitle": "Удалить папку",
       "deleteConfirm": "Удалить папку «{name}»?"
     },
-    "enterPinToLock": "Введите 4-значный PIN-код"
+    "enterPinToLock": "Введите 4-значный PIN-код",
+    "tagsTitle": "Теги",
+    "tagsAdd": "Добавить тег",
+    "tagsHint": "Тег"
   },
   "diary": {
     "title": "Мой Дневник",

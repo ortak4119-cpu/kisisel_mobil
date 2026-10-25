@@ -16,6 +16,7 @@ import '../../../core/route/app_router.gr.dart';
 import '../../../models/diary/diary_models.dart';
 import '../../../models/note/note_models.dart';
 import '../viewmodel/notes_diary_viewmodel.dart';
+import 'markdown_note_parser.dart';
 
 @RoutePage()
 class NotesDiaryView extends StatefulWidget {
@@ -2030,13 +2031,13 @@ class _NotesContent extends StatelessWidget {
       );
     }
 
-    final all = viewModel
-        .applyNoteSearch(viewModel.notes.where((n) => !n.isArchived).toList());
+    final all = viewModel.applyTagFilter(viewModel
+        .applyNoteSearch(viewModel.notes.where((n) => !n.isArchived).toList()));
     final pinned = all.where((n) => n.isPinned).toList();
     // Son notlar: sabitlenmiş notlar burada TEKRAR gösterilmez.
     final recent = all.where((n) => !n.isPinned).toList();
-    final archived = viewModel
-        .applyNoteSearch(viewModel.notes.where((n) => n.isArchived).toList());
+    final archived = viewModel.applyTagFilter(viewModel
+        .applyNoteSearch(viewModel.notes.where((n) => n.isArchived).toList()));
     final tab = viewModel.notesFilter; // all | pinned | folders | archive
     const orange = Color(0xFFF6A821);
     const purple = Color(0xFF9F7AEA);
@@ -2074,6 +2075,45 @@ class _NotesContent extends StatelessWidget {
                   onTap: () => viewModel.setNotesFilter('archive')),
             ],
           ),
+          // Etiket filtresi (notlarda etiket varsa)
+          if (viewModel.allTags.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            SizedBox(
+              height: 34,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  for (final t in viewModel.allTags)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: GestureDetector(
+                        onTap: () => viewModel.setSelectedTag(t),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: viewModel.selectedTag == t
+                                ? purple
+                                : purple.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            '#$t',
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w700,
+                              color: viewModel.selectedTag == t
+                                  ? Colors.white
+                                  : purple,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 20),
           ..._notesBody(context, isDarkMode, tab, all, pinned, recent, archived),
         ],
@@ -3181,16 +3221,51 @@ class _NotesContent extends StatelessWidget {
                     ],
                   ),
                 ] else if (otherLines.isNotEmpty)
-                  Text(
-                    otherLines.join('\n'),
+                  RichText(
                     maxLines: 6,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 14.5,
-                      height: 1.4,
-                      color: c.textSecondary,
+                    text: TextSpan(
+                      children: parseMarkdownSpans(
+                        otherLines.join('\n'),
+                        TextStyle(
+                          fontSize: 14.5,
+                          height: 1.4,
+                          color: c.textSecondary,
+                        ),
+                      ),
                     ),
                   ),
+
+                // Etiketler (en fazla 3)
+                if (note.tags.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
+                    children: [
+                      for (final t in note.tags.take(3))
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 7, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: noteColor.withOpacity(0.16),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text('#$t',
+                              style: TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: c.textSecondary)),
+                        ),
+                      if (note.tags.length > 3)
+                        Text('+${note.tags.length - 3}',
+                            style: TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w700,
+                                color: c.textMuted)),
+                    ],
+                  ),
+                ],
 
                 const SizedBox(height: 8),
                 // Alt satır: zaman + hatırlatıcı
@@ -3476,12 +3551,16 @@ class _NotesContent extends StatelessWidget {
                                               color: c.textSecondary)),
                                     ],
                                   )
-                                : Text(
-                                    otherLines.join('\n'),
-                                    style: TextStyle(
-                                      fontSize: 11.5,
-                                      height: 1.3,
-                                      color: c.textSecondary,
+                                : RichText(
+                                    text: TextSpan(
+                                      children: parseMarkdownSpans(
+                                        otherLines.join('\n'),
+                                        TextStyle(
+                                          fontSize: 11.5,
+                                          height: 1.3,
+                                          color: c.textSecondary,
+                                        ),
+                                      ),
                                     ),
                                   ),
                       ),
@@ -3504,6 +3583,30 @@ class _NotesContent extends StatelessWidget {
                               color: c.textMuted),
                         ),
                       ),
+                      if (note.tags.isNotEmpty) ...[
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 5, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: noteColor.withOpacity(0.18),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              note.tags.length > 1
+                                  ? '#${note.tags.first} +${note.tags.length - 1}'
+                                  : '#${note.tags.first}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w700,
+                                  color: c.textSecondary),
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ],
@@ -4658,6 +4761,64 @@ class _AddNoteBottomSheet extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
+          // Etiketler (serbest biçimli) — chip listesi + ekle
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              for (final t in vm.editTags)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFB794F6).withOpacity(0.14),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('#$t',
+                          style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w600,
+                              color: c.textSecondary)),
+                      const SizedBox(width: 4),
+                      GestureDetector(
+                        onTap: () => vm.removeTag(t),
+                        child: Icon(Icons.close_rounded,
+                            size: 14, color: c.textMuted),
+                      ),
+                    ],
+                  ),
+                ),
+              GestureDetector(
+                onTap: () => _showAddTagDialog(context, vm),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: c.border),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.add_rounded, size: 15, color: c.textSecondary),
+                      const SizedBox(width: 3),
+                      Text('notes.tagsAdd'.tr(),
+                          style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w600,
+                              color: c.textSecondary)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
           // Notun eski yerel görselleri — yalnız backend eki YOKSA gösterilir
           // (çift gösterimi önler; yeni notlar backend eklerini kullanır).
           if (vm.editingExistingImages.isNotEmpty &&
@@ -5189,6 +5350,8 @@ class _AddNoteBottomSheet extends StatelessWidget {
     // Her buton: [ikon, aksiyon]. Liste/onay/madde/alıntı gerçekten
     // içeriğe eklenir; kalın/italik seçimi işaretlerle sarar.
     final buttons = <List<dynamic>>[
+      [Icons.format_bold_rounded, () => _wrapSelection(vm, '**')],
+      [Icons.format_italic_rounded, () => _wrapSelection(vm, '*')],
       [Icons.format_list_bulleted_rounded, () => _insert(vm, '• ')],
       [Icons.format_list_numbered_rounded, () => _insertNumbered(vm)],
       [Icons.check_box_outlined, () => _insert(vm, '☐ ')],
@@ -5230,6 +5393,32 @@ class _AddNoteBottomSheet extends StatelessWidget {
   void _insert(NotesDiaryViewModel vm, String prefix) {
     vm.noteContentFocus.requestFocus();
     insertNotePrefix(vm.noteContentController, prefix);
+  }
+
+  /// Seçili metni [marker] ile sarar (kalın=** , italik=*). Seçim yoksa
+  /// imleç konumuna işaret çifti ekleyip imleci ortaya alır.
+  void _wrapSelection(NotesDiaryViewModel vm, String marker) {
+    vm.noteContentFocus.requestFocus();
+    final ctrl = vm.noteContentController;
+    final text = ctrl.text;
+    final sel = ctrl.selection;
+    if (sel.isValid && !sel.isCollapsed) {
+      final selected = text.substring(sel.start, sel.end);
+      final newText =
+          text.replaceRange(sel.start, sel.end, '$marker$selected$marker');
+      ctrl.value = TextEditingValue(
+        text: newText,
+        selection:
+            TextSelection.collapsed(offset: sel.end + marker.length * 2),
+      );
+    } else {
+      final pos = sel.isValid ? sel.start : text.length;
+      final newText = text.replaceRange(pos, pos, '$marker$marker');
+      ctrl.value = TextEditingValue(
+        text: newText,
+        selection: TextSelection.collapsed(offset: pos + marker.length),
+      );
+    }
   }
 
   /// Numaralı liste: mevcut en büyük numarayı bulur, bir sonrakini ekler (1, 2, 3…).
@@ -5277,6 +5466,48 @@ class _AddNoteBottomSheet extends StatelessWidget {
         duration: const Duration(milliseconds: 1200),
         behavior: SnackBarBehavior.floating,
       ));
+  }
+
+  /// Etiket ekleme diyaloğu.
+  void _showAddTagDialog(BuildContext context, NotesDiaryViewModel vm) {
+    final ctrl = TextEditingController();
+    final c = AppColors.of(context);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: c.card,
+        title: Text('notes.tagsAdd'.tr(),
+            style: TextStyle(color: c.textPrimary)),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          maxLength: 40,
+          style: TextStyle(color: c.textPrimary),
+          decoration: InputDecoration(
+            prefixText: '#',
+            hintText: 'notes.tagsHint'.tr(),
+            counterText: '',
+          ),
+          onSubmitted: (v) {
+            vm.addTag(v);
+            Navigator.pop(ctx);
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('common.cancel'.tr()),
+          ),
+          TextButton(
+            onPressed: () {
+              vm.addTag(ctrl.text);
+              Navigator.pop(ctx);
+            },
+            child: Text('notes.tagsAdd'.tr()),
+          ),
+        ],
+      ),
+    );
   }
 
   /// Çizim tuvalini açar; kaydedilen çizim görsel olarak nota eklenir.

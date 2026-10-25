@@ -920,7 +920,10 @@
       "deleteTitle": "Supprimer le dossier",
       "deleteConfirm": "Voulez-vous vraiment supprimer le dossier « {name} » ?"
     },
-    "enterPinToLock": "Saisissez un code PIN à 4 chiffres"
+    "enterPinToLock": "Saisissez un code PIN à 4 chiffres",
+    "tagsTitle": "Étiquettes",
+    "tagsAdd": "Ajouter une étiquette",
+    "tagsHint": "Étiquette"
   },
   "diary": {
     "title": "Mon Journal",

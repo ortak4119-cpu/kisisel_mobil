@@ -920,7 +920,10 @@
       "deleteTitle": "حذف المجلد",
       "deleteConfirm": "هل أنت متأكد من حذف المجلد \"{name}\"؟"
     },
-    "enterPinToLock": "أدخل رمز PIN مكوّن من 4 أرقام"
+    "enterPinToLock": "أدخل رمز PIN مكوّن من 4 أرقام",
+    "tagsTitle": "الوسوم",
+    "tagsAdd": "إضافة وسم",
+    "tagsHint": "وسم"
   },
   "diary": {
     "title": "مذكراتي",

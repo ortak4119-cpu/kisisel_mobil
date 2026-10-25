@@ -920,7 +920,10 @@
       "deleteTitle": "फ़ोल्डर हटाएं",
       "deleteConfirm": "क्या आप वाकई \"{name}\" फ़ोल्डर हटाना चाहते हैं?"
     },
-    "enterPinToLock": "4 अंकों का पिन कोड दर्ज करें"
+    "enterPinToLock": "4 अंकों का पिन कोड दर्ज करें",
+    "tagsTitle": "टैग",
+    "tagsAdd": "टैग जोड़ें",
+    "tagsHint": "टैग"
   },
   "diary": {
     "title": "मेरी डायरी",

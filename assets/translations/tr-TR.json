@@ -920,7 +920,10 @@
       "deleteTitle": "Klasörü Sil",
       "deleteConfirm": "\"{name}\" klasörünü silmek istediğinizden emin misiniz?"
     },
-    "enterPinToLock": "4 haneli bir PIN kodu girin"
+    "enterPinToLock": "4 haneli bir PIN kodu girin",
+    "tagsTitle": "Etiketler",
+    "tagsAdd": "Etiket ekle",
+    "tagsHint": "Etiket"
   },
   "diary": {
     "title": "Günlüğüm",

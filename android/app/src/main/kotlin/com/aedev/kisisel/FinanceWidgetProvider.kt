@@ -1,10 +1,11 @@
 package com.aedev.kisisel
 
+import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.widget.RemoteViews
-import es.antonborri.home_widget.HomeWidgetLaunchIntent
 import es.antonborri.home_widget.HomeWidgetProvider
 
 class FinanceWidgetProvider : HomeWidgetProvider() {
@@ -33,9 +34,16 @@ class FinanceWidgetProvider : HomeWidgetProvider() {
                     widgetData.getString("income", "—")
                 )
 
-                val pendingIntent = HomeWidgetLaunchIntent.getActivity(
+                // Yeni Android sürümlerinde çöken HomeWidgetLaunchIntent yerine
+                // PendingIntent'i elle kuruyoruz (bkz. NoteWidgetProvider).
+                val launchIntent = Intent(context, MainActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                }
+                val pendingIntent = PendingIntent.getActivity(
                     context,
-                    MainActivity::class.java
+                    0,
+                    launchIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
                 setOnClickPendingIntent(R.id.widget_balance, pendingIntent)
             }

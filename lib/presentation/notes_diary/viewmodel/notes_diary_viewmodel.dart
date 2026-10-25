@@ -58,6 +58,22 @@ class NotesDiaryViewModel extends ChangeNotifier {
   String _selectedNoteColor = '#B794F6'; // Default mor renk
   String get selectedNoteColor => _selectedNoteColor;
 
+  // Editördeki etiketler (serbest biçimli).
+  final List<String> _editTags = [];
+  List<String> get editTags => List.unmodifiable(_editTags);
+  void addTag(String raw) {
+    final t = raw.trim();
+    if (t.isEmpty || t.length > 40) return;
+    if (_editTags.any((e) => e.toLowerCase() == t.toLowerCase())) return;
+    _editTags.add(t);
+    notifyListeners();
+  }
+
+  void removeTag(String tag) {
+    _editTags.removeWhere((e) => e == tag);
+    notifyListeners();
+  }
+
   // Editör form durumları (kilit / sabitleme / hatırlatıcı)
   bool _noteLocked = false;
   bool get noteLocked => _noteLocked;
@@ -226,6 +242,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
       version: n.version,
       reminderEnabled: n.reminderEnabled,
       attachments: attachments,
+      tags: n.tags,
     );
   }
 
@@ -376,6 +393,16 @@ class NotesDiaryViewModel extends ChangeNotifier {
         .toList();
   }
 
+  /// Seçili etikete göre listeyi süzer (seçili etiket yoksa aynen döner).
+  List<Note> applyTagFilter(List<Note> list) {
+    final tag = _selectedTag;
+    if (tag == null) return list;
+    return list
+        .where((n) =>
+            n.tags.any((t) => t.toLowerCase() == tag.toLowerCase()))
+        .toList();
+  }
+
   // İstatistik kartı sekmesi: 'all' | 'pinned' | 'folders' | 'archive'
   String _notesFilter = 'all';
   String get notesFilter => _notesFilter;
@@ -406,11 +433,33 @@ class NotesDiaryViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Etikete göre filtre (liste)
+  String? _selectedTag;
+  String? get selectedTag => _selectedTag;
+  void setSelectedTag(String? tag) {
+    _selectedTag = (_selectedTag == tag) ? null : tag;
+    notifyListeners();
+  }
+
+  /// Tüm notlardaki benzersiz etiketler (filtre çipleri için).
+  List<String> get allTags {
+    final set = <String>{};
+    for (final n in _notes) {
+      for (final t in n.tags) {
+        if (t.trim().isNotEmpty) set.add(t);
+      }
+    }
+    final list = set.toList();
+    list.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+    return list;
+  }
+
   void clearFilters() {
     _selectedCategoryId = null;
     _filterPinned = null;
     _filterLocked = null;
     _filterArchived = null;
+    _selectedTag = null;
     notifyListeners();
   }
 
@@ -435,6 +484,13 @@ class NotesDiaryViewModel extends ChangeNotifier {
 
     if (_filterLocked != null) {
       filtered = filtered.where((n) => n.isLocked == _filterLocked).toList();
+    }
+
+    if (_selectedTag != null) {
+      filtered = filtered
+          .where((n) => n.tags
+              .any((t) => t.toLowerCase() == _selectedTag!.toLowerCase()))
+          .toList();
     }
 
     // Sort: pinned first, then by date
@@ -477,6 +533,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
     _voiceNotePath = null;
     _voiceDurationSeconds = null;
     _recordStart = null;
+    _editTags.clear();
     if (_isRecording) {
       _recorder.stop();
       _isRecording = false;
@@ -507,6 +564,9 @@ class NotesDiaryViewModel extends ChangeNotifier {
     _voiceNotePath = null;
     _voiceDurationSeconds = null;
     _recordStart = null;
+    _editTags
+      ..clear()
+      ..addAll(note.tags);
     notifyListeners();
   }
 
@@ -618,6 +678,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
         isLocked: _noteLocked,
         isPinned: _notePinned,
         reminderEnabled: _noteReminder != null,
+        tags: _editTags.isEmpty ? null : List<String>.from(_editTags),
       );
 
       final response = await _noteService.createNote(request);
@@ -722,6 +783,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
         isLocked: _noteLocked,
         isPinned: _notePinned,
         reminderEnabled: _noteReminder != null,
+        tags: _editTags.isEmpty ? null : List<String>.from(_editTags),
       );
 
       final response = await _noteService.updateNote(_editingNoteId!, request);
@@ -829,6 +891,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
             version: note.version,
             reminderEnabled: note.reminderEnabled,
             attachments: note.attachments,
+            tags: note.tags,
           );
           notifyListeners();
 
@@ -909,6 +972,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
             version: note.version,
             reminderEnabled: note.reminderEnabled,
             attachments: note.attachments,
+            tags: note.tags,
           );
           notifyListeners();
 
@@ -1028,6 +1092,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
             version: note.version,
             reminderEnabled: note.reminderEnabled,
             attachments: note.attachments,
+            tags: note.tags,
           );
           notifyListeners();
 

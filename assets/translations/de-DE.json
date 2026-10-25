@@ -920,7 +920,10 @@
       "deleteTitle": "Ordner löschen",
       "deleteConfirm": "Möchten Sie den Ordner „{name}\" wirklich löschen?"
     },
-    "enterPinToLock": "Gib einen 4-stelligen PIN-Code ein"
+    "enterPinToLock": "Gib einen 4-stelligen PIN-Code ein",
+    "tagsTitle": "Schlagwörter",
+    "tagsAdd": "Schlagwort hinzufügen",
+    "tagsHint": "Schlagwort"
   },
   "diary": {
     "title": "Mein Tagebuch",

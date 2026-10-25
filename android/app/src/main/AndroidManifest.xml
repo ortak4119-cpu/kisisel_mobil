@@ -45,6 +45,12 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- Başka uygulamadan "Paylaş" ile gelen metni not olarak içe aktar -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/*" />
+            </intent-filter>
         </activity>
         <!-- Finans ana ekran widget'ı -->
         <receiver
@@ -56,6 +62,18 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/finance_widget_info" />
+        </receiver>
+
+        <!-- Notlar ana ekran widget'ı -->
+        <receiver
+            android:name=".NoteWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/note_widget_info" />
         </receiver>
 
         <!-- Don't delete the meta-data below.

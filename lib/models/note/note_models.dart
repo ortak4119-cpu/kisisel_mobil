@@ -76,6 +76,7 @@ class Note {
   final int? version;
   final bool? reminderEnabled;
   final List<NoteAttachment> attachments;
+  final List<String> tags;
 
   Note({
     required this.id,
@@ -96,6 +97,7 @@ class Note {
     this.version,
     this.reminderEnabled,
     this.attachments = const [],
+    this.tags = const [],
   });
 
   factory Note.fromJson(Map<String, dynamic> json) {
@@ -123,6 +125,11 @@ class Note {
               ?.map((e) => NoteAttachment.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
+      tags: (json['tags'] as List?)
+              ?.map((e) => e.toString())
+              .where((e) => e.isNotEmpty)
+              .toList() ??
+          const [],
     );
   }
 
@@ -146,6 +153,7 @@ class Note {
       'version': version,
       'reminder_enabled': reminderEnabled,
       'attachments': attachments.map((e) => e.toJson()).toList(),
+      'tags': tags,
     };
   }
 }
@@ -202,6 +210,7 @@ class NoteRequest {
   final bool isLocked;
   final bool isPinned;
   final bool? reminderEnabled;
+  final List<String>? tags;
 
   NoteRequest({
     this.title,
@@ -213,6 +222,7 @@ class NoteRequest {
     required this.isLocked,
     required this.isPinned,
     this.reminderEnabled,
+    this.tags,
   });
 
   Map<String, dynamic> toJson() {
@@ -226,6 +236,7 @@ class NoteRequest {
       'is_locked': isLocked,
       'is_pinned': isPinned,
       'reminder_enabled': reminderEnabled,
+      'tags': tags,
     };
   }
 }

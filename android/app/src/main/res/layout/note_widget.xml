@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/note_widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/note_widget_bg"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Notlarım"
+        android:textColor="#FFFFFFFF"
+        android:textStyle="bold"
+        android:textSize="15sp" />
+
+    <TextView
+        android:id="@+id/note_empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Henüz not yok"
+        android:textColor="#FFFFFFFF"
+        android:alpha="0.85"
+        android:textSize="13sp"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/note_row_1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="vertical"
+        android:visibility="gone">
+        <TextView
+            android:id="@+id/note_title_1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:text="—"
+            android:textColor="#FFFFFFFF"
+            android:textStyle="bold"
+            android:textSize="13sp" />
+        <TextView
+            android:id="@+id/note_snip_1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:text=""
+            android:textColor="#FFFFFFFF"
+            android:alpha="0.8"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/note_row_2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="vertical"
+        android:visibility="gone">
+        <TextView
+            android:id="@+id/note_title_2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:text="—"
+            android:textColor="#FFFFFFFF"
+            android:textStyle="bold"
+            android:textSize="13sp" />
+        <TextView
+            android:id="@+id/note_snip_2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:text=""
+            android:textColor="#FFFFFFFF"
+            android:alpha="0.8"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/note_row_3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="vertical"
+        android:visibility="gone">
+        <TextView
+            android:id="@+id/note_title_3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:text="—"
+            android:textColor="#FFFFFFFF"
+            android:textStyle="bold"
+            android:textSize="13sp" />
+        <TextView
+            android:id="@+id/note_snip_3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:text=""
+            android:textColor="#FFFFFFFF"
+            android:alpha="0.8"
+            android:textSize="11sp" />
+    </LinearLayout>
+</LinearLayout>

@@ -920,7 +920,10 @@
       "deleteTitle": "删除文件夹",
       "deleteConfirm": "确定要删除文件夹“{name}”吗？"
     },
-    "enterPinToLock": "输入4位PIN码"
+    "enterPinToLock": "输入4位PIN码",
+    "tagsTitle": "标签",
+    "tagsAdd": "添加标签",
+    "tagsHint": "标签"
   },
   "diary": {
     "title": "我的日记",
