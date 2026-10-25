@@ -457,6 +457,12 @@ class _HabitsTab extends StatelessWidget {
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFF48BB78)))
+                  else if (h.skippedToday)
+                    Text('habits.skippedToday'.tr(),
+                        style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: _orange))
                   else ...[
                     Text('$cur / $goal',
                         style: TextStyle(
@@ -518,6 +524,18 @@ class _HabitsTab extends StatelessWidget {
                 showEditHabitSheet(context, viewModel, c.isDark, h);
               },
             ),
+            if (!viewModel.isHabitDoneToday(h) && !h.skippedToday)
+              ListTile(
+                leading: const Icon(Icons.fast_forward_rounded, color: _orange),
+                title: Text('habits.skipToday'.tr(),
+                    style: TextStyle(color: c.textPrimary)),
+                subtitle: Text('habits.skipHint'.tr(),
+                    style: TextStyle(color: c.textMuted, fontSize: 12)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  viewModel.skipHabitToday(h, context);
+                },
+              ),
             ListTile(
               leading: const Icon(Icons.delete_outline_rounded,
                   color: Color(0xFFE53E3E)),
@@ -2807,6 +2825,14 @@ class _AddHabitBottomSheet extends StatelessWidget {
                         const SizedBox(height: 20),
                         _label(c, 'habits.motivation'.tr()),
                         _motivationField(vm, c),
+                        const SizedBox(height: 20),
+                        _label(c, 'habits.cue'.tr()),
+                        _habitLineField(
+                            vm.habitCueController, 'habits.cueHint'.tr(), c),
+                        const SizedBox(height: 20),
+                        _label(c, 'habits.reward'.tr()),
+                        _habitLineField(vm.habitRewardController,
+                            'habits.rewardHint'.tr(), c),
                       ],
                     ),
                   ),
@@ -3153,6 +3179,32 @@ class _AddHabitBottomSheet extends StatelessWidget {
               trailing,
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  /// Tek satırlık alışkanlık metin alanı (ipucu / ödül için).
+  Widget _habitLineField(
+      TextEditingController controller, String hint, AppColors c) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+      decoration: BoxDecoration(
+        color: c.card,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: c.border.withOpacity(0.7)),
+      ),
+      child: TextField(
+        controller: controller,
+        maxLength: 120,
+        style: TextStyle(fontSize: 15, color: c.textPrimary),
+        decoration: InputDecoration(
+          border: InputBorder.none,
+          isDense: true,
+          counterText: '',
+          hintText: hint,
+          hintStyle: TextStyle(color: c.textMuted, fontSize: 14.5),
+          contentPadding: const EdgeInsets.symmetric(vertical: 12),
         ),
       ),
     );

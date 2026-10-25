@@ -658,6 +658,9 @@ class TasksHabitsViewModel extends ChangeNotifier {
   // Habit Form State
   final TextEditingController habitTitleController = TextEditingController();
   final TextEditingController habitDescriptionController = TextEditingController();
+  // Atomic Habits döngüsü: ipucu (cue) + ödül (reward)
+  final TextEditingController habitCueController = TextEditingController();
+  final TextEditingController habitRewardController = TextEditingController();
   String _habitCategory = 'health_fitness';
   String get habitCategory => _habitCategory;
   String _habitDifficulty = 'beginner';
@@ -869,6 +872,8 @@ class TasksHabitsViewModel extends ChangeNotifier {
   void resetHabitForm() {
     habitTitleController.clear();
     habitDescriptionController.clear();
+    habitCueController.clear();
+    habitRewardController.clear();
     _habitCategory = 'health_fitness';
     _habitDifficulty = 'beginner';
     _habitTimePeriod = 'morning';
@@ -906,8 +911,12 @@ class TasksHabitsViewModel extends ChangeNotifier {
           ? null
           : habitDescriptionController.text.trim(),
       motivationQuote: null,
-      cue: null,
-      reward: null,
+      cue: habitCueController.text.trim().isEmpty
+          ? null
+          : habitCueController.text.trim(),
+      reward: habitRewardController.text.trim().isEmpty
+          ? null
+          : habitRewardController.text.trim(),
       isPublic: false,
     );
   }
@@ -1056,6 +1065,8 @@ class TasksHabitsViewModel extends ChangeNotifier {
     habitTitleController.text = habit.title;
     habitDescriptionController.text =
         habit.whyDescription ?? habit.description ?? '';
+    habitCueController.text = habit.cue ?? '';
+    habitRewardController.text = habit.reward ?? '';
     _habitCategory = habit.category;
     _habitDifficulty = habit.difficultyLevel;
     _selectedIcon = habit.icon ?? '⭐';
@@ -1157,6 +1168,8 @@ class TasksHabitsViewModel extends ChangeNotifier {
     taskDescriptionController.dispose();
     habitTitleController.dispose();
     habitDescriptionController.dispose();
+    habitCueController.dispose();
+    habitRewardController.dispose();
     super.dispose();
   }
 
@@ -1541,6 +1554,33 @@ class TasksHabitsViewModel extends ChangeNotifier {
         CustomSnackBar.showError(context, 'errors.general'.tr());
       }
       debugPrint('Toggle habit exception: $e');
+    }
+  }
+
+  /// Alışkanlığı bugün için atla (seriyi bozmadan "dinlenme günü"). İsteğe
+  /// bağlı sebep. Backend skipHabit zaten vardı, UI'a yeni açılıyor.
+  Future<void> skipHabitToday(Habit habit, BuildContext context,
+      {String? reason}) async {
+    try {
+      final today = DateTime.now().toIso8601String().split('T')[0];
+      final response = await _habitService.skipHabit(
+        habit.id,
+        SkipHabitRequest(date: today, reason: reason),
+      );
+      if (response.isSuccess) {
+        await loadHabits();
+        if (context.mounted) {
+          CustomSnackBar.showSuccess(context, 'success.habitSkipped'.tr());
+        }
+      } else if (context.mounted) {
+        CustomSnackBar.showError(
+            context, response.errorMessage ?? 'errors.general'.tr());
+      }
+    } catch (e) {
+      if (context.mounted) {
+        CustomSnackBar.showError(context, 'errors.general'.tr());
+      }
+      debugPrint('Skip habit exception: $e');
     }
   }
 

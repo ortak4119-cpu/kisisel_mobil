@@ -347,6 +347,13 @@
     "startDate": "Başlangıç tarihi",
     "motivation": "Motivasyon notu",
     "motivationHint": "Bu alışkanlığı neden kazanmak istiyorsun?",
+    "cue": "İpucu (tetikleyici)",
+    "cueHint": "Ne zaman/nerede? Örn: Sabah kahvesinden sonra",
+    "reward": "Ödül",
+    "rewardHint": "Tamamlayınca kendine ne vereceksin?",
+    "skipToday": "Bugün atla",
+    "skipHint": "Seriyi bozmaz",
+    "skippedToday": "Bugün atlandı",
     "saveHabit": "Alışkanlığı Kaydet",
     "todaySection": "Bugünün alışkanlıkları",
     "doneToday": "Tamamlandı"
@@ -1138,6 +1145,7 @@
     "habitUpdated": "Alışkanlık güncellendi",
     "habitDeleted": "Alışkanlık silindi",
     "habitCompleted": "Harika! Alışkanlık tamamlandı 🎉",
+    "habitSkipped": "Alışkanlık bugün atlandı",
     "habitCancelled": "Alışkanlık iptal edildi",
     "incomeAdded": "Gelir eklendi",
     "incomeUpdated": "Gelir güncellendi"

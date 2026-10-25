@@ -347,6 +347,13 @@
     "startDate": "Start date",
     "motivation": "Motivation note",
     "motivationHint": "Why do you want this habit?",
+    "cue": "Cue (trigger)",
+    "cueHint": "When/where? e.g. After morning coffee",
+    "reward": "Reward",
+    "rewardHint": "What will you treat yourself to?",
+    "skipToday": "Skip today",
+    "skipHint": "Keeps your streak",
+    "skippedToday": "Skipped today",
     "saveHabit": "Save Habit",
     "todaySection": "Today’s habits",
     "doneToday": "Completed"
@@ -1138,6 +1145,7 @@
     "habitUpdated": "Habit updated",
     "habitDeleted": "Habit deleted",
     "habitCompleted": "Great! Habit completed 🎉",
+    "habitSkipped": "Habit skipped for today",
     "habitCancelled": "Habit cancelled",
     "incomeAdded": "Income added",
     "incomeUpdated": "Income updated"
