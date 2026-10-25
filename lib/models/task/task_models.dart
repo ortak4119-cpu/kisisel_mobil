@@ -47,6 +47,7 @@ class Task {
   final int? actualDurationMinutes;
   final bool isOverdue;
   final int? parentTaskId;
+  final int orderIndex;
   final DateTime createdAt;
   // Faz 1: backend'e taşınan meta alanları
   final String? category;
@@ -74,6 +75,7 @@ class Task {
     this.actualDurationMinutes,
     required this.isOverdue,
     this.parentTaskId,
+    this.orderIndex = 0,
     required this.createdAt,
     this.category,
     List<String>? tags,
@@ -105,6 +107,7 @@ class Task {
       actualDurationMinutes: json['actual_duration_minutes'] as int?,
       isOverdue: json['is_overdue'] == true || json['is_overdue'] == 1, // ← Null-safe
       parentTaskId: json['parent_task_id'] as int?,
+      orderIndex: json['order_index'] as int? ?? 0,
       createdAt: DateTime.parse(json['created_at'] as String),
       category: json['category'] as String?,
       tags: (json['tags'] as List?)?.cast<String>() ?? const [],
@@ -177,6 +180,7 @@ class Task {
     int? actualDurationMinutes,
     bool? isOverdue,
     int? parentTaskId,
+    int? orderIndex,
     DateTime? createdAt,
     String? category,
     List<String>? tags,
@@ -203,6 +207,7 @@ class Task {
       actualDurationMinutes: actualDurationMinutes ?? this.actualDurationMinutes,
       isOverdue: isOverdue ?? this.isOverdue,
       parentTaskId: parentTaskId ?? this.parentTaskId,
+      orderIndex: orderIndex ?? this.orderIndex,
       createdAt: createdAt ?? this.createdAt,
       category: category ?? this.category,
       tags: tags ?? this.tags,

@@ -33,6 +33,7 @@ abstract class ITaskService {
     File file,
   );
   Future<ServiceResponse<void>> deleteTaskAttachment(int attachmentId);
+  Future<ServiceResponse<void>> reorderTasks(List<int> ids);
 }
 
 class TaskService implements ITaskService {
@@ -295,6 +296,15 @@ class TaskService implements ITaskService {
   Future<ServiceResponse<void>> deleteTaskAttachment(int attachmentId) async {
     return await BaseApiService.delete<void>(
       '/attachments/$attachmentId',
+      requiresAuth: true,
+    );
+  }
+
+  @override
+  Future<ServiceResponse<void>> reorderTasks(List<int> ids) async {
+    return await BaseApiService.post<void>(
+      '/tasks/reorder',
+      body: {'ids': ids},
       requiresAuth: true,
     );
   }

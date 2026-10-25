@@ -254,6 +254,7 @@
     "sortPriority": "Öncelik",
     "sortTime": "Saat",
     "sortCreated": "Eklenme",
+    "sortManual": "Elle",
     "later": "Daha sonra",
     "laterCount": "{n} görev",
     "subtaskProgress": "{done}/{total} alt görev",

@@ -254,6 +254,7 @@
     "sortPriority": "प्राथमिकता",
     "sortTime": "समय",
     "sortCreated": "नवीनतम",
+    "sortManual": "मैनुअल",
     "later": "बाद में",
     "laterCount": "{n} कार्य",
     "subtaskProgress": "{done}/{total} उपकार्य",

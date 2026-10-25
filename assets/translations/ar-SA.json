@@ -254,6 +254,7 @@
     "sortPriority": "الأولوية",
     "sortTime": "الوقت",
     "sortCreated": "الأحدث",
+    "sortManual": "يدوي",
     "later": "لاحقًا",
     "laterCount": "{n} مهمة",
     "subtaskProgress": "{done}/{total} مهمة فرعية",

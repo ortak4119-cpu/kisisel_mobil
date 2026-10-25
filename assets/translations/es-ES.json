@@ -254,6 +254,7 @@
     "sortPriority": "Prioridad",
     "sortTime": "Hora",
     "sortCreated": "Recientes",
+    "sortManual": "Manual",
     "later": "Más tarde",
     "laterCount": "{n} tareas",
     "subtaskProgress": "{done}/{total} subtareas",

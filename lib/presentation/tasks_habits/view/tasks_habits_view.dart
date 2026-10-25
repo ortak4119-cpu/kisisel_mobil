@@ -9,6 +9,7 @@ import '../../../models/habit/habit_models.dart';
 import '../../../core/design/app_design.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/utils/premium_helper.dart';
+import '../../../core/utils/nl_task_parser.dart';
 import '../../../core/route/app_router.gr.dart';
 import '../viewmodel/tasks_habits_viewmodel.dart';
 
@@ -796,6 +797,8 @@ class _TasksTab extends StatelessWidget {
       const SizedBox(height: 12),
       if (list.isEmpty)
         _emptyDay(context, c)
+      else if (viewModel.canReorderTasks)
+        _reorderableTaskList(context, c, list)
       else
         ...list.map((t) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
@@ -1018,6 +1021,8 @@ class _TasksTab extends StatelessWidget {
         return 'tasks.sortTime'.tr();
       case 'created':
         return 'tasks.sortCreated'.tr();
+      case 'manual':
+        return 'tasks.sortManual'.tr();
       default:
         return 'tasks.sortPriority'.tr();
     }
@@ -1038,6 +1043,7 @@ class _TasksTab extends StatelessWidget {
               ['priority', 'tasks.sortPriority'],
               ['time', 'tasks.sortTime'],
               ['created', 'tasks.sortCreated'],
+              ['manual', 'tasks.sortManual'],
             ])
               ListTile(
                 title: Text(o[1].tr(),
@@ -1053,6 +1059,23 @@ class _TasksTab extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  /// "Elle" sıralama modunda sürükle-bırak görev listesi.
+  Widget _reorderableTaskList(
+      BuildContext context, AppColors c, List<Task> list) {
+    return ReorderableListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: list.length,
+      itemBuilder: (ctx, i) => Padding(
+        key: ValueKey(list[i].id),
+        padding: const EdgeInsets.only(bottom: 12),
+        child: _taskCard(context, c, list[i]),
+      ),
+      onReorder: (oldIndex, newIndex) =>
+          viewModel.reorderTasksForSelectedDay(oldIndex, newIndex),
     );
   }
 
@@ -1653,7 +1676,7 @@ class _AddTaskBottomSheet extends StatelessWidget {
 
   // ---------- Başlık ----------
   Widget _titleField(TasksHabitsViewModel vm, AppColors c) {
-    return Container(
+    final box = Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
         color: c.card,
@@ -1673,6 +1696,7 @@ class _AddTaskBottomSheet extends StatelessWidget {
           Expanded(
             child: TextField(
               controller: vm.taskTitleController,
+              onChanged: (_) => vm.onTaskTitleChanged(),
               style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w600,
@@ -1686,6 +1710,70 @@ class _AddTaskBottomSheet extends StatelessWidget {
               ),
             ),
           ),
+        ],
+      ),
+    );
+    final p = vm.nlPreview;
+    if (!p.hasAny) return box;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [box, const SizedBox(height: 8), _nlPreviewBar(vm, c, p)],
+    );
+  }
+
+  /// Doğal dil önizleme çubuğu: başlıkta algılanan tarih/saat/öncelik/etiket.
+  Widget _nlPreviewBar(TasksHabitsViewModel vm, AppColors c, ParsedTask p) {
+    final chips = <Widget>[];
+    String two(int n) => n.toString().padLeft(2, '0');
+    if (p.dueDate != null) {
+      chips.add(_nlChip(Icons.event_rounded,
+          '${two(p.dueDate!.day)}.${two(p.dueDate!.month)}'));
+    }
+    if (p.dueTime != null) {
+      chips.add(_nlChip(Icons.schedule_rounded,
+          '${two(p.dueTime!.hour)}:${two(p.dueTime!.minute)}'));
+    }
+    if (p.priority != null) {
+      chips.add(_nlChip(
+          Icons.flag_rounded,
+          'tasks.priority.${p.priority == 2 ? 'high' : p.priority == 0 ? 'low' : 'medium'}'
+              .tr()));
+    }
+    for (final t in p.tags) {
+      chips.add(_nlChip(Icons.tag_rounded, '#$t'));
+    }
+    return Padding(
+      padding: const EdgeInsets.only(left: 2),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.auto_awesome_rounded,
+              size: 15, color: Color(0xFF9F7AEA)),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Wrap(spacing: 6, runSpacing: 6, children: chips),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _nlChip(IconData icon, String label) {
+    const purple = Color(0xFF9F7AEA);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: purple.withOpacity(0.10),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: purple),
+          const SizedBox(width: 4),
+          Text(label,
+              style: const TextStyle(
+                  fontSize: 12, fontWeight: FontWeight.w600, color: purple)),
         ],
       ),
     );

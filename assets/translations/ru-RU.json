@@ -254,6 +254,7 @@
     "sortPriority": "Приоритет",
     "sortTime": "Время",
     "sortCreated": "Новые",
+    "sortManual": "Вручную",
     "later": "Позже",
     "laterCount": "{n} задач",
     "subtaskProgress": "{done}/{total} подзадач",

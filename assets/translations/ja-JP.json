@@ -254,6 +254,7 @@
     "sortPriority": "優先度",
     "sortTime": "時間",
     "sortCreated": "新着",
+    "sortManual": "手動",
     "later": "あとで",
     "laterCount": "{n} 件",
     "subtaskProgress": "{done}/{total} サブタスク",

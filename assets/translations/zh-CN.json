@@ -254,6 +254,7 @@
     "sortPriority": "优先级",
     "sortTime": "时间",
     "sortCreated": "最新",
+    "sortManual": "手动",
     "later": "稍后",
     "laterCount": "{n} 个任务",
     "subtaskProgress": "{done}/{total} 子任务",

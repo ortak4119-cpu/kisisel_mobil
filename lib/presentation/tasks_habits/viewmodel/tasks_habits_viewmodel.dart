@@ -15,6 +15,8 @@ import '../../../models/habit/habit_models.dart';
 import '../../../models/auth/auth_models.dart';
 import '../../../core/utils/custom_snackbar.dart';
 import '../../../core/utils/premium_helper.dart';
+import '../../../core/utils/nl_task_parser.dart';
+import '../../../core/utils/app_locale.dart';
 
 enum TaskFilter { all, pending, completed }
 
@@ -567,6 +569,13 @@ class TasksHabitsViewModel extends ChangeNotifier {
       case 'time':
         l.sort((a, b) => (a.dueTime ?? '99:99').compareTo(b.dueTime ?? '99:99'));
         break;
+      case 'manual':
+        // Elle sıralama: order_index, eşitlikte en yeni üstte.
+        l.sort((a, b) {
+          final c = a.orderIndex.compareTo(b.orderIndex);
+          return c != 0 ? c : b.createdAt.compareTo(a.createdAt);
+        });
+        break;
       default:
         l.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     }
@@ -574,6 +583,59 @@ class TasksHabitsViewModel extends ChangeNotifier {
   }
 
   List<Task> get sortedTasksForSelectedDay => _applySort(tasksForSelectedDay);
+
+  /// Sürükle-bırak yalnız "manual" sıralama modunda ve arama yokken aktif.
+  bool get canReorderTasks =>
+      _taskSort == 'manual' && _taskSearch.trim().isEmpty;
+
+  /// Seçili günün görevlerini elle sırala (sürükle-bırak). reorderable_grid_view
+  /// konvansiyonu değil; ReorderableListView: oldIndex < newIndex ise newIndex--.
+  Future<void> reorderTasksForSelectedDay(int oldIndex, int newIndex) async {
+    final visible = sortedTasksForSelectedDay;
+    if (oldIndex < 0 || oldIndex >= visible.length) return;
+    if (oldIndex < newIndex) newIndex -= 1;
+    newIndex = newIndex.clamp(0, visible.length - 1);
+    if (oldIndex == newIndex) return;
+
+    final moved = visible.removeAt(oldIndex);
+    visible.insert(newIndex, moved);
+
+    // Yeni sırayı order_index olarak yerel Task'lara yaz (anında yansısın).
+    for (var i = 0; i < visible.length; i++) {
+      final idx = _tasks.indexWhere((t) => t.id == visible[i].id);
+      if (idx != -1) {
+        _tasks[idx] = _tasks[idx].copyWith(orderIndex: i);
+      }
+    }
+    notifyListeners();
+
+    try {
+      await _taskService.reorderTasks(visible.map((t) => t.id).toList());
+    } catch (_) {}
+  }
+
+  // ---- Doğal dil girişi (Faz 2) ----
+  /// Başlık değişince önizleme çubuğunu tazelemek için rebuild tetikler.
+  void onTaskTitleChanged() => notifyListeners();
+
+  /// Başlık metninin canlı doğal dil önizlemesi.
+  ParsedTask get nlPreview =>
+      NlTaskParser.parse(taskTitleController.text, AppLocale.code);
+
+  /// Doğal dil çözümlemesini form durumuna uygular: başlığı sadeleştirir ve
+  /// algılanan tarih/saat/öncelik/etiketi set eder (metinde olmayan alanlara
+  /// dokunmaz). Kaydetmeden hemen önce çağrılır.
+  void _applyNlParseToState() {
+    final p = NlTaskParser.parse(taskTitleController.text, AppLocale.code);
+    if (!p.hasAny) return;
+    if (p.title.isNotEmpty) taskTitleController.text = p.title;
+    if (p.dueDate != null) _taskDueDate = p.dueDate;
+    if (p.dueTime != null) _taskDueTime = p.dueTime;
+    if (p.priority != null) _taskPriority = p.priority!;
+    for (final t in p.tags) {
+      if (!_taskTags.contains(t)) _taskTags.add(t);
+    }
+  }
 
   // Arama
   String _taskSearch = '';
@@ -907,6 +969,8 @@ class TasksHabitsViewModel extends ChangeNotifier {
   }
 
   Future<void> updateTask(BuildContext context) async {
+    // Doğal dil çözümlemesini uygula (başlıkta tarih/saat/öncelik/etiket varsa).
+    _applyNlParseToState();
     if (_editingTaskId == null) {
       CustomSnackBar.showError(context, 'errors.taskNotFound'.tr());
       return;
@@ -1137,6 +1201,8 @@ class TasksHabitsViewModel extends ChangeNotifier {
   }
 
   Future<void> createTask(BuildContext context) async {
+    // Doğal dil: "yarın 15:00 ... !1 #ev" → tarih/saat/öncelik/etiket.
+    _applyNlParseToState();
     if (taskTitleController.text.trim().isEmpty) {
       CustomSnackBar.showError(context, 'errors.taskTitleEmpty'.tr());
       return;
