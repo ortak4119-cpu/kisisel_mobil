@@ -10,6 +10,7 @@ import '../../../core/design/app_design.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/utils/premium_helper.dart';
 import '../../../core/utils/nl_task_parser.dart';
+import 'shared_habits_view.dart';
 import '../../../core/route/app_router.gr.dart';
 import '../viewmodel/tasks_habits_viewmodel.dart';
 
@@ -397,6 +398,29 @@ class _HabitsTab extends StatelessWidget {
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
                   color: c.textPrimary)),
+        ),
+        GestureDetector(
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => SharedHabitsPage(isDark: c.isDark))),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+            decoration: BoxDecoration(
+              color: _orange.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.groups_rounded, size: 18, color: _orange),
+                const SizedBox(width: 5),
+                Text('habits.shared.short'.tr(),
+                    style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: _orange)),
+              ],
+            ),
+          ),
         ),
       ],
     );

@@ -5,6 +5,7 @@ import 'package:get_it/get_it.dart';
 // Services
 import '../../service/auth/auth_service.dart';
 import '../../service/habit/habit_service.dart';
+import '../../service/habit/shared_habit_service.dart';
 import '../../service/profile/profile_service.dart';
 import '../../service/settings/settings_service.dart';
 import '../../service/task/task_service.dart';
@@ -34,6 +35,8 @@ void setupLocator() {
 
   // Content Services
   locator.registerLazySingleton<IHabitService>(() => HabitService());
+  locator.registerLazySingleton<ISharedHabitService>(
+      () => SharedHabitService());
   locator.registerLazySingleton<ITaskService>(() => TaskService());
   locator.registerLazySingleton<INoteService>(() => NoteService());
   locator.registerLazySingleton<IDiaryService>(() => DiaryService());
@@ -67,6 +70,7 @@ IProfileService get profileService => locator<IProfileService>();
 ISocialService get socialService => locator<ISocialService>();
 ISettingsService get settingsService => locator<ISettingsService>();
 IHabitService get habitService => locator<IHabitService>();
+ISharedHabitService get sharedHabitService => locator<ISharedHabitService>();
 ITaskService get taskService => locator<ITaskService>();
 INoteService get noteService => locator<INoteService>();
 IDiaryService get diaryService => locator<IDiaryService>();
