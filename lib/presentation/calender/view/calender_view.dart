@@ -1,17 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:auto_route/auto_route.dart';
-import 'package:table_calendar/table_calendar.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import '../../../core/design/app_design.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/utils/custom_snackbar.dart';
-import '../../../core/utils/subscription_icons.dart';
-import '../../../core/utils/premium_helper.dart';
-import '../../../core/route/app_router.gr.dart';
 import '../../../models/calender/calendar_models.dart';
-import '../../../models/note/note_models.dart';
 import '../../../models/subscription/subscription_models.dart';
 import '../../../models/installment/installment_models.dart';
 import '../../../core/utils/currency.dart';

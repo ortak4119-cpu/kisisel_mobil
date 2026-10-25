@@ -138,13 +138,6 @@ class CalendarViewModel extends ChangeNotifier {
     return filtered;
   }
 
-  // Event type'a göre filtrele
-  List<CalendarEvent> getCalendarEventsByType(String eventType) {
-    return calendarEventsForSelectedDate
-        .where((event) => event.eventType == eventType)
-        .toList();
-  }
-
   // Seçili güne ait veriler
   List<Note> get notesForSelectedDate {
     final filtered = _notes.where((note) {
@@ -627,26 +620,6 @@ class CalendarViewModel extends ChangeNotifier {
   }
 
   // Calendar Event CRUD operations
-  Future<bool> createCalendarEvent(CalendarEventRequest request) async {
-    try {
-      debugPrint('➕ Calendar: Creating new event: ${request.title}');
-      final response = await _calendarService.createEvent(request);
-
-      if (response.isSuccess && response.data != null) {
-        _calendarEvents.add(response.data!);
-        notifyListeners();
-        debugPrint('✅ Calendar: Event created successfully');
-        return true;
-      } else {
-        debugPrint('❌ Calendar: Failed to create event: ${response.errorMessage}');
-        return false;
-      }
-    } catch (e) {
-      debugPrint('❌ Calendar: Error creating event: $e');
-      return false;
-    }
-  }
-
   Future<bool> updateCalendarEvent(int eventId, CalendarEventUpdateRequest request) async {
     try {
       debugPrint('✏️ Calendar: Updating event: $eventId');

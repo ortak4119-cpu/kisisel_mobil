@@ -11,8 +11,6 @@ abstract class ICalendarService {
     String? endDate,
   });
 
-  Future<ServiceResponse<CalendarEvent>> getEvent(int id);
-
   Future<ServiceResponse<CalendarEvent>> createEvent(
       CalendarEventRequest request,
       );
@@ -23,13 +21,6 @@ abstract class ICalendarService {
       );
 
   Future<ServiceResponse<void>> deleteEvent(int id);
-
-  Future<ServiceResponse<MonthViewResponse>> getMonthView(
-      int year,
-      int month,
-      );
-
-  Future<ServiceResponse<DayViewResponse>> getDayView(String date);
 }
 
 class CalendarService implements ICalendarService {
@@ -59,42 +50,6 @@ class CalendarService implements ICalendarService {
                 .map((e) => CalendarEvent.fromJson(e as Map<String, dynamic>))
                 .toList();
           }
-        }
-        throw Exception('Invalid JSON format');
-      },
-    );
-
-    if (response.isSuccess && response.data != null) {
-      return ServiceResponse.success(
-        statusCode: response.statusCode,
-        data: response.data!,
-        message: response.message,
-      );
-    }
-
-    return ServiceResponse.error(
-      statusCode: response.statusCode,
-      message: response.errorMessage,
-      errors: response.errors,
-    );
-  }
-
-  @override
-  Future<ServiceResponse<CalendarEvent>> getEvent(int id) async {
-    final response = await BaseApiService.get<CalendarEvent>(
-      '/calendar/events/$id',
-      requiresAuth: true,
-      fromJson: (json) {
-        debugPrint('🔍 GetEvent - JSON Type: ${json.runtimeType}');
-        debugPrint('🔍 GetEvent - JSON Content: $json');
-
-        if (json is Map<String, dynamic>) {
-          if (json.containsKey('event')) {
-            return CalendarEvent.fromJson(
-              json['event'] as Map<String, dynamic>,
-            );
-          }
-          return CalendarEvent.fromJson(json);
         }
         throw Exception('Invalid JSON format');
       },
@@ -193,71 +148,6 @@ class CalendarService implements ICalendarService {
         statusCode: response.statusCode,
         data: null,
         message: response.message ?? 'messages.eventDeleted'.tr(),
-      );
-    }
-
-    return ServiceResponse.error(
-      statusCode: response.statusCode,
-      message: response.errorMessage,
-      errors: response.errors,
-    );
-  }
-
-  @override
-  Future<ServiceResponse<MonthViewResponse>> getMonthView(
-      int year,
-      int month,
-      ) async {
-    final response = await BaseApiService.get<MonthViewResponse>(
-      '/calendar/month/$year/$month',
-      requiresAuth: true,
-      fromJson: (json) {
-        debugPrint('🔍 GetMonthView - JSON Type: ${json.runtimeType}');
-        debugPrint('🔍 GetMonthView - JSON Content: $json');
-
-        if (json is Map<String, dynamic>) {
-          return MonthViewResponse.fromJson(json);
-        }
-        throw Exception('Invalid JSON format');
-      },
-    );
-
-    if (response.isSuccess && response.data != null) {
-      return ServiceResponse.success(
-        statusCode: response.statusCode,
-        data: response.data!,
-        message: response.message,
-      );
-    }
-
-    return ServiceResponse.error(
-      statusCode: response.statusCode,
-      message: response.errorMessage,
-      errors: response.errors,
-    );
-  }
-
-  @override
-  Future<ServiceResponse<DayViewResponse>> getDayView(String date) async {
-    final response = await BaseApiService.get<DayViewResponse>(
-      '/calendar/day/$date',
-      requiresAuth: true,
-      fromJson: (json) {
-        debugPrint('🔍 GetDayView - JSON Type: ${json.runtimeType}');
-        debugPrint('🔍 GetDayView - JSON Content: $json');
-
-        if (json is Map<String, dynamic>) {
-          return DayViewResponse.fromJson(json);
-        }
-        throw Exception('Invalid JSON format');
-      },
-    );
-
-    if (response.isSuccess && response.data != null) {
-      return ServiceResponse.success(
-        statusCode: response.statusCode,
-        data: response.data!,
-        message: response.message,
       );
     }
 
