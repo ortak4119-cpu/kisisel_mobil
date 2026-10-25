@@ -923,7 +923,17 @@
     "enterPinToLock": "输入4位PIN码",
     "tagsTitle": "标签",
     "tagsAdd": "添加标签",
-    "tagsHint": "标签"
+    "tagsHint": "标签",
+    "dictation": {
+      "title": "语音笔记",
+      "listening": "正在聆听…",
+      "paused": "已暂停",
+      "hint": "对着麦克风说话，文字会显示在这里",
+      "start": "聆听",
+      "stop": "停止",
+      "add": "添加",
+      "unavailable": "此设备不支持语音识别"
+    }
   },
   "diary": {
     "title": "我的日记",

@@ -923,7 +923,17 @@
     "enterPinToLock": "4 haneli bir PIN kodu girin",
     "tagsTitle": "Etiketler",
     "tagsAdd": "Etiket ekle",
-    "tagsHint": "Etiket"
+    "tagsHint": "Etiket",
+    "dictation": {
+      "title": "Sesli not",
+      "listening": "Dinleniyor…",
+      "paused": "Duraklatıldı",
+      "hint": "Mikrofona konuşun, metin burada görünecek",
+      "start": "Dinle",
+      "stop": "Durdur",
+      "add": "Ekle",
+      "unavailable": "Cihazda konuşma tanıma kullanılamıyor"
+    }
   },
   "diary": {
     "title": "Günlüğüm",

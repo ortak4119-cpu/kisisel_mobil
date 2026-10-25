@@ -923,7 +923,17 @@
     "enterPinToLock": "Saisissez un code PIN à 4 chiffres",
     "tagsTitle": "Étiquettes",
     "tagsAdd": "Ajouter une étiquette",
-    "tagsHint": "Étiquette"
+    "tagsHint": "Étiquette",
+    "dictation": {
+      "title": "Note vocale",
+      "listening": "Écoute…",
+      "paused": "En pause",
+      "hint": "Parlez dans le micro, le texte apparaîtra ici",
+      "start": "Écouter",
+      "stop": "Arrêter",
+      "add": "Ajouter",
+      "unavailable": "La reconnaissance vocale n'est pas disponible sur cet appareil"
+    }
   },
   "diary": {
     "title": "Mon Journal",

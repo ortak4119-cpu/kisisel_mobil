@@ -9,6 +9,8 @@ import 'package:share_plus/share_plus.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:reorderable_grid_view/reorderable_grid_view.dart';
+import '../../../service/stt/stt_service.dart';
 import '../../../core/design/app_design.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/utils/premium_helper.dart';
@@ -2218,7 +2220,9 @@ class _NotesContent extends StatelessWidget {
           const SizedBox(height: 10),
           recent.isEmpty
               ? _inlineEmpty(context, isDarkMode)
-              : _notesGrid(context, recent, isDarkMode),
+              : (viewModel.canReorderNotes
+                  ? _reorderableNotesGrid(context, recent, isDarkMode)
+                  : _notesGrid(context, recent, isDarkMode)),
         ];
     }
   }
@@ -2569,6 +2573,30 @@ class _NotesContent extends StatelessWidget {
       itemCount: notes.length,
       itemBuilder: (context, i) =>
           _buildPinnedCard(context, notes[i], viewModel, isDarkMode),
+    );
+  }
+
+  /// "Son notlar" için sürükle-bırak sıralanabilir ızgara. Bir kartı basılı
+  /// tutup sürükleyince sıra değişir ve sunucuya kaydedilir (order_index).
+  Widget _reorderableNotesGrid(
+      BuildContext context, List<Note> notes, bool isDarkMode) {
+    return ReorderableGridView.builder(
+      padding: EdgeInsets.zero,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        mainAxisExtent: 146,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+      ),
+      itemCount: notes.length,
+      itemBuilder: (context, i) => KeyedSubtree(
+        key: ValueKey(notes[i].id),
+        child: _buildPinnedCard(context, notes[i], viewModel, isDarkMode),
+      ),
+      onReorder: (oldIndex, newIndex) =>
+          viewModel.reorderRecentNotes(oldIndex, newIndex),
     );
   }
 
@@ -4352,6 +4380,226 @@ void insertNotePrefix(TextEditingController c, String prefix) {
   );
 }
 
+/// Sesli dikte alt sayfası: cihaz-içi konuşma tanıma ile konuşulanı metne çevirir.
+class _DictationSheet extends StatefulWidget {
+  final String localeId;
+  final void Function(String text) onInsert;
+  const _DictationSheet({required this.localeId, required this.onInsert});
+
+  @override
+  State<_DictationSheet> createState() => _DictationSheetState();
+}
+
+class _DictationSheetState extends State<_DictationSheet> {
+  final SttService _stt = SttService();
+  String _committed = '';
+  String _partial = '';
+  bool _listening = false;
+  bool _initFailed = false;
+
+  static const _accent = Color(0xFF9F7AEA);
+
+  String get _display => [
+        if (_committed.isNotEmpty) _committed,
+        if (_partial.isNotEmpty) _partial,
+      ].join(' ').trim();
+
+  @override
+  void initState() {
+    super.initState();
+    _start();
+  }
+
+  Future<void> _start() async {
+    if (!_stt.isAvailable) {
+      final ok = await _stt.init(
+        onStatus: (s) {
+          if (!mounted) return;
+          final listening = s == 'listening';
+          if (listening != _listening) setState(() => _listening = listening);
+        },
+        onError: (_) {
+          if (mounted) setState(() => _listening = false);
+        },
+      );
+      if (!ok) {
+        if (mounted) setState(() => _initFailed = true);
+        return;
+      }
+    }
+    await _stt.start(
+      localeId: widget.localeId,
+      onResult: (words, isFinal) {
+        if (mounted) setState(() => _partial = words);
+      },
+    );
+    if (mounted) setState(() => _listening = true);
+  }
+
+  Future<void> _toggle() async {
+    if (_listening) {
+      await _stt.stop();
+      if (mounted) {
+        setState(() {
+          _committed = _display;
+          _partial = '';
+          _listening = false;
+        });
+      }
+    } else {
+      if (_partial.isNotEmpty) {
+        _committed = _display;
+        _partial = '';
+      }
+      await _start();
+    }
+  }
+
+  @override
+  void dispose() {
+    _stt.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final c = AppColors(isDark);
+    final text = _display;
+    return SafeArea(
+      child: Container(
+        margin: const EdgeInsets.all(12),
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+        decoration: BoxDecoration(
+          color: c.card,
+          borderRadius: BorderRadius.circular(22),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.graphic_eq_rounded, color: _accent, size: 22),
+                const SizedBox(width: 8),
+                Text('notes.dictation.title'.tr(),
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: c.textPrimary)),
+                const Spacer(),
+                IconButton(
+                  icon: Icon(Icons.close_rounded, color: c.textSecondary),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (_initFailed)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Text('notes.dictation.unavailable'.tr(),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: c.textSecondary)),
+              )
+            else ...[
+              Center(
+                child: Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: (_listening ? _accent : c.textSecondary)
+                        .withOpacity(_listening ? 0.18 : 0.10),
+                  ),
+                  child: Icon(
+                    _listening ? Icons.mic_rounded : Icons.mic_none_rounded,
+                    color: _listening ? _accent : c.textSecondary,
+                    size: 34,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                _listening
+                    ? 'notes.dictation.listening'.tr()
+                    : 'notes.dictation.paused'.tr(),
+                textAlign: TextAlign.center,
+                style: TextStyle(color: c.textSecondary, fontSize: 12),
+              ),
+              const SizedBox(height: 14),
+              Container(
+                constraints: const BoxConstraints(minHeight: 70, maxHeight: 180),
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: c.bg,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: c.border.withOpacity(0.6)),
+                ),
+                child: SingleChildScrollView(
+                  reverse: true,
+                  child: Text(
+                    text.isEmpty ? 'notes.dictation.hint'.tr() : text,
+                    style: TextStyle(
+                      color: text.isEmpty ? c.textSecondary : c.textPrimary,
+                      fontSize: 15,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _toggle,
+                      icon: Icon(
+                          _listening ? Icons.stop_rounded : Icons.mic_rounded,
+                          size: 20),
+                      label: Text(_listening
+                          ? 'notes.dictation.stop'.tr()
+                          : 'notes.dictation.start'.tr()),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: _accent,
+                        side: BorderSide(color: _accent.withOpacity(0.6)),
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: text.isEmpty
+                          ? null
+                          : () {
+                              widget.onInsert(text);
+                              Navigator.pop(context);
+                            },
+                      icon: const Icon(Icons.check_rounded, size: 20),
+                      label: Text('notes.dictation.add'.tr()),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _accent,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// Editör alt çubuğundaki ekleme çipi (checklist / madde işareti).
 class _InsertChip extends StatelessWidget {
   final IconData icon;
@@ -5356,6 +5604,7 @@ class _AddNoteBottomSheet extends StatelessWidget {
       [Icons.format_list_numbered_rounded, () => _insertNumbered(vm)],
       [Icons.check_box_outlined, () => _insert(vm, '☐ ')],
       [Icons.format_quote_rounded, () => _insert(vm, '> ')],
+      [Icons.mic_rounded, () => _showDictationSheet(context, vm)],
       [Icons.undo_rounded, () => _toast(context, 'notes.editor.undo'.tr())],
     ];
     return Container(
@@ -5419,6 +5668,40 @@ class _AddNoteBottomSheet extends StatelessWidget {
         selection: TextSelection.collapsed(offset: pos + marker.length),
       );
     }
+  }
+
+  /// Sesli dikte alt sayfasını açar; tanınan metni not içeriğine ekler.
+  void _showDictationSheet(BuildContext context, NotesDiaryViewModel vm) {
+    final localeId = SttService.localeIdFor(context.locale.languageCode);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _DictationSheet(
+        localeId: localeId,
+        onInsert: (text) {
+          if (text.trim().isEmpty) return;
+          vm.noteContentFocus.requestFocus();
+          _insertDictatedText(vm.noteContentController, text.trim());
+        },
+      ),
+    );
+  }
+
+  /// Dikte edilen metni imleç konumuna ekler (gerekirse araya boşluk koyar).
+  void _insertDictatedText(TextEditingController c, String text) {
+    final cur = c.text;
+    final sel = c.selection;
+    final pos =
+        (sel.isValid && sel.baseOffset >= 0) ? sel.baseOffset : cur.length;
+    final needsSpace =
+        pos > 0 && !RegExp(r'\s$').hasMatch(cur.substring(0, pos));
+    final insert = '${needsSpace ? ' ' : ''}$text';
+    final newText = cur.replaceRange(pos, pos, insert);
+    c.value = TextEditingValue(
+      text: newText,
+      selection: TextSelection.collapsed(offset: pos + insert.length),
+    );
   }
 
   /// Numaralı liste: mevcut en büyük numarayı bulur, bir sonrakini ekler (1, 2, 3…).

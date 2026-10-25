@@ -463,6 +463,40 @@ class NotesDiaryViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Sürükle-bırak sıralama yalnız arama/etiket filtresi yokken anlamlıdır
+  /// (görünen liste tüm "son notlar" olur). Aksi halde statik ızgara gösterilir.
+  bool get canReorderNotes =>
+      _noteSearchQuery.trim().isEmpty && _selectedTag == null;
+
+  /// "Son notlar" (arşivlenmemiş + sabitlenmemiş) listesinde sürükle-bırak
+  /// sıralaması. reorderable_grid_view konvansiyonu: oldIndex'i çıkar, newIndex'e
+  /// ekle. Yerel sırayı anında günceller, sonra sunucuya kalıcı yazar.
+  Future<void> reorderRecentNotes(int oldIndex, int newIndex) async {
+    final recent =
+        _notes.where((n) => !n.isArchived && !n.isPinned).toList();
+    if (oldIndex < 0 || oldIndex >= recent.length) return;
+    newIndex = newIndex.clamp(0, recent.length - 1);
+    if (oldIndex == newIndex) return;
+
+    final moved = recent.removeAt(oldIndex);
+    recent.insert(newIndex, moved);
+
+    // _notes içindeki "recent" slotlarını yeni sırayla doldur; sabitlenen ve
+    // arşivlenen notların yeri korunur (türetilen liste sırayı korur).
+    final recentIds = recent.map((n) => n.id).toSet();
+    final queue = List<Note>.from(recent);
+    _notes = [
+      for (final n in _notes)
+        if (recentIds.contains(n.id)) queue.removeAt(0) else n,
+    ];
+    notifyListeners();
+
+    // Sunucuya kalıcı yaz; hata olursa bir sonraki yüklemede sunucu sırası esas.
+    try {
+      await _noteService.reorderNotes(recent.map((n) => n.id).toList());
+    } catch (_) {}
+  }
+
   List<Note> getFilteredNotes() {
     var filtered = _notes;
 

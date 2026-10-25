@@ -923,7 +923,17 @@
     "enterPinToLock": "Gib einen 4-stelligen PIN-Code ein",
     "tagsTitle": "Schlagwörter",
     "tagsAdd": "Schlagwort hinzufügen",
-    "tagsHint": "Schlagwort"
+    "tagsHint": "Schlagwort",
+    "dictation": {
+      "title": "Sprachnotiz",
+      "listening": "Hört zu…",
+      "paused": "Pausiert",
+      "hint": "Sprich ins Mikrofon, der Text erscheint hier",
+      "start": "Zuhören",
+      "stop": "Stopp",
+      "add": "Hinzufügen",
+      "unavailable": "Spracherkennung ist auf diesem Gerät nicht verfügbar"
+    }
   },
   "diary": {
     "title": "Mein Tagebuch",

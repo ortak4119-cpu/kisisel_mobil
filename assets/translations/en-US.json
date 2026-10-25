@@ -923,7 +923,17 @@
     "enterPinToLock": "Enter a 4-digit PIN code",
     "tagsTitle": "Tags",
     "tagsAdd": "Add tag",
-    "tagsHint": "Tag"
+    "tagsHint": "Tag",
+    "dictation": {
+      "title": "Voice note",
+      "listening": "Listening…",
+      "paused": "Paused",
+      "hint": "Speak into the mic, the text will appear here",
+      "start": "Listen",
+      "stop": "Stop",
+      "add": "Add",
+      "unavailable": "Speech recognition is not available on this device"
+    }
   },
   "diary": {
     "title": "My Diary",

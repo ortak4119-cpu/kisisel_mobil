@@ -37,6 +37,9 @@ abstract class INoteService {
     int? durationSeconds,
   });
   Future<ServiceResponse<void>> deleteNoteAttachment(int attachmentId);
+
+  /// Notları verilen id sırasına göre sunucuda sıralar (sürükle-bırak).
+  Future<ServiceResponse<void>> reorderNotes(List<int> ids);
 }
 
 class NoteService implements INoteService {
@@ -226,6 +229,15 @@ class NoteService implements INoteService {
   Future<ServiceResponse<void>> unpinNote(int id) async {
     return await BaseApiService.post<void>(
       '/notes/$id/unpin',
+      requiresAuth: true,
+    );
+  }
+
+  @override
+  Future<ServiceResponse<void>> reorderNotes(List<int> ids) async {
+    return await BaseApiService.post<void>(
+      '/notes/reorder',
+      body: {'ids': ids},
       requiresAuth: true,
     );
   }

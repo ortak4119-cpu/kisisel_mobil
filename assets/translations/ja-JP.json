@@ -923,7 +923,17 @@
     "enterPinToLock": "4桁のPINコードを入力",
     "tagsTitle": "タグ",
     "tagsAdd": "タグを追加",
-    "tagsHint": "タグ"
+    "tagsHint": "タグ",
+    "dictation": {
+      "title": "音声メモ",
+      "listening": "聞き取り中…",
+      "paused": "一時停止",
+      "hint": "マイクに話してください。テキストがここに表示されます",
+      "start": "聞き取り",
+      "stop": "停止",
+      "add": "追加",
+      "unavailable": "この端末では音声認識を利用できません"
+    }
   },
   "diary": {
     "title": "マイダイアリー",

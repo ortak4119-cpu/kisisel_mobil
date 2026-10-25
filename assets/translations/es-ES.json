@@ -923,7 +923,17 @@
     "enterPinToLock": "Introduce un PIN de 4 dígitos",
     "tagsTitle": "Etiquetas",
     "tagsAdd": "Añadir etiqueta",
-    "tagsHint": "Etiqueta"
+    "tagsHint": "Etiqueta",
+    "dictation": {
+      "title": "Nota de voz",
+      "listening": "Escuchando…",
+      "paused": "En pausa",
+      "hint": "Habla al micrófono, el texto aparecerá aquí",
+      "start": "Escuchar",
+      "stop": "Detener",
+      "add": "Añadir",
+      "unavailable": "El reconocimiento de voz no está disponible en este dispositivo"
+    }
   },
   "diary": {
     "title": "Mi Diario",
