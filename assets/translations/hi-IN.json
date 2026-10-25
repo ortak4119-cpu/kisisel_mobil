@@ -1025,7 +1025,8 @@
       "security": "सुरक्षा",
       "account": "खाता सेटिंग्स",
       "legal": "कानूनी",
-      "support": "समर्थन"
+      "support": "समर्थन",
+      "privacy": "गोपनीयता"
     },
     "notifications": {
       "all": "सभी सूचनाएँ",
@@ -1035,7 +1036,10 @@
       "habits": "आदत सूचनाएँ",
       "habitsSubtitle": "दैनिक आदत अनुस्मारक",
       "diary": "डायरी अनुस्मारक",
-      "diarySubtitle": "डायरी लिखने के अनुस्मारक"
+      "diarySubtitle": "डायरी लिखने के अनुस्मारक",
+      "subscription": "सदस्यताएँ",
+      "note": "नोट्स",
+      "social": "सामाजिक"
     },
     "appearance": {
       "theme": "थीम",
@@ -1088,6 +1092,15 @@
     "premium": {
       "active": "आप प्रीमियम हैं",
       "enjoyFeatures": "सभी प्रीमियम सुविधाओं का आनंद लें"
+    },
+    "privacy": {
+      "visibility": "प्रोफ़ाइल दृश्यता",
+      "public": "सार्वजनिक",
+      "friends": "मित्र",
+      "private": "निजी",
+      "showLevel": "स्तर दिखाएँ",
+      "showAchievements": "उपलब्धियाँ दिखाएँ",
+      "showHabits": "आदतें दिखाएँ"
     }
   },
   "validation": {

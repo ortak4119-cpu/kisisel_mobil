@@ -1025,7 +1025,8 @@
       "security": "Segurança",
       "account": "Definições da Conta",
       "legal": "Legal",
-      "support": "Suporte"
+      "support": "Suporte",
+      "privacy": "Privacidade"
     },
     "notifications": {
       "all": "Todas as Notificações",
@@ -1035,7 +1036,10 @@
       "habits": "Notificações de Hábitos",
       "habitsSubtitle": "Lembretes diários de hábitos",
       "diary": "Lembretes de Diário",
-      "diarySubtitle": "Lembretes para escrever no diário"
+      "diarySubtitle": "Lembretes para escrever no diário",
+      "subscription": "Subscrições",
+      "note": "Notas",
+      "social": "Social"
     },
     "appearance": {
       "theme": "Tema",
@@ -1088,6 +1092,15 @@
     "premium": {
       "active": "Você é Premium",
       "enjoyFeatures": "Aproveite todos os recursos premium"
+    },
+    "privacy": {
+      "visibility": "Visibilidade do perfil",
+      "public": "Público",
+      "friends": "Amigos",
+      "private": "Privado",
+      "showLevel": "Mostrar nível",
+      "showAchievements": "Mostrar conquistas",
+      "showHabits": "Mostrar hábitos"
     }
   },
   "validation": {

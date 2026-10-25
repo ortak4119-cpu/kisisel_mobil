@@ -1025,7 +1025,8 @@
       "security": "Güvenlik",
       "account": "Hesap Ayarları",
       "legal": "Yasal",
-      "support": "Destek"
+      "support": "Destek",
+      "privacy": "Gizlilik"
     },
     "notifications": {
       "all": "Tüm Bildirimler",
@@ -1035,7 +1036,10 @@
       "habits": "Alışkanlık Bildirimleri",
       "habitsSubtitle": "Günlük alışkanlık hatırlatıcıları",
       "diary": "Günlük Hatırlatıcıları",
-      "diarySubtitle": "Günlük yazma hatırlatıcıları"
+      "diarySubtitle": "Günlük yazma hatırlatıcıları",
+      "subscription": "Abonelikler",
+      "note": "Notlar",
+      "social": "Sosyal"
     },
     "appearance": {
       "theme": "Tema",
@@ -1088,6 +1092,15 @@
     "premium": {
       "active": "Premium Üyesiniz",
       "enjoyFeatures": "Tüm premium özelliklerin keyfini çıkarın"
+    },
+    "privacy": {
+      "visibility": "Profil görünürlüğü",
+      "public": "Herkese açık",
+      "friends": "Arkadaşlar",
+      "private": "Gizli",
+      "showLevel": "Seviyeyi göster",
+      "showAchievements": "Başarımları göster",
+      "showHabits": "Alışkanlıkları göster"
     }
   },
   "validation": {

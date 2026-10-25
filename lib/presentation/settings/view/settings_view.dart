@@ -177,6 +177,58 @@ class SettingsView extends StatelessWidget {
                                   ? ColorConstant.cardYellowDark
                                   : ColorConstant.cardYellowLight,
                             ),
+                            _buildDivider(isDarkMode),
+                            _buildSwitchTile(
+                              title: 'settings.notifications.subscription'.tr(),
+                              icon: Icons.subscriptions_rounded,
+                              isDarkMode: isDarkMode,
+                              value: viewModel
+                                      .settings?.subscriptionNotifications ??
+                                  true,
+                              onChanged: (value) {
+                                viewModel.updateNotificationSettings(
+                                  subscriptionNotifications: value,
+                                );
+                              },
+                              iconColor: ColorConstant.primaryPurple,
+                              iconBgColor: isDarkMode
+                                  ? ColorConstant.cardPurpleDark
+                                  : ColorConstant.cardPurpleLight,
+                            ),
+                            _buildDivider(isDarkMode),
+                            _buildSwitchTile(
+                              title: 'settings.notifications.note'.tr(),
+                              icon: Icons.sticky_note_2_rounded,
+                              isDarkMode: isDarkMode,
+                              value:
+                                  viewModel.settings?.noteNotifications ?? true,
+                              onChanged: (value) {
+                                viewModel.updateNotificationSettings(
+                                  noteNotifications: value,
+                                );
+                              },
+                              iconColor: ColorConstant.accentBlue,
+                              iconBgColor: isDarkMode
+                                  ? ColorConstant.cardBlueDark
+                                  : ColorConstant.cardBlueLight,
+                            ),
+                            _buildDivider(isDarkMode),
+                            _buildSwitchTile(
+                              title: 'settings.notifications.social'.tr(),
+                              icon: Icons.people_rounded,
+                              isDarkMode: isDarkMode,
+                              value: viewModel.settings?.socialNotifications ??
+                                  true,
+                              onChanged: (value) {
+                                viewModel.updateNotificationSettings(
+                                  socialNotifications: value,
+                                );
+                              },
+                              iconColor: ColorConstant.accentGreen,
+                              iconBgColor: isDarkMode
+                                  ? ColorConstant.cardColorDark
+                                  : ColorConstant.cardGreenLight,
+                            ),
                           ],
                         ),
 
@@ -210,7 +262,6 @@ class SettingsView extends StatelessWidget {
                         ),
 
                         const SizedBox(height: 20),
-                        /*
 
                         // Güvenlik Bölümü
                         _buildSection(
@@ -238,7 +289,72 @@ class SettingsView extends StatelessWidget {
 
                         const SizedBox(height: 20),
 
-                         */
+                        // Gizlilik Bölümü
+                        _buildSection(
+                          title: 'settings.sections.privacy'.tr(),
+                          isDarkMode: isDarkMode,
+                          children: [
+                            _buildListTile(
+                              title: 'settings.privacy.visibility'.tr(),
+                              subtitle: _visibilityLabel(
+                                  viewModel.currentUser?.profileVisibility ??
+                                      'public'),
+                              icon: Icons.visibility_rounded,
+                              isDarkMode: isDarkMode,
+                              iconColor: ColorConstant.primaryPurple,
+                              iconBgColor: isDarkMode
+                                  ? ColorConstant.cardPurpleDark
+                                  : ColorConstant.cardPurpleLight,
+                              onTap: () =>
+                                  _showVisibilityDialog(context, viewModel, isDarkMode),
+                            ),
+                            _buildDivider(isDarkMode),
+                            _buildSwitchTile(
+                              title: 'settings.privacy.showLevel'.tr(),
+                              icon: Icons.military_tech_rounded,
+                              isDarkMode: isDarkMode,
+                              value: viewModel.currentUser?.showLevel ?? true,
+                              onChanged: (value) {
+                                viewModel.updatePrivacy(showLevel: value);
+                              },
+                              iconColor: ColorConstant.accentYellow,
+                              iconBgColor: isDarkMode
+                                  ? ColorConstant.cardYellowDark
+                                  : ColorConstant.cardYellowLight,
+                            ),
+                            _buildDivider(isDarkMode),
+                            _buildSwitchTile(
+                              title: 'settings.privacy.showAchievements'.tr(),
+                              icon: Icons.emoji_events_rounded,
+                              isDarkMode: isDarkMode,
+                              value:
+                                  viewModel.currentUser?.showAchievements ?? true,
+                              onChanged: (value) {
+                                viewModel.updatePrivacy(showAchievements: value);
+                              },
+                              iconColor: ColorConstant.accentGreen,
+                              iconBgColor: isDarkMode
+                                  ? ColorConstant.cardColorDark
+                                  : ColorConstant.cardGreenLight,
+                            ),
+                            _buildDivider(isDarkMode),
+                            _buildSwitchTile(
+                              title: 'settings.privacy.showHabits'.tr(),
+                              icon: Icons.track_changes_rounded,
+                              isDarkMode: isDarkMode,
+                              value: viewModel.currentUser?.showHabits ?? true,
+                              onChanged: (value) {
+                                viewModel.updatePrivacy(showHabits: value);
+                              },
+                              iconColor: ColorConstant.accentBlue,
+                              iconBgColor: isDarkMode
+                                  ? ColorConstant.cardBlueDark
+                                  : ColorConstant.cardBlueLight,
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 20),
 
                         // Hesap İşlemleri Bölümü
                         _buildSection(
@@ -792,6 +908,67 @@ class SettingsView extends StatelessWidget {
     );
   }
 
+  String _visibilityLabel(String v) {
+    switch (v) {
+      case 'friends':
+        return 'settings.privacy.friends'.tr();
+      case 'private':
+        return 'settings.privacy.private'.tr();
+      case 'public':
+      default:
+        return 'settings.privacy.public'.tr();
+    }
+  }
+
+  void _showVisibilityDialog(
+      BuildContext context, SettingsViewModel viewModel, bool isDarkMode) {
+    final current = viewModel.currentUser?.profileVisibility ?? 'public';
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor:
+            isDarkMode ? ColorConstant.cardColorDark : Colors.white,
+        title: Text('settings.privacy.visibility'.tr(),
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: isDarkMode
+                    ? ColorConstant.textPrimaryDark
+                    : ColorConstant.textPrimaryLight)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: ['public', 'friends', 'private'].map((v) {
+            final selected = v == current;
+            return ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Icon(
+                selected
+                    ? Icons.radio_button_checked_rounded
+                    : Icons.radio_button_unchecked_rounded,
+                color: selected
+                    ? ColorConstant.primaryPurple
+                    : (isDarkMode
+                        ? ColorConstant.textMutedDark
+                        : ColorConstant.textMutedLight),
+              ),
+              title: Text(_visibilityLabel(v),
+                  style: TextStyle(
+                      color: isDarkMode
+                          ? ColorConstant.textPrimaryDark
+                          : ColorConstant.textPrimaryLight)),
+              onTap: () {
+                Navigator.pop(ctx);
+                if (v != current) {
+                  viewModel.updatePrivacy(profileVisibility: v);
+                }
+              },
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
   Widget _buildSwitchTile({
     required String title,
     String? subtitle,
@@ -1176,6 +1353,7 @@ class SettingsView extends StatelessWidget {
                 onChanged: (value) {
                   if (value != null) {
                     themeProvider.setThemeMode(value);
+                    context.read<SettingsViewModel>().updateThemeMode(value);
                     Navigator.pop(dialogContext);
                   }
                 },
@@ -1192,6 +1370,7 @@ class SettingsView extends StatelessWidget {
                 onChanged: (value) {
                   if (value != null) {
                     themeProvider.setThemeMode(value);
+                    context.read<SettingsViewModel>().updateThemeMode(value);
                     Navigator.pop(dialogContext);
                   }
                 },
@@ -1208,6 +1387,7 @@ class SettingsView extends StatelessWidget {
                 onChanged: (value) {
                   if (value != null) {
                     themeProvider.setThemeMode(value);
+                    context.read<SettingsViewModel>().updateThemeMode(value);
                     Navigator.pop(dialogContext);
                   }
                 },

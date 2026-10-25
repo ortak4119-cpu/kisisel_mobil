@@ -1025,7 +1025,8 @@
       "security": "セキュリティ",
       "account": "アカウント設定",
       "legal": "法務",
-      "support": "サポート"
+      "support": "サポート",
+      "privacy": "プライバシー"
     },
     "notifications": {
       "all": "すべての通知",
@@ -1035,7 +1036,10 @@
       "habits": "習慣通知",
       "habitsSubtitle": "日々の習慣のリマインダー",
       "diary": "ダイアリーリマインダー",
-      "diarySubtitle": "日記作成のリマインダー"
+      "diarySubtitle": "日記作成のリマインダー",
+      "subscription": "サブスクリプション",
+      "note": "メモ",
+      "social": "ソーシャル"
     },
     "appearance": {
       "theme": "テーマ",
@@ -1088,6 +1092,15 @@
     "premium": {
       "active": "プレミアム会員です",
       "enjoyFeatures": "すべてのプレミアム機能をお楽しみください"
+    },
+    "privacy": {
+      "visibility": "プロフィールの公開範囲",
+      "public": "公開",
+      "friends": "友達",
+      "private": "非公開",
+      "showLevel": "レベルを表示",
+      "showAchievements": "実績を表示",
+      "showHabits": "習慣を表示"
     }
   },
   "validation": {

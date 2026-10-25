@@ -1025,7 +1025,8 @@
       "security": "الأمان",
       "account": "إعدادات الحساب",
       "legal": "قانوني",
-      "support": "الدعم"
+      "support": "الدعم",
+      "privacy": "الخصوصية"
     },
     "notifications": {
       "all": "جميع الإشعارات",
@@ -1035,7 +1036,10 @@
       "habits": "إشعارات العادات",
       "habitsSubtitle": "تذكيرات العادات اليومية",
       "diary": "تذكيرات المذكرات",
-      "diarySubtitle": "تذكيرات كتابة المذكرات"
+      "diarySubtitle": "تذكيرات كتابة المذكرات",
+      "subscription": "الاشتراكات",
+      "note": "الملاحظات",
+      "social": "اجتماعي"
     },
     "appearance": {
       "theme": "السمة",
@@ -1088,6 +1092,15 @@
     "premium": {
       "active": "أنت مشترك مميز",
       "enjoyFeatures": "استمتع بجميع الميزات المميزة"
+    },
+    "privacy": {
+      "visibility": "ظهور الملف الشخصي",
+      "public": "عام",
+      "friends": "الأصدقاء",
+      "private": "خاص",
+      "showLevel": "إظهار المستوى",
+      "showAchievements": "إظهار الإنجازات",
+      "showHabits": "إظهار العادات"
     }
   },
   "validation": {

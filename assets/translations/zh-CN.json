@@ -1025,7 +1025,8 @@
       "security": "安全",
       "account": "账户设置",
       "legal": "法律",
-      "support": "支持"
+      "support": "支持",
+      "privacy": "隐私"
     },
     "notifications": {
       "all": "所有通知",
@@ -1035,7 +1036,10 @@
       "habits": "习惯通知",
       "habitsSubtitle": "每日习惯提醒",
       "diary": "日记提醒",
-      "diarySubtitle": "日记写作提醒"
+      "diarySubtitle": "日记写作提醒",
+      "subscription": "订阅",
+      "note": "笔记",
+      "social": "社交"
     },
     "appearance": {
       "theme": "主题",
@@ -1088,6 +1092,15 @@
     "premium": {
       "active": "您是高级会员",
       "enjoyFeatures": "享受所有高级功能"
+    },
+    "privacy": {
+      "visibility": "资料可见性",
+      "public": "公开",
+      "friends": "好友",
+      "private": "私密",
+      "showLevel": "显示等级",
+      "showAchievements": "显示成就",
+      "showHabits": "显示习惯"
     }
   },
   "validation": {

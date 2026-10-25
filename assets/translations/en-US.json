@@ -1025,7 +1025,8 @@
       "security": "Security",
       "account": "Account Settings",
       "legal": "Legal",
-      "support": "Support"
+      "support": "Support",
+      "privacy": "Privacy"
     },
     "notifications": {
       "all": "All Notifications",
@@ -1035,7 +1036,10 @@
       "habits": "Habit Notifications",
       "habitsSubtitle": "Daily habit reminders",
       "diary": "Diary Reminders",
-      "diarySubtitle": "Diary writing reminders"
+      "diarySubtitle": "Diary writing reminders",
+      "subscription": "Subscriptions",
+      "note": "Notes",
+      "social": "Social"
     },
     "appearance": {
       "theme": "Theme",
@@ -1088,6 +1092,15 @@
     "premium": {
       "active": "You're Premium",
       "enjoyFeatures": "Enjoy all premium features"
+    },
+    "privacy": {
+      "visibility": "Profile visibility",
+      "public": "Public",
+      "friends": "Friends",
+      "private": "Private",
+      "showLevel": "Show level",
+      "showAchievements": "Show achievements",
+      "showHabits": "Show habits"
     }
   },
   "validation": {
