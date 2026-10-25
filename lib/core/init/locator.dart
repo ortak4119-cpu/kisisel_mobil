@@ -79,6 +79,7 @@ IExpenseService get expenseService => locator<IExpenseService>();
 ISubscriptionService get subscriptionService => locator<ISubscriptionService>();
 IGamificationService get gamificationService => locator<IGamificationService>();
 INotificationService get notificationService => locator<INotificationService>();
+ICalendarService get calendarService => locator<ICalendarService>();
 IUtilityService get utilityService => locator<IUtilityService>();
 IFeedbackService get feedbackService => locator<IFeedbackService>();
 FCMService get fcmService => locator<FCMService>();

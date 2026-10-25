@@ -36,6 +36,16 @@ _EvCat evCatById(String? id) {
   return kEvCats.last;
 }
 
+/// Ay/hafta ızgarasındaki nokta rengi. Etkinlik kategorilerinin yanı sıra
+/// diğer modül işaretlerini (görev/not/günlük) ayırt edilebilir renklerle verir.
+const Map<String, Color> kModuleDotColors = {
+  'task': Color(0xFF10B981), // zümrüt
+  'note': Color(0xFF6366F1), // indigo
+  'diary': Color(0xFFEC4899), // pembe
+};
+
+Color dotColorById(String id) => kModuleDotColors[id] ?? evCatById(id).color;
+
 class _EvKind {
   final String id;
   final String labelKey;
@@ -450,7 +460,7 @@ class _CalendarViewState extends State<CalendarView> {
                       height: 5,
                       margin: const EdgeInsets.symmetric(horizontal: 1),
                       decoration: BoxDecoration(
-                          color: sel ? Colors.white : evCatById(cat).color,
+                          color: sel ? Colors.white : dotColorById(cat),
                           shape: BoxShape.circle),
                     ),
                 ],
@@ -603,7 +613,7 @@ class _CalendarViewState extends State<CalendarView> {
                         height: 5,
                         margin: const EdgeInsets.symmetric(horizontal: 1),
                         decoration: BoxDecoration(
-                            color: evCatById(cat).color,
+                            color: dotColorById(cat),
                             shape: BoxShape.circle),
                       ),
                   ],
@@ -1327,6 +1337,8 @@ class _EventFormSheet extends StatelessWidget {
               Expanded(
                 child: TextField(
                   controller: vm.eventTitleController,
+                  onChanged: (v) => vm.updateNlEventPreview(
+                      v, context.locale.languageCode),
                   style: TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w600,
@@ -1340,8 +1352,37 @@ class _EventFormSheet extends StatelessWidget {
                   ),
                 ),
               ),
+              IconButton(
+                onPressed: () =>
+                    vm.toggleEventDictation(context.locale.languageCode),
+                icon: Icon(
+                  vm.sttListening ? Icons.mic : Icons.mic_none_rounded,
+                  color: vm.sttListening ? _accent : c.textMuted,
+                ),
+                tooltip: 'notes.dictation.title'.tr(),
+              ),
             ],
           ),
+          if (vm.nlEventPreview != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                children: [
+                  const SizedBox(width: 38),
+                  Icon(Icons.auto_awesome_rounded, size: 15, color: _accent),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      vm.nlEventPreview!,
+                      style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: _accent),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           Divider(height: 1, color: c.border.withOpacity(0.5)),
           Row(
             children: [

@@ -6,6 +6,9 @@ import '../../../core/init/locator.dart';
 import '../../../core/utils/custom_snackbar.dart';
 import '../../../models/calender/calendar_models.dart';
 import '../../../service/calender/calendar_service.dart';
+import '../../../core/utils/nl_task_parser.dart';
+import '../../../service/stt/stt_service.dart';
+import '../../../service/widget/calendar_widget_service.dart';
 import '../../../service/note/note_service.dart';
 import '../../../service/diary/diary_service.dart';
 import '../../../service/task/task_service.dart';
@@ -414,9 +417,12 @@ class CalendarViewModel extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       final savedType = prefs.getString('calendar_view_type');
       if (savedType != null) {
-        _calendarViewType = savedType == 'week'
-            ? CalendarViewType.week
-            : CalendarViewType.month;
+        // 4 görünümün hepsini geri yükle (eskiden sadece week/month saklanıyordu;
+        // day/agenda restart'ta sessizce aya dönüyordu).
+        _calendarViewType = CalendarViewType.values.firstWhere(
+          (t) => t.name == savedType,
+          orElse: () => CalendarViewType.month,
+        );
         debugPrint('💾 Calendar: Loaded view type: ${_calendarViewType.name}');
       }
     } catch (e) {
@@ -427,10 +433,7 @@ class CalendarViewModel extends ChangeNotifier {
   Future<void> _saveCalendarViewType() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(
-        'calendar_view_type',
-        _calendarViewType == CalendarViewType.week ? 'week' : 'month',
-      );
+      await prefs.setString('calendar_view_type', _calendarViewType.name);
       debugPrint('💾 Calendar: Saved view type: ${_calendarViewType.name}');
     } catch (e) {
       debugPrint('❌ Calendar: Error saving calendar view type: $e');
@@ -650,6 +653,7 @@ class CalendarViewModel extends ChangeNotifier {
 
       if (response.isSuccess) {
         _calendarEvents.removeWhere((e) => e.id == eventId);
+        CalendarWidgetService.update();
         notifyListeners();
         debugPrint('✅ Calendar: Event deleted successfully');
         return true;
@@ -1002,7 +1006,79 @@ class CalendarViewModel extends ChangeNotifier {
       ..add(30);
     _formLocation = null;
     _formTag = null;
+    _nlEventPreview = null;
     notifyListeners();
+  }
+
+  // ---- Faz 3: doğal dil girişi + sesli dikte ----
+  final SttService _stt = SttService();
+  bool _sttListening = false;
+  bool get sttListening => _sttListening;
+
+  String? _nlEventPreview;
+  String? get nlEventPreview => _nlEventPreview;
+
+  /// Başlık her değiştiğinde tarih/saat algısını canlı önizle.
+  void updateNlEventPreview(String raw, String lang) {
+    final p = NlTaskParser.parse(raw, lang);
+    final parts = <String>[];
+    if (p.dueDate != null) parts.add(_fmtDate(p.dueDate!));
+    if (p.dueTime != null) parts.add(_fmtTime(p.dueTime!));
+    final s = parts.isEmpty ? null : parts.join(' • ');
+    if (s != _nlEventPreview) {
+      _nlEventPreview = s;
+      notifyListeners();
+    }
+  }
+
+  /// Başlıktaki doğal dil tarih/saatini forma uygular ve başlıktan temizler.
+  void applyNlToForm(String lang) {
+    final raw = eventTitleController.text;
+    final p = NlTaskParser.parse(raw, lang);
+    if (p.dueDate == null && p.dueTime == null) return;
+    if (p.dueDate != null) {
+      _formStartDate =
+          DateTime(p.dueDate!.year, p.dueDate!.month, p.dueDate!.day);
+      if (_formEndDate.isBefore(_formStartDate)) _formEndDate = _formStartDate;
+    }
+    if (p.dueTime != null) {
+      _formStartTime = p.dueTime!;
+      _formEndTime =
+          TimeOfDay(hour: (p.dueTime!.hour + 1) % 24, minute: p.dueTime!.minute);
+      _formAllDay = false;
+    }
+    if (p.title.trim().isNotEmpty) {
+      eventTitleController.text = p.title.trim();
+    }
+    _nlEventPreview = null;
+    notifyListeners();
+  }
+
+  /// Sesli dikteyi aç/kapat; tanınan metni başlık alanına yazar.
+  Future<void> toggleEventDictation(String lang) async {
+    if (_sttListening) {
+      await _stt.stop();
+      _sttListening = false;
+      notifyListeners();
+      return;
+    }
+    final ok = _stt.isAvailable || await _stt.init();
+    if (!ok) return;
+    _sttListening = true;
+    notifyListeners();
+    await _stt.start(
+      localeId: SttService.localeIdFor(lang),
+      onResult: (text, isFinal) {
+        eventTitleController.text = text;
+        eventTitleController.selection =
+            TextSelection.collapsed(offset: text.length);
+        updateNlEventPreview(text, lang);
+        if (isFinal) {
+          _sttListening = false;
+          notifyListeners();
+        }
+      },
+    );
   }
 
   void prepareEditEvent(CalendarEvent e) {
@@ -1047,6 +1123,9 @@ class CalendarViewModel extends ChangeNotifier {
       CustomSnackBar.showError(context, 'errors.taskTitleEmpty'.tr());
       return;
     }
+    // Faz 3: başlıktaki doğal dil (yarın 14:00 ...) tarih/saat olarak uygulanıp
+    // başlıktan temizlenir.
+    applyNlToForm(context.locale.languageCode);
     final backendType = _formKind == 'reminder' ? 'reminder' : 'custom';
     final meta = EventMeta(
       kind: _formKind,
@@ -1090,6 +1169,7 @@ class CalendarViewModel extends ChangeNotifier {
         // Yerel meta'yı da yedek olarak güncel tut (çevrimdışı/legacy uyumu).
         _eventMeta[_editingEventId!] = meta;
         await _persistEventMeta();
+        CalendarWidgetService.update();
         if (context.mounted) {
           CustomSnackBar.showSuccess(context, 'success.eventUpdated'.tr());
           Navigator.pop(context);
@@ -1122,6 +1202,7 @@ class CalendarViewModel extends ChangeNotifier {
       _calendarEvents.add(resp.data!);
       _eventMeta[resp.data!.id] = meta;
       await _persistEventMeta();
+      CalendarWidgetService.update();
       notifyListeners();
       if (context.mounted) {
         CustomSnackBar.showSuccess(context, 'success.eventCreated'.tr());
@@ -1206,6 +1287,26 @@ class CalendarViewModel extends ChangeNotifier {
           (map[d] ??= <String>{}).add('installment');
         }
       }
+    }
+    // Faz 3: diğer modül noktaları (görev/not/günlük) — artık ay ızgarasında
+    // da görünür (önceden yalnızca gün-detay panelindeydi).
+    bool inMonth(DateTime d) =>
+        d.year == _focusedMonth.year && d.month == _focusedMonth.month;
+    for (final t in _tasks) {
+      if (t.dueDate == null) continue;
+      try {
+        final d0 = DateTime.parse(t.dueDate!);
+        final d = DateTime(d0.year, d0.month, d0.day);
+        if (inMonth(d)) (map[d] ??= <String>{}).add('task');
+      } catch (_) {}
+    }
+    for (final n in _notes) {
+      final d = DateTime(n.createdAt.year, n.createdAt.month, n.createdAt.day);
+      if (inMonth(d)) (map[d] ??= <String>{}).add('note');
+    }
+    for (final dd in _diaryEntries) {
+      final d = DateTime(dd.diaryDate.year, dd.diaryDate.month, dd.diaryDate.day);
+      if (inMonth(d)) (map[d] ??= <String>{}).add('diary');
     }
     return map;
   }
