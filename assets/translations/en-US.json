@@ -406,6 +406,15 @@
     "qrComingSoon": "QR code coming soon",
     "memberSince": "Member since {date}",
     "editProfile": "Edit Profile",
+    "editSheet": {
+      "title": "Edit Profile",
+      "displayName": "Display name",
+      "username": "Username",
+      "bio": "Bio",
+      "bioHint": "A short line about you",
+      "email": "Email",
+      "saved": "Profile updated"
+    },
     "chips": {
       "friends": "Friends",
       "achievement": "Achievement",

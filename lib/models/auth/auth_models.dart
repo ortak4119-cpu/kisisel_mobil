@@ -85,6 +85,48 @@ class User {
       'created_at': createdAt.toIso8601String(),
     };
   }
+
+  User copyWith({
+    int? id,
+    String? username,
+    String? email,
+    String? displayName,
+    String? bio,
+    String? profilePictureUrl,
+    String? coverImageUrl,
+    String? preferredLanguage,
+    bool? isGuest,
+    bool? isVerified,
+    String? subscriptionType,
+    String? subscriptionStatus,
+    String? profileVisibility,
+    bool? showLevel,
+    bool? showAchievements,
+    bool? showHabits,
+    UserLevel? level,
+    DateTime? createdAt,
+  }) {
+    return User(
+      id: id ?? this.id,
+      username: username ?? this.username,
+      email: email ?? this.email,
+      displayName: displayName ?? this.displayName,
+      bio: bio ?? this.bio,
+      profilePictureUrl: profilePictureUrl ?? this.profilePictureUrl,
+      coverImageUrl: coverImageUrl ?? this.coverImageUrl,
+      preferredLanguage: preferredLanguage ?? this.preferredLanguage,
+      isGuest: isGuest ?? this.isGuest,
+      isVerified: isVerified ?? this.isVerified,
+      subscriptionType: subscriptionType ?? this.subscriptionType,
+      subscriptionStatus: subscriptionStatus ?? this.subscriptionStatus,
+      profileVisibility: profileVisibility ?? this.profileVisibility,
+      showLevel: showLevel ?? this.showLevel,
+      showAchievements: showAchievements ?? this.showAchievements,
+      showHabits: showHabits ?? this.showHabits,
+      level: level ?? this.level,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
 }
 
 // User Level Model

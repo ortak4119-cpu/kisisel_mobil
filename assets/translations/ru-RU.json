@@ -490,6 +490,15 @@
     "qrComingSoon": "QR-код скоро",
     "memberSince": "Участник с {date}",
     "editProfile": "Редактировать профиль",
+    "editSheet": {
+      "title": "Редактировать профиль",
+      "displayName": "Отображаемое имя",
+      "username": "Имя пользователя",
+      "bio": "О себе",
+      "bioHint": "Коротко о себе",
+      "email": "Эл. почта",
+      "saved": "Профиль обновлён"
+    },
     "chips": {
       "friends": "Друзья",
       "achievement": "Достижение",

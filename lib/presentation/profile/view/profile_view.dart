@@ -251,7 +251,7 @@ class _ProfileViewState extends State<ProfileView> with SingleTickerProviderStat
                 ),
                 const SizedBox(height: 12),
                 OutlinedButton.icon(
-                  onPressed: () => context.router.push(const SettingsRoute()),
+                  onPressed: () => showEditProfileSheet(context, vm),
                   icon: const Icon(Icons.edit_rounded, size: 14),
                   label: Text('profile.editProfile'.tr(),
                       style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
@@ -881,7 +881,8 @@ class _StatsContent extends StatelessWidget {
 
           // ─── Ayarlar ───
           _settingsRow(context, Icons.person_outline_rounded, 'profile.accountInfo'.tr(),
-              isDark: isDark),
+              isDark: isDark,
+              onTap: () => showEditProfileSheet(context, vm)),
           _settingsRow(context, Icons.notifications_outlined, 'profile.notifications'.tr(),
               isDark: isDark,
               badge: vm.friendRequests.isNotEmpty ? '${vm.friendRequests.length}' : null),
@@ -898,7 +899,9 @@ class _StatsContent extends StatelessWidget {
           _settingsRow(context, Icons.info_outline_rounded, 'profile.aboutApp'.tr(),
               isDark: isDark, muted: true),
           _settingsRow(context, Icons.logout_rounded, 'settings.account.logout'.tr(),
-              isDark: isDark, isLogout: true),
+              isDark: isDark,
+              isLogout: true,
+              onTap: () => _confirmLogout(context, vm)),
         ],
       ),
     );
@@ -1080,6 +1083,7 @@ class _StatsContent extends StatelessWidget {
     Color? trailingColor,
     bool muted = false,
     bool isLogout = false,
+    VoidCallback? onTap,
   }) {
     final labelColor = isLogout
         ? ColorConstant.errorRed
@@ -1093,7 +1097,7 @@ class _StatsContent extends StatelessWidget {
             : (isDark ? ColorConstant.textSecondaryDark : ColorConstant.textSecondaryLight);
 
     return InkWell(
-      onTap: () => context.router.push(const SettingsRoute()),
+      onTap: onTap ?? () => context.router.push(const SettingsRoute()),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 14),
         decoration: BoxDecoration(
@@ -2217,4 +2221,255 @@ Widget _buildEmptyState({
       accent: accent,
     ),
   );
+}
+
+// ==================== PROFİL DÜZENLEME + ÇIKIŞ ====================
+
+/// Çıkış onay diyaloğu → onaylanırsa oturumu kapatır (settings ile aynı akış).
+void _confirmLogout(BuildContext context, ProfileViewModel vm) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      backgroundColor: isDark ? ColorConstant.cardColorDark : Colors.white,
+      title: Text('settings.account.logout'.tr(),
+          style: TextStyle(
+              fontWeight: FontWeight.w800,
+              color: isDark
+                  ? ColorConstant.textPrimaryDark
+                  : ColorConstant.textPrimaryLight)),
+      content: Text('settings.account.logoutConfirm'.tr(),
+          style: TextStyle(
+              color: isDark
+                  ? ColorConstant.textSecondaryDark
+                  : ColorConstant.textSecondaryLight)),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx),
+          child: Text('common.cancel'.tr()),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.pop(ctx);
+            vm.logout(context);
+          },
+          child: Text('settings.account.logout'.tr(),
+              style: const TextStyle(
+                  color: Color(0xFFE53935), fontWeight: FontWeight.w700)),
+        ),
+      ],
+    ),
+  );
+}
+
+/// Ad / kullanıcı adı / bio düzenleme alt sayfası.
+/// Backend PUT /profile (updateProfile) hazırdı ama hiçbir UI çağırmıyordu.
+void showEditProfileSheet(BuildContext context, ProfileViewModel vm) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => _EditProfileSheet(vm: vm),
+  );
+}
+
+class _EditProfileSheet extends StatefulWidget {
+  final ProfileViewModel vm;
+  const _EditProfileSheet({required this.vm});
+
+  @override
+  State<_EditProfileSheet> createState() => _EditProfileSheetState();
+}
+
+class _EditProfileSheetState extends State<_EditProfileSheet> {
+  late final TextEditingController _nameCtrl;
+  late final TextEditingController _userCtrl;
+  late final TextEditingController _bioCtrl;
+  bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final u = widget.vm.currentUser;
+    _nameCtrl = TextEditingController(text: u?.displayName ?? '');
+    _userCtrl = TextEditingController(text: u?.username ?? '');
+    _bioCtrl = TextEditingController(text: u?.bio ?? '');
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _userCtrl.dispose();
+    _bioCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    if (_saving) return;
+    setState(() => _saving = true);
+    final ok = await widget.vm.updateProfile(
+      displayName: _nameCtrl.text.trim(),
+      username: _userCtrl.text.trim(),
+      bio: _bioCtrl.text.trim(),
+      context: context,
+    );
+    if (!mounted) return;
+    setState(() => _saving = false);
+    if (ok) {
+      CustomSnackBar.showSuccess(context, 'profile.editSheet.saved'.tr());
+      Navigator.pop(context);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final u = widget.vm.currentUser;
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? ColorConstant.bgColorDark : const Color(0xFFF6F4EF),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 42,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                        color: (isDark
+                                ? ColorConstant.textMutedDark
+                                : ColorConstant.textMutedLight)
+                            .withValues(alpha: 0.4),
+                        borderRadius: BorderRadius.circular(2)),
+                  ),
+                ),
+                Text('profile.editSheet.title'.tr(),
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: isDark
+                            ? ColorConstant.textPrimaryDark
+                            : ColorConstant.textPrimaryLight)),
+                const SizedBox(height: 18),
+                _label('profile.editSheet.displayName'.tr(), isDark),
+                _field(_nameCtrl, isDark),
+                const SizedBox(height: 14),
+                _label('profile.editSheet.username'.tr(), isDark),
+                _field(_userCtrl, isDark, prefix: '@'),
+                const SizedBox(height: 14),
+                _label('profile.editSheet.bio'.tr(), isDark),
+                _field(_bioCtrl, isDark,
+                    hint: 'profile.editSheet.bioHint'.tr(), maxLines: 3),
+                if (u?.email != null && u!.email!.isNotEmpty) ...[
+                  const SizedBox(height: 14),
+                  _label('profile.editSheet.email'.tr(), isDark),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Row(
+                      children: [
+                        Icon(Icons.mail_outline_rounded,
+                            size: 18,
+                            color: isDark
+                                ? ColorConstant.textMutedDark
+                                : ColorConstant.textMutedLight),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(u.email!,
+                              style: TextStyle(
+                                  fontSize: 15,
+                                  color: isDark
+                                      ? ColorConstant.textSecondaryDark
+                                      : ColorConstant.textSecondaryLight)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _saving ? null : _save,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFF6A821),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14)),
+                    ),
+                    child: _saving
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.white))
+                        : Text('common.save'.tr(),
+                            style: const TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.w700)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _label(String text, bool isDark) => Padding(
+        padding: const EdgeInsets.only(bottom: 6, left: 2),
+        child: Text(text,
+            style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: isDark
+                    ? ColorConstant.textSecondaryDark
+                    : ColorConstant.textSecondaryLight)),
+      );
+
+  Widget _field(TextEditingController ctrl, bool isDark,
+      {String? hint, String? prefix, int maxLines = 1}) {
+    return TextField(
+      controller: ctrl,
+      maxLines: maxLines,
+      style: TextStyle(
+          fontSize: 15,
+          color: isDark
+              ? ColorConstant.textPrimaryDark
+              : ColorConstant.textPrimaryLight),
+      decoration: InputDecoration(
+        hintText: hint,
+        prefixText: prefix,
+        filled: true,
+        fillColor: isDark ? ColorConstant.cardColorDark : Colors.white,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+                color: isDark
+                    ? ColorConstant.borderColorDark
+                    : ColorConstant.borderColorLight)),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+                color: isDark
+                    ? ColorConstant.borderColorDark
+                    : ColorConstant.borderColorLight)),
+        focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFFF6A821), width: 1.5)),
+      ),
+    );
+  }
 }

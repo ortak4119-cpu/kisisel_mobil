@@ -490,6 +490,15 @@
     "qrComingSoon": "رمز QR قريبًا",
     "memberSince": "عضو منذ {date}",
     "editProfile": "تعديل الملف الشخصي",
+    "editSheet": {
+      "title": "تعديل الملف الشخصي",
+      "displayName": "الاسم المعروض",
+      "username": "اسم المستخدم",
+      "bio": "النبذة",
+      "bioHint": "نبذة قصيرة عنك",
+      "email": "البريد الإلكتروني",
+      "saved": "تم تحديث الملف الشخصي"
+    },
     "chips": {
       "friends": "الأصدقاء",
       "achievement": "إنجاز",

@@ -490,6 +490,15 @@
     "qrComingSoon": "Código QR próximamente",
     "memberSince": "Miembro desde {date}",
     "editProfile": "Editar perfil",
+    "editSheet": {
+      "title": "Editar perfil",
+      "displayName": "Nombre visible",
+      "username": "Nombre de usuario",
+      "bio": "Biografía",
+      "bioHint": "Algo breve sobre ti",
+      "email": "Correo",
+      "saved": "Perfil actualizado"
+    },
     "chips": {
       "friends": "Amigos",
       "achievement": "Logro",

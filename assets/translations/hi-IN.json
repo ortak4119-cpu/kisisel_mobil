@@ -490,6 +490,15 @@
     "qrComingSoon": "QR कोड जल्द आ रहा है",
     "memberSince": "{date} से सदस्य",
     "editProfile": "प्रोफ़ाइल संपादित करें",
+    "editSheet": {
+      "title": "प्रोफ़ाइल संपादित करें",
+      "displayName": "प्रदर्शित नाम",
+      "username": "उपयोगकर्ता नाम",
+      "bio": "परिचय",
+      "bioHint": "अपने बारे में संक्षेप में",
+      "email": "ईमेल",
+      "saved": "प्रोफ़ाइल अपडेट हुई"
+    },
     "chips": {
       "friends": "मित्र",
       "achievement": "उपलब्धि",

@@ -406,6 +406,15 @@
     "qrComingSoon": "QR kodu yakında gelecek",
     "memberSince": "{date} tarihinden beri üye",
     "editProfile": "Profili Düzenle",
+    "editSheet": {
+      "title": "Profili Düzenle",
+      "displayName": "Görünen ad",
+      "username": "Kullanıcı adı",
+      "bio": "Biyografi",
+      "bioHint": "Kendinden kısaca bahset",
+      "email": "E-posta",
+      "saved": "Profil güncellendi"
+    },
     "chips": {
       "friends": "Arkadaş",
       "achievement": "Başarı",

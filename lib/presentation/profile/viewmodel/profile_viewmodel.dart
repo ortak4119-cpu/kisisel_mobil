@@ -2,12 +2,15 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:auto_route/auto_route.dart';
+import '../../../core/route/app_router.gr.dart';
 import '../../../core/init/locator.dart';
 import '../../../models/settings/settings_models.dart';
 import '../../../models/social/social_model.dart';
 import '../../../service/profile/profile_service.dart';
 import '../../../service/social/social_service.dart';
 import '../../../service/gamification/gamification_service.dart';
+import '../../../service/auth/auth_service.dart';
 import '../../../models/auth/auth_models.dart';
 import '../../../models/gamification/gamification_models.dart';
 import '../../../core/utils/custom_snackbar.dart';
@@ -16,6 +19,7 @@ class ProfileViewModel extends ChangeNotifier {
   final IProfileService _profileService = locator.get<IProfileService>();
   final ISocialService _socialService = locator.get<ISocialService>();
   final IGamificationService _gamificationService = locator.get<IGamificationService>();
+  final IAuthService _authService = locator.get<IAuthService>();
   final ImagePicker _imagePicker = ImagePicker();
 
   bool _isLoading = false;
@@ -123,10 +127,18 @@ class ProfileViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> updateProfile({
+  /// Profil alanlarını günceller (ad/kullanıcı adı/bio + gizlilik/dil).
+  /// Başarıyı bool döner; hata mesajını (ör. kullanıcı adı çakışması) gösterir.
+  Future<bool> updateProfile({
     String? username,
     String? displayName,
     String? bio,
+    String? preferredLanguage,
+    String? profileVisibility,
+    bool? showLevel,
+    bool? showAchievements,
+    bool? showHabits,
+    BuildContext? context,
   }) async {
     try {
       _isLoading = true;
@@ -136,18 +148,45 @@ class ProfileViewModel extends ChangeNotifier {
         username: username,
         displayName: displayName,
         bio: bio,
+        preferredLanguage: preferredLanguage,
+        profileVisibility: profileVisibility,
+        showLevel: showLevel,
+        showAchievements: showAchievements,
+        showHabits: showHabits,
       );
 
       final response = await _profileService.updateProfile(request);
 
       if (response.isSuccess && response.data != null) {
         _currentUser = response.data!;
+        return true;
       }
+      if (context != null && context.mounted) {
+        CustomSnackBar.showError(
+            context, response.errorMessage ?? 'errors.general'.tr());
+      }
+      return false;
     } catch (e) {
       debugPrint('Error updating profile: $e');
+      if (context != null && context.mounted) {
+        CustomSnackBar.showError(context, 'errors.general'.tr());
+      }
+      return false;
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  /// Oturumu kapatır ve splash'a döner (settings ile aynı akış).
+  Future<void> logout(BuildContext context) async {
+    try {
+      await _authService.logout();
+    } catch (e) {
+      debugPrint('Error logging out: $e');
+    }
+    if (context.mounted) {
+      context.router.replaceAll([const SplashRoute()]);
     }
   }
 
@@ -172,28 +211,7 @@ class ProfileViewModel extends ChangeNotifier {
 
       if (response.isSuccess && response.data != null) {
         // Update current user profile picture
-        if (_currentUser != null) {
-          _currentUser = User(
-            id: _currentUser!.id,
-            email: _currentUser!.email,
-            username: _currentUser!.username,
-            displayName: _currentUser!.displayName,
-            profilePictureUrl: response.data!,
-            coverImageUrl: _currentUser!.coverImageUrl,
-            bio: _currentUser!.bio,
-            preferredLanguage: _currentUser!.preferredLanguage,
-            isGuest: _currentUser!.isGuest,
-            isVerified: _currentUser!.isVerified,
-            subscriptionType: _currentUser!.subscriptionType,
-            subscriptionStatus: _currentUser!.subscriptionStatus,
-            profileVisibility: _currentUser!.profileVisibility,
-            showLevel: _currentUser!.showLevel,
-            showAchievements: _currentUser!.showAchievements,
-            showHabits: _currentUser!.showHabits,
-            level: _currentUser!.level,
-            createdAt: _currentUser!.createdAt,
-          );
-        }
+        _currentUser = _currentUser?.copyWith(profilePictureUrl: response.data!);
 
         if (context.mounted) {
           CustomSnackBar.showSuccess(context, 'profile.success.profilePictureUpdated'.tr());
@@ -236,28 +254,7 @@ class ProfileViewModel extends ChangeNotifier {
 
       if (response.isSuccess && response.data != null) {
         // Update current user cover image
-        if (_currentUser != null) {
-          _currentUser = User(
-            id: _currentUser!.id,
-            email: _currentUser!.email,
-            username: _currentUser!.username,
-            displayName: _currentUser!.displayName,
-            profilePictureUrl: _currentUser!.profilePictureUrl,
-            coverImageUrl: response.data!,
-            bio: _currentUser!.bio,
-            preferredLanguage: _currentUser!.preferredLanguage,
-            isGuest: _currentUser!.isGuest,
-            isVerified: _currentUser!.isVerified,
-            subscriptionType: _currentUser!.subscriptionType,
-            subscriptionStatus: _currentUser!.subscriptionStatus,
-            profileVisibility: _currentUser!.profileVisibility,
-            showLevel: _currentUser!.showLevel,
-            showAchievements: _currentUser!.showAchievements,
-            showHabits: _currentUser!.showHabits,
-            level: _currentUser!.level,
-            createdAt: _currentUser!.createdAt,
-          );
-        }
+        _currentUser = _currentUser?.copyWith(coverImageUrl: response.data!);
 
         if (context.mounted) {
           CustomSnackBar.showSuccess(context, 'profile.success.coverImageUpdated'.tr());

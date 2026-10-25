@@ -490,6 +490,15 @@
     "qrComingSoon": "QRコードは近日公開",
     "memberSince": "{date}から利用",
     "editProfile": "プロフィールを編集",
+    "editSheet": {
+      "title": "プロフィールを編集",
+      "displayName": "表示名",
+      "username": "ユーザー名",
+      "bio": "自己紹介",
+      "bioHint": "自己紹介を一言",
+      "email": "メール",
+      "saved": "プロフィールを更新しました"
+    },
     "chips": {
       "friends": "友達",
       "achievement": "実績",
