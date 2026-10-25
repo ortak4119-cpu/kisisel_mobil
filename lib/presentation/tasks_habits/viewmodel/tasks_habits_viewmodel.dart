@@ -747,10 +747,48 @@ class TasksHabitsViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  TimeOfDay _habitReminderTime = const TimeOfDay(hour: 9, minute: 0);
-  TimeOfDay get habitReminderTime => _habitReminderTime;
+  // Çoklu hatırlatıcı saatleri (Faz 3). Backend reminder_times zaten liste.
+  List<TimeOfDay> _habitReminderTimes = [const TimeOfDay(hour: 9, minute: 0)];
+  List<TimeOfDay> get habitReminderTimes {
+    final l = List<TimeOfDay>.from(_habitReminderTimes);
+    l.sort((a, b) => (a.hour * 60 + a.minute).compareTo(b.hour * 60 + b.minute));
+    return l;
+  }
+
+  TimeOfDay get habitReminderTime =>
+      _habitReminderTimes.isNotEmpty ? habitReminderTimes.first : const TimeOfDay(hour: 9, minute: 0);
+
   void setHabitReminderTime(TimeOfDay t) {
-    _habitReminderTime = t;
+    _habitReminderTimes = [t];
+    notifyListeners();
+  }
+
+  void addHabitReminderTime(TimeOfDay t) {
+    final exists = _habitReminderTimes
+        .any((x) => x.hour == t.hour && x.minute == t.minute);
+    if (!exists) {
+      _habitReminderTimes.add(t);
+      notifyListeners();
+    }
+  }
+
+  void removeHabitReminderTimeAt(int i) {
+    final sorted = habitReminderTimes;
+    if (i < 0 || i >= sorted.length) return;
+    final t = sorted[i];
+    _habitReminderTimes
+        .removeWhere((x) => x.hour == t.hour && x.minute == t.minute);
+    if (_habitReminderTimes.isEmpty) {
+      _habitReminderTimes = [const TimeOfDay(hour: 9, minute: 0)];
+    }
+    notifyListeners();
+  }
+
+  // Sıklık türü (Faz 3): times_per_day | times_per_week | times_per_month
+  String _habitFreqType = 'times_per_day';
+  String get habitFreqType => _habitFreqType;
+  void setHabitFreqType(String t) {
+    _habitFreqType = t;
     notifyListeners();
   }
 
@@ -884,14 +922,17 @@ class TasksHabitsViewModel extends ChangeNotifier {
     _habitRecurrence = 'daily';
     _habitDays = {1, 2, 3, 4, 5, 6, 7};
     _habitReminderEnabled = true;
-    _habitReminderTime = const TimeOfDay(hour: 9, minute: 0);
+    _habitReminderTimes = [const TimeOfDay(hour: 9, minute: 0)];
+    _habitFreqType = 'times_per_day';
     _habitStartDate = DateTime.now();
     notifyListeners();
   }
 
   HabitRequest _buildHabitRequest() {
-    final rt =
-        '${_habitReminderTime.hour.toString().padLeft(2, '0')}:${_habitReminderTime.minute.toString().padLeft(2, '0')}';
+    final rts = habitReminderTimes
+        .map((t) =>
+            '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}')
+        .toList();
     return HabitRequest(
       title: habitTitleController.text.trim(),
       description: null,
@@ -900,10 +941,10 @@ class TasksHabitsViewModel extends ChangeNotifier {
       color: _habitColor,
       difficultyLevel: _habitDifficulty,
       timePeriod: _habitRecurrence == 'weekly' ? 'weekly' : 'daily',
-      targetFrequencyType: 'times_per_day',
+      targetFrequencyType: _habitFreqType,
       targetFrequencyValue: _habitGoal,
       reminderEnabled: _habitReminderEnabled,
-      reminderTimes: _habitReminderEnabled ? [rt] : null,
+      reminderTimes: _habitReminderEnabled ? rts : null,
       specificDays: _habitRecurrence == 'custom'
           ? (_habitDays.toList()..sort())
           : null,
@@ -1074,6 +1115,9 @@ class TasksHabitsViewModel extends ChangeNotifier {
 
     _habitColor = habit.color ?? '#F6A821';
     _habitGoal = habit.targetFrequencyValue ?? 1;
+    _habitFreqType = habit.targetFrequencyType.isEmpty
+        ? 'times_per_day'
+        : habit.targetFrequencyType;
     if (habit.specificDays != null && habit.specificDays!.isNotEmpty) {
       _habitRecurrence = 'custom';
       _habitDays = habit.specificDays!.toSet();
@@ -1086,11 +1130,15 @@ class TasksHabitsViewModel extends ChangeNotifier {
     }
     _habitReminderEnabled = habit.reminderEnabled;
     if (habit.reminderTimes != null && habit.reminderTimes!.isNotEmpty) {
-      try {
-        final p = habit.reminderTimes!.first.split(':');
-        _habitReminderTime =
-            TimeOfDay(hour: int.parse(p[0]), minute: int.parse(p[1]));
-      } catch (_) {}
+      final parsed = <TimeOfDay>[];
+      for (final s in habit.reminderTimes!) {
+        try {
+          final p = s.split(':');
+          parsed.add(
+              TimeOfDay(hour: int.parse(p[0]), minute: int.parse(p[1])));
+        } catch (_) {}
+      }
+      if (parsed.isNotEmpty) _habitReminderTimes = parsed;
     }
     _habitStartDate = DateTime.now();
     notifyListeners();
@@ -1565,6 +1613,24 @@ class TasksHabitsViewModel extends ChangeNotifier {
     } catch (_) {
       return null;
     }
+  }
+
+  /// Bugünün tamamlama kaydına not ekler/günceller (markComplete upsert eder).
+  /// Not: alışkanlığı bugün için tamamlanmış olarak işaretler.
+  Future<bool> setHabitTodayNote(int habitId, String note) async {
+    try {
+      final today = DateTime.now().toIso8601String().split('T')[0];
+      final r = await _habitService.markComplete(
+        habitId,
+        CompleteHabitRequest(
+            date: today, notes: note.trim().isEmpty ? null : note.trim()),
+      );
+      if (r.isSuccess) {
+        await loadHabits();
+        return true;
+      }
+    } catch (_) {}
+    return false;
   }
 
   /// Alışkanlık günlük kayıtları (ısı haritası için) — son [days] gün.

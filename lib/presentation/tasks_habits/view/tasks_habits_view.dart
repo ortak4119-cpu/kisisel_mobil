@@ -618,13 +618,22 @@ class _HabitHistorySheet extends StatefulWidget {
 class _HabitHistorySheetState extends State<_HabitHistorySheet> {
   static const int _weeks = 8;
   bool _loading = true;
+  bool _savingNote = false;
   HabitStats? _stats;
   final Map<String, int> _status = {}; // 1 yapıldı, 2 atlandı
+  final Map<String, String> _notes = {};
+  final TextEditingController _noteCtrl = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _load();
+  }
+
+  @override
+  void dispose() {
+    _noteCtrl.dispose();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -636,17 +645,35 @@ class _HabitHistorySheetState extends State<_HabitHistorySheet> {
     final stats = results[0] as HabitStats?;
     final logs = results[1] as List<HabitLog>;
     for (final l in logs) {
+      final k = _key(l.logDate);
       if (l.completed) {
-        _status[_key(l.logDate)] = 1;
+        _status[k] = 1;
       } else if (l.skipped) {
-        _status[_key(l.logDate)] = 2;
+        _status[k] = 2;
       }
+      if ((l.notes ?? '').trim().isNotEmpty) _notes[k] = l.notes!.trim();
     }
+    _noteCtrl.text = _notes[_key(DateTime.now())] ?? '';
     if (mounted) {
       setState(() {
         _stats = stats;
         _loading = false;
       });
+    }
+  }
+
+  Future<void> _saveNote() async {
+    setState(() => _savingNote = true);
+    final ok = await widget.viewModel
+        .setHabitTodayNote(widget.habit.id, _noteCtrl.text);
+    if (!mounted) return;
+    setState(() => _savingNote = false);
+    if (ok) {
+      _notes[_key(DateTime.now())] = _noteCtrl.text.trim();
+      _status[_key(DateTime.now())] = 1;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('habits.noteSaved'.tr())),
+      );
     }
   }
 
@@ -668,7 +695,9 @@ class _HabitHistorySheetState extends State<_HabitHistorySheet> {
     final rawRate = _stats?.completionRate ?? 0;
     final pct = (rawRate <= 1.0 ? rawRate * 100 : rawRate).round();
 
-    return SafeArea(
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: SafeArea(
       child: Container(
         margin: const EdgeInsets.all(12),
         padding: const EdgeInsets.fromLTRB(18, 16, 18, 20),
@@ -676,7 +705,8 @@ class _HabitHistorySheetState extends State<_HabitHistorySheet> {
           color: c.card,
           borderRadius: BorderRadius.circular(22),
         ),
-        child: Column(
+        child: SingleChildScrollView(
+          child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -744,10 +774,70 @@ class _HabitHistorySheetState extends State<_HabitHistorySheet> {
                   _legend(c.bg, 'habits.legendMissed'.tr(), c, border: true),
                 ],
               ),
+              const SizedBox(height: 18),
+              Text('habits.todayNote'.tr(),
+                  style: TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                      color: c.textPrimary)),
+              const SizedBox(height: 8),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: Container(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: c.bg,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: c.border),
+                      ),
+                      child: TextField(
+                        controller: _noteCtrl,
+                        maxLength: 1000,
+                        minLines: 1,
+                        maxLines: 3,
+                        style: TextStyle(fontSize: 14.5, color: c.textPrimary),
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          isDense: true,
+                          counterText: '',
+                          hintText: 'habits.todayNoteHint'.tr(),
+                          hintStyle:
+                              TextStyle(color: c.textMuted, fontSize: 14),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    height: 44,
+                    child: ElevatedButton(
+                      onPressed: _savingNote ? null : _saveNote,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFF6A821),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: _savingNote
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Colors.white))
+                          : Text('common.save'.tr()),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ],
         ),
+        ),
       ),
+    ),
     );
   }
 
@@ -3353,41 +3443,18 @@ class _AddHabitBottomSheet extends StatelessWidget {
       ),
       child: Column(
         children: [
-          _row(c, Icons.track_changes_rounded,
-              'habits.dailyGoal'.tr(),
+          _row(c, Icons.track_changes_rounded, 'habits.targetLabel'.tr(),
               'habits.timesN'.tr(namedArgs: {'n': '${vm.habitGoal}'}),
               onTap: () => _pickGoal(context, vm, c)),
           _divider(c),
-          _rowCustom(
-            c,
-            Icons.access_time_rounded,
-            'tasks.reminder'.tr(),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                    vm.habitReminderEnabled
-                        ? _fmt(vm.habitReminderTime)
-                        : 'tasks.reminderOff'.tr(),
-                    style: TextStyle(
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.w600,
-                        color: c.textSecondary)),
-                const SizedBox(width: 8),
-                Switch(
-                  value: vm.habitReminderEnabled,
-                  activeColor: _accent,
-                  onChanged: vm.setHabitReminderEnabled,
-                ),
-              ],
-            ),
-            onTap: vm.habitReminderEnabled
-                ? () => _pickTime(context, vm)
-                : null,
-          ),
+          _row(c, Icons.repeat_rounded, 'habits.frequency'.tr(),
+              _freqLabel(vm),
+              onTap: () => _pickFreqType(context, vm, c)),
           _divider(c),
-          _row(c, Icons.calendar_month_rounded,
-              'habits.startDate'.tr(), _dateLabel(vm),
+          _reminderSection(context, vm, c),
+          _divider(c),
+          _row(c, Icons.calendar_month_rounded, 'habits.startDate'.tr(),
+              _dateLabel(vm),
               onTap: () => _pickStart(context, vm)),
         ],
       ),
@@ -3396,6 +3463,134 @@ class _AddHabitBottomSheet extends StatelessWidget {
 
   Widget _divider(AppColors c) => Divider(
       height: 1, thickness: 1, color: c.border.withOpacity(0.5), indent: 52);
+
+  String _freqLabel(TasksHabitsViewModel vm) {
+    switch (vm.habitFreqType) {
+      case 'days_per_week':
+        return 'habits.perWeek'.tr();
+      case 'continuous':
+        return 'habits.continuous'.tr();
+      default:
+        return 'habits.perDay'.tr();
+    }
+  }
+
+  void _pickFreqType(
+      BuildContext context, TasksHabitsViewModel vm, AppColors c) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: c.card,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final o in const [
+              ['times_per_day', 'habits.perDay'],
+              ['days_per_week', 'habits.perWeek'],
+              ['continuous', 'habits.continuous'],
+            ])
+              ListTile(
+                title: Text(o[1].tr(), style: TextStyle(color: c.textPrimary)),
+                trailing: vm.habitFreqType == o[0]
+                    ? const Icon(Icons.check_rounded, color: _accent)
+                    : null,
+                onTap: () {
+                  vm.setHabitFreqType(o[0]);
+                  Navigator.pop(ctx);
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Çoklu hatırlatıcı bölümü: aç/kapa + saat çipleri + saat ekle.
+  Widget _reminderSection(
+      BuildContext context, TasksHabitsViewModel vm, AppColors c) {
+    return Column(
+      children: [
+        _rowCustom(
+          c,
+          Icons.access_time_rounded,
+          'tasks.reminder'.tr(),
+          Switch(
+            value: vm.habitReminderEnabled,
+            activeColor: _accent,
+            onChanged: vm.setHabitReminderEnabled,
+          ),
+        ),
+        if (vm.habitReminderEnabled)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(52, 0, 14, 12),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (int i = 0; i < vm.habitReminderTimes.length; i++)
+                  _timeChip(c, _fmt(vm.habitReminderTimes[i]),
+                      () => vm.removeHabitReminderTimeAt(i)),
+                _addTimeChip(c, () async {
+                  final t = await showTimePicker(
+                      context: context, initialTime: TimeOfDay.now());
+                  if (t != null) vm.addHabitReminderTime(t);
+                }),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _timeChip(AppColors c, String label, VoidCallback onRemove) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 6, 6, 6),
+      decoration: BoxDecoration(
+        color: _accent.withOpacity(0.10),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(label,
+              style: const TextStyle(
+                  fontSize: 14, fontWeight: FontWeight.w600, color: _accent)),
+          const SizedBox(width: 2),
+          GestureDetector(
+            onTap: onRemove,
+            child: const Icon(Icons.close_rounded, size: 16, color: _accent),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _addTimeChip(AppColors c, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: _accent.withOpacity(0.5)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.add_rounded, size: 16, color: _accent),
+            const SizedBox(width: 4),
+            Text('habits.addReminderTime'.tr(),
+                style: const TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w600,
+                    color: _accent)),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget _row(AppColors c, IconData icon, String label, String value,
       {required VoidCallback onTap}) {
