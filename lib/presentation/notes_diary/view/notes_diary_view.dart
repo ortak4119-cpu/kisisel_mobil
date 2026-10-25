@@ -4658,8 +4658,10 @@ class _AddNoteBottomSheet extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
-          // Notun mevcut (kayıtlı) görselleri — düzenlemede gösterilir.
-          if (vm.editingExistingImages.isNotEmpty) ...[
+          // Notun eski yerel görselleri — yalnız backend eki YOKSA gösterilir
+          // (çift gösterimi önler; yeni notlar backend eklerini kullanır).
+          if (vm.editingExistingImages.isNotEmpty &&
+              vm.editingNoteAttachments.isEmpty) ...[
             Wrap(
               spacing: 10,
               runSpacing: 10,
@@ -4704,6 +4706,137 @@ class _AddNoteBottomSheet extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
+          ],
+
+          // Kayıtlı (backend) ekler — düzenlemede gösterilir; başka cihazdan
+          // eklenmiş olanlar da buradan görünür/silinir.
+          if (vm.editingNoteAttachments.isNotEmpty) ...[
+            Builder(builder: (ctx) {
+              final atts = vm.editingNoteAttachments;
+              final imgs = atts.where((a) => a.isImage).toList();
+              final auds = atts.where((a) => a.isAudio).toList();
+              final files = atts.where((a) => a.isFile).toList();
+              final noteId = vm.editingNoteId;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (imgs.isNotEmpty) ...[
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: [
+                        for (final a in imgs)
+                          Stack(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(14),
+                                child: Image.network(
+                                  a.thumbnailUrl ?? a.fileUrl,
+                                  width: 100,
+                                  height: 100,
+                                  fit: BoxFit.cover,
+                                  loadingBuilder: (_, child, prog) =>
+                                      prog == null
+                                          ? child
+                                          : Container(
+                                              width: 100,
+                                              height: 100,
+                                              color: c.card,
+                                              child: const Center(
+                                                child: SizedBox(
+                                                  width: 20,
+                                                  height: 20,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                          strokeWidth: 2),
+                                                ),
+                                              ),
+                                            ),
+                                  errorBuilder: (_, __, ___) => Container(
+                                    width: 100,
+                                    height: 100,
+                                    color: c.card,
+                                    child: Icon(Icons.broken_image_rounded,
+                                        color: c.textMuted),
+                                  ),
+                                ),
+                              ),
+                              if (noteId != null)
+                                Positioned(
+                                  top: 4,
+                                  right: 4,
+                                  child: GestureDetector(
+                                    onTap: () =>
+                                        vm.removeAttachment(noteId, a.id, ctx),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(3),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.black54,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(Icons.close_rounded,
+                                          size: 14, color: Colors.white),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  for (final a in auds) ...[
+                    _VoiceNoteChip(
+                      path: a.fileUrl,
+                      isNetwork: true,
+                      durationSeconds: a.durationSeconds,
+                      onRemove: noteId == null
+                          ? () {}
+                          : () => vm.removeAttachment(noteId, a.id, ctx),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  for (final a in files)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: c.card,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: c.border.withOpacity(0.8)),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.insert_drive_file_rounded,
+                                size: 18, color: c.textSecondary),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                a.fileName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: c.textPrimary),
+                              ),
+                            ),
+                            if (noteId != null)
+                              GestureDetector(
+                                onTap: () =>
+                                    vm.removeAttachment(noteId, a.id, ctx),
+                                child: Icon(Icons.close_rounded,
+                                    size: 18, color: c.textMuted),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            }),
           ],
 
           // Eklenen görseller (Fotoğraf/Kamera ile seçilenler)
@@ -6803,7 +6936,19 @@ class _DrawPainter extends CustomPainter {
 class _VoiceNoteChip extends StatefulWidget {
   final String path;
   final VoidCallback onRemove;
-  const _VoiceNoteChip({required this.path, required this.onRemove});
+
+  /// true ise [path] bir URL'dir (backend ses eki); false ise yerel dosya.
+  final bool isNetwork;
+
+  /// Varsa kayıt süresi (saniye) — mm:ss olarak gösterilir.
+  final int? durationSeconds;
+
+  const _VoiceNoteChip({
+    required this.path,
+    required this.onRemove,
+    this.isNetwork = false,
+    this.durationSeconds,
+  });
 
   @override
   State<_VoiceNoteChip> createState() => _VoiceNoteChipState();
@@ -6832,9 +6977,19 @@ class _VoiceNoteChipState extends State<_VoiceNoteChip> {
       await _player.pause();
       setState(() => _playing = false);
     } else {
-      await _player.play(DeviceFileSource(widget.path));
+      await _player.play(widget.isNetwork
+          ? UrlSource(widget.path)
+          : DeviceFileSource(widget.path));
       setState(() => _playing = true);
     }
+  }
+
+  String _durationLabel() {
+    final d = widget.durationSeconds;
+    if (d == null || d <= 0) return 'notes.editor.voiceNote'.tr();
+    final m = (d ~/ 60).toString().padLeft(2, '0');
+    final s = (d % 60).toString().padLeft(2, '0');
+    return '$m:$s';
   }
 
   @override
@@ -6886,7 +7041,7 @@ class _VoiceNoteChipState extends State<_VoiceNoteChip> {
             ),
           ),
           const SizedBox(width: 8),
-          Text('notes.editor.voiceNote'.tr(),
+          Text(_durationLabel(),
               style: const TextStyle(
                   fontSize: 12, fontWeight: FontWeight.w600, color: accent)),
           const SizedBox(width: 8),

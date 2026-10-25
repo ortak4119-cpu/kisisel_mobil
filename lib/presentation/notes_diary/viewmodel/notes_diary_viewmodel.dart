@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:convert';
-import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -145,41 +144,9 @@ class NotesDiaryViewModel extends ChangeNotifier {
     } catch (_) {}
   }
 
-  /// Seçilen görselleri kalıcı klasöre kopyalar, yeni yolları döndürür.
-  Future<List<String>> _copyImagesToPersistentDir(List<File> files) async {
-    final saved = <String>[];
-    try {
-      final docs = await getApplicationDocumentsDirectory();
-      final dir = Directory('${docs.path}/note_images');
-      if (!dir.existsSync()) dir.createSync(recursive: true);
-      var i = 0;
-      for (final f in files) {
-        if (!f.existsSync()) continue;
-        final ext = f.path.contains('.') ? f.path.split('.').last : 'jpg';
-        final stamp = DateTime.now().microsecondsSinceEpoch + (i++);
-        final dest = '${dir.path}/img_$stamp.$ext';
-        await f.copy(dest);
-        saved.add(dest);
-      }
-    } catch (_) {}
-    return saved;
-  }
-
-  /// Not kaydedildikten sonra seçilen görselleri o notun id'sine bağlar.
-  Future<void> _attachImagesToNote(int noteId,
-      {List<String> keepExisting = const []}) async {
-    final merged = <String>[...keepExisting];
-    if (_pickedImages.isNotEmpty) {
-      merged.addAll(await _copyImagesToPersistentDir(_pickedImages));
-    }
-    if (merged.isEmpty) {
-      _noteImages.remove(noteId);
-    } else {
-      _noteImages[noteId] = merged;
-    }
-    await _persistNoteImages();
-    notifyListeners();
-  }
+  // NOT: Görseller artık yalnız backend'e yüklenir (tek doğruluk kaynağı).
+  // Eski yerel görsel önbelleği (imagesForNote) yalnız geriye dönük okuma için
+  // korunur; yeni kayıtlar yerel kopya üretmez.
 
   /// Editörde seçilen ekleri (görsel/ses/dosya) backend'e yükler. Her yükleme
   /// ayrı try/catch ile korunur; biri başarısız olursa kayıt bozulmaz.
@@ -209,7 +176,8 @@ class NotesDiaryViewModel extends ChangeNotifier {
       try {
         final vf = File(_voiceNotePath!);
         if (vf.existsSync()) {
-          final r = await _noteService.uploadNoteAttachment(noteId, vf);
+          final r = await _noteService.uploadNoteAttachment(noteId, vf,
+              durationSeconds: _voiceDurationSeconds);
           if (r.isSuccess) uploaded = true;
         }
       } catch (e) {
@@ -226,6 +194,16 @@ class NotesDiaryViewModel extends ChangeNotifier {
 
   /// Bir notun eklerini döndürür (görünümde kullanım için).
   List<NoteAttachment> attachmentsFor(Note n) => n.attachments;
+
+  /// Düzenlenen notun id'si (editörde backend eklerini göstermek için).
+  int? get editingNoteId => _editingNoteId;
+
+  /// Düzenlenen notun backend ekleri (editörde gösterilir). Not bulunamazsa boş.
+  List<NoteAttachment> get editingNoteAttachments {
+    if (_editingNoteId == null) return const [];
+    final i = _notes.indexWhere((n) => n.id == _editingNoteId);
+    return i == -1 ? const [] : _notes[i].attachments;
+  }
 
   /// Note immutable olduğundan ekleri güncellenmiş yeni bir kopya üretir.
   Note _noteWithAttachments(Note n, List<NoteAttachment> attachments) {
@@ -305,12 +283,22 @@ class NotesDiaryViewModel extends ChangeNotifier {
   String? _voiceNotePath;
   String? get voiceNotePath => _voiceNotePath;
 
+  // Kayıt süresi (saniye) — backend'e duration_seconds olarak gönderilir.
+  DateTime? _recordStart;
+  int? _voiceDurationSeconds;
+  int? get voiceDurationSeconds => _voiceDurationSeconds;
+
   Future<void> toggleRecording() async {
     try {
       if (_isRecording) {
         final path = await _recorder.stop();
         _isRecording = false;
         if (path != null) _voiceNotePath = path;
+        if (_recordStart != null) {
+          final secs = DateTime.now().difference(_recordStart!).inSeconds;
+          _voiceDurationSeconds = secs > 0 ? secs : 1;
+          _recordStart = null;
+        }
         notifyListeners();
       } else {
         if (await _recorder.hasPermission()) {
@@ -319,6 +307,8 @@ class NotesDiaryViewModel extends ChangeNotifier {
               '${dir.path}/ses_${DateTime.now().millisecondsSinceEpoch}.m4a';
           await _recorder.start(const RecordConfig(), path: path);
           _isRecording = true;
+          _recordStart = DateTime.now();
+          _voiceDurationSeconds = null;
           notifyListeners();
         }
       }
@@ -330,6 +320,8 @@ class NotesDiaryViewModel extends ChangeNotifier {
 
   void removeVoiceNote() {
     _voiceNotePath = null;
+    _voiceDurationSeconds = null;
+    _recordStart = null;
     notifyListeners();
   }
 
@@ -483,6 +475,8 @@ class NotesDiaryViewModel extends ChangeNotifier {
     _pickedFiles.clear();
     _editingExistingImages = [];
     _voiceNotePath = null;
+    _voiceDurationSeconds = null;
+    _recordStart = null;
     if (_isRecording) {
       _recorder.stop();
       _isRecording = false;
@@ -511,6 +505,8 @@ class NotesDiaryViewModel extends ChangeNotifier {
     _pickedFiles.clear();
     _editingExistingImages = List<String>.from(_noteImages[note.id] ?? const []);
     _voiceNotePath = null;
+    _voiceDurationSeconds = null;
+    _recordStart = null;
     notifyListeners();
   }
 
@@ -628,9 +624,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
 
       if (response.isSuccess && response.data != null) {
         _notes.insert(0, response.data!);
-        // Görselleri yerel önbelleğe kopyala (geriye dönük uyumluluk) ve
-        // tüm ekleri (görsel/ses/dosya) backend'e yükle.
-        await _attachImagesToNote(response.data!.id);
+        // Tüm ekleri (görsel/ses/dosya) backend'e yükle — tek doğruluk kaynağı.
         await _uploadPickedAttachments(response.data!.id);
         resetNoteForm();
         if (context.mounted) {
@@ -737,8 +731,6 @@ class NotesDiaryViewModel extends ChangeNotifier {
         if (index != -1) {
           _notes[index] = response.data!;
         }
-        await _attachImagesToNote(_editingNoteId!,
-            keepExisting: _editingExistingImages);
         await _uploadPickedAttachments(_editingNoteId!);
         resetNoteForm();
         if (context.mounted) {
