@@ -411,6 +411,7 @@ class _HabitsTab extends StatelessWidget {
     final p = goal == 0 ? 0.0 : (cur / goal).clamp(0.0, 1.0);
 
     return GestureDetector(
+      onTap: () => _showHabitHistory(context, c, h),
       onLongPress: () => _habitMenu(context, c, h),
       child: Container(
         padding: const EdgeInsets.all(14),
@@ -516,6 +517,15 @@ class _HabitsTab extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
+              leading: const Icon(Icons.grid_view_rounded, color: _orange),
+              title: Text('habits.history'.tr(),
+                  style: TextStyle(color: c.textPrimary)),
+              onTap: () {
+                Navigator.pop(ctx);
+                _showHabitHistory(context, c, h);
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.edit_rounded, color: _orange),
               title: Text('common.edit'.tr(),
                   style: TextStyle(color: c.textPrimary)),
@@ -553,6 +563,16 @@ class _HabitsTab extends StatelessWidget {
     );
   }
 
+  void _showHabitHistory(BuildContext context, AppColors c, Habit h) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _HabitHistorySheet(
+          viewModel: viewModel, habit: h, isDark: c.isDark),
+    );
+  }
+
   Widget _empty(BuildContext context, AppColors c) {
     return Container(
       width: double.infinity,
@@ -579,6 +599,245 @@ class _HabitsTab extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+// ==================== ALIŞKANLIK GEÇMİŞİ (ISI HARİTASI) ====================
+
+class _HabitHistorySheet extends StatefulWidget {
+  final TasksHabitsViewModel viewModel;
+  final Habit habit;
+  final bool isDark;
+  const _HabitHistorySheet(
+      {required this.viewModel, required this.habit, required this.isDark});
+
+  @override
+  State<_HabitHistorySheet> createState() => _HabitHistorySheetState();
+}
+
+class _HabitHistorySheetState extends State<_HabitHistorySheet> {
+  static const int _weeks = 8;
+  bool _loading = true;
+  HabitStats? _stats;
+  final Map<String, int> _status = {}; // 1 yapıldı, 2 atlandı
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final days = _weeks * 7;
+    final results = await Future.wait([
+      widget.viewModel.fetchHabitStats(widget.habit.id, days: days),
+      widget.viewModel.fetchHabitLogs(widget.habit.id, days: days),
+    ]);
+    final stats = results[0] as HabitStats?;
+    final logs = results[1] as List<HabitLog>;
+    for (final l in logs) {
+      if (l.completed) {
+        _status[_key(l.logDate)] = 1;
+      } else if (l.skipped) {
+        _status[_key(l.logDate)] = 2;
+      }
+    }
+    if (mounted) {
+      setState(() {
+        _stats = stats;
+        _loading = false;
+      });
+    }
+  }
+
+  String _key(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+  @override
+  Widget build(BuildContext context) {
+    final c = AppColors(widget.isDark);
+    final color = widget.viewModel.getHabitColor(widget.habit.color);
+    const done = Color(0xFF1BAF7A);
+    const skipped = Color(0xFFEDA100);
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final thisMonday = today.subtract(Duration(days: today.weekday - 1));
+    final gridStart = thisMonday.subtract(const Duration(days: 7 * (_weeks - 1)));
+
+    final rawRate = _stats?.completionRate ?? 0;
+    final pct = (rawRate <= 1.0 ? rawRate * 100 : rawRate).round();
+
+    return SafeArea(
+      child: Container(
+        margin: const EdgeInsets.all(12),
+        padding: const EdgeInsets.fromLTRB(18, 16, 18, 20),
+        decoration: BoxDecoration(
+          color: c.card,
+          borderRadius: BorderRadius.circular(22),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                      color: color, borderRadius: BorderRadius.circular(10)),
+                  child: Icon(habitIconData(widget.habit.icon),
+                      color: Colors.white, size: 20),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(widget.habit.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: c.textPrimary)),
+                      Text('habits.history'.tr(),
+                          style: TextStyle(
+                              fontSize: 12.5, color: c.textSecondary)),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.close_rounded, color: c.textSecondary),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            if (_loading)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 44),
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else ...[
+              Row(
+                children: [
+                  _stat(c, '${_stats?.currentStreak ?? 0}',
+                      'habits.currentStreak'.tr()),
+                  const SizedBox(width: 10),
+                  _stat(c, '${_stats?.longestStreak ?? 0}',
+                      'habits.longestStreak'.tr()),
+                  const SizedBox(width: 10),
+                  _stat(c, '%$pct', 'habits.completionRate'.tr()),
+                ],
+              ),
+              const SizedBox(height: 18),
+              _heatmap(c, gridStart, today, done, skipped),
+              const SizedBox(height: 14),
+              Wrap(
+                spacing: 14,
+                runSpacing: 8,
+                children: [
+                  _legend(done, 'habits.legendDone'.tr(), c),
+                  _legend(skipped, 'habits.legendSkipped'.tr(), c),
+                  _legend(c.bg, 'habits.legendMissed'.tr(), c, border: true),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _stat(AppColors c, String value, String label) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+        decoration: BoxDecoration(
+            color: c.bg, borderRadius: BorderRadius.circular(12)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 11.5, color: c.textSecondary)),
+            const SizedBox(height: 2),
+            Text(value,
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: c.textPrimary)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _legend(Color color, String label, AppColors c, {bool border = false}) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(3),
+              border: border ? Border.all(color: c.border) : null),
+        ),
+        const SizedBox(width: 5),
+        Text(label, style: TextStyle(fontSize: 12, color: c.textSecondary)),
+      ],
+    );
+  }
+
+  Widget _heatmap(AppColors c, DateTime gridStart, DateTime today, Color done,
+      Color skipped) {
+    return LayoutBuilder(builder: (context, cons) {
+      const gap = 4.0;
+      final cell =
+          ((cons.maxWidth - gap * (_weeks - 1)) / _weeks).clamp(10.0, 26.0);
+      final cols = <Widget>[];
+      for (var w = 0; w < _weeks; w++) {
+        final cells = <Widget>[];
+        for (var d = 0; d < 7; d++) {
+          final date = gridStart.add(Duration(days: w * 7 + d));
+          Color fill;
+          Border? bd;
+          if (date.isAfter(today)) {
+            fill = Colors.transparent;
+            bd = Border.all(color: c.border.withOpacity(0.4));
+          } else {
+            final s = _status[_key(date)];
+            if (s == 1) {
+              fill = done;
+            } else if (s == 2) {
+              fill = skipped;
+            } else {
+              fill = c.bg;
+              bd = Border.all(color: c.border);
+            }
+          }
+          cells.add(Padding(
+            padding: EdgeInsets.only(bottom: d == 6 ? 0 : gap),
+            child: Container(
+              width: cell,
+              height: cell,
+              decoration: BoxDecoration(
+                  color: fill,
+                  borderRadius: BorderRadius.circular(3),
+                  border: bd),
+            ),
+          ));
+        }
+        cols.add(Column(children: cells));
+      }
+      return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween, children: cols);
+    });
   }
 }
 

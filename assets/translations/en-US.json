@@ -354,6 +354,13 @@
     "skipToday": "Skip today",
     "skipHint": "Keeps your streak",
     "skippedToday": "Skipped today",
+    "history": "History (heatmap)",
+    "currentStreak": "Current streak",
+    "longestStreak": "Longest streak",
+    "completionRate": "Completion",
+    "legendDone": "Done",
+    "legendSkipped": "Skipped",
+    "legendMissed": "Missed",
     "saveHabit": "Save Habit",
     "todaySection": "Today’s habits",
     "doneToday": "Completed"

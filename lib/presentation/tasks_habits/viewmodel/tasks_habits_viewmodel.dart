@@ -1557,6 +1557,27 @@ class TasksHabitsViewModel extends ChangeNotifier {
     }
   }
 
+  /// Alışkanlık istatistikleri (seri/tamamlanma oranı) — geçmiş ekranı için.
+  Future<HabitStats?> fetchHabitStats(int id, {int days = 56}) async {
+    try {
+      final r = await _habitService.getHabitStats(id, days: days);
+      return r.isSuccess ? r.data : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Alışkanlık günlük kayıtları (ısı haritası için) — son [days] gün.
+  Future<List<HabitLog>> fetchHabitLogs(int id, {int days = 56}) async {
+    try {
+      final r =
+          await _habitService.getHabitLogs(id, days: days, perPage: days + 10);
+      return (r.isSuccess && r.data != null) ? r.data!.data : <HabitLog>[];
+    } catch (_) {
+      return <HabitLog>[];
+    }
+  }
+
   /// Alışkanlığı bugün için atla (seriyi bozmadan "dinlenme günü"). İsteğe
   /// bağlı sebep. Backend skipHabit zaten vardı, UI'a yeni açılıyor.
   Future<void> skipHabitToday(Habit habit, BuildContext context,

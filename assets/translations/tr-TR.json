@@ -354,6 +354,13 @@
     "skipToday": "Bugün atla",
     "skipHint": "Seriyi bozmaz",
     "skippedToday": "Bugün atlandı",
+    "history": "Geçmiş (ısı haritası)",
+    "currentStreak": "Güncel seri",
+    "longestStreak": "En uzun seri",
+    "completionRate": "Tamamlanma",
+    "legendDone": "Yapıldı",
+    "legendSkipped": "Atlandı",
+    "legendMissed": "Kaçırıldı",
     "saveHabit": "Alışkanlığı Kaydet",
     "todaySection": "Bugünün alışkanlıkları",
     "doneToday": "Tamamlandı"
