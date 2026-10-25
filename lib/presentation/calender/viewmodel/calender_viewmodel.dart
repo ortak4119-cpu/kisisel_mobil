@@ -71,6 +71,20 @@ class EventMeta {
         tag: j['tag'] as String?,
       );
 
+  /// Faz 1: backend'de saklanan zengin alanlardan meta üret (artık yerel
+  /// SharedPreferences birincil kaynak değil).
+  factory EventMeta.fromEvent(CalendarEvent e) => EventMeta(
+        kind: e.kind ?? 'meeting',
+        category: e.category ?? 'is',
+        color: e.color,
+        endTime: e.endTime,
+        allDay: e.allDay,
+        reminders: List<int>.from(e.reminderMinutes),
+        location: e.location,
+        recurrence: e.recurrence ?? 'none',
+        tag: e.tag,
+      );
+
   EventMeta copy() => EventMeta.fromJson(toJson());
 }
 
@@ -671,8 +685,46 @@ class CalendarViewModel extends ChangeNotifier {
       await _loadCurrentUser();
       _isInitialized = true;
       notifyListeners();
+      // Eski yerel etkinlik meta'sını (renk/kategori/hatırlatıcı...) tek sefer
+      // backend'e taşı; arka planda, UI'ı bloklamadan.
+      migrateLocalEventMetaOnce();
     }
     await loadDataForMonth(_focusedMonth.year, _focusedMonth.month);
+  }
+
+  /// Faz 1 göçü: backend meta desteği öncesi yalnızca cihazda tutulan
+  /// EventMeta'yı sunucuya PUT eder. Bir kez çalışır (flag ile korunur).
+  Future<void> migrateLocalEventMetaOnce() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (prefs.getBool('calendar_meta_migrated_v1') == true) return;
+      await loadEventMeta();
+      if (_eventMeta.isEmpty) {
+        await prefs.setBool('calendar_meta_migrated_v1', true);
+        return;
+      }
+      for (final entry in _eventMeta.entries) {
+        final m = entry.value;
+        await _calendarService.updateEvent(
+          entry.key,
+          CalendarEventUpdateRequest(
+            allDay: m.allDay,
+            color: m.color,
+            category: m.category,
+            kind: m.kind,
+            location: m.location,
+            recurrence: m.recurrence,
+            tag: m.tag,
+            endTime: m.endTime,
+            reminderMinutes: List<int>.from(m.reminders),
+          ),
+        );
+      }
+      await prefs.setBool('calendar_meta_migrated_v1', true);
+      debugPrint('✅ Calendar: Local event meta migrated to backend');
+    } catch (e) {
+      debugPrint('⚠️ Calendar: Meta migration skipped: $e');
+    }
   }
 
   Future<void> _loadCurrentUser() async {
@@ -810,7 +862,17 @@ class CalendarViewModel extends ChangeNotifier {
 
   static const String _kEventMetaKey = 'event_meta_v1';
   final Map<int, EventMeta> _eventMeta = {};
-  EventMeta metaForEvent(int id) => _eventMeta[id] ?? EventMeta();
+
+  /// Önce backend'deki zengin alanları kullan; yoksa (migration öncesi eski
+  /// etkinlik) yerel meta'ya, o da yoksa varsayılana düş.
+  EventMeta metaForEvent(int id) {
+    final e = getCalendarEventById(id);
+    // Yeni istemci her zaman category gönderir → backend meta'nın işareti budur.
+    if (e != null && e.category != null) {
+      return EventMeta.fromEvent(e);
+    }
+    return _eventMeta[id] ?? EventMeta();
+  }
 
   Future<void> loadEventMeta() async {
     try {
@@ -1012,19 +1074,34 @@ class CalendarViewModel extends ChangeNotifier {
       tag: _formTag,
     );
 
+    final desc = eventDescController.text.trim().isEmpty
+        ? null
+        : eventDescController.text.trim();
+    final startTime = _formAllDay ? null : _fmtTime(_formStartTime);
+    final endTime = _formAllDay ? null : _fmtTime(_formEndTime);
+
     if (_editingEventId != null) {
       final ok = await updateCalendarEvent(
         _editingEventId!,
         CalendarEventUpdateRequest(
           title: eventTitleController.text.trim(),
-          description: eventDescController.text.trim().isEmpty
-              ? null
-              : eventDescController.text.trim(),
+          description: desc,
           eventDate: _fmtDate(_formStartDate),
-          eventTime: _formAllDay ? null : _fmtTime(_formStartTime),
+          eventTime: startTime,
+          endDate: _fmtDate(_formEndDate),
+          endTime: endTime,
+          allDay: _formAllDay,
+          color: _formColor,
+          category: _formCategory,
+          kind: _formKind,
+          location: _formLocation,
+          recurrence: _formRecurrence,
+          tag: _formTag,
+          reminderMinutes: List<int>.from(_formReminders),
         ),
       );
       if (ok) {
+        // Yerel meta'yı da yedek olarak güncel tut (çevrimdışı/legacy uyumu).
         _eventMeta[_editingEventId!] = meta;
         await _persistEventMeta();
         if (context.mounted) {
@@ -1039,12 +1116,20 @@ class CalendarViewModel extends ChangeNotifier {
 
     final request = CalendarEventRequest(
       title: eventTitleController.text.trim(),
-      description: eventDescController.text.trim().isEmpty
-          ? null
-          : eventDescController.text.trim(),
+      description: desc,
       eventType: backendType,
       eventDate: _fmtDate(_formStartDate),
-      eventTime: _formAllDay ? null : _fmtTime(_formStartTime),
+      eventTime: startTime,
+      endDate: _fmtDate(_formEndDate),
+      endTime: endTime,
+      allDay: _formAllDay,
+      color: _formColor,
+      category: _formCategory,
+      kind: _formKind,
+      location: _formLocation,
+      recurrence: _formRecurrence,
+      tag: _formTag,
+      reminderMinutes: List<int>.from(_formReminders),
     );
     final resp = await _calendarService.createEvent(request);
     if (resp.isSuccess && resp.data != null) {
