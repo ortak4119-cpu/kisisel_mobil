@@ -2179,18 +2179,26 @@ class _AddTaskBottomSheet extends StatelessWidget {
   }
 
   Widget _thumb(AppColors c, String path, VoidCallback onRemove) {
-    final isImg = ['jpg', 'jpeg', 'png', 'gif', 'webp']
-        .contains(path.split('.').last.toLowerCase());
+    // Backend eki (URL) ya da yerel dosya yolu olabilir.
+    final isNetwork = path.startsWith('http');
+    final ext = path.split('?').first.split('.').last.toLowerCase();
+    final isImg = ['jpg', 'jpeg', 'png', 'gif', 'webp'].contains(ext);
     return Stack(
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(12),
           child: isImg
-              ? Image.file(File(path),
-                  width: 74,
-                  height: 74,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => _fileBox(c))
+              ? (isNetwork
+                  ? Image.network(path,
+                      width: 74,
+                      height: 74,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => _fileBox(c))
+                  : Image.file(File(path),
+                      width: 74,
+                      height: 74,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => _fileBox(c)))
               : _fileBox(c),
         ),
         Positioned(

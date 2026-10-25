@@ -1,3 +1,32 @@
+// Task Attachment (göreve bağlı görsel/dosya — backend polimorfik attachments)
+class TaskAttachment {
+  final int id;
+  final String fileName;
+  final String fileType;
+  final String fileUrl;
+  final String? thumbnailUrl;
+
+  TaskAttachment({
+    required this.id,
+    required this.fileName,
+    required this.fileType,
+    required this.fileUrl,
+    this.thumbnailUrl,
+  });
+
+  bool get isImage => fileType.startsWith('image/');
+
+  factory TaskAttachment.fromJson(Map<String, dynamic> json) {
+    return TaskAttachment(
+      id: json['id'] as int,
+      fileName: (json['file_name'] ?? '') as String,
+      fileType: (json['file_type'] ?? 'application/octet-stream') as String,
+      fileUrl: (json['file_url'] ?? '') as String,
+      thumbnailUrl: json['thumbnail_url'] as String?,
+    );
+  }
+}
+
 // Task Model
 class Task {
   final int id;
@@ -19,6 +48,12 @@ class Task {
   final bool isOverdue;
   final int? parentTaskId;
   final DateTime createdAt;
+  // Faz 1: backend'e taşınan meta alanları
+  final String? category;
+  final List<String> tags;
+  final String? location;
+  final String? link;
+  final List<TaskAttachment> attachments;
 
   Task({
     required this.id,
@@ -40,7 +75,13 @@ class Task {
     required this.isOverdue,
     this.parentTaskId,
     required this.createdAt,
-  });
+    this.category,
+    List<String>? tags,
+    this.location,
+    this.link,
+    List<TaskAttachment>? attachments,
+  })  : tags = tags ?? const [],
+        attachments = attachments ?? const [];
 
   factory Task.fromJson(Map<String, dynamic> json) {
     return Task(
@@ -65,6 +106,14 @@ class Task {
       isOverdue: json['is_overdue'] == true || json['is_overdue'] == 1, // ← Null-safe
       parentTaskId: json['parent_task_id'] as int?,
       createdAt: DateTime.parse(json['created_at'] as String),
+      category: json['category'] as String?,
+      tags: (json['tags'] as List?)?.cast<String>() ?? const [],
+      location: json['location'] as String?,
+      link: json['link'] as String?,
+      attachments: (json['attachments'] as List?)
+              ?.map((e) => TaskAttachment.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
     );
   }
 
@@ -89,6 +138,10 @@ class Task {
       'is_overdue': isOverdue,
       'parent_task_id': parentTaskId,
       'created_at': createdAt.toIso8601String(),
+      'category': category,
+      'tags': tags,
+      'location': location,
+      'link': link,
     };
   }
 
@@ -125,6 +178,11 @@ class Task {
     bool? isOverdue,
     int? parentTaskId,
     DateTime? createdAt,
+    String? category,
+    List<String>? tags,
+    String? location,
+    String? link,
+    List<TaskAttachment>? attachments,
   }) {
     return Task(
       id: id ?? this.id,
@@ -146,6 +204,11 @@ class Task {
       isOverdue: isOverdue ?? this.isOverdue,
       parentTaskId: parentTaskId ?? this.parentTaskId,
       createdAt: createdAt ?? this.createdAt,
+      category: category ?? this.category,
+      tags: tags ?? this.tags,
+      location: location ?? this.location,
+      link: link ?? this.link,
+      attachments: attachments ?? this.attachments,
     );
   }
 }
@@ -165,6 +228,10 @@ class TaskRequest {
   final String? recurringPattern;
   final int? estimatedDurationMinutes;
   final int? parentTaskId;
+  final String? category;
+  final List<String>? tags;
+  final String? location;
+  final String? link;
 
   TaskRequest({
     required this.title,
@@ -180,6 +247,10 @@ class TaskRequest {
     this.recurringPattern,
     this.estimatedDurationMinutes,
     this.parentTaskId,
+    this.category,
+    this.tags,
+    this.location,
+    this.link,
   });
 
   Map<String, dynamic> toJson() {
@@ -197,6 +268,10 @@ class TaskRequest {
       'recurring_pattern': recurringPattern,
       'estimated_duration_minutes': estimatedDurationMinutes,
       'parent_task_id': parentTaskId,
+      'category': category,
+      'tags': tags,
+      'location': location,
+      'link': link,
     };
   }
 }

@@ -243,11 +243,13 @@ class TasksHabitsViewModel extends ChangeNotifier {
     }
   }
 
-  // Ekler (yerel dosya/foto)
+  // Ekler (yerel dosya/foto — kaydedince backend'e yüklenir)
   final List<File> _taskPickedFiles = [];
   List<File> get taskPickedFiles => _taskPickedFiles;
-  List<String> _taskExistingAttachments = [];
-  List<String> get taskExistingAttachments => _taskExistingAttachments;
+  // Düzenlenen görevin backend'deki mevcut ekleri.
+  List<TaskAttachment> _editingTaskAttachments = [];
+  List<String> get taskExistingAttachments =>
+      _editingTaskAttachments.map((a) => a.fileUrl).toList();
   final ImagePicker _taskImagePicker = ImagePicker();
 
   Future<void> pickTaskImage(ImageSource source) async {
@@ -285,20 +287,64 @@ class TasksHabitsViewModel extends ChangeNotifier {
     }
   }
 
-  void removeTaskExistingAttachment(int i) {
-    if (i >= 0 && i < _taskExistingAttachments.length) {
-      _taskExistingAttachments.removeAt(i);
-      notifyListeners();
-    }
+  /// Mevcut (backend) eki kaldırır — sunucudan da siler.
+  Future<void> removeTaskExistingAttachment(int i) async {
+    if (i < 0 || i >= _editingTaskAttachments.length) return;
+    final att = _editingTaskAttachments[i];
+    _editingTaskAttachments.removeAt(i);
+    notifyListeners();
+    try {
+      await _taskService.deleteTaskAttachment(att.id);
+      final idx = _tasks.indexWhere((t) => t.id == _editingTaskId);
+      if (idx != -1) {
+        _tasks[idx] = _tasks[idx].copyWith(
+            attachments: _tasks[idx]
+                .attachments
+                .where((a) => a.id != att.id)
+                .toList());
+      }
+    } catch (_) {}
   }
 
   int get taskAttachmentCount =>
-      _taskPickedFiles.length + _taskExistingAttachments.length;
+      _taskPickedFiles.length + _editingTaskAttachments.length;
 
-  // ---- Yerel meta store (SharedPreferences) ----
+  /// Seçilen yerel dosyaları göreve (backend) yükler ve yerel listeyi günceller.
+  Future<void> _uploadTaskAttachments(int taskId) async {
+    for (final f in List<File>.from(_taskPickedFiles)) {
+      try {
+        final r = await _taskService.uploadTaskAttachment(taskId, f);
+        if (r.isSuccess && r.data != null) {
+          final idx = _tasks.indexWhere((t) => t.id == taskId);
+          if (idx != -1) {
+            _tasks[idx] = _tasks[idx]
+                .copyWith(attachments: [..._tasks[idx].attachments, r.data!]);
+          }
+        }
+      } catch (_) {}
+    }
+  }
+
+  // ---- Meta artık backend'de (kategori/etiket/konum/bağlantı/ek). Eski yerel
+  // store yalnız tek seferlik göç için okunur. ----
   static const String _kTaskMetaKey = 'task_meta_v1';
   final Map<int, TaskMeta> _taskMeta = {};
-  TaskMeta metaForTask(int id) => _taskMeta[id] ?? TaskMeta();
+
+  /// Görev meta'sını backend task nesnesinden üretir.
+  TaskMeta metaForTask(int id) {
+    for (final t in _tasks) {
+      if (t.id == id) {
+        return TaskMeta(
+          category: t.category,
+          tags: List.from(t.tags),
+          location: t.location,
+          link: t.link,
+          attachments: t.attachments.map((a) => a.fileUrl).toList(),
+        );
+      }
+    }
+    return TaskMeta();
+  }
 
   Future<void> loadTaskMeta() async {
     try {
@@ -321,52 +367,70 @@ class TasksHabitsViewModel extends ChangeNotifier {
     } catch (_) {}
   }
 
-  Future<void> _persistTaskMeta() async {
+  /// Eski yerel task meta'sını (kategori/etiket/konum/bağlantı + ek dosyaları)
+  /// bir kez backend'e taşır, sonra yerel anahtarı siler. Backend zaten meta
+  /// içeren görevlere dokunmaz. Mevcut diğer alanlar korunur (tam istek).
+  Future<void> migrateLocalTaskMetaOnce() async {
+    await loadTaskMeta();
+    if (_taskMeta.isEmpty) return;
+    final entries = Map<int, TaskMeta>.from(_taskMeta);
+    for (final entry in entries.entries) {
+      final taskId = entry.key;
+      final m = entry.value;
+      final idx = _tasks.indexWhere((t) => t.id == taskId);
+      if (idx == -1) continue; // backend'de yok → atla
+      final t = _tasks[idx];
+      final backendHasMeta = (t.category != null) ||
+          t.tags.isNotEmpty ||
+          (t.location != null) ||
+          (t.link != null) ||
+          t.attachments.isNotEmpty;
+      try {
+        final hasTextMeta = m.category != null ||
+            m.tags.isNotEmpty ||
+            (m.location != null && m.location!.isNotEmpty) ||
+            (m.link != null && m.link!.isNotEmpty);
+        if (!backendHasMeta && hasTextMeta) {
+          await _taskService.updateTask(
+            taskId,
+            TaskRequest(
+              title: t.title,
+              description: t.description,
+              taskType: t.taskType,
+              dueDate: t.dueDate,
+              dueTime: t.dueTime,
+              reminderEnabled: t.reminderEnabled,
+              reminderBeforeMinutes: t.reminderBeforeMinutes,
+              reminderTime: t.reminderTime,
+              priority: t.priority,
+              isRecurring: t.isRecurring,
+              recurringPattern: t.recurringPattern,
+              estimatedDurationMinutes: t.estimatedDurationMinutes,
+              category: m.category,
+              tags: m.tags.isEmpty ? null : m.tags,
+              location: m.location,
+              link: m.link,
+            ),
+          );
+        }
+        // Yerel ek dosyalarını yükle (yalnız backend'de hiç ek yoksa).
+        if (t.attachments.isEmpty) {
+          for (final p in m.attachments) {
+            final f = File(p);
+            if (f.existsSync()) {
+              await _taskService.uploadTaskAttachment(taskId, f);
+            }
+          }
+        }
+      } catch (_) {}
+    }
+    // Göç tamamlandı: yerel anahtarı temizle ve listeyi tazele.
     try {
       final prefs = await SharedPreferences.getInstance();
-      final map = _taskMeta.map((k, v) => MapEntry(k.toString(), v.toJson()));
-      await prefs.setString(_kTaskMetaKey, jsonEncode(map));
+      await prefs.remove(_kTaskMetaKey);
     } catch (_) {}
-  }
-
-  Future<List<String>> _copyTaskFilesToDir(List<File> files) async {
-    final saved = <String>[];
-    try {
-      final docs = await getApplicationDocumentsDirectory();
-      final dir = Directory('${docs.path}/task_files');
-      if (!dir.existsSync()) dir.createSync(recursive: true);
-      var i = 0;
-      for (final f in files) {
-        if (!f.existsSync()) continue;
-        final ext = f.path.contains('.') ? f.path.split('.').last : 'dat';
-        final stamp = DateTime.now().microsecondsSinceEpoch + (i++);
-        final dest = '${dir.path}/task_$stamp.$ext';
-        await f.copy(dest);
-        saved.add(dest);
-      }
-    } catch (_) {}
-    return saved;
-  }
-
-  Future<void> _saveTaskMeta(int taskId,
-      {List<String> keepExisting = const []}) async {
-    final m = TaskMeta(
-      category: _taskCategory,
-      tags: List.from(_taskTags),
-      location: _taskLocation,
-      link: _taskLink,
-      attachments: [...keepExisting],
-    );
-    if (_taskPickedFiles.isNotEmpty) {
-      m.attachments.addAll(await _copyTaskFilesToDir(_taskPickedFiles));
-    }
-    if (m.isEmpty) {
-      _taskMeta.remove(taskId);
-    } else {
-      _taskMeta[taskId] = m;
-    }
-    await _persistTaskMeta();
-    notifyListeners();
+    _taskMeta.clear();
+    await loadTasks();
   }
 
   // ---- Ana görev / alt görev yardımcıları ----
@@ -736,7 +800,7 @@ class TasksHabitsViewModel extends ChangeNotifier {
     _taskLink = null;
     _subtaskDrafts.clear();
     _taskPickedFiles.clear();
-    _taskExistingAttachments = [];
+    _editingTaskAttachments = [];
     notifyListeners();
   }
 
@@ -811,15 +875,14 @@ class TasksHabitsViewModel extends ChangeNotifier {
       } catch (_) {}
     }
 
-    // Yerel meta (kategori/etiket/ek/konum/bağlantı)
-    final m = metaForTask(task.id).copy();
-    _taskCategory = m.category;
+    // Meta backend'den (kategori/etiket/konum/bağlantı/ek)
+    _taskCategory = task.category;
     _taskTags
       ..clear()
-      ..addAll(m.tags);
-    _taskLocation = m.location;
-    _taskLink = m.link;
-    _taskExistingAttachments = List.from(m.attachments);
+      ..addAll(task.tags);
+    _taskLocation = task.location;
+    _taskLink = task.link;
+    _editingTaskAttachments = List.from(task.attachments);
     _taskPickedFiles.clear();
     _subtaskDrafts.clear();
 
@@ -882,6 +945,10 @@ class TasksHabitsViewModel extends ChangeNotifier {
         reminderTime: reminderTimeString,
         estimatedDurationMinutes: null,
         parentTaskId: null,
+        category: _taskCategory,
+        tags: _taskTags.isEmpty ? null : List.from(_taskTags),
+        location: _taskLocation,
+        link: _taskLink,
       );
 
       final editingId = _editingTaskId!;
@@ -892,7 +959,8 @@ class TasksHabitsViewModel extends ChangeNotifier {
         if (index != -1) {
           _tasks[index] = response.data!;
         }
-        await _saveTaskMeta(editingId, keepExisting: _taskExistingAttachments);
+        // Yeni seçilen yerel dosyaları backend'e yükle.
+        await _uploadTaskAttachments(editingId);
         resetTaskForm();
         if (context.mounted) {
           CustomSnackBar.showSuccess(context, 'success.taskUpdated'.tr());
@@ -1060,7 +1128,6 @@ class TasksHabitsViewModel extends ChangeNotifier {
       if (response.isSuccess && response.data != null) {
         _tasks = response.data!;
       }
-      await loadTaskMeta();
     } catch (e) {
       debugPrint('Error loading tasks: $e');
     } finally {
@@ -1114,6 +1181,10 @@ class TasksHabitsViewModel extends ChangeNotifier {
         reminderTime: reminderTimeString,
         estimatedDurationMinutes: null,
         parentTaskId: null,
+        category: _taskCategory,
+        tags: _taskTags.isEmpty ? null : List.from(_taskTags),
+        location: _taskLocation,
+        link: _taskLink,
       );
 
       final response = await _taskService.createTask(request);
@@ -1121,8 +1192,8 @@ class TasksHabitsViewModel extends ChangeNotifier {
       if (response.isSuccess && response.data != null) {
         final parent = response.data!;
         _tasks.insert(0, parent);
-        // Yerel meta (kategori/etiket/ek/konum/bağlantı)
-        await _saveTaskMeta(parent.id);
+        // Ekleri backend'e yükle (kategori/etiket/konum/bağlantı istekle gitti).
+        await _uploadTaskAttachments(parent.id);
         // Alt görevleri oluştur (backend: parent_task_id)
         for (final title in List<String>.from(_subtaskDrafts)) {
           final subReq = TaskRequest(
@@ -1215,9 +1286,7 @@ class TasksHabitsViewModel extends ChangeNotifier {
 
       if (response.isSuccess) {
         _tasks.removeWhere((t) => t.id == taskId || t.parentTaskId == taskId);
-        if (_taskMeta.remove(taskId) != null) {
-          await _persistTaskMeta();
-        }
+        // Meta + ekler backend'de; silme sunucuda cascade temizleniyor.
         if (context.mounted) {
           CustomSnackBar.showSuccess(context, 'success.taskDeleted'.tr());
         }
@@ -1450,10 +1519,17 @@ class TasksHabitsViewModel extends ChangeNotifier {
 
   // ==================== COMMON ====================
 
+  bool _taskMetaMigrated = false;
+
   Future<void> refreshAll() async {
     await Future.wait([
       loadTasks(),
       loadHabits(),
     ]);
+    // Eski yerel task meta'sını bir kez backend'e taşı (ilk yüklemeden sonra).
+    if (!_taskMetaMigrated) {
+      _taskMetaMigrated = true;
+      await migrateLocalTaskMetaOnce();
+    }
   }
 }

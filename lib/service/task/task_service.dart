@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:easy_localization/easy_localization.dart';
 
@@ -27,6 +28,11 @@ abstract class ITaskService {
     int? page,
     int? perPage,
   });
+  Future<ServiceResponse<TaskAttachment>> uploadTaskAttachment(
+    int taskId,
+    File file,
+  );
+  Future<ServiceResponse<void>> deleteTaskAttachment(int attachmentId);
 }
 
 class TaskService implements ITaskService {
@@ -268,6 +274,28 @@ class TaskService implements ITaskService {
       queryParameters: queryParams,
       requiresAuth: true,
       fromJson: (json) => Task.fromJson(json),
+    );
+  }
+
+  @override
+  Future<ServiceResponse<TaskAttachment>> uploadTaskAttachment(
+    int taskId,
+    File file,
+  ) async {
+    return await BaseApiService.uploadFile<TaskAttachment>(
+      '/tasks/$taskId/attachments',
+      file: file,
+      fieldName: 'file',
+      requiresAuth: true,
+      fromJson: (json) => TaskAttachment.fromJson(json as Map<String, dynamic>),
+    );
+  }
+
+  @override
+  Future<ServiceResponse<void>> deleteTaskAttachment(int attachmentId) async {
+    return await BaseApiService.delete<void>(
+      '/attachments/$attachmentId',
+      requiresAuth: true,
     );
   }
 }
