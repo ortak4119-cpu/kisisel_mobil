@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../utils/color_constant.dart';
 
 class AppTheme {
@@ -489,14 +488,16 @@ class AppTheme {
     ),
   ));
 
-  /// Tüm uygulama yazı tipini Josefin Sans yapar. Metin temalarını Josefin'e
-  /// çevirir; doğrudan stil atayan tema parçalarına da font ailesini uygular.
+  /// Tüm uygulama yazı tipini Josefin Sans yapar. Font assets'e gömülüdür
+  /// (assets/fonts), bu yüzden çevrimdışı ve indirmesiz çalışır. Metin
+  /// temalarını Josefin'e çevirir; doğrudan stil atayan tema parçalarına da
+  /// font ailesini uygular.
   static ThemeData _applyJosefin(ThemeData base) {
-    final family = GoogleFonts.josefinSans().fontFamily;
+    const family = 'JosefinSans';
     TextStyle? f(TextStyle? s) => s?.copyWith(fontFamily: family);
     return base.copyWith(
-      textTheme: GoogleFonts.josefinSansTextTheme(base.textTheme),
-      primaryTextTheme: GoogleFonts.josefinSansTextTheme(base.primaryTextTheme),
+      textTheme: base.textTheme.apply(fontFamily: family),
+      primaryTextTheme: base.primaryTextTheme.apply(fontFamily: family),
       appBarTheme: base.appBarTheme
           .copyWith(titleTextStyle: f(base.appBarTheme.titleTextStyle)),
       snackBarTheme: base.snackBarTheme

@@ -9,7 +9,6 @@ import 'package:share_plus/share_plus.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 import '../../../service/stt/stt_service.dart';
 import '../../../core/design/app_design.dart';
@@ -102,7 +101,7 @@ class _NotesDiaryViewState extends State<NotesDiaryView> {
                         Expanded(
                           child: Text(
                             'notes.title'.tr(),
-                            style: GoogleFonts.josefinSans(
+                            style: TextStyle(fontFamily: 'JosefinSans',
                               color: isDarkMode
                                   ? ColorConstant.textPrimaryDark
                                   : const Color(0xFF3A3326),
@@ -1513,7 +1512,7 @@ class _NotesContent extends StatelessWidget {
                     child: Text(e[1] as String,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.josefinSans(
+                        style: TextStyle(fontFamily: 'JosefinSans',
                             fontSize: 15.5,
                             height: 1.1,
                             color: const Color(0xFF3A3326))),
@@ -1528,7 +1527,7 @@ class _NotesContent extends StatelessWidget {
         texts.isEmpty ? ' ' : texts.take(4).join('\n'),
         maxLines: 4,
         overflow: TextOverflow.ellipsis,
-        style: GoogleFonts.josefinSans(
+        style: TextStyle(fontFamily: 'JosefinSans',
             fontSize: 15.5, height: 1.15, color: const Color(0xFF473F2F)),
       );
     }
@@ -1556,7 +1555,7 @@ class _NotesContent extends StatelessWidget {
             Text(title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.josefinSans(
+                style: TextStyle(fontFamily: 'JosefinSans',
                     fontSize: 21,
                     fontWeight: FontWeight.w700,
                     height: 1.0,
