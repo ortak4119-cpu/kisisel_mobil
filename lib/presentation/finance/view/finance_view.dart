@@ -146,32 +146,8 @@ class _FinanceViewState extends State<FinanceView> {
                           ],
                         ),
                       ),
-            floatingActionButton: FloatingActionButton(
-              heroTag: 'finance_fab',
-              onPressed: () => showFinanceFormSheet(context, vm, isDark),
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              child: Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFFF6C23E), _fOrange],
-                  ),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                        color: _fOrange.withOpacity(0.45),
-                        blurRadius: 14,
-                        offset: const Offset(0, 6)),
-                  ],
-                ),
-                child: const Icon(Icons.add_rounded,
-                    color: Colors.white, size: 30),
-              ),
-            ),
+            // Ekleme, teal başlıktaki Gelir/Gider/Abonelik aksiyonlarından
+            // yapılır; ayrı bir "+" FAB'ı (Gider ile aynı işi gören) kaldırıldı.
           );
         },
       ),

@@ -111,20 +111,13 @@ class _NotesDiaryViewState extends State<NotesDiaryView> {
                             ),
                           ),
                         ),
+                        // Not ekleme tek yerden (FAB). Başlıkta yalnızca arama.
                         _headerCircleBtn(
                           icon: Icons.search_rounded,
                           bg: Colors.white,
                           fg: const Color(0xFF3A3326),
                           onTap: () =>
                               _openNoteSearch(context, viewModel, isDarkMode),
-                        ),
-                        const SizedBox(width: 10),
-                        _headerCircleBtn(
-                          icon: Icons.add_rounded,
-                          bg: const Color(0xFF2B2622),
-                          fg: Colors.white,
-                          onTap: () =>
-                              _showAddChooser(context, viewModel, isDarkMode),
                         ),
                       ],
                     ),
@@ -142,27 +135,30 @@ class _NotesDiaryViewState extends State<NotesDiaryView> {
               backgroundColor: Colors.transparent,
               elevation: 0,
               child: Container(
-                width: 56,
-                height: 56,
+                width: 60,
+                height: 60,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
+                  gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [Color(0xFFB794F6), Color(0xFF9B6FE8)],
+                    colors: [
+                      ColorConstant.accentYellow,
+                      ColorConstant.accentOrange,
+                    ],
                   ),
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFB794F6).withOpacity(0.4),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
+                      color: ColorConstant.accentOrange.withValues(alpha: 0.45),
+                      blurRadius: 14,
+                      offset: const Offset(0, 6),
                     ),
                   ],
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.add_rounded,
-                  color: ColorConstant.white,
-                  size: 28,
+                  color: Colors.white,
+                  size: 30,
                 ),
               ),
             ),

@@ -367,8 +367,7 @@ class _CalendarViewState extends State<CalendarView> {
           children: [
             _dayHero(vm, c),
             const SizedBox(height: 16),
-            ..._dayEventsSection(context, vm, c, vm.selectedDate,
-                showAdd: true),
+            ..._dayEventsSection(context, vm, c, vm.selectedDate),
           ],
         );
       case CalendarViewType.week:
@@ -377,8 +376,7 @@ class _CalendarViewState extends State<CalendarView> {
           children: [
             _weekStrip(vm, c),
             const SizedBox(height: 16),
-            ..._dayEventsSection(context, vm, c, vm.selectedDate,
-                showAdd: true),
+            ..._dayEventsSection(context, vm, c, vm.selectedDate),
             const SizedBox(height: 12),
             _tomorrowRow(context, vm, c),
           ],
@@ -389,8 +387,7 @@ class _CalendarViewState extends State<CalendarView> {
           children: [
             _monthCard(vm, c),
             const SizedBox(height: 16),
-            ..._dayEventsSection(context, vm, c, vm.selectedDate,
-                showAdd: true),
+            ..._dayEventsSection(context, vm, c, vm.selectedDate),
             const SizedBox(height: 12),
             _tomorrowRow(context, vm, c),
           ],
@@ -677,8 +674,7 @@ class _CalendarViewState extends State<CalendarView> {
 
   // ---------- Seçili gün etkinlik bölümü ----------
   List<Widget> _dayEventsSection(BuildContext context, CalendarViewModel vm,
-      AppColors c, DateTime date,
-      {bool showAdd = false}) {
+      AppColors c, DateTime date) {
     final events = vm.eventsForDate(date);
     final allDay = events.where((e) => vm.metaForEvent(e.id).allDay).toList();
     final timed = events.where((e) => !vm.metaForEvent(e.id).allDay).toList();
@@ -687,30 +683,9 @@ class _CalendarViewState extends State<CalendarView> {
     final List<Installment> insts = vm.installmentsForSelectedDate;
     final hasFinance = subs.isNotEmpty || insts.isNotEmpty;
     return [
-      Row(
-        children: [
-          Expanded(
-            child: Text(midDate(date),
-                style: TextStyle(
-                    fontSize: 19,
-                    fontWeight: FontWeight.w800,
-                    color: c.textPrimary)),
-          ),
-          if (showAdd)
-            InkWell(
-              onTap: () => showAddEventSheet(context, vm, c.isDark, date: date),
-              child: Row(children: [
-                const Icon(Icons.add_rounded, size: 18, color: _cOrange),
-                const SizedBox(width: 2),
-                Text('calendar.addEvent'.tr(),
-                    style: const TextStyle(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w700,
-                        color: _cOrange)),
-              ]),
-            ),
-        ],
-      ),
+      Text(midDate(date),
+          style: TextStyle(
+              fontSize: 19, fontWeight: FontWeight.w800, color: c.textPrimary)),
       const SizedBox(height: 12),
       for (final s in subs) ...[
         _financeDayCard(
