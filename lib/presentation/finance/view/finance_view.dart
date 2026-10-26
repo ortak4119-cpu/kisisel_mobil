@@ -839,14 +839,14 @@ class _FinanceViewState extends State<FinanceView> {
                   'finance.limited'
                       .tr(namedArgs: {'n': '${vm.categoryBudgets.length}'}),
                   style: TextStyle(fontSize: 12.5, color: c.textSecondary)),
-              onTap: () => _showBudgetSettingsDialog(context, vm, c.isDark)),
+              onTap: () => _showCategoryBudgetsDialog(context, vm, c.isDark)),
           _setDivider(c),
           _setRow(c, 'finance.financeLock'.tr(),
               trailing: Switch(
                 value: vm.financeHasPin,
                 activeThumbColor: _fOrange,
                 onChanged: (_) =>
-                    _showBudgetSettingsDialog(context, vm, c.isDark),
+                    _showFinanceLockDialog(context, vm, c.isDark),
               )),
           _setDivider(c),
           _setRow(c, 'finance.currency.title'.tr(),
