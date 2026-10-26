@@ -317,8 +317,17 @@
       "legendTask": "任务",
       "legendDone": "完成",
       "legendMoved": "已移",
-      "legendOverdue": "逾期"
-    }
+      "legendOverdue": "逾期",
+      "later": "稍后",
+      "undated": "无日期"
+    },
+    "allTitle": "所有任务",
+    "allOverdue": "逾期",
+    "allToday": "今天",
+    "allUpcoming": "即将到来",
+    "allUndated": "无日期",
+    "allCompleted": "已完成",
+    "allEmpty": "还没有任务"
   },
   "habits": {
     "title": "习惯",

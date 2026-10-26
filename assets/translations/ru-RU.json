@@ -317,8 +317,17 @@
       "legendTask": "задача",
       "legendDone": "готово",
       "legendMoved": "перенесено",
-      "legendOverdue": "просрочено"
-    }
+      "legendOverdue": "просрочено",
+      "later": "Позже",
+      "undated": "Без даты"
+    },
+    "allTitle": "Все задачи",
+    "allOverdue": "Просроченные",
+    "allToday": "Сегодня",
+    "allUpcoming": "Предстоящие",
+    "allUndated": "Без даты",
+    "allCompleted": "Завершённые",
+    "allEmpty": "Пока нет задач"
   },
   "habits": {
     "title": "Привычки",

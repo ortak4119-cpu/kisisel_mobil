@@ -317,8 +317,17 @@
       "legendTask": "タスク",
       "legendDone": "完了",
       "legendMoved": "移動",
-      "legendOverdue": "遅延"
-    }
+      "legendOverdue": "遅延",
+      "later": "後で",
+      "undated": "日付なし"
+    },
+    "allTitle": "すべてのタスク",
+    "allOverdue": "遅延",
+    "allToday": "今日",
+    "allUpcoming": "今後",
+    "allUndated": "日付なし",
+    "allCompleted": "完了",
+    "allEmpty": "タスクはまだありません"
   },
   "habits": {
     "title": "習慣",

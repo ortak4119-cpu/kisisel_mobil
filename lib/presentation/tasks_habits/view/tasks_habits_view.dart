@@ -162,6 +162,7 @@ class _TasksHabitsViewState extends State<TasksHabitsView> {
 /// Üst seviyede tutuluyor ki hem FAB hem de boş durum butonu aynı yeri açsın.
 void showAddTaskSheet(
     BuildContext context, TasksHabitsViewModel viewModel, bool isDarkMode) {
+  viewModel.resetTaskForm(); // temiz form + varsayılan bugün tarihi
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -1186,7 +1187,12 @@ class _TasksTab extends StatelessWidget {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final sunday = today.add(Duration(days: 7 - now.weekday)); // haftanın pazarı
-    final sections = <Widget>[_legend(), const SizedBox(height: 12)];
+    final sections = <Widget>[
+      _plannerHeader(context, isDark),
+      const SizedBox(height: 10),
+      _legend(),
+      const SizedBox(height: 12),
+    ];
     // Bugün her zaman kendi bölümünde (gecikmiş + ekle + taşı ile).
     sections.add(_daySection(context, c, isDark, today, today, isToday: true));
     final weekend = <DateTime>[];
@@ -1202,6 +1208,18 @@ class _TasksTab extends StatelessWidget {
     if (weekend.isNotEmpty) {
       sections.add(_weekendSection(context, c, isDark, weekend));
     }
+    // Bu haftadan sonrasına tarihli görevler.
+    final later = _laterTasks(sunday);
+    if (later.isNotEmpty) {
+      sections.add(
+          _listSection(context, isDark, 'tasks.planner.later'.tr(), later));
+    }
+    // Tarihsiz (tarihi olmayan) görevler kaybolmasın diye kendi bölümünde.
+    final undated = _undatedTasks();
+    if (undated.isNotEmpty) {
+      sections.add(_listSection(
+          context, isDark, 'tasks.planner.undated'.tr(), undated));
+    }
     sections.add(const SizedBox(height: 10));
     sections.add(_weekSummary(c));
     return RefreshIndicator(
@@ -1210,6 +1228,179 @@ class _TasksTab extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(22, 4, 22, 140),
         children: sections,
+      ),
+    );
+  }
+
+  // Üstte "Tüm Görevler" kısayolu.
+  Widget _plannerHeader(BuildContext context, bool isDark) {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: GestureDetector(
+        onTap: () => _openAllTasks(context, isDark),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          decoration: BoxDecoration(
+            color: _orange.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.list_alt_rounded, size: 18, color: _orange),
+              const SizedBox(width: 5),
+              Text('tasks.allTitle'.tr(),
+                  style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: _orange)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Bu haftadan sonrasına tarihli, tamamlanmamış görevler.
+  List<Task> _laterTasks(DateTime sunday) {
+    final list = viewModel.tasks.where((t) {
+      if (t.parentTaskId != null || t.isCompleted) return false;
+      final d = viewModel.dueDateOf(t);
+      if (d == null) return false;
+      return DateTime(d.year, d.month, d.day).isAfter(sunday);
+    }).toList();
+    list.sort((a, b) {
+      final da = viewModel.dueDateOf(a)!;
+      final db = viewModel.dueDateOf(b)!;
+      return da.compareTo(db);
+    });
+    return list;
+  }
+
+  // Tarihi olmayan, tamamlanmamış görevler.
+  List<Task> _undatedTasks() {
+    return viewModel.tasks
+        .where((t) =>
+            t.parentTaskId == null &&
+            !t.isCompleted &&
+            viewModel.dueDateOf(t) == null)
+        .toList();
+  }
+
+  // Başlık + çizgi + görev satırları (ekleme butonu yok).
+  Widget _listSection(
+      BuildContext context, bool isDark, String title, List<Task> tasks) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _dayHeader(title),
+          _rule(),
+          for (final t in tasks) _taskLine(context, isDark, t),
+        ],
+      ),
+    );
+  }
+
+  // ---------- Tüm Görevler sayfası (gruplu) ----------
+  void _openAllTasks(BuildContext context, bool isDark) {
+    final c = AppColors(isDark);
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => ChangeNotifierProvider.value(
+        value: viewModel,
+        child: Consumer<TasksHabitsViewModel>(
+          builder: (ctx, vm, _) {
+            final now = DateTime.now();
+            final today = DateTime(now.year, now.month, now.day);
+            final overdue = vm.overdueTasksList;
+            final todayList = vm.tasks.where((t) {
+              if (t.parentTaskId != null || t.isCompleted) return false;
+              final d = vm.dueDateOf(t);
+              return d != null && vm.isSameDay(d, today);
+            }).toList();
+            final upcoming = vm.upcomingTasksList;
+            final undated = vm.tasks
+                .where((t) =>
+                    t.parentTaskId == null &&
+                    !t.isCompleted &&
+                    vm.dueDateOf(t) == null)
+                .toList();
+            final completed = vm.completedTasksList;
+            final groups = <List<dynamic>>[
+              ['tasks.allOverdue', overdue, true],
+              ['tasks.allToday', todayList, false],
+              ['tasks.allUpcoming', upcoming, false],
+              ['tasks.allUndated', undated, false],
+              ['tasks.allCompleted', completed, false],
+            ];
+            final anything = groups.any((g) => (g[1] as List).isNotEmpty);
+            return Scaffold(
+              backgroundColor: c.bg,
+              appBar: AppBar(
+                backgroundColor: c.bg,
+                elevation: 0,
+                surfaceTintColor: Colors.transparent,
+                foregroundColor: _ink,
+                title: Text('tasks.allTitle'.tr(),
+                    style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: _ink)),
+              ),
+              body: !anything
+                  ? Center(
+                      child: Text('tasks.allEmpty'.tr(),
+                          style: TextStyle(color: _inkMuted)))
+                  : ListView(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                      children: [
+                        for (final g in groups)
+                          if ((g[1] as List<Task>).isNotEmpty)
+                            _allGroupCard(ctx, isDark, (g[0] as String).tr(),
+                                g[1] as List<Task>, g[2] as bool),
+                      ],
+                    ),
+            );
+          },
+        ),
+      ),
+    ));
+  }
+
+  Widget _allGroupCard(BuildContext context, bool isDark, String title,
+      List<Task> tasks, bool overdue) {
+    final c = AppColors(isDark);
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+      decoration: BoxDecoration(
+        color: c.card,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFCBB89A)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(title,
+                    style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: _ink)),
+              ),
+              Text('${tasks.length}',
+                  style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: _inkMuted)),
+            ],
+          ),
+          const SizedBox(height: 6),
+          for (final t in tasks) _taskLine(context, isDark, t, overdue: overdue),
+        ],
       ),
     );
   }
@@ -1301,24 +1492,28 @@ class _TasksTab extends StatelessWidget {
       final d = DateTime.tryParse(t.dueDate!);
       if (d != null) trailing = ' — ${d.day}.${d.month}';
     }
-    return InkWell(
-      onTap: () => viewModel.toggleTaskComplete(t, context),
-      onLongPress: () => showEditTaskSheet(context, viewModel, isDark, t),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 3),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              width: 16,
+    // Sol işaret: dokun = tamamla/geri al. Başlık ve kalem: dokun = düzenle.
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          GestureDetector(
+            onTap: () => viewModel.toggleTaskComplete(t, context),
+            behavior: HitTestBehavior.opaque,
+            child: SizedBox(
+              width: 22,
               child: Text(mark,
                   style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w900,
                       color: color)),
             ),
-            const SizedBox(width: 4),
-            Expanded(
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => showEditTaskSheet(context, viewModel, isDark, t),
+              behavior: HitTestBehavior.opaque,
               child: Text(
                 '${t.title}$trailing',
                 style: TextStyle(fontFamily: 'JosefinSans',
@@ -1330,8 +1525,17 @@ class _TasksTab extends StatelessWidget {
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+          GestureDetector(
+            onTap: () => showEditTaskSheet(context, viewModel, isDark, t),
+            behavior: HitTestBehavior.opaque,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 8, top: 2),
+              child: Icon(Icons.edit_outlined,
+                  size: 15, color: _inkMuted.withOpacity(0.7)),
+            ),
+          ),
+        ],
       ),
     );
   }

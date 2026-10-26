@@ -317,8 +317,17 @@
       "legendTask": "görev",
       "legendDone": "bitti",
       "legendMoved": "taşındı",
-      "legendOverdue": "gecikti"
-    }
+      "legendOverdue": "gecikti",
+      "later": "Daha sonra",
+      "undated": "Tarihsiz"
+    },
+    "allTitle": "Tüm Görevler",
+    "allOverdue": "Gecikmiş",
+    "allToday": "Bugün",
+    "allUpcoming": "Yaklaşan",
+    "allUndated": "Tarihsiz",
+    "allCompleted": "Tamamlanan",
+    "allEmpty": "Henüz görev yok"
   },
   "habits": {
     "title": "Alışkanlıklar",

@@ -317,8 +317,17 @@
       "legendTask": "कार्य",
       "legendDone": "पूर्ण",
       "legendMoved": "स्थानांतरित",
-      "legendOverdue": "विलंबित"
-    }
+      "legendOverdue": "विलंबित",
+      "later": "बाद में",
+      "undated": "बिना तारीख"
+    },
+    "allTitle": "सभी कार्य",
+    "allOverdue": "विलंबित",
+    "allToday": "आज",
+    "allUpcoming": "आगामी",
+    "allUndated": "बिना तारीख",
+    "allCompleted": "पूर्ण",
+    "allEmpty": "अभी कोई कार्य नहीं"
   },
   "habits": {
     "title": "आदतें",

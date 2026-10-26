@@ -894,7 +894,7 @@ class TasksHabitsViewModel extends ChangeNotifier {
     _reminderBeforeMinutes = 30;
     _reminderTime = null;
     _editingTaskId = null;
-    _taskDueDate = null;
+    _taskDueDate = DateTime.now(); // yeni görevler varsayılan bugüne
     _taskDueTime = null;
     _taskCategory = null;
     _taskTags.clear();

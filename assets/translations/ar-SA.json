@@ -317,8 +317,17 @@
       "legendTask": "مهمة",
       "legendDone": "منجزة",
       "legendMoved": "منقولة",
-      "legendOverdue": "متأخرة"
-    }
+      "legendOverdue": "متأخرة",
+      "later": "لاحقًا",
+      "undated": "بدون تاريخ"
+    },
+    "allTitle": "كل المهام",
+    "allOverdue": "متأخرة",
+    "allToday": "اليوم",
+    "allUpcoming": "قادمة",
+    "allUndated": "بدون تاريخ",
+    "allCompleted": "مكتملة",
+    "allEmpty": "لا مهام بعد"
   },
   "habits": {
     "title": "العادات",

@@ -317,8 +317,17 @@
       "legendTask": "task",
       "legendDone": "done",
       "legendMoved": "moved",
-      "legendOverdue": "overdue"
-    }
+      "legendOverdue": "overdue",
+      "later": "Later",
+      "undated": "No date"
+    },
+    "allTitle": "All Tasks",
+    "allOverdue": "Overdue",
+    "allToday": "Today",
+    "allUpcoming": "Upcoming",
+    "allUndated": "No date",
+    "allCompleted": "Completed",
+    "allEmpty": "No tasks yet"
   },
   "habits": {
     "title": "Habits",

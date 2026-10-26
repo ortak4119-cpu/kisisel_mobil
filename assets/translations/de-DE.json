@@ -317,8 +317,17 @@
       "legendTask": "Aufgabe",
       "legendDone": "erledigt",
       "legendMoved": "verschoben",
-      "legendOverdue": "überfällig"
-    }
+      "legendOverdue": "überfällig",
+      "later": "Später",
+      "undated": "Ohne Datum"
+    },
+    "allTitle": "Alle Aufgaben",
+    "allOverdue": "Überfällig",
+    "allToday": "Heute",
+    "allUpcoming": "Anstehend",
+    "allUndated": "Ohne Datum",
+    "allCompleted": "Erledigt",
+    "allEmpty": "Noch keine Aufgaben"
   },
   "habits": {
     "title": "Gewohnheiten",

@@ -317,8 +317,17 @@
       "legendTask": "tarea",
       "legendDone": "hecha",
       "legendMoved": "movida",
-      "legendOverdue": "atrasada"
-    }
+      "legendOverdue": "atrasada",
+      "later": "Más tarde",
+      "undated": "Sin fecha"
+    },
+    "allTitle": "Todas las tareas",
+    "allOverdue": "Atrasadas",
+    "allToday": "Hoy",
+    "allUpcoming": "Próximas",
+    "allUndated": "Sin fecha",
+    "allCompleted": "Completadas",
+    "allEmpty": "Aún sin tareas"
   },
   "habits": {
     "title": "Hábitos",
