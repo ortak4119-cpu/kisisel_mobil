@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../utils/color_constant.dart';
 
 class AppTheme {
-  static ThemeData lightTheme = ThemeData(
+  static final ThemeData lightTheme = _applyJosefin(ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
     colorScheme: ColorScheme.light(
@@ -242,9 +243,9 @@ class AppTheme {
       ),
       behavior: SnackBarBehavior.floating,
     ),
-  );
+  ));
 
-  static ThemeData darkTheme = ThemeData(
+  static final ThemeData darkTheme = _applyJosefin(ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
     colorScheme: ColorScheme.dark(
@@ -486,5 +487,28 @@ class AppTheme {
       ),
       behavior: SnackBarBehavior.floating,
     ),
-  );
+  ));
+
+  /// Tüm uygulama yazı tipini Josefin Sans yapar. Metin temalarını Josefin'e
+  /// çevirir; doğrudan stil atayan tema parçalarına da font ailesini uygular.
+  static ThemeData _applyJosefin(ThemeData base) {
+    final family = GoogleFonts.josefinSans().fontFamily;
+    TextStyle? f(TextStyle? s) => s?.copyWith(fontFamily: family);
+    return base.copyWith(
+      textTheme: GoogleFonts.josefinSansTextTheme(base.textTheme),
+      primaryTextTheme: GoogleFonts.josefinSansTextTheme(base.primaryTextTheme),
+      appBarTheme: base.appBarTheme
+          .copyWith(titleTextStyle: f(base.appBarTheme.titleTextStyle)),
+      snackBarTheme: base.snackBarTheme
+          .copyWith(contentTextStyle: f(base.snackBarTheme.contentTextStyle)),
+      chipTheme: base.chipTheme.copyWith(labelStyle: f(base.chipTheme.labelStyle)),
+      bottomNavigationBarTheme: base.bottomNavigationBarTheme.copyWith(
+        selectedLabelStyle: f(base.bottomNavigationBarTheme.selectedLabelStyle),
+        unselectedLabelStyle:
+            f(base.bottomNavigationBarTheme.unselectedLabelStyle),
+      ),
+      inputDecorationTheme: base.inputDecorationTheme
+          .copyWith(hintStyle: f(base.inputDecorationTheme.hintStyle)),
+    );
+  }
 }
