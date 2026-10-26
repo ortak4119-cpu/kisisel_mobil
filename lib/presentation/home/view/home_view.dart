@@ -34,13 +34,15 @@ class _HomeViewState extends State<HomeView> {
     });
   }
 
-  // Sayfalar
+  // Sayfalar — Görevler ve Alışkanlıklar artık ayrı sekmeler.
   final List<Widget> _pages = [
-    const NotesDiaryView(),
-    const TasksHabitsView(),
-    const CalendarView(),
-    const FinanceView(),
-    const ProfileView(),
+    const NotesDiaryView(), // 0 Notlar
+    const TasksHabitsView(key: ValueKey('tasks'), mode: 'tasks'), // 1 Görevler
+    const TasksHabitsView(
+        key: ValueKey('habits'), mode: 'habits'), // 2 Alışkanlıklar
+    const CalendarView(), // 3 Takvim (ortadaki FAB)
+    const FinanceView(), // 4 Finans
+    const ProfileView(), // 5 Profil
   ];
 
   @override
@@ -56,10 +58,10 @@ class _HomeViewState extends State<HomeView> {
         heroTag: 'home_fab',
         onPressed: () {
           setState(() {
-            _selectedIndex = 2; // Takvim sayfasına git
+            _selectedIndex = 3; // Takvim sayfasına git
           });
         },
-        backgroundColor: _selectedIndex == 2
+        backgroundColor: _selectedIndex == 3
             ? (isDarkMode
             ? ColorConstant.primaryDarkModePurple
             : ColorConstant.primaryPurple)
@@ -70,7 +72,7 @@ class _HomeViewState extends State<HomeView> {
         child: Icon(
           Icons.calendar_month_rounded,
           color: Colors.white,
-          size: _selectedIndex == 2 ? 30 : 28,
+          size: _selectedIndex == 3 ? 30 : 28,
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -93,22 +95,28 @@ class _HomeViewState extends State<HomeView> {
                 isDarkMode: isDarkMode,
               ),
               _buildNavItem(
-                icon: Icons.task_rounded,
+                icon: Icons.checklist_rounded,
                 label: 'navigation.tasks'.tr(),
                 index: 1,
+                isDarkMode: isDarkMode,
+              ),
+              _buildNavItem(
+                icon: Icons.emoji_events_rounded,
+                label: 'navigation.habits'.tr(),
+                index: 2,
                 isDarkMode: isDarkMode,
               ),
               const SizedBox(width: 40), // Ortadaki FAB için boşluk
               _buildNavItem(
                 icon: Icons.attach_money,
                 label: 'navigation.finance'.tr(),
-                index: 3,
+                index: 4,
                 isDarkMode: isDarkMode,
               ),
               _buildNavItem(
                 icon: Icons.person_rounded,
                 label: 'navigation.profile'.tr(),
-                index: 4,
+                index: 5,
                 isDarkMode: isDarkMode,
               ),
             ],

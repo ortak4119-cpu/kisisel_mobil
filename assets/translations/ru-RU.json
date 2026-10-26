@@ -187,7 +187,8 @@
     "calendar": "Календарь",
     "notes": "Мои Заметки",
     "diary": "Мой Дневник",
-    "settings": "Настройки"
+    "settings": "Настройки",
+    "habits": "Привычки"
   },
   "home": {
     "title": "Главная",
@@ -302,7 +303,22 @@
       "shopping": "Покупки",
       "other": "Другое"
     },
-    "rowDailyGoal": "дневная цель"
+    "rowDailyGoal": "дневная цель",
+    "planner": {
+      "today": "Сегодня",
+      "tapToAdd": "нажмите, чтобы добавить задачу...",
+      "moveOverdue": "Перенести просроченные на сегодня",
+      "movedCount": "{n} задач перенесено на сегодня",
+      "noUpcoming": "нет предстоящих задач",
+      "weekSummary": "ИТОГИ НЕДЕЛИ",
+      "done": "готово",
+      "overdue": "просрочено",
+      "upcoming": "предстоит",
+      "legendTask": "задача",
+      "legendDone": "готово",
+      "legendMoved": "перенесено",
+      "legendOverdue": "просрочено"
+    }
   },
   "habits": {
     "title": "Привычки",

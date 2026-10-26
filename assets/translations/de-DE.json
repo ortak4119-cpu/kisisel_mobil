@@ -187,7 +187,8 @@
     "calendar": "Kalender",
     "notes": "Meine Notizen",
     "diary": "Mein Tagebuch",
-    "settings": "Einstellungen"
+    "settings": "Einstellungen",
+    "habits": "Routinen"
   },
   "home": {
     "title": "Startseite",
@@ -302,7 +303,22 @@
       "shopping": "Einkauf",
       "other": "Sonstige"
     },
-    "rowDailyGoal": "Tagesziel"
+    "rowDailyGoal": "Tagesziel",
+    "planner": {
+      "today": "Heute",
+      "tapToAdd": "tippen für neue Aufgabe...",
+      "moveOverdue": "Überfällige auf heute",
+      "movedCount": "{n} Aufgaben auf heute verschoben",
+      "noUpcoming": "keine anstehenden Aufgaben",
+      "weekSummary": "WOCHENÜBERSICHT",
+      "done": "erledigt",
+      "overdue": "überfällig",
+      "upcoming": "anstehend",
+      "legendTask": "Aufgabe",
+      "legendDone": "erledigt",
+      "legendMoved": "verschoben",
+      "legendOverdue": "überfällig"
+    }
   },
   "habits": {
     "title": "Gewohnheiten",

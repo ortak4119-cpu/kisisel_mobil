@@ -187,7 +187,8 @@
     "calendar": "कैलेंडर",
     "notes": "मेरे नोट्स",
     "diary": "मेरी डायरी",
-    "settings": "सेटिंग्स"
+    "settings": "सेटिंग्स",
+    "habits": "आदतें"
   },
   "home": {
     "title": "होम",
@@ -302,7 +303,22 @@
       "shopping": "खरीदारी",
       "other": "अन्य"
     },
-    "rowDailyGoal": "दैनिक लक्ष्य"
+    "rowDailyGoal": "दैनिक लक्ष्य",
+    "planner": {
+      "today": "आज",
+      "tapToAdd": "नया कार्य लिखने के लिए टैप करें...",
+      "moveOverdue": "विलंबित को आज लाएँ",
+      "movedCount": "{n} कार्य आज में लाए गए",
+      "noUpcoming": "कोई आगामी कार्य नहीं",
+      "weekSummary": "सप्ताह सारांश",
+      "done": "पूर्ण",
+      "overdue": "विलंबित",
+      "upcoming": "आगामी",
+      "legendTask": "कार्य",
+      "legendDone": "पूर्ण",
+      "legendMoved": "स्थानांतरित",
+      "legendOverdue": "विलंबित"
+    }
   },
   "habits": {
     "title": "आदतें",

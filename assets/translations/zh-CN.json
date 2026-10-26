@@ -187,7 +187,8 @@
     "calendar": "日历",
     "notes": "我的笔记",
     "diary": "我的日记",
-    "settings": "设置"
+    "settings": "设置",
+    "habits": "习惯"
   },
   "home": {
     "title": "首页",
@@ -302,7 +303,22 @@
       "shopping": "购物",
       "other": "其他"
     },
-    "rowDailyGoal": "每日目标"
+    "rowDailyGoal": "每日目标",
+    "planner": {
+      "today": "今天",
+      "tapToAdd": "点按添加新任务…",
+      "moveOverdue": "将逾期移到今天",
+      "movedCount": "已将 {n} 项移到今天",
+      "noUpcoming": "没有即将到来的任务",
+      "weekSummary": "本周摘要",
+      "done": "完成",
+      "overdue": "逾期",
+      "upcoming": "即将",
+      "legendTask": "任务",
+      "legendDone": "完成",
+      "legendMoved": "已移",
+      "legendOverdue": "逾期"
+    }
   },
   "habits": {
     "title": "习惯",

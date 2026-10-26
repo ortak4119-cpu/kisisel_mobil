@@ -187,7 +187,8 @@
     "calendar": "Calendário",
     "notes": "Minhas Notas",
     "diary": "Meu Diário",
-    "settings": "Definições"
+    "settings": "Definições",
+    "habits": "Hábitos"
   },
   "home": {
     "title": "Início",
@@ -302,7 +303,22 @@
       "shopping": "Compras",
       "other": "Outro"
     },
-    "rowDailyGoal": "meta diária"
+    "rowDailyGoal": "meta diária",
+    "planner": {
+      "today": "Hoje",
+      "tapToAdd": "toque para nova tarefa...",
+      "moveOverdue": "Mover atrasadas para hoje",
+      "movedCount": "{n} tarefas movidas para hoje",
+      "noUpcoming": "sem tarefas futuras",
+      "weekSummary": "RESUMO DA SEMANA",
+      "done": "feitas",
+      "overdue": "atrasadas",
+      "upcoming": "futuras",
+      "legendTask": "tarefa",
+      "legendDone": "feita",
+      "legendMoved": "movida",
+      "legendOverdue": "atrasada"
+    }
   },
   "habits": {
     "title": "Hábitos",

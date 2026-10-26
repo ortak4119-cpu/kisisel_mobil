@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../models/task/task_models.dart';
 import '../../../models/habit/habit_models.dart';
 import '../../../core/design/app_design.dart';
@@ -11,15 +12,53 @@ import '../../../core/utils/nl_task_parser.dart';
 import 'shared_habits_view.dart';
 import '../viewmodel/tasks_habits_viewmodel.dart';
 
+/// Kesikli yuvarlak dikdörtgen kenar — "Gecikenleri bugüne taşı" butonu.
+class _DashedRectPainter extends CustomPainter {
+  final Color color;
+  _DashedRectPainter({required this.color});
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4;
+    final rrect = RRect.fromRectAndRadius(
+        Offset.zero & size, const Radius.circular(10));
+    final path = Path()..addRRect(rrect);
+    const dash = 5.0, gap = 4.0;
+    for (final metric in path.computeMetrics()) {
+      double dist = 0;
+      while (dist < metric.length) {
+        canvas.drawPath(metric.extractPath(dist, dist + dash), paint);
+        dist += dash + gap;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
 class TasksHabitsView extends StatefulWidget {
-  const TasksHabitsView({super.key});
+  /// 'both' = görev/alışkanlık toggle'lı; 'tasks' = sadece görevler;
+  /// 'habits' = sadece alışkanlıklar (alt menüde ayrı sekmeler için).
+  final String mode;
+  const TasksHabitsView({super.key, this.mode = 'both'});
 
   @override
   State<TasksHabitsView> createState() => _TasksHabitsViewState();
 }
 
 class _TasksHabitsViewState extends State<TasksHabitsView> {
-  int _tab = 0; // 0 = Görevler, 1 = Alışkanlıklar
+  late int _tab; // 0 = Görevler, 1 = Alışkanlıklar
+
+  bool get _showToggle => widget.mode == 'both';
+
+  @override
+  void initState() {
+    super.initState();
+    _tab = widget.mode == 'habits' ? 1 : 0;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,27 +71,48 @@ class _TasksHabitsViewState extends State<TasksHabitsView> {
           return Scaffold(
             backgroundColor: isDarkMode
                 ? ColorConstant.bgColorDark
-                : ColorConstant.bgColorLight,
+                : (widget.mode == 'tasks'
+                    ? const Color(0xFFFBF4E6)
+                    : ColorConstant.bgColorLight),
             body: SafeArea(
               bottom: false,
               child: Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 10),
-                    child: AppSegmentedControl(
-                      selectedIndex: _tab,
-                      onChanged: (i) => setState(() => _tab = i),
-                      accent: ColorConstant.accentOrange,
-                      segments: [
-                        AppSegment(
-                            label: 'tasks.title'.tr(),
-                            icon: Icons.checklist_rounded),
-                        AppSegment(
-                            label: 'habits.title'.tr(),
-                            icon: Icons.emoji_events_rounded),
-                      ],
+                  if (!_showToggle)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(22, 10, 22, 2),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          _tab == 0 ? 'tasks.title'.tr() : 'habits.title'.tr(),
+                          style: GoogleFonts.caveat(
+                            fontSize: 38,
+                            fontWeight: FontWeight.w700,
+                            height: 1.0,
+                            color: isDarkMode
+                                ? ColorConstant.textPrimaryDark
+                                : const Color(0xFF3A3326),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                  if (_showToggle)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 10),
+                      child: AppSegmentedControl(
+                        selectedIndex: _tab,
+                        onChanged: (i) => setState(() => _tab = i),
+                        accent: ColorConstant.accentOrange,
+                        segments: [
+                          AppSegment(
+                              label: 'tasks.title'.tr(),
+                              icon: Icons.checklist_rounded),
+                          AppSegment(
+                              label: 'habits.title'.tr(),
+                              icon: Icons.emoji_events_rounded),
+                        ],
+                      ),
+                    ),
                   Expanded(
                     child: _tab == 0
                         ? _TasksTab(viewModel: viewModel)
@@ -1021,21 +1081,325 @@ class _TasksTab extends StatelessWidget {
     }
 
     final searching = viewModel.taskSearch.trim().isNotEmpty;
+    if (searching) {
+      return RefreshIndicator(
+        onRefresh: () => viewModel.refreshAll(),
+        color: _orange,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 130),
+          children: [
+            _searchBar(context, c),
+            const SizedBox(height: 16),
+            ..._searchBody(context, c),
+          ],
+        ),
+      );
+    }
+    return _planner(context, c, isDark);
+  }
 
+  // ==================== HAFTALIK PLANLAYICI (defter) ====================
+  static const _ink = Color(0xFF4A3F2E);
+  static const _inkMuted = Color(0xFF9B8A6E);
+
+  Widget _planner(BuildContext context, AppColors c, bool isDark) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final sunday = today.add(Duration(days: 7 - now.weekday)); // haftanın pazarı
+    final sections = <Widget>[_legend(), const SizedBox(height: 12)];
+    // Bugün her zaman kendi bölümünde (gecikmiş + ekle + taşı ile).
+    sections.add(_daySection(context, c, isDark, today, today, isToday: true));
+    final weekend = <DateTime>[];
+    for (DateTime d = today.add(const Duration(days: 1));
+        !d.isAfter(sunday);
+        d = d.add(const Duration(days: 1))) {
+      if (d.weekday >= 5) {
+        weekend.add(d);
+      } else {
+        sections.add(_daySection(context, c, isDark, d, today));
+      }
+    }
+    if (weekend.isNotEmpty) {
+      sections.add(_weekendSection(context, c, isDark, weekend));
+    }
+    sections.add(const SizedBox(height: 10));
+    sections.add(_weekSummary(c));
     return RefreshIndicator(
       onRefresh: () => viewModel.refreshAll(),
       color: _orange,
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 4, 20, 130),
+        padding: const EdgeInsets.fromLTRB(22, 4, 22, 140),
+        children: sections,
+      ),
+    );
+  }
+
+  Widget _legend() {
+    Widget item(String mark, String label, Color color) => Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(mark,
+                style: TextStyle(
+                    fontSize: 13, fontWeight: FontWeight.w900, color: color)),
+            const SizedBox(width: 3),
+            Text(label,
+                style: GoogleFonts.caveat(
+                    fontSize: 15, color: _inkMuted, fontWeight: FontWeight.w600)),
+          ],
+        );
+    return Wrap(
+      spacing: 14,
+      runSpacing: 4,
+      children: [
+        item('·', 'tasks.planner.legendTask'.tr(), _ink),
+        item('×', 'tasks.planner.legendDone'.tr(), _green),
+        item('>', 'tasks.planner.legendMoved'.tr(), _orange),
+        item('!', 'tasks.planner.legendOverdue'.tr(), _red),
+      ],
+    );
+  }
+
+  List<Task> _tasksForDay(DateTime day) {
+    return viewModel.tasks.where((t) {
+      if (t.parentTaskId != null) return false;
+      if (t.dueDate == null) return false;
+      final d = DateTime.tryParse(t.dueDate!);
+      return d != null && viewModel.isSameDay(d, day);
+    }).toList();
+  }
+
+  String _dayShort(int weekday) {
+    final names = 'tasks.weekShort'.tr().split(',');
+    return (weekday >= 1 && weekday <= names.length) ? names[weekday - 1] : '';
+  }
+
+  Widget _dayHeader(String text, {String? todaySuffix, String? count}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
         children: [
-          _searchBar(context, c),
-          const SizedBox(height: 16),
-          _statCards(context, c),
-          const SizedBox(height: 18),
-          if (searching)
-            ..._searchBody(context, c)
+          Flexible(
+            child: Text(text,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.caveat(
+                    fontSize: 23, fontWeight: FontWeight.w700, color: _ink)),
+          ),
+          if (todaySuffix != null) ...[
+            const SizedBox(width: 6),
+            Text('· $todaySuffix',
+                style: GoogleFonts.caveat(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: _orange)),
+          ],
+          if (count != null) ...[
+            const SizedBox(width: 6),
+            Text(count,
+                style: TextStyle(
+                    fontSize: 13, fontWeight: FontWeight.w700, color: _inkMuted)),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _rule() => Container(
+      height: 1.3,
+      margin: const EdgeInsets.only(bottom: 8),
+      color: const Color(0xFFCBB89A));
+
+  Widget _taskLine(BuildContext context, bool isDark, Task t,
+      {bool overdue = false}) {
+    final mark = t.isCompleted ? '×' : (overdue || t.isOverdue ? '!' : '·');
+    final color =
+        t.isCompleted ? _green : (overdue || t.isOverdue ? _red : _ink);
+    String trailing = '';
+    if (overdue && t.dueDate != null) {
+      final d = DateTime.tryParse(t.dueDate!);
+      if (d != null) trailing = ' — ${d.day}.${d.month}';
+    }
+    return InkWell(
+      onTap: () => viewModel.toggleTaskComplete(t, context),
+      onLongPress: () => showEditTaskSheet(context, viewModel, isDark, t),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 3),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: 16,
+              child: Text(mark,
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                      color: color)),
+            ),
+            const SizedBox(width: 4),
+            Expanded(
+              child: Text(
+                '${t.title}$trailing',
+                style: GoogleFonts.caveat(
+                  fontSize: 18.5,
+                  height: 1.15,
+                  color: t.isCompleted ? _inkMuted : _ink,
+                  decoration:
+                      t.isCompleted ? TextDecoration.lineThrough : null,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _daySection(BuildContext context, AppColors c, bool isDark,
+      DateTime day, DateTime today,
+      {bool isToday = false}) {
+    final dayTasks = _tasksForDay(day);
+    final overdue = isToday ? viewModel.overdueTasksList : const <Task>[];
+    final doneT = dayTasks.where((t) => t.isCompleted).length;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _dayHeader('${_dayShort(day.weekday)} ${day.day}',
+              todaySuffix: isToday ? 'tasks.planner.today'.tr() : null,
+              count: isToday ? '$doneT/${dayTasks.length}' : null),
+          _rule(),
+          for (final t in overdue) _taskLine(context, isDark, t, overdue: true),
+          for (final t in dayTasks) _taskLine(context, isDark, t),
+          if (isToday) ...[
+            const SizedBox(height: 2),
+            GestureDetector(
+              onTap: () {
+                viewModel.setSelectedDay(day);
+                showAddTaskSheet(context, viewModel, isDark);
+              },
+              behavior: HitTestBehavior.opaque,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Text('tasks.planner.tapToAdd'.tr(),
+                    style: GoogleFonts.caveat(
+                        fontSize: 18,
+                        fontStyle: FontStyle.italic,
+                        color: _inkMuted)),
+              ),
+            ),
+            if (overdue.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              _moveOverdueBtn(context),
+            ],
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _moveOverdueBtn(BuildContext context) {
+    return GestureDetector(
+      onTap: () => viewModel.carryOverdueToToday(context),
+      child: CustomPaint(
+        painter: _DashedRectPainter(color: _orange),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('> ',
+                  style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                      color: _orange)),
+              Text('tasks.planner.moveOverdue'.tr(),
+                  style: const TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                      color: _orange)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _weekendSection(BuildContext context, AppColors c, bool isDark,
+      List<DateTime> days) {
+    final label = days
+        .map((d) => '${_dayShort(d.weekday)} ${d.day}')
+        .join(' · ');
+    final tasks = <Task>[];
+    for (final d in days) {
+      tasks.addAll(_tasksForDay(d));
+    }
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _dayHeader(label),
+          _rule(),
+          if (tasks.isEmpty)
+            Text('— ${'tasks.planner.noUpcoming'.tr()}',
+                style: GoogleFonts.caveat(
+                    fontSize: 18, fontStyle: FontStyle.italic, color: _inkMuted))
           else
-            ..._dayBody(context, c),
+            for (final t in tasks) _taskLine(context, isDark, t),
+        ],
+      ),
+    );
+  }
+
+  Widget _weekSummary(AppColors c) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final sunday = today.add(Duration(days: 7 - now.weekday));
+    int done = 0, upcoming = 0;
+    for (final t in viewModel.tasks) {
+      if (t.parentTaskId != null || t.dueDate == null) continue;
+      final d = DateTime.tryParse(t.dueDate!);
+      if (d == null) continue;
+      final dd = DateTime(d.year, d.month, d.day);
+      if (dd.isBefore(today)) continue;
+      if (dd.isAfter(sunday)) continue;
+      if (t.isCompleted) {
+        done++;
+      } else if (dd.isAfter(today)) {
+        upcoming++;
+      }
+    }
+    final overdue = viewModel.overdueTaskCount;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFCBB89A)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('tasks.planner.weekSummary'.tr(),
+                    style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.0,
+                        color: _ink)),
+                const SizedBox(height: 4),
+                Text(
+                  '$done ${'tasks.planner.done'.tr()} · $overdue ${'tasks.planner.overdue'.tr()} · $upcoming ${'tasks.planner.upcoming'.tr()}',
+                  style: const TextStyle(fontSize: 14, color: _inkMuted),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -1073,131 +1437,9 @@ class _TasksTab extends StatelessWidget {
   }
 
   // ---------- İstatistik kartları ----------
-  Widget _statCards(BuildContext context, AppColors c) {
-    final f = viewModel.taskStatFilter;
-    return Row(
-      children: [
-        _statCard(c, Icons.today_rounded, 'tasks.statsToday'.tr(),
-            viewModel.todayTaskCount, _orange,
-            filled: f == 'today',
-            onTap: () => viewModel.setTaskStatFilter('today')),
-        const SizedBox(width: 10),
-        _statCard(c, Icons.event_rounded, 'tasks.statsUpcoming'.tr(),
-            viewModel.upcomingTaskCount, _purple,
-            filled: f == 'upcoming',
-            onTap: () => viewModel.setTaskStatFilter('upcoming')),
-        const SizedBox(width: 10),
-        _statCard(c, Icons.schedule_rounded, 'tasks.stats.overdue'.tr(),
-            viewModel.overdueTaskCount, _red,
-            filled: f == 'overdue',
-            onTap: () => viewModel.setTaskStatFilter('overdue')),
-        const SizedBox(width: 10),
-        _statCard(c, Icons.check_circle_rounded, 'tasks.stats.completed'.tr(),
-            viewModel.completedTaskCount, _green,
-            filled: f == 'completed',
-            onTap: () => viewModel.setTaskStatFilter('completed')),
-      ],
-    );
-  }
 
-  Widget _statCard(AppColors c, IconData icon, String label, int count,
-      Color color,
-      {bool filled = false, required VoidCallback onTap}) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-        decoration: BoxDecoration(
-          color: filled ? color : c.card,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-              color: filled ? color : c.border.withOpacity(0.7)),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, size: 20, color: filled ? Colors.white : color),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: filled ? Colors.white : c.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              '$count',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                color: filled ? Colors.white : c.textPrimary,
-              ),
-            ),
-          ],
-        ),
-        ),
-      ),
-    );
-  }
 
   // ---------- Gün gövdesi ----------
-  List<Widget> _dayBody(BuildContext context, AppColors c) {
-    final filter = viewModel.taskStatFilter;
-    if (filter != 'today') {
-      final list = filter == 'upcoming'
-          ? viewModel.upcomingTasksList
-          : filter == 'overdue'
-              ? viewModel.overdueTasksList
-              : viewModel.completedTasksList;
-      final titleKey = filter == 'upcoming'
-          ? 'tasks.statsUpcoming'
-          : filter == 'overdue'
-              ? 'tasks.stats.overdue'
-              : 'tasks.stats.completed';
-      return [
-        Text(titleKey.tr(),
-            style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                color: c.textPrimary)),
-        const SizedBox(height: 12),
-        if (list.isEmpty)
-          _emptyDay(context, c)
-        else
-          ...list.map((t) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: _taskCard(context, c, t),
-              )),
-      ];
-    }
-    final list = viewModel.sortedTasksForSelectedDay;
-    final later = viewModel.laterTasks;
-    return [
-      _weekSelector(context, c),
-      const SizedBox(height: 16),
-      _progressCard(context, c),
-      const SizedBox(height: 22),
-      _sectionRow(context, c),
-      const SizedBox(height: 12),
-      if (list.isEmpty)
-        _emptyDay(context, c)
-      else if (viewModel.canReorderTasks)
-        _reorderableTaskList(context, c, list)
-      else
-        ...list.map((t) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _taskCard(context, c, t),
-            )),
-      if (later.isNotEmpty) ...[
-        const SizedBox(height: 6),
-        _laterRow(context, c, later.length),
-      ],
-    ];
-  }
 
   List<Widget> _searchBody(BuildContext context, AppColors c) {
     final res = viewModel.searchResults;
@@ -1213,259 +1455,14 @@ class _TasksTab extends StatelessWidget {
   }
 
   // ---------- Hafta seçici ----------
-  Widget _weekSelector(BuildContext context, AppColors c) {
-    final now = DateTime.now();
-    final monday = now.subtract(Duration(days: now.weekday - 1));
-    final shorts = 'tasks.weekShort'.tr().split(',');
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: List.generate(7, (i) {
-        final day = DateTime(monday.year, monday.month, monday.day + i);
-        final selected = viewModel.isSameDay(day, viewModel.selectedDay);
-        final hasTasks = viewModel.parentTasks.any((t) {
-          final d = viewModel.dueDateOf(t);
-          return d != null && viewModel.isSameDay(d, day);
-        });
-        return GestureDetector(
-          onTap: () => viewModel.setSelectedDay(day),
-          behavior: HitTestBehavior.opaque,
-          child: Column(
-            children: [
-              Text(
-                i < shorts.length ? shorts[i] : '',
-                style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: c.textMuted),
-              ),
-              const SizedBox(height: 6),
-              Container(
-                width: 40,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: selected ? _orange : Colors.transparent,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  '${day.day}',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w800,
-                    color: selected ? Colors.white : c.textPrimary,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 5),
-              Container(
-                width: 5,
-                height: 5,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: hasTasks && !selected
-                      ? _orange
-                      : Colors.transparent,
-                ),
-              ),
-            ],
-          ),
-        );
-      }),
-    );
-  }
 
   // ---------- İlerleme kartı ----------
-  Widget _progressCard(BuildContext context, AppColors c) {
-    final p = viewModel.dayProgress;
-    final pct = (p * 100).round();
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: c.card,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: c.border.withOpacity(0.7)),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('tasks.progressTitle'.tr(),
-                    style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w800,
-                        color: c.textPrimary)),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
-                        child: LinearProgressIndicator(
-                          value: p,
-                          minHeight: 8,
-                          backgroundColor: _orange.withOpacity(0.15),
-                          valueColor:
-                              const AlwaysStoppedAnimation<Color>(_orange),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Text('${viewModel.dayDoneCount}/${viewModel.dayTotalCount}',
-                        style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: c.textSecondary)),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'tasks.progressDone'.tr(namedArgs: {'p': '$pct'}),
-                  style: TextStyle(fontSize: 12.5, color: c.textMuted),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 16),
-          SizedBox(
-            width: 66,
-            height: 66,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                SizedBox(
-                  width: 66,
-                  height: 66,
-                  child: CircularProgressIndicator(
-                    value: p,
-                    strokeWidth: 7,
-                    backgroundColor: _orange.withOpacity(0.15),
-                    valueColor:
-                        const AlwaysStoppedAnimation<Color>(_orange),
-                  ),
-                ),
-                Text('%$pct',
-                    style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
-                        color: c.textPrimary)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   // ---------- Bölüm başlığı + sıralama ----------
-  Widget _sectionRow(BuildContext context, AppColors c) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            'tasks.todaySection'.tr(),
-            style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                color: c.textPrimary),
-          ),
-        ),
-        Material(
-          color: c.card,
-          borderRadius: BorderRadius.circular(12),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(12),
-            onTap: () => _showSortSheet(context, c),
-            child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: c.border.withOpacity(0.7)),
-              ),
-              child: Row(
-                children: [
-                  Text(_sortLabel(),
-                      style: TextStyle(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w600,
-                          color: c.textSecondary)),
-                  const SizedBox(width: 4),
-                  Icon(Icons.keyboard_arrow_down_rounded,
-                      size: 18, color: c.textSecondary),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 
-  String _sortLabel() {
-    switch (viewModel.taskSort) {
-      case 'time':
-        return 'tasks.sortTime'.tr();
-      case 'created':
-        return 'tasks.sortCreated'.tr();
-      case 'manual':
-        return 'tasks.sortManual'.tr();
-      default:
-        return 'tasks.sortPriority'.tr();
-    }
-  }
 
-  void _showSortSheet(BuildContext context, AppColors c) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: c.card,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (final o in [
-              ['priority', 'tasks.sortPriority'],
-              ['time', 'tasks.sortTime'],
-              ['created', 'tasks.sortCreated'],
-              ['manual', 'tasks.sortManual'],
-            ])
-              ListTile(
-                title: Text(o[1].tr(),
-                    style: TextStyle(color: c.textPrimary)),
-                trailing: viewModel.taskSort == o[0]
-                    ? const Icon(Icons.check_rounded, color: _orange)
-                    : null,
-                onTap: () {
-                  viewModel.setTaskSort(o[0]);
-                  Navigator.pop(ctx);
-                },
-              ),
-          ],
-        ),
-      ),
-    );
-  }
 
   /// "Elle" sıralama modunda sürükle-bırak görev listesi.
-  Widget _reorderableTaskList(
-      BuildContext context, AppColors c, List<Task> list) {
-    return ReorderableListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: list.length,
-      itemBuilder: (ctx, i) => Padding(
-        key: ValueKey(list[i].id),
-        padding: const EdgeInsets.only(bottom: 12),
-        child: _taskCard(context, c, list[i]),
-      ),
-      onReorder: (oldIndex, newIndex) =>
-          viewModel.reorderTasksForSelectedDay(oldIndex, newIndex),
-    );
-  }
 
   // ---------- Görev kartı ----------
   Widget _taskCard(BuildContext context, AppColors c, Task task) {
@@ -1783,88 +1780,7 @@ class _TasksTab extends StatelessWidget {
     );
   }
 
-  Widget _laterRow(BuildContext context, AppColors c, int count) {
-    return Material(
-      color: c.card,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () => _showLaterSheet(context, c),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: c.border.withOpacity(0.7)),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.schedule_rounded, size: 20, color: _orange),
-              const SizedBox(width: 12),
-              Text('tasks.later'.tr(),
-                  style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: c.textPrimary)),
-              const SizedBox(width: 6),
-              Text('· ${'tasks.laterCount'.tr(namedArgs: {
-                    'n': '$count'
-                  })}',
-                  style: TextStyle(fontSize: 14, color: c.textMuted)),
-              const Spacer(),
-              Icon(Icons.chevron_right_rounded, color: c.textMuted),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
-  void _showLaterSheet(BuildContext context, AppColors c) {
-    final later = viewModel.laterTasks;
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: c.card,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
-      ),
-      builder: (ctx) => DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.6,
-        maxChildSize: 0.9,
-        builder: (ctx, scroll) => Column(
-          children: [
-            const SizedBox(height: 12),
-            Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                    color: c.border,
-                    borderRadius: BorderRadius.circular(2))),
-            const SizedBox(height: 14),
-            Text('tasks.later'.tr(),
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                    color: c.textPrimary)),
-            const SizedBox(height: 12),
-            Expanded(
-              child: ListView(
-                controller: scroll,
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-                children: later
-                    .map((t) => Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: _taskCard(context, c, t),
-                        ))
-                    .toList(),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   // ---------- Yardımcılar ----------
   String _hhmm(DateTime d) =>

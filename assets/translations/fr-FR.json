@@ -187,7 +187,8 @@
     "calendar": "Calendrier",
     "notes": "Mes Notes",
     "diary": "Mon Journal",
-    "settings": "Paramètres"
+    "settings": "Paramètres",
+    "habits": "Habitudes"
   },
   "home": {
     "title": "Accueil",
@@ -302,7 +303,22 @@
       "shopping": "Achats",
       "other": "Autre"
     },
-    "rowDailyGoal": "objectif du jour"
+    "rowDailyGoal": "objectif du jour",
+    "planner": {
+      "today": "Aujourd'hui",
+      "tapToAdd": "touchez pour une tâche...",
+      "moveOverdue": "Déplacer en retard à aujourd'hui",
+      "movedCount": "{n} tâches déplacées à aujourd'hui",
+      "noUpcoming": "aucune tâche à venir",
+      "weekSummary": "RÉSUMÉ DE LA SEMAINE",
+      "done": "faites",
+      "overdue": "en retard",
+      "upcoming": "à venir",
+      "legendTask": "tâche",
+      "legendDone": "faite",
+      "legendMoved": "déplacée",
+      "legendOverdue": "en retard"
+    }
   },
   "habits": {
     "title": "Habitudes",

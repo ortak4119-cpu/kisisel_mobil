@@ -187,7 +187,8 @@
     "calendar": "Takvim",
     "notes": "Notlarım",
     "diary": "Günlüğüm",
-    "settings": "Ayarlar"
+    "settings": "Ayarlar",
+    "habits": "Alışkanlık"
   },
   "home": {
     "title": "Ana Sayfa",
@@ -302,7 +303,22 @@
       "shopping": "Alışveriş",
       "other": "Diğer"
     },
-    "rowDailyGoal": "günlük hedef"
+    "rowDailyGoal": "günlük hedef",
+    "planner": {
+      "today": "Bugün",
+      "tapToAdd": "yeni görev yazmak için dokun...",
+      "moveOverdue": "Gecikenleri bugüne taşı",
+      "movedCount": "{n} görev bugüne taşındı",
+      "noUpcoming": "yaklaşan görev yok",
+      "weekSummary": "HAFTA ÖZETİ",
+      "done": "bitti",
+      "overdue": "gecikti",
+      "upcoming": "yaklaşan",
+      "legendTask": "görev",
+      "legendDone": "bitti",
+      "legendMoved": "taşındı",
+      "legendOverdue": "gecikti"
+    }
   },
   "habits": {
     "title": "Alışkanlıklar",

@@ -187,7 +187,8 @@
     "calendar": "التقويم",
     "notes": "ملاحظاتي",
     "diary": "مذكراتي",
-    "settings": "الإعدادات"
+    "settings": "الإعدادات",
+    "habits": "العادات"
   },
   "home": {
     "title": "الرئيسية",
@@ -302,7 +303,22 @@
       "shopping": "تسوق",
       "other": "أخرى"
     },
-    "rowDailyGoal": "الهدف اليومي"
+    "rowDailyGoal": "الهدف اليومي",
+    "planner": {
+      "today": "اليوم",
+      "tapToAdd": "اضغط لكتابة مهمة جديدة...",
+      "moveOverdue": "نقل المتأخرة إلى اليوم",
+      "movedCount": "تم نقل {n} مهمة إلى اليوم",
+      "noUpcoming": "لا مهام قادمة",
+      "weekSummary": "ملخص الأسبوع",
+      "done": "منجزة",
+      "overdue": "متأخرة",
+      "upcoming": "قادمة",
+      "legendTask": "مهمة",
+      "legendDone": "منجزة",
+      "legendMoved": "منقولة",
+      "legendOverdue": "متأخرة"
+    }
   },
   "habits": {
     "title": "العادات",
