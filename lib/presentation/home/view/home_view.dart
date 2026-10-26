@@ -85,40 +85,89 @@ class _HomeViewState extends State<HomeView> {
         shape: const CircularNotchedRectangle(),
         child: SizedBox(
           height: 60,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+          child: Stack(
             children: [
-              _buildNavItem(
-                icon: Icons.home_rounded,
-                label: 'navigation.home'.tr(),
-                index: 0,
-                isDarkMode: isDarkMode,
+          // Sol (3 öğe) ve sağ (2 öğe) gruplar eşit flex ile dengelenir;
+          // ortadaki boşluk tam merkeze oturur, böylece FAB ve "Takvim"
+          // etiketi çakışmadan hizalanır.
+          Row(
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    _buildNavItem(
+                      icon: Icons.home_rounded,
+                      label: 'navigation.home'.tr(),
+                      index: 0,
+                      isDarkMode: isDarkMode,
+                    ),
+                    _buildNavItem(
+                      icon: Icons.checklist_rounded,
+                      label: 'navigation.tasks'.tr(),
+                      index: 1,
+                      isDarkMode: isDarkMode,
+                    ),
+                    _buildNavItem(
+                      icon: Icons.emoji_events_rounded,
+                      label: 'navigation.habits'.tr(),
+                      index: 2,
+                      isDarkMode: isDarkMode,
+                    ),
+                  ],
+                ),
               ),
-              _buildNavItem(
-                icon: Icons.checklist_rounded,
-                label: 'navigation.tasks'.tr(),
-                index: 1,
-                isDarkMode: isDarkMode,
+              // Ortadaki takvim FAB'ı (notch) için merkez boşluk.
+              const SizedBox(width: 56),
+              Expanded(
+                child: Row(
+                  children: [
+                    _buildNavItem(
+                      icon: Icons.attach_money,
+                      label: 'navigation.finance'.tr(),
+                      index: 4,
+                      isDarkMode: isDarkMode,
+                    ),
+                    _buildNavItem(
+                      icon: Icons.person_rounded,
+                      label: 'navigation.profile'.tr(),
+                      index: 5,
+                      isDarkMode: isDarkMode,
+                    ),
+                  ],
+                ),
               ),
-              _buildNavItem(
-                icon: Icons.emoji_events_rounded,
-                label: 'navigation.habits'.tr(),
-                index: 2,
-                isDarkMode: isDarkMode,
+            ],
+          ),
+          // Ortadaki FAB'ın tam altındaki "Takvim" etiketi (gerçek merkez).
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 7,
+            child: Center(
+              child: GestureDetector(
+                onTap: () => setState(() => _selectedIndex = 3),
+                behavior: HitTestBehavior.opaque,
+                child: Text(
+                  'navigation.calendar'.tr(),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: _selectedIndex == 3 ? 12 : 11,
+                    fontWeight:
+                        _selectedIndex == 3 ? FontWeight.w600 : FontWeight.w500,
+                    color: _selectedIndex == 3
+                        ? (isDarkMode
+                            ? ColorConstant.primaryDarkModePurple
+                            : ColorConstant.primaryPurple)
+                        : (isDarkMode
+                            ? ColorConstant.textMutedDark
+                            : ColorConstant.textMutedLight),
+                  ),
+                ),
               ),
-              const SizedBox(width: 40), // Ortadaki FAB için boşluk
-              _buildNavItem(
-                icon: Icons.attach_money,
-                label: 'navigation.finance'.tr(),
-                index: 4,
-                isDarkMode: isDarkMode,
-              ),
-              _buildNavItem(
-                icon: Icons.person_rounded,
-                label: 'navigation.profile'.tr(),
-                index: 5,
-                isDarkMode: isDarkMode,
-              ),
+            ),
+          ),
             ],
           ),
         ),
