@@ -1399,7 +1399,9 @@ class _TasksTab extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 6),
-          for (final t in tasks) _taskLine(context, isDark, t, overdue: overdue),
+          for (final t in tasks)
+            _taskLine(context, isDark, t,
+                overdue: overdue, showDelete: true),
         ],
       ),
     );
@@ -1483,7 +1485,7 @@ class _TasksTab extends StatelessWidget {
       color: const Color(0xFFCBB89A));
 
   Widget _taskLine(BuildContext context, bool isDark, Task t,
-      {bool overdue = false}) {
+      {bool overdue = false, bool showDelete = false}) {
     final mark = t.isCompleted ? '×' : (overdue || t.isOverdue ? '!' : '·');
     final color =
         t.isCompleted ? _green : (overdue || t.isOverdue ? _red : _ink);
@@ -1530,11 +1532,22 @@ class _TasksTab extends StatelessWidget {
             onTap: () => showEditTaskSheet(context, viewModel, isDark, t),
             behavior: HitTestBehavior.opaque,
             child: Padding(
-              padding: const EdgeInsets.only(left: 8, top: 2),
+              padding: const EdgeInsets.only(left: 8, top: 1),
               child: Icon(Icons.edit_outlined,
-                  size: 15, color: _inkMuted.withOpacity(0.7)),
+                  size: showDelete ? 18 : 15,
+                  color: showDelete ? _orange : _inkMuted.withOpacity(0.7)),
             ),
           ),
+          if (showDelete)
+            GestureDetector(
+              onTap: () => _confirmDelete(context, AppColors(isDark), t),
+              behavior: HitTestBehavior.opaque,
+              child: const Padding(
+                padding: EdgeInsets.only(left: 12, top: 1),
+                child: Icon(Icons.delete_outline_rounded,
+                    size: 18, color: Color(0xFFE53E3E)),
+              ),
+            ),
         ],
       ),
     );
