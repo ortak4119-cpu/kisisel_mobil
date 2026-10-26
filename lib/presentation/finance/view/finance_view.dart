@@ -83,35 +83,6 @@ void showFinanceFormSheet(BuildContext context, FinanceViewModel vm, bool isDark
   );
 }
 
-class _DonutPainter extends CustomPainter {
-  final List<MapEntry<Color, double>> segments;
-  final double total;
-  _DonutPainter(this.segments, this.total);
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = size.center(Offset.zero);
-    final radius = size.width / 2;
-    final stroke = radius * 0.42;
-    final rect = Rect.fromCircle(
-        center: center, radius: radius - stroke / 2);
-    var start = -1.5708; // -90°
-    if (total <= 0) return;
-    for (final s in segments) {
-      final sweep = (s.value / total) * 6.28319;
-      final paint = Paint()
-        ..color = s.key
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = stroke
-        ..strokeCap = StrokeCap.butt;
-      canvas.drawArc(rect, start, sweep - 0.03, false, paint);
-      start += sweep;
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _DonutPainter old) =>
-      old.segments != segments || old.total != total;
-}
 
 class FinanceView extends StatefulWidget {
   const FinanceView({super.key});
@@ -263,33 +234,21 @@ class _FinanceViewState extends State<FinanceView> {
     switch (_dashTab) {
       case 1: // Harcama
         return [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(child: _monthExpensesCard(vm, c)),
-              const SizedBox(width: 12),
-              Expanded(child: _dailyAvgCard(vm, c)),
-            ],
-          ),
+          _harcamaSummary(vm, c),
           const SizedBox(height: 14),
-          _distributionCard(context, vm, c),
+          _categoryBreakdown(vm, c),
           const SizedBox(height: 14),
           _transactionsCard(context, vm, c),
         ];
       case 2: // Plan
         return [
-          _budgetCard(context, vm, c),
+          _planBudgetCard(context, vm, c),
           const SizedBox(height: 14),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(flex: 3, child: _upcomingCard(context, vm, c)),
-              const SizedBox(width: 12),
-              Expanded(flex: 2, child: _savingsCard(context, vm, c)),
-            ],
-          ),
+          _planSavingsCard(context, vm, c),
           const SizedBox(height: 14),
-          _subscriptionsCard(context, vm, c),
+          _planUpcomingCard(context, vm, c),
+          const SizedBox(height: 14),
+          _planDebtCard(vm, c),
         ];
       default: // Genel
         return [
@@ -931,6 +890,379 @@ class _FinanceViewState extends State<FinanceView> {
   Widget _setDivider(AppColors c) =>
       Divider(height: 1, color: c.border.withOpacity(0.5));
 
+  // ---------- Ortak panel / başlık ----------
+  Widget _panel(AppColors c, Widget child) => Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: c.card,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: c.border.withOpacity(0.6)),
+        ),
+        child: child,
+      );
+
+  Widget _panelHead(AppColors c, String title, {Widget? trailing}) => Padding(
+        padding: const EdgeInsets.only(bottom: 14),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(title,
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: c.textPrimary)),
+            ),
+            if (trailing != null) trailing,
+          ],
+        ),
+      );
+
+  // ---------- HARCAMA sekmesi ----------
+  Widget _harcamaSummary(FinanceViewModel vm, AppColors c) {
+    return _panel(
+      c,
+      Row(
+        children: [
+          _hStat(c, tl0(vm.monthExpensesTotal), 'finance.expense'.tr()),
+          _vDiv(c),
+          _hStat(c, tl0(vm.dailyAverage), 'finance.avg'.tr()),
+          _vDiv(c),
+          _hStat(c, '${vm.expenses.length}', 'finance.transactions'.tr()),
+        ],
+      ),
+    );
+  }
+
+  Widget _hStat(AppColors c, String value, String label) => Expanded(
+        child: Column(
+          children: [
+            Text(value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w900,
+                    color: c.textPrimary)),
+            const SizedBox(height: 3),
+            Text(label,
+                style: TextStyle(fontSize: 12, color: c.textMuted)),
+          ],
+        ),
+      );
+
+  Widget _vDiv(AppColors c) =>
+      Container(width: 1, height: 34, color: c.border.withOpacity(0.6));
+
+  Widget _categoryBreakdown(FinanceViewModel vm, AppColors c) {
+    final total = vm.monthExpensesTotal;
+    final cats = vm.categoryTotals.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    return _panel(
+      c,
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _panelHead(c, 'finance.distribution'.tr()),
+          if (cats.isEmpty)
+            Text('—', style: TextStyle(color: c.textMuted))
+          else
+            ...cats.map((e) {
+              final color = finCatById(e.key).color;
+              final pct = total > 0 ? (e.value / total).clamp(0.0, 1.0) : 0.0;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 14),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                            width: 9,
+                            height: 9,
+                            decoration: BoxDecoration(
+                                color: color, shape: BoxShape.circle)),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(vm.getCategoryLabel(e.key),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: c.textPrimary)),
+                        ),
+                        Text(tl0(e.value),
+                            style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: c.textPrimary)),
+                        const SizedBox(width: 10),
+                        SizedBox(
+                          width: 42,
+                          child: Text('%${(pct * 100).round()}',
+                              textAlign: TextAlign.right,
+                              style:
+                                  TextStyle(fontSize: 12.5, color: c.textMuted)),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 7),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: pct,
+                        minHeight: 6,
+                        backgroundColor: color.withOpacity(0.14),
+                        valueColor: AlwaysStoppedAnimation<Color>(color),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+        ],
+      ),
+    );
+  }
+
+  // ---------- PLAN sekmesi ----------
+  Widget _planBudgetCard(
+      BuildContext context, FinanceViewModel vm, AppColors c) {
+    final budget = vm.budgetStats?.monthlyBudget ?? 0;
+    final spent = vm.monthExpensesTotal;
+    final rem = budget - spent;
+    final pct = budget > 0 ? (spent / budget).clamp(0.0, 1.0) : 0.0;
+    return _panel(
+      c,
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _panelHead(c, 'finance.monthlyBudget'.tr(),
+              trailing: GestureDetector(
+                onTap: () => _showBudgetSettingsDialog(context, vm, c.isDark),
+                child: Text('finance.editBudget'.tr(),
+                    style: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        color: _fOrange)),
+              )),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(tl(spent),
+                  style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                      color: c.textPrimary)),
+              const SizedBox(width: 6),
+              Text('/ ${tl0(budget)}',
+                  style: TextStyle(fontSize: 14, color: c.textMuted)),
+            ],
+          ),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(5),
+            child: LinearProgressIndicator(
+              value: pct,
+              minHeight: 8,
+              backgroundColor: _fOrange.withOpacity(0.15),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                  pct >= 1 ? const Color(0xFFF6524B) : _fOrange),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            budget > 0
+                ? '${tl0(rem.abs())} ${rem >= 0 ? 'finance.remaining'.tr() : 'finance.spent'.tr()}'
+                : '—',
+            style: TextStyle(fontSize: 13, color: c.textSecondary),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _planSavingsCard(
+      BuildContext context, FinanceViewModel vm, AppColors c) {
+    final pct = vm.savingsTarget > 0
+        ? (vm.savingsCurrent / vm.savingsTarget).clamp(0.0, 1.0)
+        : 0.0;
+    final title = vm.savingsTitle.trim().isEmpty
+        ? 'finance.savingsFund'.tr()
+        : vm.savingsTitle;
+    return _panel(
+      c,
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _panelHead(c, title,
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('%${(pct * 100).round()}',
+                      style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF2F9E5E))),
+                  const SizedBox(width: 8),
+                  InkWell(
+                    onTap: () => _addSavingsDialog(context, vm, c),
+                    child: Icon(Icons.edit_rounded,
+                        size: 17, color: c.textMuted),
+                  ),
+                ],
+              )),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(tl(vm.savingsCurrent),
+                  style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                      color: c.textPrimary)),
+              const SizedBox(width: 6),
+              Text('/ ${tl0(vm.savingsTarget)}',
+                  style: TextStyle(fontSize: 14, color: c.textMuted)),
+            ],
+          ),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(5),
+            child: LinearProgressIndicator(
+              value: pct,
+              minHeight: 8,
+              backgroundColor: const Color(0xFF48BB78).withOpacity(0.15),
+              valueColor:
+                  const AlwaysStoppedAnimation<Color>(Color(0xFF48BB78)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _planUpcomingCard(
+      BuildContext context, FinanceViewModel vm, AppColors c) {
+    final rows = <Widget>[];
+    for (final s in vm.activeSubscriptions) {
+      rows.add(_payRow(c, Icons.sync_rounded, const Color(0xFF9F7AEA), s.name,
+          _shortDate(s.nextBillingDate), tl0(s.amount),
+          onTap: () => _openEditSubscription(context, vm, s, c.isDark)));
+    }
+    for (final it in vm.installments.where((i) => !i.isDone)) {
+      rows.add(_payRow(c, Icons.credit_card_rounded, const Color(0xFF3B82C4),
+          it.name, '${it.paidCount}/${it.installmentCount}',
+          tl0(it.monthlyAmount)));
+    }
+    return _panel(
+      c,
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _panelHead(c, 'finance.upcoming'.tr()),
+          if (rows.isEmpty)
+            Text('—', style: TextStyle(color: c.textMuted))
+          else
+            ...rows,
+        ],
+      ),
+    );
+  }
+
+  Widget _payRow(AppColors c, IconData icon, Color col, String name,
+      String sub, String amount, {VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Row(
+          children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+                color: col.withOpacity(0.14),
+                borderRadius: BorderRadius.circular(12)),
+            child: Icon(icon, size: 20, color: col),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: c.textPrimary)),
+                const SizedBox(height: 2),
+                Text(sub, style: TextStyle(fontSize: 12, color: c.textMuted)),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(amount,
+              style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: c.textPrimary)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _planDebtCard(FinanceViewModel vm, AppColors c) {
+    return _panel(
+      c,
+      Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+                color: const Color(0xFF9B2C2C).withOpacity(0.12),
+                borderRadius: BorderRadius.circular(12)),
+            child: const Icon(Icons.account_balance_wallet_rounded,
+                color: Color(0xFF9B2C2C)),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('finance.debtShort'.tr(),
+                    style: TextStyle(fontSize: 13, color: c.textMuted)),
+                const SizedBox(height: 2),
+                Text(tl(vm.totalDebt),
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        color: c.textPrimary)),
+              ],
+            ),
+          ),
+          if (vm.totalMinPayment > 0)
+            Text(
+                'finance.debt.minTotal'
+                    .tr(namedArgs: {'amount': tl0(vm.totalMinPayment)}),
+                style: TextStyle(fontSize: 12.5, color: c.textSecondary)),
+        ],
+      ),
+    );
+  }
+
+  String _shortDate(DateTime d) {
+    final months = 'calendar.monthNames'.tr().split(',');
+    final mn = d.month <= months.length ? months[d.month - 1] : '';
+    final short = mn.length >= 3 ? mn.substring(0, 3) : mn;
+    return '${d.day} $short';
+  }
+
   // ---------- Başlık ----------
 
   // ---------- Ay değiştirici ----------
@@ -945,519 +1277,16 @@ class _FinanceViewState extends State<FinanceView> {
 
 
   // ---------- Aylık bütçe ----------
-  Widget _budgetCard(BuildContext context, FinanceViewModel vm, AppColors c) {
-    final b = vm.budgetStats;
-    final budget = b?.monthlyBudget ?? 0;
-    // Geçmiş/ileri aylarda backend "bu ay" verisi yerine o ayın client
-    // toplamını kullan.
-    final spent = vm.isCurrentMonth
-        ? (b?.totalSpent ?? vm.monthExpensesTotal)
-        : vm.monthExpensesTotal;
-    final pct = budget <= 0 ? 0.0 : (spent / budget).clamp(0.0, 1.0);
-    final over = spent > budget && budget > 0;
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: c.card,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: c.border.withOpacity(0.7)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('finance.monthlyBudget'.tr(),
-              style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  color: c.textPrimary)),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    RichText(
-                      text: TextSpan(children: [
-                        TextSpan(
-                            text: tl0(spent),
-                            style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w900,
-                                color: c.textPrimary)),
-                        TextSpan(
-                            text: ' / ${tl0(budget)}',
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: c.textMuted)),
-                      ]),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                        'finance.remainingAmount'.tr(namedArgs: {
-                          'amount': tl0((budget - spent).clamp(0, budget))
-                        }),
-                        style: TextStyle(fontSize: 13, color: c.textMuted)),
-                    const SizedBox(height: 10),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: LinearProgressIndicator(
-                        value: pct.toDouble(),
-                        minHeight: 8,
-                        backgroundColor: _fOrange.withOpacity(0.15),
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                            over ? const Color(0xFFF6524B) : _fOrange),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 16),
-              SizedBox(
-                width: 76,
-                height: 76,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    SizedBox(
-                      width: 76,
-                      height: 76,
-                      child: CircularProgressIndicator(
-                        value: pct.toDouble(),
-                        strokeWidth: 8,
-                        backgroundColor: c.border.withOpacity(0.4),
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                            over ? const Color(0xFFF6524B) : _fOrange),
-                      ),
-                    ),
-                    Text('%${(pct * 100).round()}',
-                        style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w900,
-                            color: c.textPrimary)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              if (pct >= 0.8)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                      color: _fOrange.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(20)),
-                  child: Row(mainAxisSize: MainAxisSize.min, children: [
-                    const Icon(Icons.warning_amber_rounded,
-                        size: 14, color: _fOrange),
-                    const SizedBox(width: 4),
-                    Text(
-                        'finance.limitWarn'.tr(namedArgs: {
-                          'pct': '${(pct * 100).round()}'
-                        }),
-                        style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: _fOrange)),
-                  ]),
-                ),
-              const Spacer(),
-              GestureDetector(
-                onTap: () =>
-                    _showBudgetSettingsDialog(context, vm, c.isDark),
-                child: Row(children: [
-                  Text('finance.editBudget'.tr(),
-                      style: const TextStyle(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w700,
-                          color: _fOrange)),
-                  const Icon(Icons.chevron_right_rounded,
-                      size: 18, color: _fOrange),
-                ]),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
 
   // ---------- Bu ayki giderler (çubuk) ----------
-  Widget _monthExpensesCard(FinanceViewModel vm, AppColors c) {
-    final series = vm.dailyExpenseSeries;
-    final maxV = series.fold<double>(
-        1, (p, e) => e.value > p ? e.value : p);
-    return Container(
-      padding: const EdgeInsets.all(16),
-      height: 176,
-      decoration: BoxDecoration(
-        color: c.card,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: c.border.withOpacity(0.7)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('finance.monthExpenses'.tr(),
-              style: TextStyle(fontSize: 13, color: c.textSecondary)),
-          const SizedBox(height: 4),
-          Text(tl0(vm.monthExpensesTotal),
-              style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
-                  color: c.textPrimary)),
-          const SizedBox(height: 10),
-          Expanded(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                for (final e in series)
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Container(
-                          height: (e.value / maxV * 46).clamp(3, 46),
-                          margin:
-                              const EdgeInsets.symmetric(horizontal: 3),
-                          decoration: BoxDecoration(
-                              color: const Color(0xFFF6524B)
-                                  .withOpacity(0.85),
-                              borderRadius: BorderRadius.circular(4)),
-                        ),
-                        const SizedBox(height: 3),
-                        Text('${e.key.day}',
-                            maxLines: 1,
-                            style: TextStyle(
-                                fontSize: 9.5, color: c.textMuted)),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
-  Widget _dailyAvgCard(FinanceViewModel vm, AppColors c) {
-    const target = 500.0;
-    final avg = vm.dailyAverage;
-    final pct = (avg / target).clamp(0.0, 1.0);
-    return Container(
-      padding: const EdgeInsets.all(16),
-      height: 176,
-      decoration: BoxDecoration(
-        color: c.card,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: c.border.withOpacity(0.7)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('finance.dailyAvg'.tr(),
-              style: TextStyle(fontSize: 13, color: c.textSecondary)),
-          const SizedBox(height: 4),
-          Text(tl0(avg),
-              style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
-                  color: c.textPrimary)),
-          const SizedBox(height: 4),
-          Text('finance.target'.tr(namedArgs: {'amount': tl0(target)}),
-              style: TextStyle(fontSize: 12.5, color: c.textMuted)),
-          const Spacer(),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: LinearProgressIndicator(
-              value: pct.toDouble(),
-              minHeight: 8,
-              backgroundColor: c.border.withOpacity(0.4),
-              valueColor:
-                  const AlwaysStoppedAnimation<Color>(Color(0xFF4C9AFF)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   // ---------- Gider dağılımı (halka) ----------
-  Widget _distributionCard(
-      BuildContext context, FinanceViewModel vm, AppColors c) {
-    final totals = vm.categoryTotals;
-    final total = totals.values.fold<double>(0, (p, v) => p + v);
-    final segs = <MapEntry<Color, double>>[];
-    for (final cat in kFinCats) {
-      final v = totals[cat.id] ?? 0;
-      if (v > 0) segs.add(MapEntry(cat.color, v));
-    }
-    // Bilinmeyen kategoriler "diğer"e
-    totals.forEach((k, v) {
-      if (!kFinCats.any((cat) => cat.id == k) && v > 0) {
-        segs.add(MapEntry(const Color(0xFF9AA0A6), v));
-      }
-    });
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: c.card,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: c.border.withOpacity(0.7)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text('finance.distribution'.tr(),
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                        color: c.textPrimary)),
-              ),
-              GestureDetector(
-                onTap: () =>
-                    _showMonthlyStatisticsDialog(context, vm, c.isDark),
-                child: Text('finance.details'.tr(),
-                    style: const TextStyle(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w700,
-                        color: _fOrange)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          if (total <= 0)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              child: Center(
-                  child: Text('finance.noExpenses'.tr(),
-                      style: TextStyle(color: c.textMuted))),
-            )
-          else
-            Row(
-              children: [
-                SizedBox(
-                  width: 110,
-                  height: 110,
-                  child: CustomPaint(
-                    painter: _DonutPainter(segs, total),
-                    child: Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(tl0(total),
-                              style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w800,
-                                  color: c.textPrimary)),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    children: [
-                      for (final cat in kFinCats)
-                        if ((totals[cat.id] ?? 0) > 0)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: Row(children: [
-                              Container(
-                                  width: 9,
-                                  height: 9,
-                                  decoration: BoxDecoration(
-                                      color: cat.color,
-                                      shape: BoxShape.circle)),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(cat.labelKey.tr(),
-                                    style: TextStyle(
-                                        fontSize: 13.5,
-                                        color: c.textSecondary)),
-                              ),
-                              Text(tl0(totals[cat.id]!),
-                                  style: TextStyle(
-                                      fontSize: 13.5,
-                                      fontWeight: FontWeight.w700,
-                                      color: c.textPrimary)),
-                            ]),
-                          ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-        ],
-      ),
-    );
-  }
 
   // ---------- Abonelikler ----------
-  Widget _subscriptionsCard(
-      BuildContext context, FinanceViewModel vm, AppColors c) {
-    final subs = vm.activeSubscriptions;
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: c.card,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: c.border.withOpacity(0.7)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text('finance.subscriptions'.tr(),
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                        color: c.textPrimary)),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                    color: const Color(0xFF9F7AEA).withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(20)),
-                child: Text(
-                    '${tl0(_subsMonthly(vm))} ${'finance.perMonth'.tr()}',
-                    style: const TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF9F7AEA))),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          if (subs.isEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Text('finance.noSubs'.tr(),
-                  style: TextStyle(color: c.textMuted)),
-            )
-          else
-            Row(
-              children: [
-                for (final s in subs.take(2)) ...[
-                  Expanded(child: _subMini(context, vm, s, c)),
-                  const SizedBox(width: 12),
-                ],
-                if (subs.length < 2) const Expanded(child: SizedBox()),
-              ],
-            ),
-          const SizedBox(height: 6),
-          Divider(color: c.border.withOpacity(0.5)),
-          Row(
-            children: [
-              Text(
-                  'finance.activeSubs'.tr(namedArgs: {'n': '${subs.length}'}),
-                  style: TextStyle(fontSize: 13, color: c.textMuted)),
-              const Spacer(),
-              GestureDetector(
-                onTap: () =>
-                    _showMonthlyStatisticsDialog(context, vm, c.isDark),
-                child: Row(children: [
-                  Text('finance.seeAll'.tr(),
-                      style: const TextStyle(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF9F7AEA))),
-                  const Icon(Icons.chevron_right_rounded,
-                      size: 18, color: Color(0xFF9F7AEA)),
-                ]),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
 
-  Widget _subMini(
-      BuildContext context, FinanceViewModel vm, dynamic s, AppColors c) {
-    return GestureDetector(
-      onTap: () => _openEditSubscription(context, vm, s, c.isDark),
-      onLongPress: () => _subMenu(context, vm, s, c),
-      child: Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-          color: c.bg, borderRadius: BorderRadius.circular(14)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(children: [
-            Container(
-              width: 34,
-              height: 34,
-              decoration: BoxDecoration(
-                  color: const Color(0xFF9F7AEA).withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(9)),
-              child: const Icon(Icons.subscriptions_rounded,
-                  size: 18, color: Color(0xFF9F7AEA)),
-            ),
-          ]),
-          const SizedBox(height: 8),
-          Text(s.name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: c.textPrimary)),
-          Text('${tl(s.amount)} ${'finance.perMonth'.tr()}',
-              style: TextStyle(fontSize: 12, color: c.textMuted)),
-        ],
-      ),
-      ),
-    );
-  }
 
   // ---------- Yaklaşan ödemeler ----------
-  Widget _upcomingCard(
-      BuildContext context, FinanceViewModel vm, AppColors c) {
-    final now = DateTime.now();
-    final subs = vm.activeSubscriptions.toList()
-      ..sort((a, b) => a.nextBillingDate.compareTo(b.nextBillingDate));
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: c.card,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: c.border.withOpacity(0.7)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('finance.upcoming'.tr(),
-              style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w800,
-                  color: c.textPrimary)),
-          const SizedBox(height: 12),
-          if (subs.isEmpty)
-            Text('finance.noUpcoming'.tr(),
-                style: TextStyle(color: c.textMuted, fontSize: 13))
-          else
-            for (final s in subs.take(2)) ...[
-              _upRow(s, now, c),
-              const SizedBox(height: 10),
-            ],
-        ],
-      ),
-    );
-  }
 
   Widget _upRow(dynamic s, DateTime now, AppColors c) {
     final days =
@@ -1501,72 +1330,6 @@ class _FinanceViewState extends State<FinanceView> {
   }
 
   // ---------- Tasarruf hedefi ----------
-  Widget _savingsCard(
-      BuildContext context, FinanceViewModel vm, AppColors c) {
-    final pct = vm.savingsPercent.clamp(0, 100).toDouble();
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: c.card,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: c.border.withOpacity(0.7)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('finance.savingsGoal'.tr(),
-              style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w800,
-                  color: c.textPrimary)),
-          Text(
-              vm.savingsTitle.isEmpty
-                  ? 'finance.savingsFund'.tr()
-                  : vm.savingsTitle,
-              style: TextStyle(fontSize: 12.5, color: c.textMuted)),
-          const SizedBox(height: 10),
-          Text(tl0(vm.savingsCurrent),
-              style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
-                  color: c.textPrimary)),
-          Text('/ ${tl0(vm.savingsTarget)}',
-              style: TextStyle(fontSize: 12.5, color: c.textMuted)),
-          const SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: LinearProgressIndicator(
-              value: pct / 100,
-              minHeight: 8,
-              backgroundColor: c.border.withOpacity(0.4),
-              valueColor:
-                  const AlwaysStoppedAnimation<Color>(Color(0xFF48BB78)),
-            ),
-          ),
-          const SizedBox(height: 12),
-          GestureDetector(
-            onTap: () => _addSavingsDialog(context, vm, c),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              decoration: BoxDecoration(
-                  color: const Color(0xFF48BB78).withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(12)),
-              child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                const Icon(Icons.add_rounded, size: 18, color: Color(0xFF48BB78)),
-                const SizedBox(width: 4),
-                Text('finance.addMoney'.tr(),
-                    style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF48BB78))),
-              ]),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   // ---------- Son işlemler ----------
   Widget _transactionsCard(
@@ -1772,39 +1535,6 @@ class _FinanceViewState extends State<FinanceView> {
     );
   }
 
-  void _subMenu(
-      BuildContext context, FinanceViewModel vm, dynamic s, AppColors c) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: c.card,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
-      builder: (ctx) => SafeArea(
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          ListTile(
-            leading: const Icon(Icons.edit_rounded, color: Color(0xFF9F7AEA)),
-            title:
-                Text('common.edit'.tr(), style: TextStyle(color: c.textPrimary)),
-            onTap: () {
-              Navigator.pop(ctx);
-              _openEditSubscription(context, vm, s, c.isDark);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.delete_outline_rounded,
-                color: Color(0xFFE53E3E)),
-            title: Text('common.delete'.tr(),
-                style: TextStyle(color: c.textPrimary)),
-            onTap: () {
-              Navigator.pop(ctx);
-              vm.deleteSubscription(s.id, context);
-            },
-          ),
-          const SizedBox(height: 8),
-        ]),
-      ),
-    );
-  }
 
   void _showBudgetSettingsDialog(
       BuildContext context, FinanceViewModel viewModel, bool isDarkMode) {
@@ -1826,16 +1556,6 @@ class _FinanceViewState extends State<FinanceView> {
     );
   }
 
-  void _showMonthlyStatisticsDialog(
-      BuildContext context, FinanceViewModel viewModel, bool isDarkMode) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _MonthlyStatisticsBottomSheet(
-          viewModel: viewModel, isDarkMode: isDarkMode),
-    );
-  }
 }
 
 class _Txn {
