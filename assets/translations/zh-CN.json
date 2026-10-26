@@ -180,7 +180,7 @@
     "description9": "为每个类别获取单独的通知并进行控制"
   },
   "navigation": {
-    "home": "首页",
+    "home": "笔记",
     "tasks": "任务",
     "finance": "财务",
     "profile": "个人资料",
@@ -1008,6 +1008,20 @@
       "stop": "停止",
       "add": "添加",
       "unavailable": "此设备不支持语音识别"
+    },
+    "noteUnit": "条",
+    "scroll": "滑动",
+    "today": "今天",
+    "yesterday": "昨天",
+    "searchTitle": "搜索笔记",
+    "searchBtn": "搜索",
+    "untitledNote": "无标题",
+    "board": {
+      "noNotes": "还没有笔记",
+      "foldersArchive": "文件夹 · 归档",
+      "pinnedHint": "空夹子在等待。长按便签即可固定在此。",
+      "newFolder": "新绳 / 文件夹",
+      "archiveBox": "归档盒"
     }
   },
   "diary": {

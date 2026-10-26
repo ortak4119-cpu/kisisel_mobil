@@ -180,7 +180,7 @@
     "description9": "Obtenga notificaciones separadas para cada categoría y contrólelas"
   },
   "navigation": {
-    "home": "Inicio",
+    "home": "Notas",
     "tasks": "Tareas",
     "finance": "Finanzas",
     "profile": "Perfil",
@@ -1008,6 +1008,20 @@
       "stop": "Detener",
       "add": "Añadir",
       "unavailable": "El reconocimiento de voz no está disponible en este dispositivo"
+    },
+    "noteUnit": "notas",
+    "scroll": "desliza",
+    "today": "Hoy",
+    "yesterday": "Ayer",
+    "searchTitle": "Buscar notas",
+    "searchBtn": "Buscar",
+    "untitledNote": "Sin título",
+    "board": {
+      "noNotes": "Aún sin notas",
+      "foldersArchive": "CARPETAS · ARCHIVO",
+      "pinnedHint": "Pinzas vacías esperando. Mantén pulsada una nota para fijarla aquí.",
+      "newFolder": "Nueva cuerda / carpeta",
+      "archiveBox": "Caja de archivo"
     }
   },
   "diary": {

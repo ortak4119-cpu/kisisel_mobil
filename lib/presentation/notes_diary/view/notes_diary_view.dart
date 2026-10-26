@@ -9,6 +9,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 import '../../../service/stt/stt_service.dart';
 import '../../../core/design/app_design.dart';
@@ -17,6 +18,54 @@ import '../../../models/diary/diary_models.dart';
 import '../../../models/note/note_models.dart';
 import '../viewmodel/notes_diary_viewmodel.dart';
 import 'markdown_note_parser.dart';
+
+/// Mantar panosu "ip"i — hafif sarkan yatay çizgi.
+class _StringPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFFB09A78)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+    final path = Path()
+      ..moveTo(0, 2)
+      ..quadraticBezierTo(size.width / 2, 10, size.width, 2);
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+/// Kesikli (dashed) yuvarlak dikdörtgen kenar — "Yeni ip / klasör" kartı için.
+class _DashedBorderPainter extends CustomPainter {
+  final Color color;
+  final double radius;
+  _DashedBorderPainter({required this.color, this.radius = 16});
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.6;
+    final rrect = RRect.fromRectAndRadius(
+        Offset.zero & size, Radius.circular(radius));
+    final path = Path()..addRRect(rrect);
+    const dash = 6.0, gap = 5.0;
+    for (final metric in path.computeMetrics()) {
+      double dist = 0;
+      while (dist < metric.length) {
+        canvas.drawPath(
+            metric.extractPath(dist, dist + dash), paint);
+        dist += dash + gap;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
 
 @RoutePage()
 class NotesDiaryView extends StatefulWidget {
@@ -41,27 +90,42 @@ class _NotesDiaryViewState extends State<NotesDiaryView> {
             // Sadece bu sekmeyi etkiler; diğer sekmeler kendi Scaffold'unu kullanır.
             backgroundColor: isDarkMode
                 ? ColorConstant.bgColorDark
-                : const Color(0xFFFFF9ED),
+                : const Color(0xFFECE3D1),
             body: SafeArea(
               child: Column(
                 children: [
-                  // Başlık
+                  // Başlık — el yazısı "Notlarım" + arama + ekle
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                    padding: const EdgeInsets.fromLTRB(22, 14, 18, 6),
                     child: Row(
                       children: [
                         Expanded(
                           child: Text(
                             'notes.title'.tr(),
-                            style: TextStyle(
+                            style: GoogleFonts.caveat(
                               color: isDarkMode
                                   ? ColorConstant.textPrimaryDark
-                                  : ColorConstant.textPrimaryLight,
-                              fontSize: 32,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -0.5,
+                                  : const Color(0xFF3A3326),
+                              fontSize: 38,
+                              fontWeight: FontWeight.w700,
+                              height: 1.0,
                             ),
                           ),
+                        ),
+                        _headerCircleBtn(
+                          icon: Icons.search_rounded,
+                          bg: Colors.white,
+                          fg: const Color(0xFF3A3326),
+                          onTap: () =>
+                              _openNoteSearch(context, viewModel, isDarkMode),
+                        ),
+                        const SizedBox(width: 10),
+                        _headerCircleBtn(
+                          icon: Icons.add_rounded,
+                          bg: const Color(0xFF2B2622),
+                          fg: Colors.white,
+                          onTap: () =>
+                              _showAddChooser(context, viewModel, isDarkMode),
                         ),
                       ],
                     ),
@@ -111,6 +175,64 @@ class _NotesDiaryViewState extends State<NotesDiaryView> {
 
 
 
+
+  Widget _headerCircleBtn(
+      {required IconData icon,
+      required Color bg,
+      required Color fg,
+      required VoidCallback onTap}) {
+    return Material(
+      color: bg,
+      shape: const CircleBorder(),
+      elevation: 1.5,
+      shadowColor: Colors.black26,
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const CircleBorder(),
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Icon(icon, size: 22, color: fg),
+        ),
+      ),
+    );
+  }
+
+  /// Başlıktaki arama: metin girilince klasik liste arama sonuçlarını gösterir.
+  void _openNoteSearch(BuildContext context, NotesDiaryViewModel viewModel,
+      bool isDarkMode) {
+    final c = AppColors(isDarkMode);
+    final ctrl = TextEditingController(text: viewModel.noteSearchQuery);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: c.card,
+        title: Text('notes.searchTitle'.tr(),
+            style: TextStyle(
+                fontWeight: FontWeight.w800, color: c.textPrimary)),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          style: TextStyle(color: c.textPrimary),
+          decoration: InputDecoration(hintText: 'notes.searchHint'.tr()),
+          onSubmitted: (v) {
+            viewModel.setNoteSearchQuery(v.trim());
+            Navigator.pop(ctx);
+          },
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text('common.cancel'.tr())),
+          TextButton(
+              onPressed: () {
+                viewModel.setNoteSearchQuery(ctrl.text.trim());
+                Navigator.pop(ctx);
+              },
+              child: Text('notes.searchBtn'.tr())),
+        ],
+      ),
+    );
+  }
 
   /// FAB seçici: Klasör Ekle / Not Ekle (açıklamalı).
   void _showAddChooser(BuildContext context, NotesDiaryViewModel viewModel,
@@ -1098,7 +1220,16 @@ class _NotesContent extends StatelessWidget {
         child: CircularProgressIndicator(color: const Color(0xFFB794F6)),
       );
     }
+    // Varsayılan görünüm = mantar panosu. Arama veya farklı filtre (sabitlenen/
+    // klasör/arşiv) seçiliyken klasik ızgara görünümüne düşer.
+    final searchActive = viewModel.noteSearchQuery.trim().isNotEmpty;
+    if (viewModel.notesFilter != 'all' || searchActive) {
+      return _classicBody(context, isDarkMode);
+    }
+    return _corkBoard(context, isDarkMode);
+  }
 
+  Widget _classicBody(BuildContext context, bool isDarkMode) {
     final all = viewModel.applyTagFilter(viewModel
         .applyNoteSearch(viewModel.notes.where((n) => !n.isArchived).toList()));
     final pinned = all.where((n) => n.isPinned).toList();
@@ -1187,6 +1318,395 @@ class _NotesContent extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  // ==================== MANTAR PANOSU ====================
+  static const _boardBrown = Color(0xFF6E5C42);
+  static const _pinLight = Color(0xFFDFB176);
+  static const _pinDark = Color(0xFFBE8A4E);
+
+  Widget _corkBoard(BuildContext context, bool isDark) {
+    final live = viewModel.applyTagFilter(viewModel
+        .applyNoteSearch(viewModel.notes.where((n) => !n.isArchived).toList()));
+    final pinned = live.where((n) => n.isPinned).toList();
+    final recent = live.where((n) => !n.isPinned).toList();
+    final archivedCount = viewModel.notes.where((n) => n.isArchived).length;
+
+    return RefreshIndicator(
+      onRefresh: () => viewModel.loadNotes(),
+      color: const Color(0xFFB794F6),
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(0, 6, 0, 120),
+        children: [
+          _boardHeader(_recentDayLabel(recent),
+              '${recent.length} ${'notes.noteUnit'.tr()}',
+              trailing: recent.length > 2 ? 'notes.scroll'.tr() : null),
+          const SizedBox(height: 2),
+          recent.isEmpty
+              ? _boardEmptyLine('notes.board.noNotes'.tr())
+              : _clothesline(context, recent, isDark),
+          const SizedBox(height: 24),
+          _boardHeader('notes.pinnedSection'.tr().toUpperCase(),
+              '${pinned.length}'),
+          const SizedBox(height: 2),
+          pinned.isEmpty
+              ? _emptyPins()
+              : _clothesline(context, pinned, isDark),
+          const SizedBox(height: 24),
+          _boardHeader('notes.board.foldersArchive'.tr(), null),
+          const SizedBox(height: 12),
+          _foldersArchive(context, archivedCount, isDark),
+        ],
+      ),
+    );
+  }
+
+  Widget _boardHeader(String label, String? count, {String? trailing}) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(22, 0, 22, 0),
+      child: Row(
+        children: [
+          Flexible(
+            child: Text(count != null ? '$label · $count' : label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.0,
+                    color: _boardBrown)),
+          ),
+          const Spacer(),
+          if (trailing != null)
+            Text(trailing,
+                style: const TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF9B7B4F))),
+        ],
+      ),
+    );
+  }
+
+  Widget _boardEmptyLine(String text) => Padding(
+        padding: const EdgeInsets.fromLTRB(22, 18, 22, 6),
+        child: Text(text,
+            style: const TextStyle(fontSize: 13, color: Color(0xFF9B8A6E))),
+      );
+
+  Widget _clothesline(BuildContext context, List<Note> notes, bool isDark) {
+    return SizedBox(
+      height: 220,
+      child: Stack(
+        children: [
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 14,
+            child: CustomPaint(
+                size: const Size(double.infinity, 12),
+                painter: _StringPainter()),
+          ),
+          ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.fromLTRB(20, 2, 20, 8),
+            itemCount: notes.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemBuilder: (_, i) => _hungCard(context, notes[i], i, isDark),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _hungCard(BuildContext context, Note note, int i, bool isDark) {
+    final angle = ((i % 3) - 1) * 0.026;
+    return Transform.rotate(
+      angle: angle,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _clothespin(),
+          Transform.translate(
+            offset: const Offset(0, -3),
+            child: _paperCard(context, note, isDark),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _clothespin() {
+    return Container(
+      width: 15,
+      height: 28,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+            colors: [_pinLight, _pinDark],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight),
+        borderRadius: BorderRadius.circular(4),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 3,
+              offset: const Offset(0, 2)),
+        ],
+      ),
+      child: Center(
+        child: Container(
+            width: 2,
+            height: 18,
+            color: const Color(0xFF8A6334).withOpacity(0.55)),
+      ),
+    );
+  }
+
+  Widget _paperCard(BuildContext context, Note note, bool isDark) {
+    const w = 150.0;
+    final lines = (note.content ?? '').split('\n');
+    final checks = <List<dynamic>>[];
+    final texts = <String>[];
+    for (final l in lines) {
+      if (l.startsWith('☐ ') || l.startsWith('☑ ')) {
+        checks.add([l.startsWith('☑ '), l.substring(2)]);
+      } else if (l.trim().isNotEmpty) {
+        texts.add(l.startsWith('• ') ? l.substring(2) : l);
+      }
+    }
+    final imgs = note.attachments.where((a) => a.isImage).toList();
+    final title =
+        (note.title ?? '').trim().isNotEmpty ? note.title!.trim() : 'notes.untitledNote'.tr();
+
+    Widget preview;
+    if (imgs.isNotEmpty) {
+      preview = ClipRRect(
+        borderRadius: BorderRadius.circular(3),
+        child: Image.network(imgs.first.thumbnailUrl ?? imgs.first.fileUrl,
+            width: double.infinity,
+            height: 78,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => Container(
+                height: 78,
+                color: const Color(0xFFE6ECF5),
+                child: const Icon(Icons.image_rounded,
+                    color: Color(0xFF9DB3D6)))),
+      );
+    } else if (checks.isNotEmpty) {
+      preview = Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (final e in checks.take(4))
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                      (e[0] as bool)
+                          ? Icons.check_box_rounded
+                          : Icons.check_box_outline_blank_rounded,
+                      size: 15,
+                      color: const Color(0xFF8A7A5E)),
+                  const SizedBox(width: 5),
+                  Expanded(
+                    child: Text(e[1] as String,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.caveat(
+                            fontSize: 15.5,
+                            height: 1.1,
+                            color: const Color(0xFF3A3326))),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      );
+    } else {
+      preview = Text(
+        texts.isEmpty ? ' ' : texts.take(4).join('\n'),
+        maxLines: 4,
+        overflow: TextOverflow.ellipsis,
+        style: GoogleFonts.caveat(
+            fontSize: 15.5, height: 1.15, color: const Color(0xFF473F2F)),
+      );
+    }
+
+    return GestureDetector(
+      onTap: () => _openNote(context, note, isDark),
+      onLongPress: () => viewModel.togglePin(note.id, context),
+      child: Container(
+        width: w,
+        padding: const EdgeInsets.fromLTRB(12, 10, 12, 11),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(3),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withOpacity(0.18),
+                blurRadius: 9,
+                offset: const Offset(2, 7)),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.caveat(
+                    fontSize: 21,
+                    fontWeight: FontWeight.w700,
+                    height: 1.0,
+                    color: const Color(0xFF3A3326))),
+            const SizedBox(height: 7),
+            Flexible(child: preview),
+            if (note.tags.isNotEmpty) ...[
+              const SizedBox(height: 7),
+              Text('#${note.tags.first}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFFD1584F))),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _emptyPins() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(22, 10, 22, 0),
+      child: Column(
+        children: [
+          SizedBox(
+            height: 34,
+            child: Stack(
+              children: [
+                Positioned(
+                    left: 0,
+                    right: 0,
+                    top: 8,
+                    child: CustomPaint(
+                        size: const Size(double.infinity, 10),
+                        painter: _StringPainter())),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: List.generate(4, (_) => _clothespin()),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          Text('notes.board.pinnedHint'.tr(),
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 13, color: Color(0xFF9B8A6E))),
+        ],
+      ),
+    );
+  }
+
+  Widget _foldersArchive(
+      BuildContext context, int archivedCount, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(22, 0, 22, 0),
+      child: Row(
+        children: [
+          Expanded(
+            child: _boardFolderCard(
+              dashed: true,
+              icon: Icons.add_rounded,
+              label: 'notes.board.newFolder'.tr(),
+              onTap: () => showFolderDialog(context, viewModel, isDark),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _boardFolderCard(
+              dashed: false,
+              icon: Icons.inventory_2_rounded,
+              label: '${'notes.board.archiveBox'.tr()} · $archivedCount',
+              onTap: () => viewModel.setNotesFilter('archive'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _boardFolderCard(
+      {required bool dashed,
+      required IconData icon,
+      required String label,
+      required VoidCallback onTap}) {
+    final inner = Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon,
+              size: 26,
+              color: dashed
+                  ? const Color(0xFF9B8A6E)
+                  : const Color(0xFF6E5C42)),
+          const SizedBox(height: 8),
+          Text(label,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w700,
+                  color: dashed
+                      ? const Color(0xFF8A7A5E)
+                      : const Color(0xFF4F4433))),
+        ],
+      ),
+    );
+    return GestureDetector(
+      onTap: onTap,
+      child: SizedBox(
+        height: 96,
+        child: dashed
+            ? CustomPaint(
+                painter: _DashedBorderPainter(color: const Color(0xFFB7A684)),
+                child: inner)
+            : Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDED0B2),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: inner,
+              ),
+      ),
+    );
+  }
+
+  void _openNote(BuildContext context, Note note, bool isDark) {
+    if (note.isLocked) {
+      _showUnlockDialog(context, note, viewModel, isDark);
+    } else {
+      _showEditNoteDialog(context, note, viewModel, isDark);
+    }
+  }
+
+  String _recentDayLabel(List<Note> recent) {
+    if (recent.isEmpty) return 'notes.recentSection'.tr().toUpperCase();
+    final d = recent.first.createdAt;
+    final now = DateTime.now();
+    final diff =
+        DateTime(now.year, now.month, now.day).difference(DateTime(d.year, d.month, d.day)).inDays;
+    if (diff <= 0) return 'notes.today'.tr().toUpperCase();
+    if (diff == 1) return 'notes.yesterday'.tr().toUpperCase();
+    return '${d.day}.${d.month}.${d.year}';
   }
 
   /// Seçili istatistik sekmesine göre gövde.

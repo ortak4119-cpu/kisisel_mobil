@@ -180,7 +180,7 @@
     "description9": "Erhalte separate Benachrichtigungen für jede Kategorie und kontrolliere sie"
   },
   "navigation": {
-    "home": "Startseite",
+    "home": "Notizen",
     "tasks": "Aufgaben",
     "finance": "Finanzen",
     "profile": "Profil",
@@ -1008,6 +1008,20 @@
       "stop": "Stopp",
       "add": "Hinzufügen",
       "unavailable": "Spracherkennung ist auf diesem Gerät nicht verfügbar"
+    },
+    "noteUnit": "Notizen",
+    "scroll": "wischen",
+    "today": "Heute",
+    "yesterday": "Gestern",
+    "searchTitle": "Notizen suchen",
+    "searchBtn": "Suchen",
+    "untitledNote": "Ohne Titel",
+    "board": {
+      "noNotes": "Noch keine Notizen",
+      "foldersArchive": "ORDNER · ARCHIV",
+      "pinnedHint": "Leere Klammern warten. Halte eine Notiz gedrückt, um sie hier anzuheften.",
+      "newFolder": "Neue Leine / Ordner",
+      "archiveBox": "Archivbox"
     }
   },
   "diary": {

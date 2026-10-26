@@ -180,7 +180,7 @@
     "description9": "Her kategori için ayrı bildirimler alın ve bunları kontrol edin"
   },
   "navigation": {
-    "home": "Ana Sayfa",
+    "home": "Notlar",
     "tasks": "Görevler",
     "finance": "Finans",
     "profile": "Profil",
@@ -1008,6 +1008,20 @@
       "stop": "Durdur",
       "add": "Ekle",
       "unavailable": "Cihazda konuşma tanıma kullanılamıyor"
+    },
+    "noteUnit": "not",
+    "scroll": "kaydır",
+    "today": "Bugün",
+    "yesterday": "Dün",
+    "searchTitle": "Notlarda ara",
+    "searchBtn": "Ara",
+    "untitledNote": "Başlıksız",
+    "board": {
+      "noNotes": "Henüz not yok",
+      "foldersArchive": "KLASÖRLER · ARŞİV",
+      "pinnedHint": "Boş mandallar bekliyor. Bir notu basılı tutup buraya as.",
+      "newFolder": "Yeni ip / klasör",
+      "archiveBox": "Arşiv kutusu"
     }
   },
   "diary": {

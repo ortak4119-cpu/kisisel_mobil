@@ -180,7 +180,7 @@
     "description9": "カテゴリごとに個別の通知を受け取り、制御"
   },
   "navigation": {
-    "home": "ホーム",
+    "home": "メモ",
     "tasks": "タスク",
     "finance": "財務",
     "profile": "プロフィール",
@@ -1008,6 +1008,20 @@
       "stop": "停止",
       "add": "追加",
       "unavailable": "この端末では音声認識を利用できません"
+    },
+    "noteUnit": "件",
+    "scroll": "スクロール",
+    "today": "今日",
+    "yesterday": "昨日",
+    "searchTitle": "メモを検索",
+    "searchBtn": "検索",
+    "untitledNote": "無題",
+    "board": {
+      "noNotes": "メモはまだありません",
+      "foldersArchive": "フォルダ · アーカイブ",
+      "pinnedHint": "空のクリップが待っています。メモを長押しでここに留めます。",
+      "newFolder": "新しい紐 / フォルダ",
+      "archiveBox": "アーカイブ箱"
     }
   },
   "diary": {

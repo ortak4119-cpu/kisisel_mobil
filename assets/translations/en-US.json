@@ -180,7 +180,7 @@
     "description9": "Receive and control separate notifications for each category"
   },
   "navigation": {
-    "home": "Home",
+    "home": "Notes",
     "tasks": "Tasks",
     "finance": "Finance",
     "profile": "Profile",
@@ -1008,6 +1008,20 @@
       "stop": "Stop",
       "add": "Add",
       "unavailable": "Speech recognition is not available on this device"
+    },
+    "noteUnit": "notes",
+    "scroll": "scroll",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "searchTitle": "Search notes",
+    "searchBtn": "Search",
+    "untitledNote": "Untitled",
+    "board": {
+      "noNotes": "No notes yet",
+      "foldersArchive": "FOLDERS · ARCHIVE",
+      "pinnedHint": "Empty clips waiting. Long-press a note to pin it here.",
+      "newFolder": "New line / folder",
+      "archiveBox": "Archive box"
     }
   },
   "diary": {
