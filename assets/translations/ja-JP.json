@@ -413,7 +413,20 @@
       "morning": "朝",
       "noon": "昼",
       "evening": "夜"
-    }
+    },
+    "area": {
+      "relationships": "人間関係",
+      "learning": "学び",
+      "mind": "心",
+      "health": "健康"
+    },
+    "areaLabel": "ライフエリア",
+    "areaEmpty": "空",
+    "areaEmptyPrompt": "{area}は空です — 習慣を追加",
+    "today": "今日",
+    "streakN": "連続{n}",
+    "doneShort": "完了",
+    "skippedShort": "スキップ"
   },
   "profile": {
     "title": "プロフィール",

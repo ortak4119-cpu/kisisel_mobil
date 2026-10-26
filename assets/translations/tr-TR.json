@@ -413,7 +413,20 @@
     },
     "saveHabit": "Alışkanlığı Kaydet",
     "todaySection": "Bugünün alışkanlıkları",
-    "doneToday": "Tamamlandı"
+    "doneToday": "Tamamlandı",
+    "area": {
+      "relationships": "İlişkiler",
+      "learning": "Öğrenme",
+      "mind": "Zihin",
+      "health": "Sağlık"
+    },
+    "areaLabel": "Yaşam alanı",
+    "areaEmpty": "boş",
+    "areaEmptyPrompt": "{area} alanı boş — bir alışkanlık ekle",
+    "today": "bugün",
+    "streakN": "seri {n}",
+    "doneShort": "tamam",
+    "skippedShort": "atlandı"
   },
   "profile": {
     "title": "Profil",

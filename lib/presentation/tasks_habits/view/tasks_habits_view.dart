@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -221,6 +222,139 @@ const List<String> kHabitColors = [
   '#48BB78',
 ];
 
+// ==================== YAŞAM ALANLARI ====================
+// Alışkanlıklar 4 yaşam alanına ayrılır: İlişkiler, Öğrenme, Zihin, Sağlık.
+// Çeyrek-donut grafiği bu alanları gösterir; her alanın kendi rengi vardır.
+class _LifeArea {
+  final String key;
+  final String labelKey;
+  final Color main;
+  final Color soft;
+  final IconData icon;
+  const _LifeArea(this.key, this.labelKey, this.main, this.soft, this.icon);
+}
+
+const List<_LifeArea> kLifeAreas = [
+  _LifeArea('relationships', 'habits.area.relationships', Color(0xFF8E7CC9),
+      Color(0xFFEBE5F7), Icons.favorite_rounded),
+  _LifeArea('learning', 'habits.area.learning', Color(0xFF4E88C7),
+      Color(0xFFE1ECF8), Icons.menu_book_rounded),
+  _LifeArea('mind', 'habits.area.mind', Color(0xFFE0893C), Color(0xFFFAEEDD),
+      Icons.self_improvement_rounded),
+  _LifeArea('health', 'habits.area.health', Color(0xFF46A46B),
+      Color(0xFFE0F1E7), Icons.spa_rounded),
+];
+
+/// Kayıtlı kategori metnini (eski ya da yeni) bir yaşam alanına eşler.
+_LifeArea lifeAreaFor(String? category) {
+  final c = (category ?? '').toLowerCase();
+  bool has(List<String> ks) => ks.any((k) => c.contains(k));
+  if (has(const [
+    'relation',
+    'social',
+    'family',
+    'friend',
+    'ilişk',
+    'iliski',
+    'love',
+    'sevgi',
+    'aile'
+  ])) {
+    return kLifeAreas[0];
+  }
+  if (has(const [
+    'learn',
+    'study',
+    'educat',
+    'öğren',
+    'ogren',
+    'read',
+    'book',
+    'kitap',
+    'skill',
+    'language',
+    'dil',
+    'course',
+    'eğitim'
+  ])) {
+    return kLifeAreas[1];
+  }
+  if (has(const [
+    'mind',
+    'mental',
+    'medit',
+    'zihin',
+    'calm',
+    'journal',
+    'günlük',
+    'spirit',
+    'focus',
+    'odak',
+    'nefes',
+    'breath',
+    'ruh'
+  ])) {
+    return kLifeAreas[2];
+  }
+  return kLifeAreas[3]; // sağlık (varsayılan)
+}
+
+/// Çeyrek-donut: 4 yaşam alanı pastel renklerle; tamamlanma oranına göre
+/// dış kenarda doygun bir yay çizilir. Ortada beyaz delik bırakılır.
+class _AreaDonutPainter extends CustomPainter {
+  final Map<String, double> ratio; // alan -> 0..1 tamamlanma
+  final Map<String, bool> hasHabits; // alan -> alışkanlık var mı
+  final Color hole;
+  _AreaDonutPainter({
+    required this.ratio,
+    required this.hasHabits,
+    required this.hole,
+  });
+
+  // Çeyreklerin başlangıç açıları (derece). 0° = doğu, saat yönü +.
+  static const Map<String, double> _starts = {
+    'relationships': 180.0, // sol üst
+    'learning': -90.0, // sağ üst
+    'mind': 90.0, // sol alt
+    'health': 0.0, // sağ alt
+  };
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.shortestSide / 2;
+    const gapDeg = 3.5;
+    final rect = Rect.fromCircle(center: center, radius: radius);
+    const d2r = math.pi / 180.0;
+    for (final a in kLifeAreas) {
+      final start = (_starts[a.key]! + gapDeg / 2) * d2r;
+      final sweep = (90.0 - gapDeg) * d2r;
+      canvas.drawArc(
+          rect, start, sweep, true, Paint()..color = a.soft);
+      final r = (ratio[a.key] ?? 0).clamp(0.0, 1.0);
+      if ((hasHabits[a.key] ?? false) && r > 0) {
+        final arcRect = Rect.fromCircle(center: center, radius: radius - 7);
+        canvas.drawArc(
+          arcRect,
+          start,
+          sweep * r,
+          false,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 7
+            ..strokeCap = StrokeCap.round
+            ..color = a.main,
+        );
+      }
+    }
+    canvas.drawCircle(center, radius * 0.56, Paint()..color = hole);
+  }
+
+  @override
+  bool shouldRepaint(covariant _AreaDonutPainter old) =>
+      old.ratio != ratio || old.hasHabits != hasHabits || old.hole != hole;
+}
+
 /// Alışkanlık düzenleme sayfasını açar.
 void showEditHabitSheet(BuildContext context, TasksHabitsViewModel viewModel,
     bool isDarkMode, Habit habit) {
@@ -244,7 +378,16 @@ class _HabitsTab extends StatelessWidget {
   const _HabitsTab({required this.viewModel});
 
   static const _orange = Color(0xFFF6A821);
-  static const _red = Color(0xFFF6524B);
+  static const _green = Color(0xFF46A46B);
+
+  /// Alışkanlıkları yaşam alanına göre grupla (alan sırası sabit).
+  Map<String, List<Habit>> _grouped() {
+    final map = {for (final a in kLifeAreas) a.key: <Habit>[]};
+    for (final h in viewModel.habits) {
+      map[lifeAreaFor(h.category).key]!.add(h);
+    }
+    return map;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -255,333 +398,300 @@ class _HabitsTab extends StatelessWidget {
       return Center(child: CircularProgressIndicator(color: _orange));
     }
 
+    final grouped = _grouped();
+    final filled = kLifeAreas.where((a) => grouped[a.key]!.isNotEmpty).toList();
+    final empty = kLifeAreas.where((a) => grouped[a.key]!.isEmpty).toList();
+
     return RefreshIndicator(
       onRefresh: () => viewModel.loadHabits(),
       color: _orange,
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 4, 20, 130),
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 130),
         children: [
-          _weekStrip(c),
-          const SizedBox(height: 16),
-          _progressCard(c),
-          const SizedBox(height: 22),
-          _sectionRow(context, c),
-          const SizedBox(height: 12),
-          if (viewModel.habits.isEmpty)
-            _empty(context, c)
-          else
-            ...viewModel.habits.map((h) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _habitCard(context, c, h),
-                )),
+          Align(
+            alignment: Alignment.centerRight,
+            child: _sharedChip(context, c),
+          ),
+          const SizedBox(height: 6),
+          _areaDonutCard(c, grouped),
+          const SizedBox(height: 18),
+          for (final a in filled)
+            for (final h in grouped[a.key]!)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: _habitCard(context, c, h, a),
+              ),
+          for (final a in empty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: _emptyAreaRow(context, c, a),
+            ),
         ],
       ),
     );
   }
 
-  // ---------- Hafta şeridi ----------
-  Widget _weekStrip(AppColors c) {
-    final now = DateTime.now();
-    final monday = now.subtract(Duration(days: now.weekday - 1));
-    final shorts = 'tasks.weekShort'.tr().split(',');
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
-      decoration: BoxDecoration(
-        color: c.card,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: c.border.withOpacity(0.7)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: List.generate(7, (i) {
-          final day = DateTime(monday.year, monday.month, monday.day + i);
-          final sel = day.year == now.year &&
-              day.month == now.month &&
-              day.day == now.day;
-          return Column(
-            children: [
-              Text(i < shorts.length ? shorts[i] : '',
-                  style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: sel ? Colors.white : c.textMuted)),
-              const SizedBox(height: 6),
-              Container(
-                width: 34,
-                height: 34,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: sel ? _orange : Colors.transparent,
-                  shape: BoxShape.circle,
-                  boxShadow: sel
-                      ? [
-                          BoxShadow(
-                              color: _orange.withOpacity(0.5),
-                              blurRadius: 12,
-                              spreadRadius: 1)
-                        ]
-                      : null,
-                ),
-                child: Text('${day.day}',
-                    style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
-                        color: sel ? Colors.white : c.textPrimary)),
-              ),
-            ],
-          );
-        }),
-      ),
-    );
-  }
-
-  // ---------- İlerleme kartı ----------
-  Widget _progressCard(AppColors c) {
-    final done = viewModel.habitTodayDone;
-    final total = viewModel.habitTodayTotal;
-    final p = viewModel.habitDayProgress;
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: c.card,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _orange.withOpacity(0.35)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('tasks.progressTitle'.tr(),
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: c.textPrimary)),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              SizedBox(
-                width: 96,
-                height: 96,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    SizedBox(
-                      width: 96,
-                      height: 96,
-                      child: CircularProgressIndicator(
-                        value: p,
-                        strokeWidth: 8,
-                        backgroundColor: c.border.withOpacity(0.4),
-                        valueColor:
-                            const AlwaysStoppedAnimation<Color>(_orange),
-                      ),
-                    ),
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text('$done/$total',
-                            style: TextStyle(
-                                fontSize: 26,
-                                fontWeight: FontWeight.w900,
-                                color: c.textPrimary)),
-                        Text('common.completed'.tr(),
-                            style: TextStyle(
-                                fontSize: 11, color: c.textMuted)),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Column(
-                  children: [
-                    _miniStat(c, Icons.local_fire_department_rounded, _red,
-                        '${viewModel.habitBestStreak}',
-                        'habits.stats.streak'.tr()),
-                    const SizedBox(height: 12),
-                    _miniStat(c, Icons.percent_rounded, _orange,
-                        '%${viewModel.habitDayPercent}',
-                        'tasks.rowDailyGoal'.tr()),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _miniStat(
-      AppColors c, IconData icon, Color color, String value, String label) {
-    return Row(
-      children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(12)),
-          child: Icon(icon, color: color, size: 20),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(value,
-                  style: TextStyle(
-                      fontSize: 19,
-                      fontWeight: FontWeight.w900,
-                      color: color)),
-              Text(label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 11.5, color: c.textMuted)),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ---------- Bölüm başlığı ----------
-  Widget _sectionRow(BuildContext context, AppColors c) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text('habits.todaySection'.tr(),
-              style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                  color: c.textPrimary)),
-        ),
-        GestureDetector(
-          onTap: () => Navigator.of(context).push(MaterialPageRoute(
-              builder: (_) => SharedHabitsPage(isDark: c.isDark))),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-            decoration: BoxDecoration(
-              color: _orange.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.groups_rounded, size: 18, color: _orange),
-                const SizedBox(width: 5),
-                Text('habits.shared.short'.tr(),
-                    style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: _orange)),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ---------- Alışkanlık kartı ----------
-  Widget _habitCard(BuildContext context, AppColors c, Habit h) {
-    final color = viewModel.getHabitColor(h.color);
-    final goal = viewModel.habitGoalOf(h);
-    final cur = viewModel.habitProgressOf(h);
-    final done = viewModel.isHabitDoneToday(h);
-    final p = goal == 0 ? 0.0 : (cur / goal).clamp(0.0, 1.0);
-
+  // ---------- Paylaşılan alışkanlıklar kısayolu ----------
+  Widget _sharedChip(BuildContext context, AppColors c) {
     return GestureDetector(
-      onTap: () => _showHabitHistory(context, c, h),
-      onLongPress: () => _habitMenu(context, c, h),
+      onTap: () => Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => SharedHabitsPage(isDark: c.isDark))),
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: BoxDecoration(
-          color: c.card,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-              color: done
-                  ? const Color(0xFF48BB78).withOpacity(0.6)
-                  : color.withOpacity(0.5)),
+          color: _orange.withOpacity(0.12),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: done ? const Color(0xFF48BB78) : color,
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(
-                  done ? Icons.check_rounded : habitIconData(h.icon),
-                  color: Colors.white,
-                  size: 26),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(h.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                          fontSize: 16.5,
-                          fontWeight: FontWeight.w800,
-                          color: done ? c.textMuted : c.textPrimary,
-                          decoration:
-                              done ? TextDecoration.lineThrough : null)),
-                  const SizedBox(height: 4),
-                  if (done)
-                    Text('habits.doneToday'.tr(),
-                        style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF48BB78)))
-                  else if (h.skippedToday)
-                    Text('habits.skippedToday'.tr(),
-                        style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: _orange))
-                  else ...[
-                    Text('$cur / $goal',
-                        style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: c.textMuted)),
-                    const SizedBox(height: 7),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
-                        value: p.toDouble(),
-                        minHeight: 6,
-                        backgroundColor: color.withOpacity(0.15),
-                        valueColor: AlwaysStoppedAnimation<Color>(color),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            const SizedBox(width: 14),
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () => viewModel.tapHabit(h, context),
-              child: done
-                  ? const Icon(Icons.check_circle_rounded,
-                      size: 30, color: Color(0xFF48BB78))
-                  : Container(
-                      width: 30,
-                      height: 30,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: color, width: 3),
-                      ),
-                    ),
-            ),
+            const Icon(Icons.groups_rounded, size: 18, color: _orange),
+            const SizedBox(width: 5),
+            Text('habits.shared.short'.tr(),
+                style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: _orange)),
           ],
+        ),
+      ),
+    );
+  }
+
+  // ---------- Çeyrek-donut kartı (4 yaşam alanı) ----------
+  Widget _areaDonutCard(AppColors c, Map<String, List<Habit>> grouped) {
+    double ratioOf(String k) {
+      final list = grouped[k]!;
+      if (list.isEmpty) return 0;
+      final done = list.where(viewModel.isHabitDoneToday).length;
+      return done / list.length;
+    }
+
+    final ratio = {for (final a in kLifeAreas) a.key: ratioOf(a.key)};
+    final hasH = {for (final a in kLifeAreas) a.key: grouped[a.key]!.isNotEmpty};
+    final totalDone = viewModel.habitTodayDone;
+    final total = viewModel.habits.length;
+
+    String areaValue(String k) {
+      final list = grouped[k]!;
+      if (list.isEmpty) return 'habits.areaEmpty'.tr();
+      final done = list.where(viewModel.isHabitDoneToday).length;
+      return '$done/${list.length}';
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      decoration: BoxDecoration(
+        color: c.card,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: c.border.withOpacity(0.6)),
+      ),
+      child: Center(
+        child: SizedBox(
+          width: 236,
+          height: 236,
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: _AreaDonutPainter(
+                      ratio: ratio, hasHabits: hasH, hole: c.card),
+                ),
+              ),
+              Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('$totalDone/$total',
+                        style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w900,
+                            height: 1.0,
+                            color: c.textPrimary)),
+                    const SizedBox(height: 2),
+                    Text('habits.today'.tr(),
+                        style: TextStyle(fontSize: 12, color: c.textMuted)),
+                  ],
+                ),
+              ),
+              _quadLabel(const Alignment(-0.54, -0.5), kLifeAreas[0],
+                  areaValue('relationships')),
+              _quadLabel(const Alignment(0.54, -0.5), kLifeAreas[1],
+                  areaValue('learning')),
+              _quadLabel(const Alignment(-0.54, 0.5), kLifeAreas[2],
+                  areaValue('mind')),
+              _quadLabel(const Alignment(0.54, 0.5), kLifeAreas[3],
+                  areaValue('health')),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _quadLabel(Alignment al, _LifeArea a, String value) {
+    return Align(
+      alignment: al,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(a.labelKey.tr(),
+              style: TextStyle(
+                  fontSize: 12.5, fontWeight: FontWeight.w700, color: a.main)),
+          const SizedBox(height: 1),
+          Text(value,
+              style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: a.main.withOpacity(0.75))),
+        ],
+      ),
+    );
+  }
+
+  // ---------- Alışkanlık kartı (alan renkli sol çubuk) ----------
+  Widget _habitCard(
+      BuildContext context, AppColors c, Habit h, _LifeArea area) {
+    final done = viewModel.isHabitDoneToday(h);
+    final goal = viewModel.habitGoalOf(h);
+    final cur = viewModel.habitProgressOf(h);
+    final streak = h.currentStreak;
+    final barColor = done ? _green : area.main;
+
+    final String trailing;
+    if (h.skippedToday) {
+      trailing = 'habits.skippedShort'.tr();
+    } else if (streak > 0) {
+      trailing =
+          '$cur/$goal · ${'habits.streakN'.tr(namedArgs: {'n': '$streak'})}';
+    } else {
+      trailing = '$cur/$goal';
+    }
+
+    return GestureDetector(
+      onTap: () => viewModel.tapHabit(h, context),
+      onLongPress: () => _habitMenu(context, c, h),
+      child: Container(
+        decoration: BoxDecoration(
+          color: c.card,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: c.border.withOpacity(0.55)),
+        ),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(
+                width: 5,
+                decoration: BoxDecoration(
+                  color: barColor,
+                  borderRadius:
+                      const BorderRadius.horizontal(left: Radius.circular(14)),
+                ),
+              ),
+              const SizedBox(width: 13),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(area.labelKey.tr(),
+                          style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
+                              color: area.main)),
+                      const SizedBox(height: 3),
+                      Text(h.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              fontSize: 15.5,
+                              fontWeight: FontWeight.w700,
+                              color: done ? c.textMuted : c.textPrimary,
+                              decoration:
+                                  done ? TextDecoration.lineThrough : null)),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Padding(
+                padding: const EdgeInsets.only(right: 14),
+                child: Center(
+                  child: done
+                      ? const Icon(Icons.check_circle_rounded,
+                          color: _green, size: 24)
+                      : Text(trailing,
+                          style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: c.textMuted)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ---------- Boş yaşam alanı istemi ----------
+  Widget _emptyAreaRow(BuildContext context, AppColors c, _LifeArea area) {
+    return GestureDetector(
+      onTap: () {
+        viewModel.resetHabitForm();
+        viewModel.setHabitCategory(area.key);
+        showAddHabitSheet(context, viewModel, c.isDark);
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: c.card,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: area.main.withOpacity(0.35)),
+        ),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(
+                width: 5,
+                decoration: BoxDecoration(
+                  color: area.main.withOpacity(0.45),
+                  borderRadius:
+                      const BorderRadius.horizontal(left: Radius.circular(14)),
+                ),
+              ),
+              const SizedBox(width: 13),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  child: Text(
+                    'habits.areaEmptyPrompt'
+                        .tr(namedArgs: {'area': area.labelKey.tr()}),
+                    style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: c.textMuted),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: Center(
+                  child: Container(
+                    width: 30,
+                    height: 30,
+                    decoration: BoxDecoration(
+                        color: area.soft, shape: BoxShape.circle),
+                    child: Icon(Icons.add_rounded, color: area.main, size: 19),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -653,35 +763,8 @@ class _HabitsTab extends StatelessWidget {
           viewModel: viewModel, habit: h, isDark: c.isDark),
     );
   }
-
-  Widget _empty(BuildContext context, AppColors c) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 44, horizontal: 20),
-      decoration: BoxDecoration(
-        color: c.card,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: c.border.withOpacity(0.7)),
-      ),
-      child: Column(
-        children: [
-          Icon(Icons.emoji_events_rounded,
-              size: 42, color: _orange.withOpacity(0.6)),
-          const SizedBox(height: 12),
-          Text('habits.emptyState'.tr(),
-              style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: c.textPrimary)),
-          const SizedBox(height: 6),
-          Text('habits.emptyStateSubtitle'.tr(),
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13, color: c.textSecondary)),
-        ],
-      ),
-    );
-  }
 }
+
 
 // ==================== ALIŞKANLIK GEÇMİŞİ (ISI HARİTASI) ====================
 
@@ -3077,6 +3160,9 @@ class _AddHabitBottomSheet extends StatelessWidget {
                         _label(c, 'habits.name'.tr()),
                         _nameField(vm, c),
                         const SizedBox(height: 20),
+                        _label(c, 'habits.areaLabel'.tr()),
+                        _areaPicker(vm, c),
+                        const SizedBox(height: 20),
                         _label(c, 'habits.iconColor'.tr()),
                         _iconRow(vm, c),
                         const SizedBox(height: 12),
@@ -3158,6 +3244,54 @@ class _AddHabitBottomSheet extends StatelessWidget {
           child: Icon(icon, size: 18, color: c.textSecondary),
         ),
       ),
+    );
+  }
+
+  // Yaşam alanı seçici: İlişkiler / Öğrenme / Zihin / Sağlık.
+  Widget _areaPicker(TasksHabitsViewModel vm, AppColors c) {
+    final sel = lifeAreaFor(vm.habitCategory);
+    return Row(
+      children: [
+        for (int i = 0; i < kLifeAreas.length; i++) ...[
+          if (i > 0) const SizedBox(width: 8),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => vm.setHabitCategory(kLifeAreas[i].key),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 11),
+                decoration: BoxDecoration(
+                  color: sel.key == kLifeAreas[i].key
+                      ? kLifeAreas[i].soft
+                      : c.card,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: sel.key == kLifeAreas[i].key
+                        ? kLifeAreas[i].main
+                        : c.border.withOpacity(0.7),
+                    width: sel.key == kLifeAreas[i].key ? 1.5 : 1,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Icon(kLifeAreas[i].icon,
+                        color: kLifeAreas[i].main, size: 20),
+                    const SizedBox(height: 6),
+                    Text(kLifeAreas[i].labelKey.tr(),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w700,
+                            color: sel.key == kLifeAreas[i].key
+                                ? kLifeAreas[i].main
+                                : c.textSecondary)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 

@@ -413,7 +413,20 @@
       "morning": "Manhã",
       "noon": "Meio-dia",
       "evening": "Noite"
-    }
+    },
+    "area": {
+      "relationships": "Relações",
+      "learning": "Aprendizagem",
+      "mind": "Mente",
+      "health": "Saúde"
+    },
+    "areaLabel": "Área da vida",
+    "areaEmpty": "vazio",
+    "areaEmptyPrompt": "{area} está vazio — adicione um hábito",
+    "today": "hoje",
+    "streakN": "sequência {n}",
+    "doneShort": "feito",
+    "skippedShort": "ignorado"
   },
   "profile": {
     "title": "Perfil",

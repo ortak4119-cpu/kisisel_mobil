@@ -208,18 +208,25 @@ class _HomeViewState extends State<HomeView> {
                 size: 24,
               ),
               const SizedBox(height: 4),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: isSelected ? 12 : 11,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected
-                      ? (isDarkMode
-                      ? ColorConstant.primaryDarkModePurple
-                      : ColorConstant.primaryPurple)
-                      : (isDarkMode
-                      ? ColorConstant.textMutedDark
-                      : ColorConstant.textMutedLight),
+              // Uzun etiketler (ör. "Alışkanlık") dar yuvada taşmasın diye
+              // tek satıra sığacak şekilde ölçeklenir.
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  softWrap: false,
+                  style: TextStyle(
+                    fontSize: isSelected ? 12 : 11,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    color: isSelected
+                        ? (isDarkMode
+                            ? ColorConstant.primaryDarkModePurple
+                            : ColorConstant.primaryPurple)
+                        : (isDarkMode
+                            ? ColorConstant.textMutedDark
+                            : ColorConstant.textMutedLight),
+                  ),
                 ),
               ),
             ],

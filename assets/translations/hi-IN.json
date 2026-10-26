@@ -413,7 +413,20 @@
       "morning": "सुबह",
       "noon": "दोपहर",
       "evening": "शाम"
-    }
+    },
+    "area": {
+      "relationships": "संबंध",
+      "learning": "सीखना",
+      "mind": "मन",
+      "health": "स्वास्थ्य"
+    },
+    "areaLabel": "जीवन क्षेत्र",
+    "areaEmpty": "खाली",
+    "areaEmptyPrompt": "{area} खाली है — एक आदत जोड़ें",
+    "today": "आज",
+    "streakN": "श्रृंखला {n}",
+    "doneShort": "पूर्ण",
+    "skippedShort": "छोड़ा"
   },
   "profile": {
     "title": "प्रोफ़ाइल",

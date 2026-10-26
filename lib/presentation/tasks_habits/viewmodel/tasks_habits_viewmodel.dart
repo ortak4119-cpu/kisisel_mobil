@@ -660,7 +660,7 @@ class TasksHabitsViewModel extends ChangeNotifier {
   // Atomic Habits döngüsü: ipucu (cue) + ödül (reward)
   final TextEditingController habitCueController = TextEditingController();
   final TextEditingController habitRewardController = TextEditingController();
-  String _habitCategory = 'health_fitness';
+  String _habitCategory = 'health';
   String get habitCategory => _habitCategory;
   String _habitDifficulty = 'beginner';
   String get habitDifficulty => _habitDifficulty;
@@ -911,7 +911,7 @@ class TasksHabitsViewModel extends ChangeNotifier {
     habitDescriptionController.clear();
     habitCueController.clear();
     habitRewardController.clear();
-    _habitCategory = 'health_fitness';
+    _habitCategory = 'health';
     _habitDifficulty = 'beginner';
     _habitTimePeriod = 'morning';
     _selectedIcon = 'star';

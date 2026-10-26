@@ -413,7 +413,20 @@
       "morning": "صباحًا",
       "noon": "ظهرًا",
       "evening": "مساءً"
-    }
+    },
+    "area": {
+      "relationships": "العلاقات",
+      "learning": "التعلّم",
+      "mind": "العقل",
+      "health": "الصحة"
+    },
+    "areaLabel": "مجال الحياة",
+    "areaEmpty": "فارغ",
+    "areaEmptyPrompt": "{area} فارغ — أضف عادة",
+    "today": "اليوم",
+    "streakN": "سلسلة {n}",
+    "doneShort": "تم",
+    "skippedShort": "تم التخطي"
   },
   "profile": {
     "title": "الملف الشخصي",

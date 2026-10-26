@@ -413,7 +413,20 @@
       "morning": "Утро",
       "noon": "Полдень",
       "evening": "Вечер"
-    }
+    },
+    "area": {
+      "relationships": "Отношения",
+      "learning": "Обучение",
+      "mind": "Разум",
+      "health": "Здоровье"
+    },
+    "areaLabel": "Сфера жизни",
+    "areaEmpty": "пусто",
+    "areaEmptyPrompt": "{area} пусто — добавьте привычку",
+    "today": "сегодня",
+    "streakN": "серия {n}",
+    "doneShort": "готово",
+    "skippedShort": "пропущено"
   },
   "profile": {
     "title": "Профиль",

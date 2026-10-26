@@ -413,7 +413,20 @@
     },
     "saveHabit": "Save Habit",
     "todaySection": "Today’s habits",
-    "doneToday": "Completed"
+    "doneToday": "Completed",
+    "area": {
+      "relationships": "Relationships",
+      "learning": "Learning",
+      "mind": "Mind",
+      "health": "Health"
+    },
+    "areaLabel": "Life area",
+    "areaEmpty": "empty",
+    "areaEmptyPrompt": "{area} is empty — add a habit",
+    "today": "today",
+    "streakN": "streak {n}",
+    "doneShort": "done",
+    "skippedShort": "skipped"
   },
   "profile": {
     "title": "Profile",
