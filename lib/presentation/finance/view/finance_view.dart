@@ -257,7 +257,19 @@ class _FinanceViewState extends State<FinanceView> {
           _coloredStatCards(context, vm, c),
           const SizedBox(height: 14),
           _transactionsCard(context, vm, c),
-          const SizedBox(height: 14),
+          const SizedBox(height: 22),
+          // Bütçe ayarları bölümü — en altta, tüm ayarlar doğrudan erişilebilir.
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 12),
+            child: Text(
+              'finance.budgetSettings'.tr(),
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
+                color: c.textPrimary,
+              ),
+            ),
+          ),
           _settingsList(context, vm, c),
         ];
     }
@@ -840,6 +852,24 @@ class _FinanceViewState extends State<FinanceView> {
                       .tr(namedArgs: {'n': '${vm.categoryBudgets.length}'}),
                   style: TextStyle(fontSize: 12.5, color: c.textSecondary)),
               onTap: () => _showCategoryBudgetsDialog(context, vm, c.isDark)),
+          _setDivider(c),
+          _setRow(c, 'finance.debt.title'.tr(),
+              trailing: Text(
+                  vm.debts.isEmpty
+                      ? 'finance.debt.none'.tr()
+                      : 'finance.debt.total'
+                          .tr(namedArgs: {'amount': tl0(vm.totalDebt)}),
+                  style: TextStyle(fontSize: 12.5, color: c.textSecondary)),
+              onTap: () => _showDebtPlannerDialog(context, vm, c.isDark)),
+          _setDivider(c),
+          _setRow(c, 'finance.installment.title'.tr(),
+              trailing: Text(
+                  vm.installments.isEmpty
+                      ? 'finance.installment.none'.tr()
+                      : 'finance.installment.monthly'.tr(
+                          namedArgs: {'amount': tl0(vm.monthlyInstallmentTotal)}),
+                  style: TextStyle(fontSize: 12.5, color: c.textSecondary)),
+              onTap: () => _showInstallmentsDialog(context, vm, c.isDark)),
           _setDivider(c),
           _setRow(c, 'finance.financeLock'.tr(),
               trailing: Switch(
