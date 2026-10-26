@@ -913,7 +913,12 @@
     "totalShort": "total",
     "categoryBudgetsLabel": "Budgets par catégorie",
     "limited": "{n} limités",
-    "financeLock": "Verrou finances"
+    "financeLock": "Verrou finances",
+    "allTransactions": "Toutes les transactions",
+    "seeAllTxn": "Voir tout ({n})",
+    "noSubscriptions": "Aucun abonnement",
+    "nextBilling": "Prochain : {date}",
+    "deleteSubscriptionConfirm": "Supprimer cet abonnement ?"
   },
   "notes": {
     "title": "Mes Notes",

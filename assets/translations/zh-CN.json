@@ -913,7 +913,12 @@
     "totalShort": "合计",
     "categoryBudgetsLabel": "分类预算",
     "limited": "{n} 项限额",
-    "financeLock": "财务锁"
+    "financeLock": "财务锁",
+    "allTransactions": "所有交易",
+    "seeAllTxn": "查看全部 ({n})",
+    "noSubscriptions": "还没有订阅",
+    "nextBilling": "下次：{date}",
+    "deleteSubscriptionConfirm": "删除此订阅？"
   },
   "notes": {
     "title": "我的笔记",

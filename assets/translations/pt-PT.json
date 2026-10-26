@@ -913,7 +913,12 @@
     "totalShort": "total",
     "categoryBudgetsLabel": "Orçamentos por categoria",
     "limited": "{n} com limite",
-    "financeLock": "Bloqueio de finanças"
+    "financeLock": "Bloqueio de finanças",
+    "allTransactions": "Todas as transações",
+    "seeAllTxn": "Ver tudo ({n})",
+    "noSubscriptions": "Ainda sem subscrições",
+    "nextBilling": "Próximo: {date}",
+    "deleteSubscriptionConfirm": "Eliminar esta subscrição?"
   },
   "notes": {
     "title": "Minhas Notas",

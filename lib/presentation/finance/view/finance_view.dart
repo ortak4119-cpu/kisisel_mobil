@@ -847,6 +847,12 @@ class _FinanceViewState extends State<FinanceView> {
                   style: TextStyle(fontSize: 12.5, color: c.textSecondary)),
               onTap: () => _showInstallmentsDialog(context, vm, c.isDark)),
           _setDivider(c),
+          _setRow(c, 'finance.subscriptions'.tr(),
+              trailing: Text(
+                  '${vm.activeSubscriptions.length} ${'finance.subShort'.tr()}',
+                  style: TextStyle(fontSize: 12.5, color: c.textSecondary)),
+              onTap: () => _openSubscriptionsManager(context, vm, c.isDark)),
+          _setDivider(c),
           _setRow(c, 'finance.financeLock'.tr(),
               trailing: Switch(
                 value: vm.financeHasPin,
@@ -1337,9 +1343,8 @@ class _FinanceViewState extends State<FinanceView> {
 
   // ---------- Tasarruf hedefi ----------
 
-  // ---------- Son işlemler ----------
-  Widget _transactionsCard(
-      BuildContext context, FinanceViewModel vm, AppColors c) {
+  /// Tüm işlemleri (gelir + gider) tarihe göre sıralı döner.
+  List<_Txn> _allTxns(FinanceViewModel vm) {
     final items = <_Txn>[];
     for (final e in vm.expenses) {
       items.add(_Txn(e.id, e.description ?? finCatById(e.category).labelKey.tr(),
@@ -1356,7 +1361,14 @@ class _FinanceViewState extends State<FinanceView> {
           d, i.amount, i.category, true));
     }
     items.sort((a, b) => b.date.compareTo(a.date));
-    final top = items.take(6).toList();
+    return items;
+  }
+
+  // ---------- Son işlemler (en fazla 5; fazlası ayrı sayfada) ----------
+  Widget _transactionsCard(
+      BuildContext context, FinanceViewModel vm, AppColors c) {
+    final items = _allTxns(vm);
+    final top = items.take(5).toList();
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -1390,8 +1402,99 @@ class _FinanceViewState extends State<FinanceView> {
             )
           else
             for (final t in top) _txnRow(context, vm, t, c),
+          if (items.length > 5) ...[
+            Divider(height: 1, color: c.border.withOpacity(0.6)),
+            InkWell(
+              onTap: () => _openAllTransactions(context, vm, c),
+              borderRadius: BorderRadius.circular(12),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'finance.seeAllTxn'
+                          .tr(namedArgs: {'n': '${items.length}'}),
+                      style: const TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                          color: _fOrange),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.chevron_right_rounded,
+                        size: 18, color: _fOrange),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ],
       ),
+    );
+  }
+
+  // ---------- Tüm işlemler sayfası ----------
+  void _openAllTransactions(
+      BuildContext context, FinanceViewModel vm, AppColors c) {
+    final bg =
+        c.isDark ? ColorConstant.bgColorDark : ColorConstant.bgColorLight;
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => ChangeNotifierProvider.value(
+        value: vm,
+        child: Consumer<FinanceViewModel>(
+          builder: (ctx, vm2, _) {
+            final items = _allTxns(vm2);
+            return Scaffold(
+              backgroundColor: bg,
+              appBar: AppBar(
+                backgroundColor: bg,
+                elevation: 0,
+                surfaceTintColor: Colors.transparent,
+                foregroundColor: c.textPrimary,
+                title: Text('finance.allTransactions'.tr(),
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: c.textPrimary)),
+              ),
+              body: items.isEmpty
+                  ? Center(
+                      child: Text('finance.noTxn'.tr(),
+                          style: TextStyle(color: c.textMuted)))
+                  : ListView(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          decoration: BoxDecoration(
+                            color: c.card,
+                            borderRadius: BorderRadius.circular(20),
+                            border:
+                                Border.all(color: c.border.withOpacity(0.7)),
+                          ),
+                          child: Column(
+                            children: [
+                              for (final t in items) _txnRow(ctx, vm2, t, c),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+            );
+          },
+        ),
+      ),
+    ));
+  }
+
+  // ---------- Abonelik yöneticisi ----------
+  void _openSubscriptionsManager(
+      BuildContext context, FinanceViewModel vm, bool isDark) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _SubscriptionsManagerSheet(vm: vm, isDark: isDark),
     );
   }
 
@@ -1572,6 +1675,247 @@ class _Txn {
   final String category;
   final bool income;
   _Txn(this.id, this.title, this.date, this.amount, this.category, this.income);
+}
+
+// ==================== ABONELİK YÖNETİCİSİ ====================
+/// Eklenen tüm abonelikleri listeler: düzenle (dokun), aktif/pasif (anahtar),
+/// sil ve yeni ekle. Bütçe Ayarları > Abonelikler ile açılır.
+class _SubscriptionsManagerSheet extends StatelessWidget {
+  final FinanceViewModel vm;
+  final bool isDark;
+  const _SubscriptionsManagerSheet({required this.vm, required this.isDark});
+
+  static const _subPurple = Color(0xFF9F7AEA);
+
+  void _openForm(BuildContext ctx, FinanceViewModel vm2) {
+    showModalBottomSheet(
+      context: ctx,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) =>
+          _AddSubscriptionBottomSheet(viewModel: vm2, isDarkMode: isDark),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final txtP =
+        isDark ? ColorConstant.textPrimaryDark : ColorConstant.textPrimaryLight;
+    final txtS = isDark
+        ? ColorConstant.textSecondaryDark
+        : ColorConstant.textSecondaryLight;
+    final card = isDark ? ColorConstant.cardColorDark : ColorConstant.white;
+    final fill = isDark ? ColorConstant.bgColorDark : ColorConstant.bgColorLight;
+    return ChangeNotifierProvider.value(
+      value: vm,
+      child: Consumer<FinanceViewModel>(
+        builder: (ctx, vm2, _) {
+          final subs = vm2.subscriptions;
+          return Container(
+            constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.85),
+            decoration: BoxDecoration(
+              color: card,
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(28)),
+            ),
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: EdgeInsets.only(
+                    left: 20,
+                    right: 20,
+                    top: 16,
+                    bottom: 16 + MediaQuery.of(context).viewInsets.bottom),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                            color: fill,
+                            borderRadius: BorderRadius.circular(2)),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text('finance.subscriptions'.tr(),
+                              style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w800,
+                                  color: txtP)),
+                        ),
+                        InkWell(
+                          onTap: () {
+                            vm2.resetSubscriptionForm();
+                            _openForm(ctx, vm2);
+                          },
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                                color: _fOrange.withOpacity(0.14),
+                                borderRadius: BorderRadius.circular(12)),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.add_rounded,
+                                    size: 18, color: _fOrange),
+                                const SizedBox(width: 4),
+                                Text('finance.addSubscription'.tr(),
+                                    style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w700,
+                                        color: _fOrange)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    if (subs.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 36),
+                        child: Center(
+                            child: Text('finance.noSubscriptions'.tr(),
+                                style: TextStyle(color: txtS))),
+                      )
+                    else
+                      Flexible(
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          itemCount: subs.length,
+                          separatorBuilder: (_, __) =>
+                              Divider(height: 1, color: fill),
+                          itemBuilder: (_, i) {
+                            final s = subs[i];
+                            final d = s.nextBillingDate;
+                            return InkWell(
+                              onTap: () {
+                                vm2.startEditSubscription(s);
+                                _openForm(ctx, vm2);
+                              },
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 10),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                          color: _subPurple.withOpacity(
+                                              s.isActive ? 0.15 : 0.07),
+                                          borderRadius:
+                                              BorderRadius.circular(11)),
+                                      child: Icon(Icons.sync_rounded,
+                                          size: 20,
+                                          color: _subPurple.withOpacity(
+                                              s.isActive ? 1 : 0.5)),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(s.name,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                  fontSize: 14.5,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: s.isActive
+                                                      ? txtP
+                                                      : txtS,
+                                                  decoration: s.isActive
+                                                      ? null
+                                                      : TextDecoration
+                                                          .lineThrough)),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                              '${tl0(s.amount)} · ${'finance.nextBilling'.tr(namedArgs: {
+                                                    'date':
+                                                        '${d.day}.${d.month}.${d.year}'
+                                                  })}',
+                                              style: TextStyle(
+                                                  fontSize: 12, color: txtS)),
+                                        ],
+                                      ),
+                                    ),
+                                    Switch(
+                                      value: s.isActive,
+                                      activeThumbColor: _fOrange,
+                                      onChanged: (_) => vm2
+                                          .toggleSubscriptionActive(s.id, ctx),
+                                    ),
+                                    InkWell(
+                                      onTap: () =>
+                                          _confirmDeleteSub(ctx, vm2, s, isDark),
+                                      borderRadius: BorderRadius.circular(20),
+                                      child: const Padding(
+                                        padding: EdgeInsets.all(6),
+                                        child: Icon(Icons.delete_outline_rounded,
+                                            size: 20, color: Color(0xFFE53E3E)),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+void _confirmDeleteSub(
+    BuildContext context, FinanceViewModel vm, dynamic s, bool isDark) {
+  showDialog(
+    context: context,
+    builder: (d) => AlertDialog(
+      backgroundColor:
+          isDark ? ColorConstant.cardColorDark : ColorConstant.white,
+      title: Text(s.name,
+          style: TextStyle(
+              color: isDark
+                  ? ColorConstant.textPrimaryDark
+                  : ColorConstant.textPrimaryLight)),
+      content: Text('finance.deleteSubscriptionConfirm'.tr(),
+          style: TextStyle(
+              color: isDark
+                  ? ColorConstant.textSecondaryDark
+                  : ColorConstant.textSecondaryLight)),
+      actions: [
+        TextButton(
+            onPressed: () => Navigator.pop(d),
+            child: Text('common.cancel'.tr())),
+        TextButton(
+          onPressed: () {
+            Navigator.pop(d);
+            vm.deleteSubscription(s.id, context);
+          },
+          child: Text('common.delete'.tr(),
+              style: const TextStyle(color: Color(0xFFE53E3E))),
+        ),
+      ],
+    ),
+  );
 }
 
 void _txnMenu(

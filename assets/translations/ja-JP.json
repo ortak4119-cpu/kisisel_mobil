@@ -913,7 +913,12 @@
     "totalShort": "合計",
     "categoryBudgetsLabel": "カテゴリ予算",
     "limited": "{n}件制限",
-    "financeLock": "家計ロック"
+    "financeLock": "家計ロック",
+    "allTransactions": "すべての取引",
+    "seeAllTxn": "すべて表示 ({n})",
+    "noSubscriptions": "サブスクはまだありません",
+    "nextBilling": "次回: {date}",
+    "deleteSubscriptionConfirm": "このサブスクを削除しますか？"
   },
   "notes": {
     "title": "マイノート",

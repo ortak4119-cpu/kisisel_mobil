@@ -913,7 +913,12 @@
     "totalShort": "всего",
     "categoryBudgetsLabel": "Бюджеты категорий",
     "limited": "{n} с лимитом",
-    "financeLock": "Блокировка финансов"
+    "financeLock": "Блокировка финансов",
+    "allTransactions": "Все операции",
+    "seeAllTxn": "Показать все ({n})",
+    "noSubscriptions": "Пока нет подписок",
+    "nextBilling": "Следующий: {date}",
+    "deleteSubscriptionConfirm": "Удалить эту подписку?"
   },
   "notes": {
     "title": "Мои Заметки",

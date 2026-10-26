@@ -913,7 +913,12 @@
     "totalShort": "toplam",
     "categoryBudgetsLabel": "Kategori bütçeleri",
     "limited": "{n} limitli",
-    "financeLock": "Finans kilidi"
+    "financeLock": "Finans kilidi",
+    "allTransactions": "Tüm İşlemler",
+    "seeAllTxn": "Tümünü gör ({n})",
+    "noSubscriptions": "Henüz abonelik yok",
+    "nextBilling": "Sonraki: {date}",
+    "deleteSubscriptionConfirm": "Bu aboneliği silmek istediğinizden emin misiniz?"
   },
   "notes": {
     "title": "Notlarım",

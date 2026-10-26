@@ -913,7 +913,12 @@
     "totalShort": "الإجمالي",
     "categoryBudgetsLabel": "ميزانيات الفئات",
     "limited": "{n} محدودة",
-    "financeLock": "قفل المالية"
+    "financeLock": "قفل المالية",
+    "allTransactions": "كل المعاملات",
+    "seeAllTxn": "عرض الكل ({n})",
+    "noSubscriptions": "لا اشتراكات بعد",
+    "nextBilling": "التالي: {date}",
+    "deleteSubscriptionConfirm": "حذف هذا الاشتراك؟"
   },
   "notes": {
     "title": "ملاحظاتي",

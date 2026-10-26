@@ -913,7 +913,12 @@
     "totalShort": "कुल",
     "categoryBudgetsLabel": "श्रेणी बजट",
     "limited": "{n} सीमित",
-    "financeLock": "वित्त लॉक"
+    "financeLock": "वित्त लॉक",
+    "allTransactions": "सभी लेन-देन",
+    "seeAllTxn": "सभी देखें ({n})",
+    "noSubscriptions": "अभी कोई सदस्यता नहीं",
+    "nextBilling": "अगला: {date}",
+    "deleteSubscriptionConfirm": "यह सदस्यता हटाएँ?"
   },
   "notes": {
     "title": "मेरे नोट्स",

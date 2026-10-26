@@ -913,7 +913,12 @@
     "totalShort": "gesamt",
     "categoryBudgetsLabel": "Kategoriebudgets",
     "limited": "{n} limitiert",
-    "financeLock": "Finanzsperre"
+    "financeLock": "Finanzsperre",
+    "allTransactions": "Alle Transaktionen",
+    "seeAllTxn": "Alle ansehen ({n})",
+    "noSubscriptions": "Noch keine Abos",
+    "nextBilling": "Nächste: {date}",
+    "deleteSubscriptionConfirm": "Dieses Abo löschen?"
   },
   "notes": {
     "title": "Meine Notizen",
