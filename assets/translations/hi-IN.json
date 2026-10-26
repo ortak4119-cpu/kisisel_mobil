@@ -509,7 +509,7 @@
       "emptyState": "अभी तक कोई उपलब्धि नहीं",
       "emptyStateSubtitle": "अब कार्य पूरे करना शुरू करें!",
       "defaultTitle": "उपलब्धि",
-      "progress": "प्रगति: {{current}}/{{total}}",
+      "progress": "प्रगति: {current}/{total}",
       "completed": "% पूर्ण",
       "unlockedOn": "अनलॉक किया गया:",
       "stats": {
@@ -560,7 +560,16 @@
     "backupSync": "बैकअप और सिंक",
     "backupOn": "चालू",
     "helpSupport": "सहायता और समर्थन",
-    "aboutApp": "ऐप के बारे में"
+    "aboutApp": "ऐप के बारे में",
+    "secLevel": "स्तर",
+    "secMonth": "इस माह",
+    "secGoals": "व्यक्तिगत लक्ष्य",
+    "secAccount": "खाता",
+    "secSupport": "सहायता",
+    "achievementsBadges": "उपलब्धियाँ और बैज",
+    "friendsRow": "मित्र",
+    "activeDays": "सक्रिय दिन",
+    "pinnedWord": "पिन"
   },
   "calendar": {
     "screenTitle": "कैलेंडर",

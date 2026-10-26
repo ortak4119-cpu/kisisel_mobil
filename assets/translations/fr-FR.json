@@ -509,7 +509,7 @@
       "emptyState": "Aucune réalisation pour l'instant",
       "emptyStateSubtitle": "Commencez à terminer des tâches maintenant!",
       "defaultTitle": "Réalisation",
-      "progress": "Progression: {{current}}/{{total}}",
+      "progress": "Progression: {current}/{total}",
       "completed": "% Terminé",
       "unlockedOn": "Débloqué le:",
       "stats": {
@@ -560,7 +560,16 @@
     "backupSync": "Sauvegarde et synchro",
     "backupOn": "Activé",
     "helpSupport": "Aide et assistance",
-    "aboutApp": "À propos de l'app"
+    "aboutApp": "À propos de l'app",
+    "secLevel": "NIVEAU",
+    "secMonth": "CE MOIS-CI",
+    "secGoals": "OBJECTIFS PERSONNELS",
+    "secAccount": "COMPTE",
+    "secSupport": "ASSISTANCE",
+    "achievementsBadges": "Succès et badges",
+    "friendsRow": "Amis",
+    "activeDays": "Jours actifs",
+    "pinnedWord": "épinglées"
   },
   "calendar": {
     "screenTitle": "Calendrier",

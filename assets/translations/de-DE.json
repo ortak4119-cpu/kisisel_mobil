@@ -509,7 +509,7 @@
       "emptyState": "Noch keine Errungenschaften",
       "emptyStateSubtitle": "Beginne jetzt mit dem Erfüllen von Aufgaben!",
       "defaultTitle": "Errungenschaft",
-      "progress": "Fortschritt: {{current}}/{{total}}",
+      "progress": "Fortschritt: {current}/{total}",
       "completed": "% Abgeschlossen",
       "unlockedOn": "Freigeschaltet am:",
       "stats": {
@@ -560,7 +560,16 @@
     "backupSync": "Backup und Sync",
     "backupOn": "An",
     "helpSupport": "Hilfe und Support",
-    "aboutApp": "Über die App"
+    "aboutApp": "Über die App",
+    "secLevel": "STUFE",
+    "secMonth": "DIESEN MONAT",
+    "secGoals": "PERSÖNLICHE ZIELE",
+    "secAccount": "KONTO",
+    "secSupport": "SUPPORT",
+    "achievementsBadges": "Erfolge und Abzeichen",
+    "friendsRow": "Freunde",
+    "activeDays": "Aktive Tage",
+    "pinnedWord": "angeheftet"
   },
   "calendar": {
     "screenTitle": "Kalender",

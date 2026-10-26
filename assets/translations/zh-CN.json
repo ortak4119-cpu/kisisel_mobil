@@ -509,7 +509,7 @@
       "emptyState": "暂无成就",
       "emptyStateSubtitle": "现在就开始完成任务吧!",
       "defaultTitle": "成就",
-      "progress": "进度: {{current}}/{{total}}",
+      "progress": "进度: {current}/{total}",
       "completed": "% 完成",
       "unlockedOn": "解锁于:",
       "stats": {
@@ -560,7 +560,16 @@
     "backupSync": "备份与同步",
     "backupOn": "已开启",
     "helpSupport": "帮助与支持",
-    "aboutApp": "关于应用"
+    "aboutApp": "关于应用",
+    "secLevel": "等级",
+    "secMonth": "本月进度",
+    "secGoals": "个人目标",
+    "secAccount": "账户",
+    "secSupport": "支持",
+    "achievementsBadges": "成就与徽章",
+    "friendsRow": "好友",
+    "activeDays": "活跃天数",
+    "pinnedWord": "置顶"
   },
   "calendar": {
     "screenTitle": "日历",

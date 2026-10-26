@@ -509,7 +509,7 @@
       "emptyState": "Aún no hay logros",
       "emptyStateSubtitle": "¡Empiece a completar tareas ahora!",
       "defaultTitle": "Logro",
-      "progress": "Progreso: {{current}}/{{total}}",
+      "progress": "Progreso: {current}/{total}",
       "completed": "% Completo",
       "unlockedOn": "Desbloqueado el:",
       "stats": {
@@ -560,7 +560,16 @@
     "backupSync": "Copia y sincronización",
     "backupOn": "Activado",
     "helpSupport": "Ayuda y soporte",
-    "aboutApp": "Acerca de la app"
+    "aboutApp": "Acerca de la app",
+    "secLevel": "NIVEL",
+    "secMonth": "ESTE MES",
+    "secGoals": "METAS PERSONALES",
+    "secAccount": "CUENTA",
+    "secSupport": "SOPORTE",
+    "achievementsBadges": "Logros e insignias",
+    "friendsRow": "Amigos",
+    "activeDays": "Días activos",
+    "pinnedWord": "fijadas"
   },
   "calendar": {
     "screenTitle": "Calendario",

@@ -509,7 +509,7 @@
       "emptyState": "لا توجد إنجازات بعد",
       "emptyStateSubtitle": "ابدأ في إكمال المهام الآن!",
       "defaultTitle": "إنجاز",
-      "progress": "التقدم: {{current}}/{{total}}",
+      "progress": "التقدم: {current}/{total}",
       "completed": "% مكتمل",
       "unlockedOn": "تاريخ الفتح:",
       "stats": {
@@ -560,7 +560,16 @@
     "backupSync": "النسخ الاحتياطي والمزامنة",
     "backupOn": "مفعّل",
     "helpSupport": "المساعدة والدعم",
-    "aboutApp": "حول التطبيق"
+    "aboutApp": "حول التطبيق",
+    "secLevel": "المستوى",
+    "secMonth": "هذا الشهر",
+    "secGoals": "الأهداف الشخصية",
+    "secAccount": "الحساب",
+    "secSupport": "الدعم",
+    "achievementsBadges": "الإنجازات والشارات",
+    "friendsRow": "الأصدقاء",
+    "activeDays": "الأيام النشطة",
+    "pinnedWord": "مثبّتة"
   },
   "calendar": {
     "screenTitle": "التقويم",

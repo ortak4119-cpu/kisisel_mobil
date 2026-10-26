@@ -509,7 +509,7 @@
       "emptyState": "Пока нет достижений",
       "emptyStateSubtitle": "Начните выполнять задачи прямо сейчас!",
       "defaultTitle": "Достижение",
-      "progress": "Прогресс: {{current}}/{{total}}",
+      "progress": "Прогресс: {current}/{total}",
       "completed": "% Выполнено",
       "unlockedOn": "Разблокировано:",
       "stats": {
@@ -560,7 +560,16 @@
     "backupSync": "Резервная копия и синхронизация",
     "backupOn": "Вкл",
     "helpSupport": "Помощь и поддержка",
-    "aboutApp": "О приложении"
+    "aboutApp": "О приложении",
+    "secLevel": "УРОВЕНЬ",
+    "secMonth": "ЗА ЭТОТ МЕСЯЦ",
+    "secGoals": "ЛИЧНЫЕ ЦЕЛИ",
+    "secAccount": "АККАУНТ",
+    "secSupport": "ПОДДЕРЖКА",
+    "achievementsBadges": "Достижения и значки",
+    "friendsRow": "Друзья",
+    "activeDays": "Активные дни",
+    "pinnedWord": "закреп."
   },
   "calendar": {
     "screenTitle": "Календарь",

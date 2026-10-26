@@ -509,7 +509,7 @@
       "emptyState": "Ainda não há conquistas",
       "emptyStateSubtitle": "Comece a concluir tarefas agora!",
       "defaultTitle": "Conquista",
-      "progress": "Progresso: {{current}}/{{total}}",
+      "progress": "Progresso: {current}/{total}",
       "completed": "% Concluído",
       "unlockedOn": "Desbloqueado em:",
       "stats": {
@@ -560,7 +560,16 @@
     "backupSync": "Cópia e sincronização",
     "backupOn": "Ativado",
     "helpSupport": "Ajuda e suporte",
-    "aboutApp": "Sobre a app"
+    "aboutApp": "Sobre a app",
+    "secLevel": "NÍVEL",
+    "secMonth": "ESTE MÊS",
+    "secGoals": "METAS PESSOAIS",
+    "secAccount": "CONTA",
+    "secSupport": "SUPORTE",
+    "achievementsBadges": "Conquistas e distintivos",
+    "friendsRow": "Amigos",
+    "activeDays": "Dias ativos",
+    "pinnedWord": "fixadas"
   },
   "calendar": {
     "screenTitle": "Calendário",

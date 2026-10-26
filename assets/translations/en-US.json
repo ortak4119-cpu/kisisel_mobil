@@ -552,7 +552,7 @@
       "emptyState": "No achievements yet",
       "emptyStateSubtitle": "Start completing tasks now!",
       "defaultTitle": "Achievement",
-      "progress": "Progress: {{current}}/{{total}}",
+      "progress": "Progress: {current}/{total}",
       "completed": "% Completed",
       "unlockedOn": "Unlocked:",
       "stats": {
@@ -560,7 +560,16 @@
         "inProgress": "In Progress",
         "locked": "Locked"
       }
-    }
+    },
+    "secLevel": "LEVEL",
+    "secMonth": "THIS MONTH",
+    "secGoals": "PERSONAL GOALS",
+    "secAccount": "ACCOUNT",
+    "secSupport": "SUPPORT",
+    "achievementsBadges": "Achievements & badges",
+    "friendsRow": "Friends",
+    "activeDays": "Active days",
+    "pinnedWord": "pinned"
   },
   "calendar": {
     "screenTitle": "Calendar",

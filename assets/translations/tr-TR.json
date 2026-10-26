@@ -552,7 +552,7 @@
       "emptyState": "Henüz başarı yok",
       "emptyStateSubtitle": "Şimdi görevleri tamamlamaya başlayın!",
       "defaultTitle": "Başarı",
-      "progress": "İlerleme: {{current}}/{{total}}",
+      "progress": "İlerleme: {current}/{total}",
       "completed": "% Tamamlandı",
       "unlockedOn": "Kilidi Açıldı:",
       "stats": {
@@ -560,7 +560,16 @@
         "inProgress": "Devam Ediyor",
         "locked": "Kilitli"
       }
-    }
+    },
+    "secLevel": "SEVİYE",
+    "secMonth": "BU AYKİ İLERLEME",
+    "secGoals": "KİŞİSEL HEDEFLER",
+    "secAccount": "HESAP",
+    "secSupport": "DESTEK",
+    "achievementsBadges": "Başarılar ve rozetler",
+    "friendsRow": "Arkadaşlar",
+    "activeDays": "Aktif gün",
+    "pinnedWord": "sabit"
   },
   "calendar": {
     "screenTitle": "Takvim",

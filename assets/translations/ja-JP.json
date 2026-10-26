@@ -509,7 +509,7 @@
       "emptyState": "まだ実績がありません",
       "emptyStateSubtitle": "今すぐタスクを完了し始めましょう！",
       "defaultTitle": "実績",
-      "progress": "進捗: {{current}}/{{total}}",
+      "progress": "進捗: {current}/{total}",
       "completed": "完了率 %",
       "unlockedOn": "アンロック日時:",
       "stats": {
@@ -560,7 +560,16 @@
     "backupSync": "バックアップと同期",
     "backupOn": "オン",
     "helpSupport": "ヘルプとサポート",
-    "aboutApp": "アプリについて"
+    "aboutApp": "アプリについて",
+    "secLevel": "レベル",
+    "secMonth": "今月の進捗",
+    "secGoals": "個人目標",
+    "secAccount": "アカウント",
+    "secSupport": "サポート",
+    "achievementsBadges": "実績とバッジ",
+    "friendsRow": "友達",
+    "activeDays": "アクティブ日数",
+    "pinnedWord": "固定"
   },
   "calendar": {
     "screenTitle": "カレンダー",

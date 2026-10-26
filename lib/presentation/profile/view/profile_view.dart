@@ -19,20 +19,26 @@ class ProfileView extends StatefulWidget {
   State<ProfileView> createState() => _ProfileViewState();
 }
 
-class _ProfileViewState extends State<ProfileView> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _ProfileViewState extends State<ProfileView> {
+  // Mockup paleti — satır ikonları için yumuşak aksan renkleri.
+  static const _cOrange = Color(0xFFF6A821);
+  static const _cGold = Color(0xFFF2B32C);
+  static const _cBlue = Color(0xFF4C9AFF);
+  static const _cRed = Color(0xFFF2685B);
+  static const _cGreen = Color(0xFF46A46B);
+  static const _cPurple = Color(0xFF9C7BD9);
+  static const _cGray = Color(0xFF8A94A6);
+  static const _cTeal = Color(0xFF2BB3A3);
 
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
+  Color _textPrimary(bool d) =>
+      d ? ColorConstant.textPrimaryDark : ColorConstant.textPrimaryLight;
+  Color _textSecondary(bool d) =>
+      d ? ColorConstant.textSecondaryDark : ColorConstant.textSecondaryLight;
+  Color _textMuted(bool d) =>
+      d ? ColorConstant.textMutedDark : ColorConstant.textMutedLight;
+  Color _cardColor(bool d) => d ? ColorConstant.cardColorDark : Colors.white;
+  Color _borderColor(bool d) =>
+      d ? ColorConstant.borderColorDark : ColorConstant.borderColorLight;
 
   @override
   Widget build(BuildContext context) {
@@ -41,32 +47,33 @@ class _ProfileViewState extends State<ProfileView> with SingleTickerProviderStat
       child: Consumer<ProfileViewModel>(
         builder: (context, vm, _) {
           final isDark = Theme.of(context).brightness == Brightness.dark;
+          final bg =
+              isDark ? ColorConstant.bgColorDark : ColorConstant.bgColorLight;
 
           if (vm.isLoading && !vm.isUserLoaded) {
             return Scaffold(
-              backgroundColor: isDark ? ColorConstant.bgColorDark : ColorConstant.bgColorLight,
-              body: const Center(child: CircularProgressIndicator(color: Color(0xFFF6A821))),
+              backgroundColor: bg,
+              body: const Center(
+                  child: CircularProgressIndicator(color: _cOrange)),
             );
           }
 
           final user = vm.currentUser;
           if (user == null) {
             return Scaffold(
-              backgroundColor: isDark ? ColorConstant.bgColorDark : ColorConstant.bgColorLight,
+              backgroundColor: bg,
+              appBar: _buildAppBar(context, isDark),
               body: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text('🤔', style: TextStyle(fontSize: 64)),
                     const SizedBox(height: 16),
-                    Text(
-                      'profile.userNotFound'.tr(),
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: isDark ? ColorConstant.textSecondaryDark : ColorConstant.textSecondaryLight,
-                      ),
-                    ),
+                    Text('profile.userNotFound'.tr(),
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: _textSecondary(isDark))),
                   ],
                 ),
               ),
@@ -74,25 +81,14 @@ class _ProfileViewState extends State<ProfileView> with SingleTickerProviderStat
           }
 
           return Scaffold(
-            backgroundColor: isDark ? ColorConstant.bgColorDark : ColorConstant.bgColorLight,
+            backgroundColor: bg,
             appBar: _buildAppBar(context, isDark),
-            body: NestedScrollView(
-              headerSliverBuilder: (ctx, _) => [
-                SliverToBoxAdapter(child: _buildProfileCard(context, vm, isDark)),
-                SliverToBoxAdapter(child: _buildThreeStats(vm, isDark)),
-                SliverToBoxAdapter(child: _buildLevelCard(vm, isDark)),
-                SliverPersistentHeader(
-                  pinned: true,
-                  delegate: _StickyTabDelegate(tabBar: _buildTabBar(isDark), isDark: isDark),
-                ),
-              ],
-              body: TabBarView(
-                controller: _tabController,
-                children: [
-                  _StatsContent(vm: vm, onViewAchievements: () => _tabController.animateTo(1)),
-                  _AchievementsTab(viewModel: vm),
-                  _FriendsTab(viewModel: vm),
-                ],
+            body: RefreshIndicator(
+              onRefresh: () => vm.refreshAll(),
+              color: _cOrange,
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 36),
+                children: _buildSections(context, vm, user, isDark),
               ),
             ),
           );
@@ -104,412 +100,554 @@ class _ProfileViewState extends State<ProfileView> with SingleTickerProviderStat
   PreferredSizeWidget _buildAppBar(BuildContext context, bool isDark) {
     return AppBar(
       automaticallyImplyLeading: false,
-      backgroundColor: isDark ? ColorConstant.bgColorDark : ColorConstant.bgColorLight,
+      backgroundColor:
+          isDark ? ColorConstant.bgColorDark : ColorConstant.bgColorLight,
       elevation: 0,
       surfaceTintColor: Colors.transparent,
-      title: Text(
-        'profile.title'.tr(),
-        style: TextStyle(
-          fontSize: 28,
-          fontWeight: FontWeight.w900,
-          color: isDark ? ColorConstant.textPrimaryDark : ColorConstant.textPrimaryLight,
-        ),
-      ),
-      actions: [
-        IconButton(
-          icon: Icon(Icons.settings_rounded,
-              color: isDark ? ColorConstant.textPrimaryDark : ColorConstant.textPrimaryLight),
-          onPressed: () => context.router.push(const SettingsRoute()),
-        ),
-        const SizedBox(width: 4),
-      ],
+      titleSpacing: 20,
+      title: Text('profile.title'.tr(),
+          style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w900,
+              color: _textPrimary(isDark))),
     );
   }
 
-  TabBar _buildTabBar(bool isDark) {
-    return TabBar(
-      controller: _tabController,
-      indicator: BoxDecoration(
-        color: const Color(0xFFF6A821),
-        borderRadius: BorderRadius.circular(24),
-      ),
-      indicatorSize: TabBarIndicatorSize.tab,
-      dividerColor: Colors.transparent,
-      labelColor: Colors.white,
-      unselectedLabelColor:
-          isDark ? ColorConstant.textSecondaryDark : ColorConstant.textSecondaryLight,
-      labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-      unselectedLabelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-      tabs: [
-        Tab(text: 'profile.tabs.statistics'.tr()),
-        Tab(text: 'profile.tabs.achievements'.tr()),
-        Tab(text: 'profile.tabs.friends'.tr()),
-      ],
-    );
+  List<Widget> _buildSections(
+      BuildContext context, ProfileViewModel vm, dynamic user, bool isDark) {
+    final stats = vm.profileStats;
+    final level = vm.levelInfo;
+
+    // ---- Seviye / sosyal ----
+    final lvl = level?.currentLevel ?? stats?.gamification.level ?? 1;
+    final totalXp = level?.totalXp ?? stats?.gamification.totalXp ?? 0;
+    final progress = ((level?.progressPercentage ?? 0) / 100.0).clamp(0.0, 1.0);
+    final remaining =
+        ((level?.nextLevelXp ?? 0) - (level?.currentXp ?? 0)).clamp(0, 999999);
+    final achievements = stats?.gamification.achievementsUnlocked ??
+        vm.achievements.where((a) => a.isCompleted).length;
+    final friends = stats?.social.friends ?? vm.friends.length;
+    final activeDays = level?.dailyStreak ?? 0;
+
+    // ---- Bu ayki ilerleme ----
+    final habitRate = (stats != null && stats.habits.active > 0)
+        ? (stats.habits.completedToday / stats.habits.active * 100).round()
+        : 0;
+    final habitStreak = stats?.habits.currentStreak ?? 0;
+    final completedTasks = stats?.tasks.completed ?? 0;
+    final dailyNote = stats?.diary.thisMonth ?? 0;
+    final notesTotal = stats?.notes.total ?? 0;
+    final notesLocked = stats?.notes.locked ?? 0;
+
+    // ---- Kişisel hedefler ----
+    const taskGoal = 10;
+    final taskProgress = (completedTasks / taskGoal).clamp(0.0, 1.0);
+    final budgetProgress = (stats != null && stats.budget.monthlyBudget > 0)
+        ? (stats.budget.thisMonthExpenses / stats.budget.monthlyBudget)
+            .clamp(0.0, 1.0)
+        : 0.0;
+    final savingsRate = (stats != null && stats.budget.monthlyBudget > 0)
+        ? ((1 - budgetProgress) * 100).round()
+        : 0;
+
+    return [
+      _header(context, vm, user, isDark),
+      const SizedBox(height: 22),
+
+      // ─── SEVİYE ───
+      _sectionHeader('profile.secLevel'.tr(), isDark),
+      _card(isDark, [
+        _levelRow(isDark,
+            title:
+                '${'profile.levelLabel'.tr(namedArgs: {'count': '$lvl'})} · ${_fmtXp(totalXp)} XP',
+            progress: progress.toDouble(),
+            right: 'profile.xpLeft'.tr(namedArgs: {'count': '$remaining'})),
+        _divider(isDark),
+        _navRow(context, isDark,
+            color: _cGold,
+            icon: Icons.emoji_events_rounded,
+            title: 'profile.achievementsBadges'.tr(),
+            value: '$achievements',
+            onTap: () => _openAchievements(context, vm, isDark)),
+        _divider(isDark),
+        _navRow(context, isDark,
+            color: _cBlue,
+            icon: Icons.group_rounded,
+            title: 'profile.friendsRow'.tr(),
+            value: '$friends',
+            onTap: () => _openFriends(context, vm, isDark)),
+        _divider(isDark),
+        _navRow(context, isDark,
+            color: _cRed,
+            icon: Icons.local_fire_department_rounded,
+            title: 'profile.activeDays'.tr(),
+            value: '$activeDays',
+            showChevron: false),
+      ]),
+      const SizedBox(height: 18),
+
+      // ─── BU AYKİ İLERLEME ───
+      _sectionHeader('profile.secMonth'.tr(), isDark),
+      _card(isDark, [
+        _navRow(context, isDark,
+            color: _cOrange,
+            icon: Icons.check_box_rounded,
+            title: 'profile.completedTasks'.tr(),
+            value: '$completedTasks',
+            showChevron: false),
+        _divider(isDark),
+        _navRow(context, isDark,
+            color: _cGreen,
+            icon: Icons.track_changes_rounded,
+            title: 'profile.habitRate'.tr(),
+            value:
+                '%$habitRate · ${'profile.dayStreak'.tr(namedArgs: {'count': '$habitStreak'})}',
+            valueColor: _cGreen,
+            showChevron: false),
+        _divider(isDark),
+        _navRow(context, isDark,
+            color: _cBlue,
+            icon: Icons.event_note_rounded,
+            title: 'profile.dailyNote'.tr(),
+            value: '$dailyNote',
+            showChevron: false),
+        _divider(isDark),
+        _navRow(context, isDark,
+            color: _cPurple,
+            icon: Icons.sticky_note_2_rounded,
+            title: 'profile.createdNotes'.tr(),
+            value: '$notesTotal · $notesLocked ${'profile.pinnedWord'.tr()}',
+            showChevron: false),
+      ]),
+      const SizedBox(height: 18),
+
+      // ─── KİŞİSEL HEDEFLER ───
+      _sectionHeader('profile.secGoals'.tr(), isDark),
+      _card(isDark, [
+        _goalRow(isDark,
+            color: _cOrange,
+            icon: Icons.track_changes_rounded,
+            title: 'profile.dailyTasksGoal'.tr(namedArgs: {'count': '$taskGoal'}),
+            progress: taskProgress.toDouble(),
+            right: '${completedTasks.clamp(0, taskGoal)}/$taskGoal'),
+        _divider(isDark),
+        _goalRow(isDark,
+            color: _cGreen,
+            icon: Icons.savings_rounded,
+            title: 'profile.monthlySavings'.tr(),
+            progress: (savingsRate / 30).clamp(0.0, 1.0).toDouble(),
+            right: '%$savingsRate / %30',
+            rightColor: _cGreen),
+      ]),
+      const SizedBox(height: 18),
+
+      // ─── HESAP ───
+      _sectionHeader('profile.secAccount'.tr(), isDark),
+      _card(isDark, [
+        _navRow(context, isDark,
+            color: _cGray,
+            icon: Icons.person_rounded,
+            title: 'profile.accountInfo'.tr(),
+            onTap: () => showEditProfileSheet(context, vm)),
+        _divider(isDark),
+        _navRow(context, isDark,
+            color: _cRed,
+            icon: Icons.notifications_rounded,
+            title: 'profile.notifications'.tr(),
+            badge: vm.friendRequests.isNotEmpty
+                ? '${vm.friendRequests.length}'
+                : null,
+            onTap: () => context.router.push(const SettingsRoute())),
+        _divider(isDark),
+        _navRow(context, isDark,
+            color: _cPurple,
+            icon: Icons.palette_rounded,
+            title: 'profile.appearanceTheme'.tr(),
+            value: isDark
+                ? 'settings.appearance.themeDark'.tr()
+                : 'settings.appearance.themeLight'.tr(),
+            onTap: () => context.router.push(const SettingsRoute())),
+        _divider(isDark),
+        _navRow(context, isDark,
+            color: _cGreen,
+            icon: Icons.shield_rounded,
+            title: 'profile.privacySecurity'.tr(),
+            onTap: () => context.router.push(const SettingsRoute())),
+      ]),
+      const SizedBox(height: 18),
+
+      // ─── DESTEK ───
+      _sectionHeader('profile.secSupport'.tr(), isDark),
+      _card(isDark, [
+        _navRow(context, isDark,
+            color: _cTeal,
+            icon: Icons.help_rounded,
+            title: 'profile.helpSupport'.tr(),
+            onTap: () => context.router.push(const SettingsRoute())),
+        _divider(isDark),
+        _navRow(context, isDark,
+            color: _cGray,
+            icon: Icons.info_rounded,
+            title: 'profile.aboutApp'.tr(),
+            onTap: () => context.router.push(const SettingsRoute())),
+      ]),
+      const SizedBox(height: 18),
+
+      _logoutCard(context, vm, isDark),
+    ];
   }
 
-  Widget _buildProfileCard(BuildContext context, ProfileViewModel vm, bool isDark) {
-    final user = vm.currentUser!;
+  // ---------- Profil başlık kartı ----------
+  Widget _header(
+      BuildContext context, ProfileViewModel vm, dynamic user, bool isDark) {
     final joined = 'profile.memberSince'.tr(namedArgs: {
       'date': DateFormat('MMMM yyyy', context.locale.toLanguageTag())
           .format(user.createdAt)
     });
-
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        color: isDark ? ColorConstant.cardColorDark : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 12, offset: const Offset(0, 4)),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildCoverBanner(context, vm, isDark),
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-          Stack(
-            children: [
-              CircleAvatar(
-                radius: 40,
-                backgroundColor: const Color(0xFFF6A821).withValues(alpha: 0.15),
+    return GestureDetector(
+      onTap: () => showEditProfileSheet(context, vm),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: _cardColor(isDark),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: _borderColor(isDark)),
+        ),
+        child: Row(
+          children: [
+            GestureDetector(
+              onTap: () =>
+                  _showImageSourceDialog(context, vm, isCover: false),
+              child: CircleAvatar(
+                radius: 30,
+                backgroundColor: _cOrange.withValues(alpha: 0.15),
                 backgroundImage: user.profilePictureUrl != null
                     ? NetworkImage(user.profilePictureUrl!)
                     : null,
                 child: user.profilePictureUrl == null
                     ? Text(
-                        user.displayName.isNotEmpty ? user.displayName[0].toUpperCase() : '?',
+                        user.displayName.isNotEmpty
+                            ? user.displayName[0].toUpperCase()
+                            : '?',
                         style: const TextStyle(
-                            fontSize: 32, fontWeight: FontWeight.w900, color: Color(0xFFF6A821)),
-                      )
+                            fontSize: 26,
+                            fontWeight: FontWeight.w900,
+                            color: _cOrange))
                     : null,
               ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: GestureDetector(
-                  onTap: () => _showImageSourceDialog(context, vm, isCover: false),
-                  child: Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF6A821),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                          color: isDark ? ColorConstant.bgColorDark : Colors.white, width: 2),
-                    ),
-                    child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 14),
-                  ),
-                ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(user.displayName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: _textPrimary(isDark))),
+                  const SizedBox(height: 2),
+                  Text('@${user.username} · $joined',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          fontSize: 12.5, color: _textMuted(isDark))),
+                  const SizedBox(height: 3),
+                  Text('profile.editProfile'.tr(),
+                      style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                          color: ColorConstant.primaryPurple)),
+                ],
               ),
+            ),
+            Icon(Icons.arrow_forward_ios_rounded,
+                size: 15, color: _textMuted(isDark)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ---------- Bölüm başlığı ----------
+  Widget _sectionHeader(String text, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.8,
+          color: _textMuted(isDark),
+        ),
+      ),
+    );
+  }
+
+  // ---------- Kart (satırları saran beyaz kutu) ----------
+  Widget _card(bool isDark, List<Widget> children) {
+    return Container(
+      decoration: BoxDecoration(
+        color: _cardColor(isDark),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _borderColor(isDark)),
+      ),
+      child: Column(children: children),
+    );
+  }
+
+  Widget _divider(bool isDark) => Divider(
+      height: 1,
+      thickness: 0.6,
+      indent: 66,
+      color: _borderColor(isDark).withValues(alpha: 0.8));
+
+  Widget _iconSquare(Color color, IconData icon) => Container(
+        width: 38,
+        height: 38,
+        decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(11)),
+        child: Icon(icon, color: color, size: 20),
+      );
+
+  // ---------- Navigasyon/değer satırı ----------
+  Widget _navRow(
+    BuildContext context,
+    bool isDark, {
+    required Color color,
+    required IconData icon,
+    required String title,
+    String? value,
+    Color? valueColor,
+    String? badge,
+    bool showChevron = true,
+    VoidCallback? onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+        child: Row(
+          children: [
+            _iconSquare(color, icon),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(title,
+                  style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: _textPrimary(isDark))),
+            ),
+            if (badge != null) ...[
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                    color: _cRed, borderRadius: BorderRadius.circular(10)),
+                child: Text(badge,
+                    style: const TextStyle(
+                        fontSize: 11,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700)),
+              ),
+              const SizedBox(width: 8),
             ],
-          ),
-          const SizedBox(width: 16),
+            if (value != null)
+              Text(value,
+                  style: TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                      color: valueColor ?? _textSecondary(isDark))),
+            if (showChevron) ...[
+              const SizedBox(width: 6),
+              Icon(Icons.arrow_forward_ios_rounded,
+                  size: 14, color: _textMuted(isDark)),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ---------- Seviye satırı (başlık + ilerleme + kalan XP) ----------
+  Widget _levelRow(bool isDark,
+      {required String title, required double progress, required String right}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+      child: Row(
+        children: [
+          _iconSquare(_cOrange, Icons.star_rounded),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Flexible(
-                      child: Text(
-                        user.displayName,
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                          color: isDark ? ColorConstant.textPrimaryDark : ColorConstant.textPrimaryLight,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                    Expanded(
+                      child: Text(title,
+                          style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: _textPrimary(isDark))),
                     ),
-                    if (user.isVerified) ...[
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.all(3),
-                        decoration: const BoxDecoration(
-                            color: Color(0xFFF6A821), shape: BoxShape.circle),
-                        child: const Icon(Icons.verified, size: 14, color: Colors.white),
-                      ),
-                    ],
+                    const SizedBox(width: 8),
+                    Text(right,
+                        style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                            color: _textMuted(isDark))),
                   ],
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  '@${user.username}',
-                  style: TextStyle(
-                      fontSize: 13,
-                      color: isDark
-                          ? ColorConstant.textSecondaryDark
-                          : ColorConstant.textSecondaryLight),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  joined,
-                  style: TextStyle(
-                      fontSize: 12,
-                      color: isDark ? ColorConstant.textMutedDark : ColorConstant.textMutedLight),
-                ),
-                const SizedBox(height: 12),
-                OutlinedButton.icon(
-                  onPressed: () => showEditProfileSheet(context, vm),
-                  icon: const Icon(Icons.edit_rounded, size: 14),
-                  label: Text('profile.editProfile'.tr(),
-                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    side: BorderSide(
-                        color: isDark
-                            ? ColorConstant.borderColorDark
-                            : ColorConstant.borderColorLight),
-                    foregroundColor:
-                        isDark ? ColorConstant.textPrimaryDark : ColorConstant.textPrimaryLight,
-                    shape:
-                        RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    minHeight: 6,
+                    backgroundColor: _cOrange.withValues(alpha: 0.15),
+                    valueColor:
+                        const AlwaysStoppedAnimation<Color>(_cOrange),
                   ),
                 ),
               ],
             ),
           ),
         ],
-              ),
-            ),
-        ],
       ),
     );
   }
 
-  Widget _buildCoverBanner(
-      BuildContext context, ProfileViewModel vm, bool isDark) {
-    final url = vm.currentUser?.coverImageUrl;
-    return SizedBox(
-      height: 96,
-      width: double.infinity,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          if (url != null && url.isNotEmpty)
-            Image.network(url, fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _coverFallback())
-          else
-            _coverFallback(),
-          Positioned(
-            top: 8,
-            right: 8,
-            child: GestureDetector(
-              onTap: () => _showImageSourceDialog(context, vm, isCover: true),
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.35),
-                  shape: BoxShape.circle,
-                ),
-                child: vm.isUploadingCover
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white))
-                    : const Icon(Icons.photo_camera_rounded,
-                        color: Colors.white, size: 16),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _coverFallback() => Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFFF6A821), Color(0xFFE8890B)],
-          ),
-        ),
-      );
-
-  Widget _buildThreeStats(ProfileViewModel vm, bool isDark) {
-    final friendCount = vm.profileStats?.social.friends ?? vm.friends.length;
-    final badgeCount = vm.profileStats?.gamification.achievementsUnlocked ??
-        vm.achievements.where((a) => a.isCompleted).length;
-    final daysActive = vm.levelInfo?.dailyStreak ?? 0;
-
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(
-        color: isDark ? ColorConstant.cardColorDark : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 12, offset: const Offset(0, 4)),
-        ],
-      ),
+  // ---------- Hedef satırı (başlık + ilerleme + oran) ----------
+  Widget _goalRow(bool isDark,
+      {required Color color,
+      required IconData icon,
+      required String title,
+      required double progress,
+      required String right,
+      Color? rightColor}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
       child: Row(
         children: [
-          _statChip(Icons.people_rounded, '$friendCount', 'profile.chips.friends'.tr(), isDark),
-          _vDivider(isDark),
-          _statChip(Icons.emoji_events_rounded, '$badgeCount', 'profile.chips.achievement'.tr(), isDark),
-          _vDivider(isDark),
-          _statChip(Icons.check_box_rounded, '$daysActive', 'profile.chips.daysActive'.tr(), isDark),
-        ],
-      ),
-    );
-  }
-
-  Widget _statChip(IconData icon, String value, String label, bool isDark) {
-    return Expanded(
-      child: Column(
-        children: [
-          Icon(icon, color: const Color(0xFFF6A821), size: 22),
-          const SizedBox(height: 4),
-          Text(value,
-              style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
-                  color: isDark
-                      ? ColorConstant.textPrimaryDark
-                      : ColorConstant.textPrimaryLight)),
-          Text(label,
-              style: TextStyle(
-                  fontSize: 11,
-                  color: isDark
-                      ? ColorConstant.textSecondaryDark
-                      : ColorConstant.textSecondaryLight)),
-        ],
-      ),
-    );
-  }
-
-  Widget _vDivider(bool isDark) => Container(
-        width: 1,
-        height: 48,
-        color: isDark ? ColorConstant.borderColorDark : ColorConstant.borderColorLight,
-      );
-
-  Widget _buildLevelCard(ProfileViewModel vm, bool isDark) {
-    final level = vm.levelInfo?.currentLevel ?? vm.profileStats?.gamification.level ?? 1;
-    final totalXp = vm.levelInfo?.totalXp ?? vm.profileStats?.gamification.totalXp ?? 0;
-    final progress =
-        ((vm.levelInfo?.progressPercentage ?? 0) / 100.0).clamp(0.0, 1.0);
-    final currentXp = vm.levelInfo?.currentXp ?? 0;
-    final nextLevelXp = vm.levelInfo?.nextLevelXp ?? 1000;
-    final remaining = (nextLevelXp - currentXp).clamp(0, 999999);
-    final badgeCount = vm.profileStats?.gamification.achievementsUnlocked ??
-        vm.achievements.where((a) => a.isCompleted).length;
-
-    return GestureDetector(
-      onTap: () => _tabController.animateTo(1),
-      child: Container(
-        margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFFF6A821), Color(0xFFE8921A)],
-          ),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-                color: const Color(0xFFF6A821).withValues(alpha: 0.4),
-                blurRadius: 16,
-                offset: const Offset(0, 6)),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(16)),
-              child: const Center(child: Text('🏆', style: TextStyle(fontSize: 32))),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text('profile.levelLabel'.tr(namedArgs: {'count': '$level'}),
-                          style: const TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.w900, color: Colors.white)),
-                      const SizedBox(width: 4),
-                      const Icon(Icons.arrow_forward_ios_rounded,
-                          color: Colors.white, size: 13),
-                    ],
-                  ),
-                  Text('${_fmtXp(totalXp)} XP',
-                      style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.white.withValues(alpha: 0.9),
-                          fontWeight: FontWeight.w500)),
-                  const SizedBox(height: 10),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      value: progress,
-                      backgroundColor: Colors.white.withValues(alpha: 0.3),
-                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                      minHeight: 8,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('profile.xpLeft'.tr(namedArgs: {'count': '$remaining'}),
-                          style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.white.withValues(alpha: 0.85),
-                              fontWeight: FontWeight.w500)),
-                      Text('profile.levelLabel'.tr(namedArgs: {'count': '${level + 1}'}),
-                          style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.white.withValues(alpha: 0.85),
-                              fontWeight: FontWeight.w600)),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
+          _iconSquare(color, icon),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('⭐', style: TextStyle(fontSize: 22)),
-                const SizedBox(height: 2),
-                Text('profile.badgeCount'.tr(namedArgs: {'count': '$badgeCount'}),
-                    style: const TextStyle(
-                        fontSize: 11, color: Colors.white, fontWeight: FontWeight.w700)),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(title,
+                          style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: _textPrimary(isDark))),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(right,
+                        style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: rightColor ?? _textSecondary(isDark))),
+                  ],
+                ),
                 const SizedBox(height: 8),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(8)),
-                  child: Text('${'profile.details'.tr()} >',
-                      style: const TextStyle(
-                          fontSize: 11,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600)),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    minHeight: 6,
+                    backgroundColor: color.withValues(alpha: 0.15),
+                    valueColor: AlwaysStoppedAnimation<Color>(color),
+                  ),
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
+  }
+
+  // ---------- Çıkış kartı ----------
+  Widget _logoutCard(BuildContext context, ProfileViewModel vm, bool isDark) {
+    return InkWell(
+      onTap: () => _confirmLogout(context, vm),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: _cardColor(isDark),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: _borderColor(isDark)),
+        ),
+        child: Text('settings.account.logout'.tr(),
+            style: TextStyle(
+                fontSize: 15.5,
+                fontWeight: FontWeight.w700,
+                color: ColorConstant.errorRed)),
+      ),
+    );
+  }
+
+  // ---------- Başarılar / Arkadaşlar sayfaları ----------
+  void _openAchievements(
+      BuildContext context, ProfileViewModel vm, bool isDark) {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => ChangeNotifierProvider.value(
+        value: vm,
+        child: Scaffold(
+          backgroundColor:
+              isDark ? ColorConstant.bgColorDark : ColorConstant.bgColorLight,
+          appBar: AppBar(
+            backgroundColor:
+                isDark ? ColorConstant.bgColorDark : ColorConstant.bgColorLight,
+            elevation: 0,
+            surfaceTintColor: Colors.transparent,
+            foregroundColor: _textPrimary(isDark),
+            title: Text('profile.achievementsBadges'.tr(),
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: _textPrimary(isDark))),
+          ),
+          body: _AchievementsTab(viewModel: vm),
+        ),
+      ),
+    ));
+  }
+
+  void _openFriends(BuildContext context, ProfileViewModel vm, bool isDark) {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => ChangeNotifierProvider.value(
+        value: vm,
+        child: Scaffold(
+          backgroundColor:
+              isDark ? ColorConstant.bgColorDark : ColorConstant.bgColorLight,
+          appBar: AppBar(
+            backgroundColor:
+                isDark ? ColorConstant.bgColorDark : ColorConstant.bgColorLight,
+            elevation: 0,
+            surfaceTintColor: Colors.transparent,
+            foregroundColor: _textPrimary(isDark),
+            title: Text('profile.friendsRow'.tr(),
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: _textPrimary(isDark))),
+          ),
+          body: _FriendsTab(viewModel: vm),
+        ),
+      ),
+    ));
   }
 
   String _fmtXp(int n) {
@@ -520,7 +658,6 @@ class _ProfileViewState extends State<ProfileView> with SingleTickerProviderStat
     }
     return '$n';
   }
-
   void _showImageSourceDialog(BuildContext context, ProfileViewModel viewModel,
       {required bool isCover}) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -656,561 +793,6 @@ class _ProfileViewState extends State<ProfileView> with SingleTickerProviderStat
 }
 
 // ==================== STICKY TAB DELEGATE ====================
-
-class _StickyTabDelegate extends SliverPersistentHeaderDelegate {
-  final TabBar tabBar;
-  final bool isDark;
-
-  _StickyTabDelegate({required this.tabBar, required this.isDark});
-
-  @override
-  double get minExtent => tabBar.preferredSize.height + 16;
-
-  @override
-  double get maxExtent => tabBar.preferredSize.height + 16;
-
-  @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      color: isDark ? ColorConstant.bgColorDark : ColorConstant.bgColorLight,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Container(
-        decoration: BoxDecoration(
-          color: isDark ? ColorConstant.cardColorDark : Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-              color: isDark ? ColorConstant.borderColorDark : ColorConstant.borderColorLight),
-        ),
-        child: tabBar,
-      ),
-    );
-  }
-
-  @override
-  bool shouldRebuild(covariant _StickyTabDelegate old) => old.isDark != isDark;
-}
-
-// ==================== İSTATİSTİKLER CONTENT ====================
-
-class _StatsContent extends StatelessWidget {
-  final ProfileViewModel vm;
-  final VoidCallback onViewAchievements;
-
-  const _StatsContent({required this.vm, required this.onViewAchievements});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final stats = vm.profileStats;
-
-    if (stats == null) {
-      return const Center(child: CircularProgressIndicator(color: Color(0xFFF6A821)));
-    }
-
-    final habitRate = stats.habits.active > 0
-        ? (stats.habits.completedToday / stats.habits.active * 100).round()
-        : 0;
-    final recentAchievements =
-        vm.achievements.where((a) => a.isCompleted).take(3).toList();
-
-    const taskGoal = 10;
-    final taskProgress = (stats.tasks.completed / taskGoal).clamp(0.0, 1.0);
-    final budgetProgress = stats.budget.monthlyBudget > 0
-        ? (stats.budget.thisMonthExpenses / stats.budget.monthlyBudget).clamp(0.0, 1.0)
-        : 0.0;
-    final savingsRate = stats.budget.monthlyBudget > 0
-        ? ((1 - budgetProgress) * 100).round()
-        : 0;
-
-    const orange = Color(0xFFF6A821);
-
-    return RefreshIndicator(
-      onRefresh: () => vm.refreshAll(),
-      color: orange,
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-        children: [
-          // ─── Bu ayki ilerleme ───
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'profile.monthlyProgress'.tr(),
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: isDark
-                      ? ColorConstant.textPrimaryDark
-                      : ColorConstant.textPrimaryLight,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: isDark ? ColorConstant.cardColorDark : Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                      color: isDark
-                          ? ColorConstant.borderColorDark
-                          : ColorConstant.borderColorLight),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      DateFormat('MMMM', context.locale.toLanguageTag())
-                          .format(DateTime.now()),
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: isDark
-                            ? ColorConstant.textSecondaryDark
-                            : ColorConstant.textSecondaryLight,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Icon(Icons.keyboard_arrow_down_rounded,
-                        size: 16,
-                        color: isDark
-                            ? ColorConstant.textSecondaryDark
-                            : ColorConstant.textSecondaryLight),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-
-          // 2x2 stat cards
-          Row(
-            children: [
-              Expanded(
-                child: _monthCard(
-                  icon: Icons.check_box_rounded,
-                  iconColor: orange,
-                  iconBg: orange.withValues(alpha: 0.1),
-                  label: 'profile.completedTasks'.tr(),
-                  value: '${stats.tasks.completed}',
-                  sub: 'profile.thisMonthSub'.tr(),
-                  subColor: isDark
-                      ? ColorConstant.textSecondaryDark
-                      : ColorConstant.textSecondaryLight,
-                  isDark: isDark,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _monthCard(
-                  icon: Icons.track_changes_rounded,
-                  iconColor: orange,
-                  iconBg: orange.withValues(alpha: 0.1),
-                  label: 'profile.habitRate'.tr(),
-                  value: '$habitRate%',
-                  sub: 'profile.dayStreak'.tr(namedArgs: {'count': '${stats.habits.currentStreak}'}),
-                  subColor: isDark
-                      ? ColorConstant.textSecondaryDark
-                      : ColorConstant.textSecondaryLight,
-                  isDark: isDark,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _monthCard(
-                  icon: Icons.calendar_month_rounded,
-                  iconColor: ColorConstant.accentBlue,
-                  iconBg: ColorConstant.accentBlue.withValues(alpha: 0.1),
-                  label: 'profile.dailyNote'.tr(),
-                  value: '${stats.diary.thisMonth}',
-                  sub: 'profile.thisMonthSub'.tr(),
-                  subColor: isDark
-                      ? ColorConstant.textSecondaryDark
-                      : ColorConstant.textSecondaryLight,
-                  isDark: isDark,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _monthCard(
-                  icon: Icons.sticky_note_2_rounded,
-                  iconColor: const Color(0xFF9C27B0),
-                  iconBg: const Color(0xFF9C27B0).withValues(alpha: 0.1),
-                  label: 'profile.createdNotes'.tr(),
-                  value: '${stats.notes.total}',
-                  sub: 'profile.pinnedCount'.tr(namedArgs: {'count': '${stats.notes.locked}'}),
-                  subColor: isDark
-                      ? ColorConstant.textSecondaryDark
-                      : ColorConstant.textSecondaryLight,
-                  isDark: isDark,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 24),
-
-          // ─── Son başarılar ───
-          if (recentAchievements.isNotEmpty) ...[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'profile.recentAchievements'.tr(),
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                    color: isDark
-                        ? ColorConstant.textPrimaryDark
-                        : ColorConstant.textPrimaryLight,
-                  ),
-                ),
-                GestureDetector(
-                  onTap: onViewAchievements,
-                  child: Text('${'profile.seeAll'.tr()} >',
-                      style: const TextStyle(
-                          fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFFF6A821))),
-                ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            Row(
-              children: List.generate(
-                recentAchievements.length,
-                (i) => Expanded(
-                  child: Padding(
-                    padding:
-                        EdgeInsets.only(right: i < recentAchievements.length - 1 ? 8 : 0),
-                    child: _achievementBadge(recentAchievements[i], isDark),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-          ],
-
-          // ─── Kişisel hedefler ───
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'profile.personalGoals'.tr(),
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: isDark
-                      ? ColorConstant.textPrimaryDark
-                      : ColorConstant.textPrimaryLight,
-                ),
-              ),
-              GestureDetector(
-                onTap: () => context.router.push(const SettingsRoute()),
-                child: Text('${'profile.editGoals'.tr()} >',
-                    style: const TextStyle(
-                        fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFFF6A821))),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          _goalRow(
-            context,
-            icon: Icons.track_changes_rounded,
-            iconColor: orange,
-            label: 'profile.dailyTasksGoal'.tr(namedArgs: {'count': '$taskGoal'}),
-            progress: taskProgress,
-            progressColor: orange,
-            rightText: '${stats.tasks.completed.clamp(0, taskGoal)}/$taskGoal',
-            isDark: isDark,
-          ),
-          const SizedBox(height: 12),
-          _goalRow(
-            context,
-            icon: Icons.savings_rounded,
-            iconColor: ColorConstant.accentGreen,
-            label: 'profile.monthlySavings'.tr(),
-            progress: (1 - budgetProgress).clamp(0.0, 1.0),
-            progressColor: ColorConstant.accentGreen,
-            rightText: '%$savingsRate/%30',
-            rightColor: ColorConstant.accentGreen,
-            isDark: isDark,
-          ),
-
-          const SizedBox(height: 24),
-
-          // ─── Ayarlar ───
-          _settingsRow(context, Icons.person_outline_rounded, 'profile.accountInfo'.tr(),
-              isDark: isDark,
-              onTap: () => showEditProfileSheet(context, vm)),
-          _settingsRow(context, Icons.notifications_outlined, 'profile.notifications'.tr(),
-              isDark: isDark,
-              badge: vm.friendRequests.isNotEmpty ? '${vm.friendRequests.length}' : null),
-          _settingsRow(context, Icons.palette_outlined, 'profile.appearanceTheme'.tr(),
-              isDark: isDark,
-              trailing: isDark
-                  ? 'settings.appearance.themeDark'.tr()
-                  : 'settings.appearance.themeLight'.tr()),
-          _settingsRow(context, Icons.shield_outlined, 'profile.privacySecurity'.tr(),
-              isDark: isDark),
-          const SizedBox(height: 4),
-          _settingsRow(context, Icons.help_outline_rounded, 'profile.helpSupport'.tr(),
-              isDark: isDark, muted: true),
-          _settingsRow(context, Icons.info_outline_rounded, 'profile.aboutApp'.tr(),
-              isDark: isDark, muted: true),
-          _settingsRow(context, Icons.logout_rounded, 'settings.account.logout'.tr(),
-              isDark: isDark,
-              isLogout: true,
-              onTap: () => _confirmLogout(context, vm)),
-        ],
-      ),
-    );
-  }
-
-  Widget _monthCard({
-    required IconData icon,
-    required Color iconColor,
-    required Color iconBg,
-    required String label,
-    required String value,
-    required String sub,
-    required Color subColor,
-    required bool isDark,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: isDark ? ColorConstant.cardColorDark : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border:
-            Border.all(color: isDark ? ColorConstant.borderColorDark : ColorConstant.borderColorLight),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration:
-                BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(10)),
-            child: Icon(icon, color: iconColor, size: 20),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: TextStyle(
-                fontSize: 11,
-                color: isDark ? ColorConstant.textMutedDark : ColorConstant.textMutedLight),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 2),
-          Text(
-            value,
-            style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w900,
-                color: isDark ? ColorConstant.textPrimaryDark : ColorConstant.textPrimaryLight),
-          ),
-          Text(
-            sub,
-            style: TextStyle(fontSize: 11, color: subColor, fontWeight: FontWeight.w600),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _achievementBadge(achievement, bool isDark) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: isDark ? ColorConstant.cardColorDark : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-            color: const Color(0xFFF6A821).withValues(alpha: 0.4), width: 1.5),
-      ),
-      child: Column(
-        children: [
-          Text(achievement.icon ?? '🏆', style: const TextStyle(fontSize: 28)),
-          const SizedBox(height: 6),
-          Text(
-            achievement.titleKey ?? 'profile.chips.achievement'.tr(),
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: isDark ? ColorConstant.textPrimaryDark : ColorConstant.textPrimaryLight,
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 2),
-          Text(
-            achievement.descriptionKey ?? '',
-            style: TextStyle(
-                fontSize: 10,
-                color: isDark ? ColorConstant.textMutedDark : ColorConstant.textMutedLight),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _goalRow(
-    BuildContext context, {
-    required IconData icon,
-    required Color iconColor,
-    required String label,
-    required double progress,
-    required Color progressColor,
-    required String rightText,
-    Color? rightColor,
-    required bool isDark,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: isDark ? ColorConstant.cardColorDark : Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-            color: isDark ? ColorConstant.borderColorDark : ColorConstant.borderColorLight),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: iconColor, size: 22),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: isDark
-                        ? ColorConstant.textPrimaryDark
-                        : ColorConstant.textPrimaryLight,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: progress,
-                    backgroundColor: isDark
-                        ? ColorConstant.bgColorDark
-                        : ColorConstant.borderColorLight,
-                    valueColor: AlwaysStoppedAnimation<Color>(progressColor),
-                    minHeight: 6,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            rightText,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: rightColor ??
-                  (isDark ? ColorConstant.textPrimaryDark : ColorConstant.textPrimaryLight),
-            ),
-          ),
-          const SizedBox(width: 4),
-          Icon(Icons.arrow_forward_ios_rounded,
-              size: 14,
-              color: isDark ? ColorConstant.textMutedDark : ColorConstant.textMutedLight),
-        ],
-      ),
-    );
-  }
-
-  Widget _settingsRow(
-    BuildContext context,
-    IconData icon,
-    String label, {
-    required bool isDark,
-    String? badge,
-    String? trailing,
-    Color? trailingColor,
-    bool muted = false,
-    bool isLogout = false,
-    VoidCallback? onTap,
-  }) {
-    final labelColor = isLogout
-        ? ColorConstant.errorRed
-        : muted
-            ? (isDark ? ColorConstant.textMutedDark : ColorConstant.textMutedLight)
-            : (isDark ? ColorConstant.textPrimaryDark : ColorConstant.textPrimaryLight);
-    final iconColor = isLogout
-        ? ColorConstant.errorRed
-        : muted
-            ? (isDark ? ColorConstant.textMutedDark : ColorConstant.textMutedLight)
-            : (isDark ? ColorConstant.textSecondaryDark : ColorConstant.textSecondaryLight);
-
-    return InkWell(
-      onTap: onTap ?? () => context.router.push(const SettingsRoute()),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 14),
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: isDark ? ColorConstant.borderColorDark : ColorConstant.borderColorLight,
-              width: 0.5,
-            ),
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, size: 22, color: iconColor),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Text(label,
-                  style: TextStyle(
-                      fontSize: 15, color: labelColor, fontWeight: FontWeight.w500)),
-            ),
-            if (badge != null)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                    color: const Color(0xFFF6A821),
-                    borderRadius: BorderRadius.circular(12)),
-                child: Text(badge,
-                    style: const TextStyle(
-                        fontSize: 11, color: Colors.white, fontWeight: FontWeight.w700)),
-              ),
-            if (trailing != null) ...[
-              Text(
-                trailing,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: trailingColor ??
-                      (isDark
-                          ? ColorConstant.textSecondaryDark
-                          : ColorConstant.textSecondaryLight),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(width: 4),
-            ],
-            Icon(Icons.arrow_forward_ios_rounded,
-                size: 14,
-                color: isDark ? ColorConstant.textMutedDark : ColorConstant.textMutedLight),
-          ],
-        ),
-      ),
-    );
-  }
-
-}
 
 // ==================== ARKADAŞLAR TAB ====================
 
