@@ -89,7 +89,7 @@ class _NotesDiaryViewState extends State<NotesDiaryView> {
             // Sadece bu sekmeyi etkiler; diğer sekmeler kendi Scaffold'unu kullanır.
             backgroundColor: isDarkMode
                 ? ColorConstant.bgColorDark
-                : const Color(0xFFECE3D1),
+                : ColorConstant.bgColorLight,
             body: SafeArea(
               child: Column(
                 children: [

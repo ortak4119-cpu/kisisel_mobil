@@ -16,9 +16,9 @@ class ColorConstant {
   static Color accentRed = fromHex("#FF5252"); // Parlak kırmızı
   static Color accentGreen = fromHex("#69F0AE"); // Parlak yeşil aksanlar
 
-  // Arka plan renkleri - açık mod (Notlar "Sunny Script" sıcak krem paleti)
+  // Arka plan renkleri - açık mod (referans swatch: sıcak tan/bej)
   static Color bgColorLight =
-      fromHex("#ECE3D1"); // Sıcak bej/krem zemin (Notlar sekmesiyle aynı)
+      fromHex("#DED0B2"); // Sıcak tan/bej zemin (referans görseldeki ton)
   static Color cardColorLight = fromHex("#FFFFFF"); // Beyaz kart arkaplanı
   static Color cardPurpleLight = fromHex("#EDE7F6"); // Açık mor kart arkaplanı
   static Color cardBlueLight = fromHex("#B3E5FC"); // Açık mavi kart arkaplanı

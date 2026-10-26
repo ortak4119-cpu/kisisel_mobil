@@ -21,6 +21,12 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> {
   int _selectedIndex = 0;
 
+  // Alt menü renkleri (referans tasarım: seçili öğede pembe hap).
+  static const _navAccent = Color(0xFFD6336C); // gül-magenta vurgu
+  static const _navPillLight = Color(0xFFFCE3EC); // açık pembe hap zemini
+  static const _navIdleIconLight = Color(0xFF3C4250); // koyu ikon (seçili değil)
+  static const _navIdleLabelLight = Color(0xFF8A8F9A); // gri etiket
+
   @override
   void initState() {
     super.initState();
@@ -114,55 +120,55 @@ class _HomeViewState extends State<HomeView> {
     required bool isDarkMode,
   }) {
     final isSelected = _selectedIndex == index;
+    final idleIcon =
+        isDarkMode ? ColorConstant.textMutedDark : _navIdleIconLight;
+    final idleLabel =
+        isDarkMode ? ColorConstant.textMutedDark : _navIdleLabelLight;
+    final pill = isDarkMode
+        ? _navAccent.withValues(alpha: 0.22)
+        : _navPillLight;
+
     return Expanded(
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            setState(() {
-              _selectedIndex = index;
-            });
-          },
-          borderRadius: BorderRadius.circular(12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
+      child: InkWell(
+        onTap: () => setState(() => _selectedIndex = index),
+        borderRadius: BorderRadius.circular(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // İkon + seçili olunca animasyonla beliren pembe hap.
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 260),
+              curve: Curves.easeOut,
+              padding: EdgeInsets.symmetric(
+                  horizontal: isSelected ? 18 : 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: isSelected ? pill : Colors.transparent,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(
                 icon,
-                color: isSelected
-                    ? (isDarkMode
-                    ? ColorConstant.primaryDarkModePurple
-                    : ColorConstant.primaryPurple)
-                    : (isDarkMode
-                    ? ColorConstant.textMutedDark
-                    : ColorConstant.textMutedLight),
-                size: 24,
+                size: 22,
+                color: isSelected ? _navAccent : idleIcon,
               ),
-              const SizedBox(height: 4),
-              // Uzun etiketler (ör. "Alışkanlık") dar yuvada taşmasın diye
-              // tek satıra sığacak şekilde ölçeklenir.
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  softWrap: false,
-                  style: TextStyle(
-                    fontSize: isSelected ? 12 : 11,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                    color: isSelected
-                        ? (isDarkMode
-                            ? ColorConstant.primaryDarkModePurple
-                            : ColorConstant.primaryPurple)
-                        : (isDarkMode
-                            ? ColorConstant.textMutedDark
-                            : ColorConstant.textMutedLight),
-                  ),
+            ),
+            const SizedBox(height: 4),
+            // Uzun etiketler (ör. "Alışkanlık") dar yuvada taşmasın diye
+            // tek satıra sığacak şekilde ölçeklenir.
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 260),
+                curve: Curves.easeOut,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: isSelected ? _navAccent : idleLabel,
                 ),
+                child: Text(label, maxLines: 1, softWrap: false),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
