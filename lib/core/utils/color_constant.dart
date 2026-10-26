@@ -20,7 +20,7 @@ class ColorConstant {
   static Color bgColorLight =
       fromHex("#DED0B2"); // Sıcak tan/bej zemin (referans görseldeki ton)
   static Color cardColorLight =
-      fromHex("#F2ECE0"); // Açık krem kart (tan zeminin açık tonu)
+      fromHex("#EAE0CD"); // Belirgin sıcak krem kart (tan zeminin açık tonu)
   static Color cardPurpleLight = fromHex("#EDE7F6"); // Açık mor kart arkaplanı
   static Color cardBlueLight = fromHex("#B3E5FC"); // Açık mavi kart arkaplanı
   static Color cardYellowLight = fromHex("#FFF9C4"); // Açık sarı kart arkaplanı
