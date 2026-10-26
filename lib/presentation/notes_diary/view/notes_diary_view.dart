@@ -102,7 +102,7 @@ class _NotesDiaryViewState extends State<NotesDiaryView> {
                         Expanded(
                           child: Text(
                             'notes.title'.tr(),
-                            style: GoogleFonts.caveat(
+                            style: GoogleFonts.josefinSans(
                               color: isDarkMode
                                   ? ColorConstant.textPrimaryDark
                                   : const Color(0xFF3A3326),
@@ -1513,7 +1513,7 @@ class _NotesContent extends StatelessWidget {
                     child: Text(e[1] as String,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.caveat(
+                        style: GoogleFonts.josefinSans(
                             fontSize: 15.5,
                             height: 1.1,
                             color: const Color(0xFF3A3326))),
@@ -1528,7 +1528,7 @@ class _NotesContent extends StatelessWidget {
         texts.isEmpty ? ' ' : texts.take(4).join('\n'),
         maxLines: 4,
         overflow: TextOverflow.ellipsis,
-        style: GoogleFonts.caveat(
+        style: GoogleFonts.josefinSans(
             fontSize: 15.5, height: 1.15, color: const Color(0xFF473F2F)),
       );
     }
@@ -1556,7 +1556,7 @@ class _NotesContent extends StatelessWidget {
             Text(title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.caveat(
+                style: GoogleFonts.josefinSans(
                     fontSize: 21,
                     fontWeight: FontWeight.w700,
                     height: 1.0,

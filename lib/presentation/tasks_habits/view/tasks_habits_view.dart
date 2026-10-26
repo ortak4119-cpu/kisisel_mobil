@@ -86,7 +86,7 @@ class _TasksHabitsViewState extends State<TasksHabitsView> {
                         alignment: Alignment.centerLeft,
                         child: Text(
                           _tab == 0 ? 'tasks.title'.tr() : 'habits.title'.tr(),
-                          style: GoogleFonts.caveat(
+                          style: GoogleFonts.josefinSans(
                             fontSize: 38,
                             fontWeight: FontWeight.w700,
                             height: 1.0,
@@ -1226,7 +1226,7 @@ class _TasksTab extends StatelessWidget {
                     fontSize: 13, fontWeight: FontWeight.w900, color: color)),
             const SizedBox(width: 3),
             Text(label,
-                style: GoogleFonts.caveat(
+                style: GoogleFonts.josefinSans(
                     fontSize: 15, color: _inkMuted, fontWeight: FontWeight.w600)),
           ],
         );
@@ -1267,13 +1267,13 @@ class _TasksTab extends StatelessWidget {
             child: Text(text,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.caveat(
+                style: GoogleFonts.josefinSans(
                     fontSize: 23, fontWeight: FontWeight.w700, color: _ink)),
           ),
           if (todaySuffix != null) ...[
             const SizedBox(width: 6),
             Text('· $todaySuffix',
-                style: GoogleFonts.caveat(
+                style: GoogleFonts.josefinSans(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
                     color: _orange)),
@@ -1324,7 +1324,7 @@ class _TasksTab extends StatelessWidget {
             Expanded(
               child: Text(
                 '${t.title}$trailing',
-                style: GoogleFonts.caveat(
+                style: GoogleFonts.josefinSans(
                   fontSize: 18.5,
                   height: 1.15,
                   color: t.isCompleted ? _inkMuted : _ink,
@@ -1367,7 +1367,7 @@ class _TasksTab extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Text('tasks.planner.tapToAdd'.tr(),
-                    style: GoogleFonts.caveat(
+                    style: GoogleFonts.josefinSans(
                         fontSize: 18,
                         fontStyle: FontStyle.italic,
                         color: _inkMuted)),
@@ -1428,7 +1428,7 @@ class _TasksTab extends StatelessWidget {
           _rule(),
           if (tasks.isEmpty)
             Text('— ${'tasks.planner.noUpcoming'.tr()}',
-                style: GoogleFonts.caveat(
+                style: GoogleFonts.josefinSans(
                     fontSize: 18, fontStyle: FontStyle.italic, color: _inkMuted))
           else
             for (final t in tasks) _taskLine(context, isDark, t),
