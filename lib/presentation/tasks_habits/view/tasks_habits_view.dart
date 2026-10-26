@@ -71,9 +71,7 @@ class _TasksHabitsViewState extends State<TasksHabitsView> {
           return Scaffold(
             backgroundColor: isDarkMode
                 ? ColorConstant.bgColorDark
-                : (widget.mode == 'tasks'
-                    ? const Color(0xFFFBF4E6)
-                    : ColorConstant.bgColorLight),
+                : ColorConstant.bgColorLight,
             body: SafeArea(
               bottom: false,
               child: Column(

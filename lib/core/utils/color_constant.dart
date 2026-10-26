@@ -16,9 +16,9 @@ class ColorConstant {
   static Color accentRed = fromHex("#FF5252"); // Parlak kırmızı
   static Color accentGreen = fromHex("#69F0AE"); // Parlak yeşil aksanlar
 
-  // Arka plan renkleri - açık mod (görseldeki tonlar)
+  // Arka plan renkleri - açık mod (Notlar "Sunny Script" sıcak krem paleti)
   static Color bgColorLight =
-      fromHex("#E3F2FD"); // Açık mavi-beyaz ton (görseldeki gibi)
+      fromHex("#ECE3D1"); // Sıcak bej/krem zemin (Notlar sekmesiyle aynı)
   static Color cardColorLight = fromHex("#FFFFFF"); // Beyaz kart arkaplanı
   static Color cardPurpleLight = fromHex("#EDE7F6"); // Açık mor kart arkaplanı
   static Color cardBlueLight = fromHex("#B3E5FC"); // Açık mavi kart arkaplanı
@@ -26,15 +26,15 @@ class ColorConstant {
   static Color cardPinkLight = fromHex("#FCE4EC"); // Açık pembe kart arkaplanı
   static Color cardGreenLight = fromHex("#C8E6C9"); // Açık yeşil kart arkaplanı
 
-  // Metin renkleri - açık mod
-  static Color textPrimaryLight = fromHex("#212121"); // Koyu siyah
-  static Color textSecondaryLight = fromHex("#757575"); // Gri ton
-  static Color textMutedLight = fromHex("#BDBDBD"); // Soluk gri
+  // Metin renkleri - açık mod (Notlar sıcak kahve mürekkep tonları)
+  static Color textPrimaryLight = fromHex("#2B2620"); // Koyu sıcak kahve
+  static Color textSecondaryLight = fromHex("#6F6456"); // Sıcak gri-kahve
+  static Color textMutedLight = fromHex("#A79A84"); // Soluk sıcak bej-gri
   static Color textOnPurple = fromHex("#FFFFFF"); // Mor üstünde beyaz
 
-  // Ara renkler - açık mod
-  static Color borderColorLight = fromHex("#E0E0E0"); // Açık gri kenarlık
-  static Color dividerLight = fromHex("#EEEEEE"); // Çok açık ayırıcı
+  // Ara renkler - açık mod (bej zeminle uyumlu sıcak kenarlıklar)
+  static Color borderColorLight = fromHex("#DCD0BA"); // Sıcak açık kenarlık
+  static Color dividerLight = fromHex("#E5DBC7"); // Sıcak açık ayırıcı
 
   // Ana renkler - koyu mod (daha canlı versiyonlar)
   static Color primaryDarkModePurple =
