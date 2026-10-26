@@ -860,7 +860,11 @@
       "notFound": "Montant introuvable, saisissez-le manuellement",
       "failed": "Échec du scan"
     },
-    "editIncome": "Modifier le revenu"
+    "editIncome": "Modifier le revenu",
+    "mainAccount": "Compte principal",
+    "spendableToday": "Disponible aujourd'hui",
+    "subShort": "Abonnement",
+    "lockShort": "Verrouiller"
   },
   "notes": {
     "title": "Mes Notes",

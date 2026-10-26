@@ -860,7 +860,11 @@
       "notFound": "لم يتم العثور على المبلغ، أدخله يدويًا",
       "failed": "فشل المسح"
     },
-    "editIncome": "تعديل الدخل"
+    "editIncome": "تعديل الدخل",
+    "mainAccount": "الحساب الرئيسي",
+    "spendableToday": "المتاح اليوم",
+    "subShort": "اشتراك",
+    "lockShort": "قفل"
   },
   "notes": {
     "title": "ملاحظاتي",

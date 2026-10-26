@@ -56,6 +56,10 @@ _FinCat finCatById(String? id) {
 }
 
 const _fOrange = Color(0xFFF6A821);
+// Mockup'taki koyu teal başlık + hesap kartı tonları.
+const _fTeal = Color(0xFF0F524E);
+const _fTealDark = Color(0xFF0B3C39);
+const _fTealCard = Color(0xFF0A3F3C);
 
 // Tutar biçimlendirme artık seçili para birimine (AppCurrency) göre yapılır.
 String tl(double v) {
@@ -116,6 +120,15 @@ class FinanceView extends StatefulWidget {
 }
 
 class _FinanceViewState extends State<FinanceView> {
+  final PageController _acctCtrl = PageController(viewportFraction: 0.9);
+  int _acctIdx = 0;
+
+  @override
+  void dispose() {
+    _acctCtrl.dispose();
+    super.dispose();
+  }
+
   double _subsMonthly(FinanceViewModel vm) {
     double t = 0;
     for (final s in vm.activeSubscriptions) {
@@ -136,59 +149,56 @@ class _FinanceViewState extends State<FinanceView> {
             backgroundColor: isDark
                 ? ColorConstant.bgColorDark
                 : ColorConstant.bgColorLight,
-            body: SafeArea(
-              bottom: false,
-              child: vm.isInitialLoading
-                  ? Center(child: CircularProgressIndicator(color: _fOrange))
-                  : vm.financeLocked
-                  ? _FinanceLockGate(vm: vm, c: c)
-                  : RefreshIndicator(
-                      onRefresh: () => vm.refreshAll(),
-                      color: _fOrange,
-                      child: ListView(
-                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 130),
-                        children: [
-                          _header(context, vm, c),
-                          const SizedBox(height: 14),
-                          _monthSwitcher(context, vm, c),
-                          const SizedBox(height: 14),
-                          _balanceCard(vm, c),
-                          const SizedBox(height: 14),
-                          _actionButtons(context, vm, c),
-                          const SizedBox(height: 16),
-                          _budgetCard(context, vm, c),
-                          const SizedBox(height: 14),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(child: _monthExpensesCard(vm, c)),
-                              const SizedBox(width: 12),
-                              Expanded(child: _dailyAvgCard(vm, c)),
-                            ],
-                          ),
-                          const SizedBox(height: 14),
-                          _distributionCard(context, vm, c),
-                          const SizedBox(height: 14),
-                          _subscriptionsCard(context, vm, c),
-                          const SizedBox(height: 14),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                  flex: 3,
-                                  child: _upcomingCard(context, vm, c)),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                  flex: 2,
-                                  child: _savingsCard(context, vm, c)),
-                            ],
-                          ),
-                          const SizedBox(height: 14),
-                          _transactionsCard(context, vm, c),
-                        ],
+            body: vm.isInitialLoading
+                ? Center(child: CircularProgressIndicator(color: _fOrange))
+                : vm.financeLocked
+                    ? SafeArea(child: _FinanceLockGate(vm: vm, c: c))
+                    : RefreshIndicator(
+                        onRefresh: () => vm.refreshAll(),
+                        color: _fOrange,
+                        child: ListView(
+                          padding: const EdgeInsets.only(bottom: 130),
+                          children: [
+                            _tealHeader(context, vm, c),
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+                              child: Column(
+                                children: [
+                                  _budgetCard(context, vm, c),
+                                  const SizedBox(height: 14),
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(child: _monthExpensesCard(vm, c)),
+                                      const SizedBox(width: 12),
+                                      Expanded(child: _dailyAvgCard(vm, c)),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 14),
+                                  _distributionCard(context, vm, c),
+                                  const SizedBox(height: 14),
+                                  _subscriptionsCard(context, vm, c),
+                                  const SizedBox(height: 14),
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                          flex: 3,
+                                          child: _upcomingCard(context, vm, c)),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                          flex: 2,
+                                          child: _savingsCard(context, vm, c)),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 14),
+                                  _transactionsCard(context, vm, c),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-            ),
             floatingActionButton: FloatingActionButton(
               heroTag: 'finance_fab',
               onPressed: () => showFinanceFormSheet(context, vm, isDark),
@@ -221,253 +231,302 @@ class _FinanceViewState extends State<FinanceView> {
     );
   }
 
-  // ---------- Başlık ----------
-  Widget _header(BuildContext context, FinanceViewModel vm, AppColors c) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Expanded(
-          child: Text('finance.title'.tr(),
-              style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.5,
-                  color: c.textPrimary)),
-        ),
-        _iconBtn(c, Icons.notifications_none_rounded,
-            () => _showUpcomingSheet(context, vm, c)),
-        const SizedBox(width: 10),
-        _iconBtn(c, Icons.ios_share_rounded, () => vm.exportCsv(context)),
-        const SizedBox(width: 10),
-        _iconBtn(c, Icons.settings_outlined,
-            () => _showBudgetSettingsDialog(context, vm, c.isDark)),
-      ],
-    );
-  }
-
-  // ---------- Ay değiştirici ----------
-  Widget _monthSwitcher(BuildContext context, FinanceViewModel vm, AppColors c) {
+  // ---------- Koyu teal başlık + hesap carousel + dairesel aksiyonlar ----------
+  Widget _tealHeader(BuildContext context, FinanceViewModel vm, AppColors c) {
     final months = 'calendar.monthNames'.tr().split(',');
     final m = vm.viewMonth;
-    final label =
+    final monthLabel =
         '${m.month <= months.length ? months[m.month - 1] : ''} ${m.year}';
+    final topPad = MediaQuery.of(context).padding.top;
+    final user = vm.currentUser;
     return Container(
-      decoration: BoxDecoration(
-        color: c.card,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: c.border.withOpacity(0.6)),
+      padding: EdgeInsets.fromLTRB(20, topPad + 10, 20, 20),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [_fTeal, _fTealDark],
+        ),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _monthArrow(c, Icons.chevron_left_rounded, () => vm.changeMonth(-1)),
-          Expanded(
-            child: GestureDetector(
-              onTap: vm.isCurrentMonth ? null : () => vm.goToCurrentMonth(),
-              child: Column(
-                children: [
-                  Text(label,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          color: c.textPrimary)),
-                  if (!vm.isCurrentMonth)
-                    Text('finance.goToday'.tr(),
-                        style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: _fOrange)),
-                ],
+          // --- Üst satır: avatar + ay/başlık + arama/zil ---
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 20,
+                backgroundColor: Colors.white.withOpacity(0.18),
+                backgroundImage: (user?.profilePictureUrl != null)
+                    ? NetworkImage(user!.profilePictureUrl!)
+                    : null,
+                child: user?.profilePictureUrl == null
+                    ? const Icon(Icons.person_rounded,
+                        color: Colors.white, size: 22)
+                    : null,
               ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GestureDetector(
+                      onTap: vm.isCurrentMonth ? null : vm.goToCurrentMonth,
+                      child: Row(
+                        children: [
+                          InkWell(
+                            onTap: () => vm.changeMonth(-1),
+                            child: const Icon(Icons.chevron_left_rounded,
+                                size: 18, color: Colors.white70),
+                          ),
+                          Text(monthLabel,
+                              style: const TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white70)),
+                          InkWell(
+                            onTap: () => vm.changeMonth(1),
+                            child: const Icon(Icons.chevron_right_rounded,
+                                size: 18, color: Colors.white70),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text('finance.title'.tr(),
+                        style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                            height: 1.1)),
+                  ],
+                ),
+              ),
+              _tealIconBtn(Icons.search_rounded,
+                  () => _showBudgetSettingsDialog(context, vm, c.isDark)),
+              const SizedBox(width: 10),
+              _tealIconBtn(Icons.notifications_none_rounded,
+                  () => _showUpcomingSheet(context, vm, c)),
+            ],
+          ),
+          const SizedBox(height: 18),
+          // --- Hesap carousel ---
+          SizedBox(
+            height: 150,
+            child: PageView(
+              controller: _acctCtrl,
+              onPageChanged: (i) => setState(() => _acctIdx = i),
+              children: [
+                _mainAccountCard(vm),
+                _savingsAccountCard(vm),
+              ],
             ),
           ),
-          _monthArrow(c, Icons.chevron_right_rounded, () => vm.changeMonth(1)),
+          const SizedBox(height: 10),
+          // --- Sayfa noktaları ---
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(2, (i) {
+              final sel = i == _acctIdx;
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                width: sel ? 18 : 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(sel ? 0.95 : 0.4),
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              );
+            }),
+          ),
+          const SizedBox(height: 18),
+          // --- 4 dairesel aksiyon ---
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _circleAction(Icons.add_rounded, 'finance.income'.tr(),
+                  const Color(0xFF48BB78),
+                  () => showFinanceFormSheet(context, vm, c.isDark,
+                      income: true)),
+              _circleAction(Icons.remove_rounded, 'finance.expense'.tr(),
+                  const Color(0xFFF6524B),
+                  () => showFinanceFormSheet(context, vm, c.isDark)),
+              _circleAction(Icons.sync_rounded, 'finance.subShort'.tr(),
+                  const Color(0xFF9F7AEA),
+                  () => _showAddSubscriptionDialog(context, vm, c.isDark)),
+              _circleAction(Icons.lock_outline_rounded, 'finance.lockShort'.tr(),
+                  const Color(0xFF3AB7A8), () {
+                if (vm.financeHasPin) {
+                  vm.lockNow();
+                } else {
+                  _showBudgetSettingsDialog(context, vm, c.isDark);
+                }
+              }),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  Widget _monthArrow(AppColors c, IconData icon, VoidCallback onTap) => InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: Icon(icon, size: 26, color: c.textSecondary)),
-      );
-
-  Widget _iconBtn(AppColors c, IconData icon, VoidCallback onTap) => Material(
-        color: c.card,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-            side: BorderSide(color: c.border.withOpacity(0.6))),
+  Widget _tealIconBtn(IconData icon, VoidCallback onTap) => Material(
+        color: Colors.white.withOpacity(0.15),
+        shape: const CircleBorder(),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(14),
+          customBorder: const CircleBorder(),
           child: Padding(
-              padding: const EdgeInsets.all(10),
-              child: Icon(icon, size: 22, color: c.textSecondary)),
+              padding: const EdgeInsets.all(9),
+              child: Icon(icon, size: 20, color: Colors.white)),
         ),
       );
 
-  // ---------- Bakiye kartı ----------
-  Widget _balanceCard(FinanceViewModel vm, AppColors c) {
+  Widget _mainAccountCard(FinanceViewModel vm) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-            colors: [Color(0xFFF6C23E), _fOrange],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight),
+        color: _fTealCard,
         borderRadius: BorderRadius.circular(22),
-        boxShadow: [
-          BoxShadow(
-              color: _fOrange.withOpacity(0.35),
-              blurRadius: 18,
-              offset: const Offset(0, 8)),
-        ],
+        border: Border.all(color: Colors.white.withOpacity(0.08)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Text('finance.availableBalance'.tr(),
-                  style: const TextStyle(
-                      fontSize: 14.5, color: Colors.white)),
-              const SizedBox(width: 6),
-              const Icon(Icons.remove_red_eye_outlined,
-                  size: 16, color: Colors.white70),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(tl(vm.availableBalance),
-              style: const TextStyle(
-                  fontSize: 34,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white)),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              const Icon(Icons.bolt_rounded, size: 15, color: Colors.white70),
-              const SizedBox(width: 4),
-              Text(
-                '${'finance.safeToSpend'.tr()}: ${tl0(vm.safeToSpendPerDay)}',
-                style: const TextStyle(fontSize: 13, color: Colors.white),
+              Text('finance.mainAccount'.tr(),
+                  style: TextStyle(
+                      fontSize: 13.5, color: Colors.white.withOpacity(0.7))),
+              const Spacer(),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.14),
+                    borderRadius: BorderRadius.circular(10)),
+                child: Text(AppCurrency.code,
+                    style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white)),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
-            decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.18),
-                borderRadius: BorderRadius.circular(16)),
-            child: Row(
-              children: [
-                _balMini('finance.income'.tr(), tl0(vm.monthIncomeTotal),
-                    const Color(0xFF48BB78)),
-                _balDivider(),
-                _balMini('finance.expense'.tr(),
-                    tl0(vm.monthExpensesTotal), const Color(0xFFF6524B)),
-                _balDivider(),
-                _balMini('finance.savings'.tr(),
-                    '%${vm.monthSavingsRate.round()}',
-                    const Color(0xFFCFF6D8)),
-              ],
-            ),
+          const SizedBox(height: 8),
+          Text(tl(vm.availableBalance),
+              style: const TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white)),
+          const Spacer(),
+          Text(
+            '${'finance.spendableToday'.tr()} · ${tl0(vm.safeToSpendPerDay)}',
+            style: const TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF5FE3B3)),
           ),
         ],
       ),
     );
   }
 
-  Widget _balMini(String label, String value, Color dot) => Expanded(
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                    width: 7,
-                    height: 7,
-                    decoration:
-                        BoxDecoration(color: dot, shape: BoxShape.circle)),
-                const SizedBox(width: 5),
-                Text(label,
-                    style: const TextStyle(
-                        fontSize: 12.5, color: Colors.white)),
-              ],
+  Widget _savingsAccountCard(FinanceViewModel vm) {
+    final pct = vm.savingsTarget > 0
+        ? (vm.savingsCurrent / vm.savingsTarget).clamp(0.0, 1.0)
+        : 0.0;
+    final title =
+        vm.savingsTitle.trim().isEmpty ? 'finance.savingsFund'.tr() : vm.savingsTitle;
+    return Container(
+      margin: const EdgeInsets.only(left: 4),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+            colors: [Color(0xFFF6894B), _fOrange],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight),
+        borderRadius: BorderRadius.circular(22),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  fontSize: 13.5, color: Colors.white.withOpacity(0.9))),
+          const SizedBox(height: 8),
+          Text(tl(vm.savingsCurrent),
+              style: const TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white)),
+          const Spacer(),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: pct,
+              minHeight: 6,
+              backgroundColor: Colors.white.withOpacity(0.3),
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
             ),
-            const SizedBox(height: 3),
-            Text(value,
-                style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white)),
-          ],
-        ),
-      );
-
-  Widget _balDivider() => Container(
-      width: 1, height: 34, color: Colors.white.withOpacity(0.25));
-
-  // ---------- 3 aksiyon ----------
-  Widget _actionButtons(
-      BuildContext context, FinanceViewModel vm, AppColors c) {
-    return Row(
-      children: [
-        Expanded(
-          child: _actBtn(c, Icons.add_circle, 'finance.addExpense'.tr(),
-              const Color(0xFFF6524B),
-              () => showFinanceFormSheet(context, vm, c.isDark)),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: _actBtn(c, Icons.add_circle, 'finance.addIncome'.tr(),
-              const Color(0xFF48BB78),
-              () => showFinanceFormSheet(context, vm, c.isDark, income: true)),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: _actBtn(c, Icons.add_circle, 'finance.addSub'.tr(),
-              const Color(0xFF9F7AEA),
-              () => _showAddSubscriptionDialog(context, vm, c.isDark)),
-        ),
-      ],
-    );
-  }
-
-  Widget _actBtn(AppColors c, IconData icon, String label, Color color,
-      VoidCallback onTap) {
-    return Material(
-      color: c.card,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 6),
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: c.border.withOpacity(0.7))),
-          child: Column(
-            children: [
-              Icon(icon, color: color, size: 26),
-              const SizedBox(height: 6),
-              Text(label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w700,
-                      color: color)),
-            ],
           ),
-        ),
+          const SizedBox(height: 6),
+          Text(
+            'finance.target'.tr(namedArgs: {'amount': tl0(vm.savingsTarget)}),
+            style: const TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: Colors.white),
+          ),
+        ],
       ),
     );
   }
+
+  Widget _circleAction(
+      IconData icon, String label, Color color, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(30),
+      child: Column(
+        children: [
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.12),
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white.withOpacity(0.15)),
+            ),
+            child: Icon(icon, color: color == const Color(0xFF3AB7A8)
+                ? Colors.white
+                : color, size: 24),
+          ),
+          const SizedBox(height: 6),
+          Text(label,
+              style: const TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white)),
+        ],
+      ),
+    );
+  }
+
+  // ---------- Başlık ----------
+
+  // ---------- Ay değiştirici ----------
+
+
+
+  // ---------- Bakiye kartı ----------
+
+
+
+  // ---------- 3 aksiyon ----------
+
 
   // ---------- Aylık bütçe ----------
   Widget _budgetCard(BuildContext context, FinanceViewModel vm, AppColors c) {

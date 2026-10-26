@@ -860,7 +860,11 @@
       "notFound": "राशि नहीं मिली, मैन्युअल रूप से दर्ज करें",
       "failed": "स्कैन विफल"
     },
-    "editIncome": "आय संपादित करें"
+    "editIncome": "आय संपादित करें",
+    "mainAccount": "मुख्य खाता",
+    "spendableToday": "आज खर्च योग्य",
+    "subShort": "सदस्यता",
+    "lockShort": "लॉक"
   },
   "notes": {
     "title": "मेरे नोट्स",

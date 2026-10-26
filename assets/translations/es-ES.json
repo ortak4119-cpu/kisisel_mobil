@@ -860,7 +860,11 @@
       "notFound": "Importe no encontrado, introdúcelo manualmente",
       "failed": "Error al escanear"
     },
-    "editIncome": "Editar ingreso"
+    "editIncome": "Editar ingreso",
+    "mainAccount": "Cuenta principal",
+    "spendableToday": "Disponible hoy",
+    "subShort": "Suscripción",
+    "lockShort": "Bloquear"
   },
   "notes": {
     "title": "Mis Notas",

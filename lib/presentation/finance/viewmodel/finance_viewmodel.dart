@@ -126,6 +126,14 @@ class FinanceViewModel extends ChangeNotifier {
   String? _pinError;
   String? get pinError => _pinError;
 
+  /// Finansı anında yeniden kilitler (PIN varsa). Teal başlıktaki "Kilitle".
+  void lockNow() {
+    if (!_financeHasPin) return;
+    _financeUnlockedSession = false;
+    _financeLocked = true;
+    notifyListeners();
+  }
+
   Future<void> _checkFinanceLock() async {
     try {
       final st = await _pinService.getStatus(type: 'finance');

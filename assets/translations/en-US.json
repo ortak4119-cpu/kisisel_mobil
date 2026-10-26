@@ -860,7 +860,11 @@
       "notFound": "Amount not found, enter manually",
       "failed": "Scan failed"
     },
-    "editIncome": "Edit Income"
+    "editIncome": "Edit Income",
+    "mainAccount": "Main account",
+    "spendableToday": "Spendable today",
+    "subShort": "Subscription",
+    "lockShort": "Lock"
   },
   "notes": {
     "title": "My Notes",

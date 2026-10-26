@@ -860,7 +860,11 @@
       "notFound": "Betrag nicht gefunden, manuell eingeben",
       "failed": "Scan fehlgeschlagen"
     },
-    "editIncome": "Einnahme bearbeiten"
+    "editIncome": "Einnahme bearbeiten",
+    "mainAccount": "Hauptkonto",
+    "spendableToday": "Heute verfügbar",
+    "subShort": "Abo",
+    "lockShort": "Sperren"
   },
   "notes": {
     "title": "Meine Notizen",

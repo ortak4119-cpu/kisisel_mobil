@@ -860,7 +860,11 @@
       "notFound": "Tutar bulunamadı, elle girin",
       "failed": "Tarama başarısız"
     },
-    "editIncome": "Geliri Düzenle"
+    "editIncome": "Geliri Düzenle",
+    "mainAccount": "Ana hesap",
+    "spendableToday": "Bugün harcanabilir",
+    "subShort": "Abonelik",
+    "lockShort": "Kilitle"
   },
   "notes": {
     "title": "Notlarım",

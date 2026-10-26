@@ -860,7 +860,11 @@
       "notFound": "Valor não encontrado, introduza manualmente",
       "failed": "Falha ao digitalizar"
     },
-    "editIncome": "Editar receita"
+    "editIncome": "Editar receita",
+    "mainAccount": "Conta principal",
+    "spendableToday": "Disponível hoje",
+    "subShort": "Subscrição",
+    "lockShort": "Bloquear"
   },
   "notes": {
     "title": "Minhas Notas",

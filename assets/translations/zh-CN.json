@@ -860,7 +860,11 @@
       "notFound": "未找到金额，请手动输入",
       "failed": "扫描失败"
     },
-    "editIncome": "编辑收入"
+    "editIncome": "编辑收入",
+    "mainAccount": "主账户",
+    "spendableToday": "今日可用",
+    "subShort": "订阅",
+    "lockShort": "锁定"
   },
   "notes": {
     "title": "我的笔记",
