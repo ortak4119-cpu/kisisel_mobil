@@ -864,7 +864,18 @@
     "mainAccount": "Main account",
     "spendableToday": "Spendable today",
     "subShort": "Subscription",
-    "lockShort": "Lock"
+    "lockShort": "Lock",
+    "tabGeneral": "General",
+    "tabSpending": "Spending",
+    "tabPlan": "Plan",
+    "avg": "Avg",
+    "perDay": "day",
+    "daysUnit": "days",
+    "debtShort": "Debt",
+    "totalShort": "total",
+    "categoryBudgetsLabel": "Category budgets",
+    "limited": "{n} limited",
+    "financeLock": "Finance lock"
   },
   "notes": {
     "title": "My Notes",

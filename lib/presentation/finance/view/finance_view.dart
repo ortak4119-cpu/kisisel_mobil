@@ -7,6 +7,7 @@ import '../../../core/design/app_design.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/utils/subscription_icons.dart';
 import '../../../core/utils/currency.dart';
+import '../../../models/subscription/subscription_models.dart';
 import '../viewmodel/finance_viewmodel.dart';
 
 // ==================== FİNANS KATEGORİLERİ & YARDIMCILAR ====================
@@ -122,6 +123,7 @@ class FinanceView extends StatefulWidget {
 class _FinanceViewState extends State<FinanceView> {
   final PageController _acctCtrl = PageController(viewportFraction: 0.9);
   int _acctIdx = 0;
+  int _dashTab = 0; // 0 Genel, 1 Harcama, 2 Plan
 
   @override
   void dispose() {
@@ -164,35 +166,9 @@ class _FinanceViewState extends State<FinanceView> {
                               padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
                               child: Column(
                                 children: [
-                                  _budgetCard(context, vm, c),
-                                  const SizedBox(height: 14),
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Expanded(child: _monthExpensesCard(vm, c)),
-                                      const SizedBox(width: 12),
-                                      Expanded(child: _dailyAvgCard(vm, c)),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 14),
-                                  _distributionCard(context, vm, c),
-                                  const SizedBox(height: 14),
-                                  _subscriptionsCard(context, vm, c),
-                                  const SizedBox(height: 14),
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Expanded(
-                                          flex: 3,
-                                          child: _upcomingCard(context, vm, c)),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                          flex: 2,
-                                          child: _savingsCard(context, vm, c)),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 14),
-                                  _transactionsCard(context, vm, c),
+                                  _tabPills(c),
+                                  const SizedBox(height: 16),
+                                  ..._tabContent(context, vm, c),
                                 ],
                               ),
                             ),
@@ -229,6 +205,103 @@ class _FinanceViewState extends State<FinanceView> {
         },
       ),
     );
+  }
+
+  // ---------- Genel/Harcama/Plan sekme pilleri ----------
+  Widget _tabPills(AppColors c) {
+    final labels = [
+      'finance.tabGeneral'.tr(),
+      'finance.tabSpending'.tr(),
+      'finance.tabPlan'.tr(),
+    ];
+    return Container(
+      padding: const EdgeInsets.all(5),
+      decoration: BoxDecoration(
+        color: c.isDark ? ColorConstant.cardColorDark : const Color(0xFFEEF1F3),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: List.generate(3, (i) {
+          final sel = i == _dashTab;
+          return Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _dashTab = i),
+              behavior: HitTestBehavior.opaque,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: sel ? (c.isDark ? _fTeal : Colors.white) : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: sel
+                      ? [
+                          BoxShadow(
+                              color: Colors.black.withOpacity(0.06),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2))
+                        ]
+                      : null,
+                ),
+                child: Text(labels[i],
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700,
+                        color: sel
+                            ? (c.isDark ? Colors.white : c.textPrimary)
+                            : c.textMuted)),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  List<Widget> _tabContent(
+      BuildContext context, FinanceViewModel vm, AppColors c) {
+    switch (_dashTab) {
+      case 1: // Harcama
+        return [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: _monthExpensesCard(vm, c)),
+              const SizedBox(width: 12),
+              Expanded(child: _dailyAvgCard(vm, c)),
+            ],
+          ),
+          const SizedBox(height: 14),
+          _distributionCard(context, vm, c),
+          const SizedBox(height: 14),
+          _transactionsCard(context, vm, c),
+        ];
+      case 2: // Plan
+        return [
+          _budgetCard(context, vm, c),
+          const SizedBox(height: 14),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(flex: 3, child: _upcomingCard(context, vm, c)),
+              const SizedBox(width: 12),
+              Expanded(flex: 2, child: _savingsCard(context, vm, c)),
+            ],
+          ),
+          const SizedBox(height: 14),
+          _subscriptionsCard(context, vm, c),
+        ];
+      default: // Genel
+        return [
+          _buAyCard(context, vm, c),
+          const SizedBox(height: 14),
+          _coloredStatCards(context, vm, c),
+          const SizedBox(height: 14),
+          _transactionsCard(context, vm, c),
+          const SizedBox(height: 14),
+          _settingsList(context, vm, c),
+        ];
+    }
   }
 
   // ---------- Koyu teal başlık + hesap carousel + dairesel aksiyonlar ----------
@@ -318,6 +391,8 @@ class _FinanceViewState extends State<FinanceView> {
               onPageChanged: (i) => setState(() => _acctIdx = i),
               children: [
                 _mainAccountCard(vm),
+                _subsAccountCard(vm),
+                _installmentsAccountCard(vm),
                 _savingsAccountCard(vm),
               ],
             ),
@@ -326,7 +401,7 @@ class _FinanceViewState extends State<FinanceView> {
           // --- Sayfa noktaları ---
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(2, (i) {
+            children: List.generate(4, (i) {
               final sel = i == _acctIdx;
               return AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
@@ -485,6 +560,78 @@ class _FinanceViewState extends State<FinanceView> {
     );
   }
 
+  Widget _gradAccountCard({
+    required String label,
+    required String value,
+    required String sub,
+    required List<Color> grad,
+    required IconData icon,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(left: 4),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+            colors: grad,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight),
+        borderRadius: BorderRadius.circular(22),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(label,
+                  style: TextStyle(
+                      fontSize: 13.5, color: Colors.white.withOpacity(0.92))),
+              const Spacer(),
+              Icon(icon, color: Colors.white70, size: 18),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white)),
+          const Spacer(),
+          Text(sub,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white)),
+        ],
+      ),
+    );
+  }
+
+  Widget _subsAccountCard(FinanceViewModel vm) {
+    final n = vm.activeSubscriptions.length;
+    return _gradAccountCard(
+      label: 'finance.subscriptions'.tr(),
+      value: tl(_subsMonthly(vm)),
+      sub: '$n ${'finance.subShort'.tr()} · ${'finance.monthly'.tr()}',
+      grad: const [Color(0xFF9F7AEA), Color(0xFF6D4FB8)],
+      icon: Icons.sync_rounded,
+    );
+  }
+
+  Widget _installmentsAccountCard(FinanceViewModel vm) {
+    final n = vm.installments.length;
+    return _gradAccountCard(
+      label: 'finance.installment.title'.tr(),
+      value: tl(vm.monthlyInstallmentTotal),
+      sub: '$n · ${'finance.monthly'.tr()}',
+      grad: const [Color(0xFF3B82C4), Color(0xFF2C6AA0)],
+      icon: Icons.credit_card_rounded,
+    );
+  }
+
   Widget _circleAction(
       IconData icon, String label, Color color, VoidCallback onTap) {
     return InkWell(
@@ -514,6 +661,275 @@ class _FinanceViewState extends State<FinanceView> {
       ),
     );
   }
+
+  // ---------- "Bu ay" kartı (Genel sekmesi) ----------
+  Widget _buAyCard(BuildContext context, FinanceViewModel vm, AppColors c) {
+    final exp = vm.monthExpensesTotal;
+    final inc = vm.monthIncomeTotal;
+    final rate = vm.monthSavingsRate.round();
+    final ratio = inc > 0 ? (exp / inc).clamp(0.0, 1.0) : 0.0;
+    final cats = vm.categoryTotals.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    final chips = <Widget>[];
+    for (final e in cats.take(2)) {
+      chips.add(_catChip(
+          vm.getCategoryLabel(e.key), tl0(e.value), finCatById(e.key).color));
+    }
+    chips.add(_catChip(
+        'finance.avg'.tr(),
+        '${tl0(vm.dailyAverage)}/${'finance.perDay'.tr()}',
+        c.textMuted));
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: c.card,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: c.border.withOpacity(0.6)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text('finance.thisMonth'.tr(),
+                  style: TextStyle(fontSize: 13, color: c.textMuted)),
+              const Spacer(),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                    color: const Color(0xFF48BB78).withOpacity(0.14),
+                    borderRadius: BorderRadius.circular(10)),
+                child: Text('%$rate ${'finance.savings'.tr()}',
+                    style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF2F9E5E))),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          RichText(
+            text: TextSpan(children: [
+              TextSpan(
+                  text: tl(exp),
+                  style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w900,
+                      color: c.textPrimary)),
+              TextSpan(
+                  text: '  ${'finance.spent'.tr()}',
+                  style: TextStyle(fontSize: 13, color: c.textMuted)),
+            ]),
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(5),
+            child: LinearProgressIndicator(
+              value: ratio,
+              minHeight: 8,
+              backgroundColor: const Color(0xFF48BB78).withOpacity(0.18),
+              valueColor:
+                  const AlwaysStoppedAnimation<Color>(Color(0xFFF6894B)),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              _dotLabel(
+                  const Color(0xFFF6524B), 'finance.expense'.tr(), tl0(exp), c),
+              const SizedBox(width: 20),
+              _dotLabel(
+                  const Color(0xFF48BB78), 'finance.income'.tr(), tl0(inc), c),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Wrap(spacing: 8, runSpacing: 8, children: chips),
+        ],
+      ),
+    );
+  }
+
+  Widget _dotLabel(Color dot, String label, String value, AppColors c) => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+              width: 7,
+              height: 7,
+              decoration: BoxDecoration(color: dot, shape: BoxShape.circle)),
+          const SizedBox(width: 6),
+          Text('$label $value',
+              style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: c.textSecondary)),
+        ],
+      );
+
+  Widget _catChip(String label, String value, Color color) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+            color: color.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(20)),
+        child: Text('$label · $value',
+            style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: color == const Color(0xFF9AA0A6)
+                    ? color
+                    : HSLColor.fromColor(color)
+                        .withLightness(0.38)
+                        .toColor())),
+      );
+
+  // ---------- 3 renkli kart: Abonelik/Taksit/Borç ----------
+  Widget _coloredStatCards(
+      BuildContext context, FinanceViewModel vm, AppColors c) {
+    Subscription? topSub;
+    for (final s in vm.activeSubscriptions) {
+      if (topSub == null || s.amount > topSub.amount) topSub = s;
+    }
+    final subSub = topSub != null
+        ? '${topSub.nextBillingDate.difference(DateTime.now()).inDays.clamp(0, 999)} ${'finance.daysUnit'.tr()}'
+        : 'finance.monthly'.tr();
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+        Expanded(
+          child: _colorStat(
+              topSub?.name ?? 'finance.subscriptions'.tr(),
+              tl0(topSub?.amount ?? _subsMonthly(vm)),
+              subSub,
+              const Color(0xFF7C5BD0)),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _colorStat(
+              'finance.installment.title'.tr(),
+              tl0(vm.monthlyInstallmentTotal),
+              'finance.monthly'.tr(),
+              const Color(0xFF13605C)),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _colorStat('finance.debtShort'.tr(), tl0(vm.totalDebt),
+              'finance.totalShort'.tr(), const Color(0xFF9B2C2C)),
+        ),
+        ],
+      ),
+    );
+  }
+
+  Widget _colorStat(String label, String value, String sub, Color bg) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  fontSize: 12.5, color: Colors.white.withOpacity(0.85))),
+          const SizedBox(height: 8),
+          Text(value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                  fontSize: 19,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white)),
+          const SizedBox(height: 3),
+          Text(sub,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  fontSize: 11, color: Colors.white.withOpacity(0.7))),
+        ],
+      ),
+    );
+  }
+
+  // ---------- Alt ayar listesi (Genel sekmesi) ----------
+  Widget _settingsList(BuildContext context, FinanceViewModel vm, AppColors c) {
+    final budget = vm.budgetStats?.monthlyBudget ?? 0;
+    return Container(
+      decoration: BoxDecoration(
+        color: c.card,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: c.border.withOpacity(0.6)),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 18),
+      child: Column(
+        children: [
+          _setRow(c, 'finance.monthlyBudget'.tr(),
+              trailing: Text(
+                  budget > 0
+                      ? '${tl0(budget)} · ${tl0(vm.monthExpensesTotal)} ${'finance.spent'.tr()}'
+                      : '${tl0(vm.monthExpensesTotal)} ${'finance.spent'.tr()}',
+                  style: TextStyle(fontSize: 12.5, color: c.textSecondary)),
+              onTap: () => _showBudgetSettingsDialog(context, vm, c.isDark)),
+          _setDivider(c),
+          _setRow(c, 'finance.categoryBudgetsLabel'.tr(),
+              trailing: Text(
+                  'finance.limited'
+                      .tr(namedArgs: {'n': '${vm.categoryBudgets.length}'}),
+                  style: TextStyle(fontSize: 12.5, color: c.textSecondary)),
+              onTap: () => _showBudgetSettingsDialog(context, vm, c.isDark)),
+          _setDivider(c),
+          _setRow(c, 'finance.financeLock'.tr(),
+              trailing: Switch(
+                value: vm.financeHasPin,
+                activeThumbColor: _fOrange,
+                onChanged: (_) =>
+                    _showBudgetSettingsDialog(context, vm, c.isDark),
+              )),
+          _setDivider(c),
+          _setRow(c, 'finance.currency.title'.tr(),
+              trailing: Text(AppCurrency.code,
+                  style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: c.textSecondary)),
+              onTap: () => _showCurrencyDialog(context, vm, c.isDark)),
+        ],
+      ),
+    );
+  }
+
+  Widget _setRow(AppColors c, String label,
+      {Widget? trailing, VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 15),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(label,
+                  style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: c.textPrimary)),
+            ),
+            if (trailing != null) trailing,
+            if (onTap != null) ...[
+              const SizedBox(width: 6),
+              Icon(Icons.chevron_right_rounded, size: 20, color: c.textMuted),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _setDivider(AppColors c) =>
+      Divider(height: 1, color: c.border.withOpacity(0.5));
 
   // ---------- Başlık ----------
 

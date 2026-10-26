@@ -864,7 +864,18 @@
     "mainAccount": "Основной счёт",
     "spendableToday": "Доступно сегодня",
     "subShort": "Подписка",
-    "lockShort": "Блок"
+    "lockShort": "Блок",
+    "tabGeneral": "Общее",
+    "tabSpending": "Расходы",
+    "tabPlan": "План",
+    "avg": "Сред.",
+    "perDay": "день",
+    "daysUnit": "дн.",
+    "debtShort": "Долг",
+    "totalShort": "всего",
+    "categoryBudgetsLabel": "Бюджеты категорий",
+    "limited": "{n} с лимитом",
+    "financeLock": "Блокировка финансов"
   },
   "notes": {
     "title": "Мои Заметки",

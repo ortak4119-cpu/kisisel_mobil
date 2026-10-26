@@ -864,7 +864,18 @@
     "mainAccount": "Ana hesap",
     "spendableToday": "Bugün harcanabilir",
     "subShort": "Abonelik",
-    "lockShort": "Kilitle"
+    "lockShort": "Kilitle",
+    "tabGeneral": "Genel",
+    "tabSpending": "Harcama",
+    "tabPlan": "Plan",
+    "avg": "Ort.",
+    "perDay": "gün",
+    "daysUnit": "gün",
+    "debtShort": "Borç",
+    "totalShort": "toplam",
+    "categoryBudgetsLabel": "Kategori bütçeleri",
+    "limited": "{n} limitli",
+    "financeLock": "Finans kilidi"
   },
   "notes": {
     "title": "Notlarım",

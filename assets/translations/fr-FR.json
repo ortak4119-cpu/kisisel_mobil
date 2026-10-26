@@ -864,7 +864,18 @@
     "mainAccount": "Compte principal",
     "spendableToday": "Disponible aujourd'hui",
     "subShort": "Abonnement",
-    "lockShort": "Verrouiller"
+    "lockShort": "Verrouiller",
+    "tabGeneral": "Général",
+    "tabSpending": "Dépenses",
+    "tabPlan": "Plan",
+    "avg": "Moy.",
+    "perDay": "jour",
+    "daysUnit": "jours",
+    "debtShort": "Dette",
+    "totalShort": "total",
+    "categoryBudgetsLabel": "Budgets par catégorie",
+    "limited": "{n} limités",
+    "financeLock": "Verrou finances"
   },
   "notes": {
     "title": "Mes Notes",

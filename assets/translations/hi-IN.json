@@ -864,7 +864,18 @@
     "mainAccount": "मुख्य खाता",
     "spendableToday": "आज खर्च योग्य",
     "subShort": "सदस्यता",
-    "lockShort": "लॉक"
+    "lockShort": "लॉक",
+    "tabGeneral": "सामान्य",
+    "tabSpending": "खर्च",
+    "tabPlan": "योजना",
+    "avg": "औसत",
+    "perDay": "दिन",
+    "daysUnit": "दिन",
+    "debtShort": "ऋण",
+    "totalShort": "कुल",
+    "categoryBudgetsLabel": "श्रेणी बजट",
+    "limited": "{n} सीमित",
+    "financeLock": "वित्त लॉक"
   },
   "notes": {
     "title": "मेरे नोट्स",

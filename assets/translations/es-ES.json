@@ -864,7 +864,18 @@
     "mainAccount": "Cuenta principal",
     "spendableToday": "Disponible hoy",
     "subShort": "Suscripción",
-    "lockShort": "Bloquear"
+    "lockShort": "Bloquear",
+    "tabGeneral": "General",
+    "tabSpending": "Gastos",
+    "tabPlan": "Plan",
+    "avg": "Prom.",
+    "perDay": "día",
+    "daysUnit": "días",
+    "debtShort": "Deuda",
+    "totalShort": "total",
+    "categoryBudgetsLabel": "Presupuestos por categoría",
+    "limited": "{n} con límite",
+    "financeLock": "Bloqueo de finanzas"
   },
   "notes": {
     "title": "Mis Notas",

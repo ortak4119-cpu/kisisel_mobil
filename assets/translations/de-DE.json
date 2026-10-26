@@ -864,7 +864,18 @@
     "mainAccount": "Hauptkonto",
     "spendableToday": "Heute verfügbar",
     "subShort": "Abo",
-    "lockShort": "Sperren"
+    "lockShort": "Sperren",
+    "tabGeneral": "Allgemein",
+    "tabSpending": "Ausgaben",
+    "tabPlan": "Plan",
+    "avg": "Ø",
+    "perDay": "Tag",
+    "daysUnit": "Tage",
+    "debtShort": "Schulden",
+    "totalShort": "gesamt",
+    "categoryBudgetsLabel": "Kategoriebudgets",
+    "limited": "{n} limitiert",
+    "financeLock": "Finanzsperre"
   },
   "notes": {
     "title": "Meine Notizen",

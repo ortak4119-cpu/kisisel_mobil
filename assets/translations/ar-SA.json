@@ -864,7 +864,18 @@
     "mainAccount": "الحساب الرئيسي",
     "spendableToday": "المتاح اليوم",
     "subShort": "اشتراك",
-    "lockShort": "قفل"
+    "lockShort": "قفل",
+    "tabGeneral": "عام",
+    "tabSpending": "الإنفاق",
+    "tabPlan": "الخطة",
+    "avg": "متوسط",
+    "perDay": "يوم",
+    "daysUnit": "يوم",
+    "debtShort": "دين",
+    "totalShort": "الإجمالي",
+    "categoryBudgetsLabel": "ميزانيات الفئات",
+    "limited": "{n} محدودة",
+    "financeLock": "قفل المالية"
   },
   "notes": {
     "title": "ملاحظاتي",

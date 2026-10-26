@@ -864,7 +864,18 @@
     "mainAccount": "主账户",
     "spendableToday": "今日可用",
     "subShort": "订阅",
-    "lockShort": "锁定"
+    "lockShort": "锁定",
+    "tabGeneral": "总览",
+    "tabSpending": "支出",
+    "tabPlan": "计划",
+    "avg": "平均",
+    "perDay": "天",
+    "daysUnit": "天",
+    "debtShort": "债务",
+    "totalShort": "合计",
+    "categoryBudgetsLabel": "分类预算",
+    "limited": "{n} 项限额",
+    "financeLock": "财务锁"
   },
   "notes": {
     "title": "我的笔记",

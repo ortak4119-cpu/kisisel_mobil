@@ -864,7 +864,18 @@
     "mainAccount": "メイン口座",
     "spendableToday": "本日の利用可能額",
     "subShort": "サブスク",
-    "lockShort": "ロック"
+    "lockShort": "ロック",
+    "tabGeneral": "概要",
+    "tabSpending": "支出",
+    "tabPlan": "計画",
+    "avg": "平均",
+    "perDay": "日",
+    "daysUnit": "日",
+    "debtShort": "負債",
+    "totalShort": "合計",
+    "categoryBudgetsLabel": "カテゴリ予算",
+    "limited": "{n}件制限",
+    "financeLock": "家計ロック"
   },
   "notes": {
     "title": "マイノート",
