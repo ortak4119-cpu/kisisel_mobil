@@ -164,7 +164,7 @@ class _FinanceViewState extends State<FinanceView> {
     return Container(
       padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
-        color: c.isDark ? ColorConstant.cardColorDark : const Color(0xFFEEF1F3),
+        color: c.isDark ? ColorConstant.cardColorDark : const Color(0xFFE8DFCD),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -178,7 +178,9 @@ class _FinanceViewState extends State<FinanceView> {
                 duration: const Duration(milliseconds: 180),
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
-                  color: sel ? (c.isDark ? _fTeal : Colors.white) : Colors.transparent,
+                  color: sel
+                      ? (c.isDark ? _fTeal : ColorConstant.cardColorLight)
+                      : Colors.transparent,
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: sel
                       ? [
@@ -1704,7 +1706,7 @@ class _SubscriptionsManagerSheet extends StatelessWidget {
     final txtS = isDark
         ? ColorConstant.textSecondaryDark
         : ColorConstant.textSecondaryLight;
-    final card = isDark ? ColorConstant.cardColorDark : ColorConstant.white;
+    final card = isDark ? ColorConstant.cardColorDark : ColorConstant.cardColorLight;
     final fill = isDark ? ColorConstant.bgColorDark : ColorConstant.bgColorLight;
     return ChangeNotifierProvider.value(
       value: vm,
@@ -1890,7 +1892,7 @@ void _confirmDeleteSub(
     context: context,
     builder: (d) => AlertDialog(
       backgroundColor:
-          isDark ? ColorConstant.cardColorDark : ColorConstant.white,
+          isDark ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
       title: Text(s.name,
           style: TextStyle(
               color: isDark
@@ -2025,7 +2027,7 @@ class _AddSubscriptionBottomSheet extends StatelessWidget {
             decoration: BoxDecoration(
               color: isDarkMode
                   ? ColorConstant.cardColorDark
-                  : ColorConstant.white,
+                  : ColorConstant.cardColorLight,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(28),
                 topRight: Radius.circular(28),
@@ -3265,7 +3267,7 @@ class _BudgetSettingsBottomSheet extends StatelessWidget {
             decoration: BoxDecoration(
               color: isDarkMode
                   ? ColorConstant.cardColorDark
-                  : ColorConstant.white,
+                  : ColorConstant.cardColorLight,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(28),
                 topRight: Radius.circular(28),
@@ -3729,7 +3731,7 @@ class _MonthlyStatisticsBottomSheetState
               decoration: BoxDecoration(
                 color: widget.isDarkMode
                     ? ColorConstant.cardColorDark
-                    : ColorConstant.white,
+                    : ColorConstant.cardColorLight,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(28),
                   topRight: Radius.circular(28),
@@ -3749,7 +3751,7 @@ class _MonthlyStatisticsBottomSheetState
               decoration: BoxDecoration(
                 color: widget.isDarkMode
                     ? ColorConstant.cardColorDark
-                    : ColorConstant.white,
+                    : ColorConstant.cardColorLight,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(28),
                   topRight: Radius.circular(28),
@@ -3778,7 +3780,7 @@ class _MonthlyStatisticsBottomSheetState
             decoration: BoxDecoration(
               color: widget.isDarkMode
                   ? ColorConstant.cardColorDark
-                  : ColorConstant.white,
+                  : ColorConstant.cardColorLight,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(28),
                 topRight: Radius.circular(28),
@@ -4169,7 +4171,7 @@ class _ExpenseFilterDialog extends StatelessWidget {
         builder: (context, vm, _) {
           return AlertDialog(
             backgroundColor:
-                isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+                isDarkMode ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
@@ -4516,7 +4518,7 @@ class _FinanceLockSettingsSheetState extends State<_FinanceLockSettingsSheet> {
         );
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? ColorConstant.cardColorDark : ColorConstant.white,
+        color: isDark ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(28),
           topRight: Radius.circular(28),
@@ -4685,7 +4687,7 @@ class _CategoryBudgetsSheetState extends State<_CategoryBudgetsSheet> {
         : ColorConstant.textSecondaryLight;
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? ColorConstant.cardColorDark : ColorConstant.white,
+        color: isDark ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(28),
           topRight: Radius.circular(28),
@@ -4919,7 +4921,7 @@ class _DebtPlannerSheetState extends State<_DebtPlannerSheet> {
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? ColorConstant.cardColorDark : ColorConstant.white,
+        color: isDark ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(28),
           topRight: Radius.circular(28),
@@ -5188,7 +5190,7 @@ class _InstallmentsSheetState extends State<_InstallmentsSheet> {
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? ColorConstant.cardColorDark : ColorConstant.white,
+        color: isDark ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(28),
           topRight: Radius.circular(28),
@@ -5261,7 +5263,7 @@ class _InstallmentsSheetState extends State<_InstallmentsSheet> {
                             minHeight: 6,
                             backgroundColor: isDark
                                 ? ColorConstant.cardColorDark
-                                : ColorConstant.white,
+                                : ColorConstant.cardColorLight,
                             color: it.isDone ? Colors.green : _fOrange,
                           ),
                         ),
@@ -5394,7 +5396,7 @@ void _showCurrencyDialog(
           : ColorConstant.textSecondaryLight;
       return Container(
         decoration: BoxDecoration(
-          color: isDark ? ColorConstant.cardColorDark : ColorConstant.white,
+          color: isDark ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(28),
             topRight: Radius.circular(28),

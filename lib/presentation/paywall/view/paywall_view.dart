@@ -204,7 +204,7 @@ class _PaywallViewState extends State<PaywallView>
             style: IconButton.styleFrom(
               backgroundColor: isDarkMode
                   ? ColorConstant.cardColorDark
-                  : ColorConstant.white,
+                  : ColorConstant.cardColorLight,
             ),
           ),
         ],
@@ -461,7 +461,7 @@ class _PaywallViewState extends State<PaywallView>
                   : ColorConstant.primaryPurple.withValues(alpha: 0.08))
                   : (isDarkMode
                   ? ColorConstant.cardColorDark
-                  : ColorConstant.white),
+                  : ColorConstant.cardColorLight),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isSelected

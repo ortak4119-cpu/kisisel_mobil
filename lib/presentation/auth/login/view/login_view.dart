@@ -428,7 +428,7 @@ class _LoginViewState extends State<LoginView> {
             suffixIcon: suffixIcon,
             filled: true,
             fillColor:
-                isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+                isDarkMode ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20),
               borderSide: BorderSide(
@@ -649,7 +649,7 @@ class _ForgotPasswordDialogState extends State<_ForgotPasswordDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       backgroundColor:
-          widget.isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+          widget.isDarkMode ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),

@@ -114,7 +114,7 @@ class _NotesDiaryViewState extends State<NotesDiaryView> {
                         // Not ekleme tek yerden (FAB). Başlıkta yalnızca arama.
                         _headerCircleBtn(
                           icon: Icons.search_rounded,
-                          bg: Colors.white,
+                          bg: ColorConstant.cardColorLight,
                           fg: const Color(0xFF3A3326),
                           onTap: () =>
                               _openNoteSearch(context, viewModel, isDarkMode),
@@ -523,7 +523,7 @@ class _DiaryCalendarSheetState extends State<_DiaryCalendarSheet> {
             decoration: BoxDecoration(
               color: widget.isDarkMode
                   ? ColorConstant.cardColorDark
-                  : ColorConstant.white,
+                  : ColorConstant.cardColorLight,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(28),
                 topRight: Radius.circular(28),
@@ -822,7 +822,7 @@ class _DiaryDetailSheet extends StatelessWidget {
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: BoxDecoration(
-        color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+        color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(28),
           topRight: Radius.circular(28),
@@ -1142,7 +1142,7 @@ class _DiaryDetailSheet extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor:
-        isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+        isDarkMode ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           'diary.deleteDiary'.tr(),
@@ -1535,7 +1535,7 @@ class _NotesContent extends StatelessWidget {
         width: w,
         padding: const EdgeInsets.fromLTRB(12, 10, 12, 11),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: ColorConstant.cardColorLight,
           borderRadius: BorderRadius.circular(3),
           boxShadow: [
             BoxShadow(
@@ -2572,7 +2572,7 @@ class _NotesContent extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor:
-        isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+        isDarkMode ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
@@ -2669,7 +2669,7 @@ class _NotesContent extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor:
-        isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+        isDarkMode ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
@@ -2801,7 +2801,7 @@ class _NotesContent extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor:
-        isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+        isDarkMode ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           'notes.deleteNote'.tr(),
@@ -4335,7 +4335,7 @@ class _EditNoteBottomSheetState extends State<_EditNoteBottomSheet> {
             decoration: BoxDecoration(
               color: widget.isDarkMode
                   ? ColorConstant.cardColorDark
-                  : ColorConstant.white,
+                  : ColorConstant.cardColorLight,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(28),
                 topRight: Radius.circular(28),
@@ -4668,7 +4668,7 @@ class _AddDiaryBottomSheet extends StatelessWidget {
             decoration: BoxDecoration(
               color: isDarkMode
                   ? ColorConstant.cardColorDark
-                  : ColorConstant.white,
+                  : ColorConstant.cardColorLight,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(28),
                 topRight: Radius.circular(28),
@@ -4954,7 +4954,7 @@ class _EditDiaryBottomSheetState extends State<_EditDiaryBottomSheet> {
             decoration: BoxDecoration(
               color: widget.isDarkMode
                   ? ColorConstant.cardColorDark
-                  : ColorConstant.white,
+                  : ColorConstant.cardColorLight,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(28),
                 topRight: Radius.circular(28),

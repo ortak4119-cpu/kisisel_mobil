@@ -63,7 +63,7 @@ class _HomeViewState extends State<HomeView> {
       bottomNavigationBar: BottomAppBar(
         color: isDarkMode
             ? ColorConstant.cardColorDark
-            : ColorConstant.white,
+            : ColorConstant.cardColorLight,
         elevation: 8,
         child: SizedBox(
           height: 60,

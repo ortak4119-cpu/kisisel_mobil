@@ -36,7 +36,7 @@ class _ProfileViewState extends State<ProfileView> {
       d ? ColorConstant.textSecondaryDark : ColorConstant.textSecondaryLight;
   Color _textMuted(bool d) =>
       d ? ColorConstant.textMutedDark : ColorConstant.textMutedLight;
-  Color _cardColor(bool d) => d ? ColorConstant.cardColorDark : Colors.white;
+  Color _cardColor(bool d) => d ? ColorConstant.cardColorDark : ColorConstant.cardColorLight;
   Color _borderColor(bool d) =>
       d ? ColorConstant.borderColorDark : ColorConstant.borderColorLight;
 
@@ -667,7 +667,7 @@ class _ProfileViewState extends State<ProfileView> {
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         decoration: BoxDecoration(
-          color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+          color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(24),
             topRight: Radius.circular(24),
@@ -1076,7 +1076,7 @@ class _FriendsTab extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+          color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
               color: isDarkMode
@@ -1167,7 +1167,7 @@ class _FriendsTab extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-              color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+              color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
               borderRadius: BorderRadius.circular(20)),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1364,7 +1364,7 @@ class _AchievementsTab extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+        color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: color.withValues(alpha: 0.3), width: 2),
       ),
@@ -1407,7 +1407,7 @@ class _AchievementsTab extends StatelessWidget {
             : null,
         color: isCompleted
             ? null
-            : (isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white),
+            : (isDarkMode ? ColorConstant.cardColorDark : ColorConstant.cardColorLight),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isCompleted
@@ -1605,7 +1605,7 @@ class _FriendSearchBottomSheetState extends State<_FriendSearchBottomSheet> {
     return Container(
       height: MediaQuery.of(context).size.height * 0.8,
       decoration: BoxDecoration(
-        color: widget.isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+        color: widget.isDarkMode ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
         borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(28), topRight: Radius.circular(28)),
       ),
@@ -1793,7 +1793,7 @@ class _FriendSearchBottomSheetState extends State<_FriendSearchBottomSheet> {
             return Container(
               height: MediaQuery.of(context).size.height * 0.4,
               decoration: BoxDecoration(
-                color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+                color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(28),
                   topRight: Radius.circular(28),
@@ -1873,7 +1873,7 @@ void _confirmLogout(BuildContext context, ProfileViewModel vm) {
   showDialog(
     context: context,
     builder: (ctx) => AlertDialog(
-      backgroundColor: isDark ? ColorConstant.cardColorDark : Colors.white,
+      backgroundColor: isDark ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
       title: Text('settings.account.logout'.tr(),
           style: TextStyle(
               fontWeight: FontWeight.w800,
@@ -2093,7 +2093,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
         hintText: hint,
         prefixText: prefix,
         filled: true,
-        fillColor: isDark ? ColorConstant.cardColorDark : Colors.white,
+        fillColor: isDark ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         border: OutlineInputBorder(

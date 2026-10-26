@@ -940,7 +940,7 @@ class SettingsView extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor:
-            isDarkMode ? ColorConstant.cardColorDark : Colors.white,
+            isDarkMode ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
         title: Text('settings.privacy.visibility'.tr(),
             style: TextStyle(
                 fontSize: 18,
@@ -1677,7 +1677,7 @@ class SettingsView extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isDarkMode
                       ? ColorConstant.cardColorDark
-                      : ColorConstant.white,
+                      : ColorConstant.cardColorLight,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -1775,7 +1775,7 @@ class SettingsView extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isDarkMode
                       ? ColorConstant.cardColorDark
-                      : ColorConstant.white,
+                      : ColorConstant.cardColorLight,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(

@@ -150,7 +150,7 @@ class AppTheme {
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: ColorConstant.white,
+      fillColor: ColorConstant.cardColorLight,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(20),
         borderSide:
@@ -203,7 +203,7 @@ class AppTheme {
       iconSize: 32,
     ),
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
-      backgroundColor: ColorConstant.white,
+      backgroundColor: ColorConstant.cardColorLight,
       selectedItemColor: ColorConstant.primaryPurple,
       unselectedItemColor: ColorConstant.textMutedLight,
       elevation: 12,

@@ -547,7 +547,7 @@ class _RegisterViewState extends State<RegisterView> {
             suffixIcon: suffixIcon,
             filled: true,
             fillColor:
-                isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+                isDarkMode ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20),
               borderSide: BorderSide(

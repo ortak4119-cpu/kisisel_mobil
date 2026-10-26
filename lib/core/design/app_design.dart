@@ -49,7 +49,8 @@ class AppColors {
 
   Color get bg =>
       isDark ? ColorConstant.bgColorDark : ColorConstant.bgColorLight;
-  Color get card => isDark ? ColorConstant.cardColorDark : ColorConstant.white;
+  Color get card =>
+      isDark ? ColorConstant.cardColorDark : ColorConstant.cardColorLight;
   Color get textPrimary =>
       isDark ? ColorConstant.textPrimaryDark : ColorConstant.textPrimaryLight;
   Color get textSecondary => isDark

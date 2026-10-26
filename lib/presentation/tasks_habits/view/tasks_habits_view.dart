@@ -1456,7 +1456,7 @@ class _TasksTab extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: ColorConstant.cardColorLight,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFFCBB89A)),
       ),

@@ -239,7 +239,7 @@ class _OnboardingViewState extends State<OnboardingView>
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.white,
+        color: isDarkMode ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(32),
           topRight: Radius.circular(32),
@@ -642,7 +642,7 @@ class _HabitAnimation extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isDarkMode
                     ? ColorConstant.cardColorDark
-                    : ColorConstant.white,
+                    : ColorConstant.cardColorLight,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Center(
@@ -821,7 +821,7 @@ class _DiaryAnimation extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: isDarkMode
                         ? ColorConstant.cardColorDark
-                        : ColorConstant.white,
+                        : ColorConstant.cardColorLight,
                     borderRadius: const BorderRadius.only(
                       topRight: Radius.circular(12),
                       bottomRight: Radius.circular(12),
@@ -1062,7 +1062,7 @@ class _SubscriptionAnimation extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isDarkMode
                     ? ColorConstant.cardColorDark
-                    : ColorConstant.white,
+                    : ColorConstant.cardColorLight,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
@@ -1308,7 +1308,7 @@ class _FileSecurityAnimation extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: isDarkMode
                         ? ColorConstant.cardColorDark
-                        : ColorConstant.white,
+                        : ColorConstant.cardColorLight,
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(

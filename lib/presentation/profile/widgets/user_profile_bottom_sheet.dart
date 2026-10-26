@@ -39,7 +39,7 @@ class _UserProfileBottomSheetState extends State<UserProfileBottomSheet> {
       decoration: BoxDecoration(
         color: widget.isDarkMode
             ? ColorConstant.cardColorDark
-            : ColorConstant.white,
+            : ColorConstant.cardColorLight,
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(28),
           topRight: Radius.circular(28),
@@ -522,7 +522,7 @@ class _UserProfileBottomSheetState extends State<UserProfileBottomSheet> {
       decoration: BoxDecoration(
         color: widget.isDarkMode
             ? ColorConstant.cardColorDark
-            : ColorConstant.white,
+            : ColorConstant.cardColorLight,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: color.withValues(alpha: 0.3),
