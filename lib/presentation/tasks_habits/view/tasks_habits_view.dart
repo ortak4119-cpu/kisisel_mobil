@@ -556,18 +556,16 @@ class _HabitsTab extends StatelessWidget {
     final streak = h.currentStreak;
     final barColor = done ? _green : area.main;
 
-    final String trailing;
+    final String sub;
     if (h.skippedToday) {
-      trailing = 'habits.skippedShort'.tr();
+      sub = 'habits.skippedShort'.tr();
     } else if (streak > 0) {
-      trailing =
-          '$cur/$goal · ${'habits.streakN'.tr(namedArgs: {'n': '$streak'})}';
+      sub = '$cur/$goal · ${'habits.streakN'.tr(namedArgs: {'n': '$streak'})}';
     } else {
-      trailing = '$cur/$goal';
+      sub = '$cur/$goal';
     }
 
     return GestureDetector(
-      onTap: () => viewModel.tapHabit(h, context),
       onLongPress: () => _habitMenu(context, c, h),
       child: Container(
         decoration: BoxDecoration(
@@ -587,10 +585,32 @@ class _HabitsTab extends StatelessWidget {
                       const BorderRadius.horizontal(left: Radius.circular(14)),
                 ),
               ),
-              const SizedBox(width: 13),
+              const SizedBox(width: 12),
+              // ---- Checkbox: dokun = tamamla / artır ----
+              Center(
+                child: GestureDetector(
+                  onTap: () => viewModel.tapHabit(h, context),
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    width: 26,
+                    height: 26,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: done ? _green : Colors.transparent,
+                      border: Border.all(
+                          color: done ? _green : area.main, width: 2),
+                    ),
+                    child: done
+                        ? const Icon(Icons.check_rounded,
+                            color: Colors.white, size: 16)
+                        : null,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  padding: const EdgeInsets.symmetric(vertical: 11),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -600,7 +620,7 @@ class _HabitsTab extends StatelessWidget {
                               fontSize: 11.5,
                               fontWeight: FontWeight.w700,
                               color: area.main)),
-                      const SizedBox(height: 3),
+                      const SizedBox(height: 2),
                       Text(h.title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -610,22 +630,28 @@ class _HabitsTab extends StatelessWidget {
                               color: done ? c.textMuted : c.textPrimary,
                               decoration:
                                   done ? TextDecoration.lineThrough : null)),
+                      const SizedBox(height: 2),
+                      Text(sub,
+                          style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: done ? _green : c.textMuted)),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
-              Padding(
-                padding: const EdgeInsets.only(right: 14),
-                child: Center(
-                  child: done
-                      ? const Icon(Icons.check_circle_rounded,
-                          color: _green, size: 24)
-                      : Text(trailing,
-                          style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: c.textMuted)),
+              const SizedBox(width: 6),
+              // ---- Geçmiş ısı haritası / menü ikonu ----
+              // Dokununca uzun-bas menüsünü açar (geçmiş, düzenle, atla, sil).
+              Center(
+                child: GestureDetector(
+                  onTap: () => _habitMenu(context, c, h),
+                  behavior: HitTestBehavior.opaque,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 4, right: 12),
+                    child: Icon(Icons.grid_view_rounded,
+                        size: 20, color: c.textMuted),
+                  ),
                 ),
               ),
             ],
