@@ -2409,7 +2409,8 @@ class _NotesContent extends StatelessWidget {
 
   void _openNote(BuildContext context, Note note, bool isDark) {
     if (note.isLocked) {
-      _showUnlockDialog(context, note, viewModel, isDark);
+      // Dokunarak açmak geçicidir: çıkınca not kilitli kalır.
+      _showUnlockDialog(context, note, viewModel, isDark, reLockAfter: true);
     } else {
       _showEditNoteDialog(context, note, viewModel, isDark);
     }
@@ -3103,7 +3104,8 @@ class _NotesContent extends StatelessWidget {
           child: InkWell(
             onTap: () {
               if (note.isLocked) {
-                _showUnlockDialog(context, note, viewModel, isDarkMode);
+                _showUnlockDialog(context, note, viewModel, isDarkMode,
+                    reLockAfter: true);
               } else {
                 _showEditNoteDialog(context, note, viewModel, isDarkMode);
               }
@@ -3532,24 +3534,30 @@ class _NotesContent extends StatelessWidget {
     );
   }
 
+  // [reLockAfter] true ise: PIN ile açılıp editör gösterilir, editör
+  // kapandığında not aynı PIN ile sessizce yeniden kilitlenir (geçici
+  // görüntüleme). false ise: kalıcı olarak kilidi açılır (editör açılmaz).
   void _showUnlockDialog(
       BuildContext context,
       Note note,
       NotesDiaryViewModel viewModel,
-      bool isDarkMode,
-      ) {
+      bool isDarkMode, {
+      bool reLockAfter = false,
+      }) {
     final pinController = TextEditingController();
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogCtx) => AlertDialog(
         backgroundColor:
         isDarkMode ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
         title: Text(
-          'notes.unlockNote'.tr(),
+          reLockAfter
+              ? 'notes.lockedNoteDialog'.tr()
+              : 'notes.unlockNote'.tr(),
           style: TextStyle(
             color: isDarkMode
                 ? ColorConstant.textPrimaryDark
@@ -3599,7 +3607,7 @@ class _NotesContent extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogCtx),
             child: Text(
               'common.cancel'.tr(),
               style: TextStyle(
@@ -3613,27 +3621,41 @@ class _NotesContent extends StatelessWidget {
             onPressed: () {
               if (pinController.text.length == 4) {
                 final pin = pinController.text;
-                Navigator.pop(context);
+                Navigator.pop(dialogCtx);
 
-                viewModel.unlockNote(
-                  note.id,
-                  pin,
-                  context,
-                      () {
-                    Future.delayed(
-                      const Duration(milliseconds: 300),
-                          () {
+                if (reLockAfter) {
+                  // Geçici görüntüleme: aç → editörü göster → kapanınca
+                  // aynı PIN ile sessizce yeniden kilitle.
+                  viewModel.unlockNote(
+                    note.id,
+                    pin,
+                    context,
+                    () {
+                      Future.delayed(const Duration(milliseconds: 300),
+                          () async {
+                        if (!context.mounted) return;
+                        // Kilidi açılmış (içerikli) taze notu editöre ver.
+                        final fresh = viewModel.notes.firstWhere(
+                            (n) => n.id == note.id,
+                            orElse: () => note);
+                        await _showEditNoteDialog(
+                            context, fresh, viewModel, isDarkMode);
                         if (context.mounted) {
-                          _showEditNoteDialog(context, note, viewModel, isDarkMode);
+                          await viewModel.lockNote(note.id, pin, context,
+                              silent: true);
                         }
-                      },
-                    );
-                  },
-                );
+                      });
+                    },
+                    silent: true,
+                  );
+                } else {
+                  // Kalıcı kilit açma: editör açılmaz, not açık kalır.
+                  viewModel.unlockNote(note.id, pin, context, null);
+                }
               }
             },
             child: Text(
-              'common.open'.tr(),
+              reLockAfter ? 'common.open'.tr() : 'notes.unlockNote'.tr(),
               style: const TextStyle(
                 color: Color(0xFFB794F6),
                 fontWeight: FontWeight.w700,
@@ -3645,7 +3667,7 @@ class _NotesContent extends StatelessWidget {
     );
   }
 
-  void _showEditNoteDialog(
+  Future<void> _showEditNoteDialog(
       BuildContext context,
       Note note,
       NotesDiaryViewModel viewModel,
@@ -3653,7 +3675,7 @@ class _NotesContent extends StatelessWidget {
       ) {
     // Düzenleme de aynı zengin editörle yapılır.
     viewModel.setNoteForEdit(note);
-    showModalBottomSheet(
+    return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

@@ -1052,7 +1052,8 @@ class NotesDiaryViewModel extends ChangeNotifier {
   }
 
 
-  Future<void> lockNote(int noteId, String pin, BuildContext context) async {
+  Future<void> lockNote(int noteId, String pin, BuildContext context,
+      {bool silent = false}) async {
     try {
       final response = await _noteService.lockNote(noteId, pin);
 
@@ -1083,7 +1084,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
           );
           notifyListeners();
 
-          if (context.mounted) {
+          if (!silent && context.mounted) {
             final cleanMsg = _cleanMessage(response.message);
             CustomSnackBar.showSuccess(
               context,
@@ -1112,8 +1113,9 @@ class NotesDiaryViewModel extends ChangeNotifier {
       int noteId,
       String pin,
       BuildContext context,
-      VoidCallback? onSuccess,
-      ) async {
+      VoidCallback? onSuccess, {
+      bool silent = false,
+      }) async {
     try {
       final response = await _noteService.unlockNote(noteId, pin);
 
@@ -1139,7 +1141,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
           _notes[index] = response.data!;
           notifyListeners();
 
-          if (context.mounted) {
+          if (!silent && context.mounted) {
             final cleanMsg = _cleanMessage(response.message);
             CustomSnackBar.showSuccess(
               context,
