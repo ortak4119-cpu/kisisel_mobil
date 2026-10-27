@@ -156,7 +156,15 @@
     "googleLoginFailed": "Googleログインに失敗しました",
     "appleLoginFailed": "Appleログインに失敗しました",
     "googleRegisterFailed": "Google登録に失敗しました",
-    "appleRegisterFailed": "Apple登録に失敗しました"
+    "appleRegisterFailed": "Apple登録に失敗しました",
+    "loginSubtitle": "メモ、タスク、予算があなたを待っています。",
+    "registerSubtitle": "1分で開始、すべてを一か所に。",
+    "show": "表示",
+    "hide": "非表示",
+    "name": "名前",
+    "nameHint": "お名前",
+    "registerTermsPrefix": "登録すると次に同意したことになります: ",
+    "createAccountBtn": "アカウント作成"
   },
   "onboarding": {
     "skip": "スキップ",

@@ -156,7 +156,15 @@
     "googleLoginFailed": "Google-Anmeldung fehlgeschlagen",
     "appleLoginFailed": "Apple-Anmeldung fehlgeschlagen",
     "googleRegisterFailed": "Google-Registrierung fehlgeschlagen",
-    "appleRegisterFailed": "Apple-Registrierung fehlgeschlagen"
+    "appleRegisterFailed": "Apple-Registrierung fehlgeschlagen",
+    "loginSubtitle": "Deine Notizen, Aufgaben und dein Budget warten.",
+    "registerSubtitle": "In einer Minute startklar, alles an einem Ort.",
+    "show": "Zeigen",
+    "hide": "Verbergen",
+    "name": "Name",
+    "nameHint": "Dein Name",
+    "registerTermsPrefix": "Mit der Registrierung akzeptierst du ",
+    "createAccountBtn": "Konto erstellen"
   },
   "onboarding": {
     "skip": "Überspringen",

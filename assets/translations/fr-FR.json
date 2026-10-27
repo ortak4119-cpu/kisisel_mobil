@@ -156,7 +156,15 @@
     "googleLoginFailed": "Échec de la connexion avec Google",
     "appleLoginFailed": "Échec de la connexion avec Apple",
     "googleRegisterFailed": "Échec de l'inscription avec Google",
-    "appleRegisterFailed": "Échec de l'inscription avec Apple"
+    "appleRegisterFailed": "Échec de l'inscription avec Apple",
+    "loginSubtitle": "Tes notes, tâches et ton budget t'attendent.",
+    "registerSubtitle": "Commence en une minute, tout au même endroit.",
+    "show": "Afficher",
+    "hide": "Masquer",
+    "name": "Nom",
+    "nameHint": "Ton nom",
+    "registerTermsPrefix": "En vous inscrivant, vous acceptez ",
+    "createAccountBtn": "Créer un compte"
   },
   "onboarding": {
     "skip": "Passer",

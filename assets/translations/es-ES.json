@@ -156,7 +156,15 @@
     "googleLoginFailed": "Error al iniciar sesión con Google",
     "appleLoginFailed": "Error al iniciar sesión con Apple",
     "googleRegisterFailed": "Error al registrarse con Google",
-    "appleRegisterFailed": "Error al registrarse con Apple"
+    "appleRegisterFailed": "Error al registrarse con Apple",
+    "loginSubtitle": "Tus notas, tareas y presupuesto te esperan.",
+    "registerSubtitle": "Empieza en un minuto, todo en un solo lugar.",
+    "show": "Mostrar",
+    "hide": "Ocultar",
+    "name": "Nombre",
+    "nameHint": "Tu nombre",
+    "registerTermsPrefix": "Al registrarte aceptas ",
+    "createAccountBtn": "Crear cuenta"
   },
   "onboarding": {
     "skip": "Omitir",

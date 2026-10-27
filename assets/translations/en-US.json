@@ -156,7 +156,15 @@
     "googleLoginFailed": "Google sign-in failed",
     "appleLoginFailed": "Apple sign-in failed",
     "googleRegisterFailed": "Google sign-up failed",
-    "appleRegisterFailed": "Apple sign-up failed"
+    "appleRegisterFailed": "Apple sign-up failed",
+    "loginSubtitle": "Your notes, tasks and budget are waiting.",
+    "registerSubtitle": "Start in a minute, everything in one place.",
+    "show": "Show",
+    "hide": "Hide",
+    "name": "Name",
+    "nameHint": "Your name",
+    "registerTermsPrefix": "By signing up you agree to ",
+    "createAccountBtn": "Create account"
   },
   "onboarding": {
     "skip": "Skip",

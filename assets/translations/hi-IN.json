@@ -156,7 +156,15 @@
     "googleLoginFailed": "Google साइन-इन विफल",
     "appleLoginFailed": "Apple साइन-इन विफल",
     "googleRegisterFailed": "Google साइन-अप विफल",
-    "appleRegisterFailed": "Apple साइन-अप विफल"
+    "appleRegisterFailed": "Apple साइन-अप विफल",
+    "loginSubtitle": "आपके नोट्स, कार्य और बजट आपका इंतज़ार कर रहे हैं।",
+    "registerSubtitle": "एक मिनट में शुरू करें, सब कुछ एक ही जगह।",
+    "show": "दिखाएं",
+    "hide": "छिपाएं",
+    "name": "नाम",
+    "nameHint": "आपका नाम",
+    "registerTermsPrefix": "साइन अप करके आप स्वीकार करते हैं ",
+    "createAccountBtn": "खाता बनाएं"
   },
   "onboarding": {
     "skip": "छोड़ें",

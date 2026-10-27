@@ -156,7 +156,15 @@
     "googleLoginFailed": "Не удалось войти через Google",
     "appleLoginFailed": "Не удалось войти через Apple",
     "googleRegisterFailed": "Не удалось зарегистрироваться через Google",
-    "appleRegisterFailed": "Не удалось зарегистрироваться через Apple"
+    "appleRegisterFailed": "Не удалось зарегистрироваться через Apple",
+    "loginSubtitle": "Ваши заметки, задачи и бюджет ждут вас.",
+    "registerSubtitle": "Начните за минуту — всё в одном месте.",
+    "show": "Показать",
+    "hide": "Скрыть",
+    "name": "Имя",
+    "nameHint": "Ваше имя",
+    "registerTermsPrefix": "Регистрируясь, вы принимаете ",
+    "createAccountBtn": "Создать аккаунт"
   },
   "onboarding": {
     "skip": "Пропустить",

@@ -156,7 +156,15 @@
     "googleLoginFailed": "فشل تسجيل الدخول عبر Google",
     "appleLoginFailed": "فشل تسجيل الدخول عبر Apple",
     "googleRegisterFailed": "فشل التسجيل عبر Google",
-    "appleRegisterFailed": "فشل التسجيل عبر Apple"
+    "appleRegisterFailed": "فشل التسجيل عبر Apple",
+    "loginSubtitle": "ملاحظاتك ومهامك وميزانيتك في انتظارك.",
+    "registerSubtitle": "ابدأ في دقيقة، كل شيء في مكان واحد.",
+    "show": "إظهار",
+    "hide": "إخفاء",
+    "name": "الاسم",
+    "nameHint": "اسمك",
+    "registerTermsPrefix": "بالتسجيل فإنك توافق على ",
+    "createAccountBtn": "إنشاء حساب"
   },
   "onboarding": {
     "skip": "تخطي",

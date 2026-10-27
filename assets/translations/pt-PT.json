@@ -156,7 +156,15 @@
     "googleLoginFailed": "Falha ao iniciar sessão com o Google",
     "appleLoginFailed": "Falha ao iniciar sessão com a Apple",
     "googleRegisterFailed": "Falha ao registar com o Google",
-    "appleRegisterFailed": "Falha ao registar com a Apple"
+    "appleRegisterFailed": "Falha ao registar com a Apple",
+    "loginSubtitle": "As tuas notas, tarefas e orçamento esperam por ti.",
+    "registerSubtitle": "Começa num minuto, tudo num só lugar.",
+    "show": "Mostrar",
+    "hide": "Ocultar",
+    "name": "Nome",
+    "nameHint": "O teu nome",
+    "registerTermsPrefix": "Ao registar-te aceitas ",
+    "createAccountBtn": "Criar conta"
   },
   "onboarding": {
     "skip": "Ignorar",

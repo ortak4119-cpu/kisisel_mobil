@@ -156,7 +156,15 @@
     "googleLoginFailed": "Google ile giriş başarısız",
     "appleLoginFailed": "Apple ile giriş başarısız",
     "googleRegisterFailed": "Google ile kayıt başarısız",
-    "appleRegisterFailed": "Apple ile kayıt başarısız"
+    "appleRegisterFailed": "Apple ile kayıt başarısız",
+    "loginSubtitle": "Notların, görevlerin ve bütçen seni bekliyor.",
+    "registerSubtitle": "Bir dakikada başla, her şey tek yerde.",
+    "show": "Göster",
+    "hide": "Gizle",
+    "name": "Ad",
+    "nameHint": "Adın",
+    "registerTermsPrefix": "Kayıt olarak kabul edersin: ",
+    "createAccountBtn": "Hesap oluştur"
   },
   "onboarding": {
     "skip": "Atla",

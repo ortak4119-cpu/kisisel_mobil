@@ -156,7 +156,15 @@
     "googleLoginFailed": "Google 登录失败",
     "appleLoginFailed": "Apple 登录失败",
     "googleRegisterFailed": "Google 注册失败",
-    "appleRegisterFailed": "Apple 注册失败"
+    "appleRegisterFailed": "Apple 注册失败",
+    "loginSubtitle": "你的笔记、任务和预算正在等你。",
+    "registerSubtitle": "一分钟开始，一切尽在一处。",
+    "show": "显示",
+    "hide": "隐藏",
+    "name": "姓名",
+    "nameHint": "你的姓名",
+    "registerTermsPrefix": "注册即表示你同意 ",
+    "createAccountBtn": "创建账户"
   },
   "onboarding": {
     "skip": "跳过",
