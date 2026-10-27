@@ -11,6 +11,9 @@ class AppRouter extends RootStackRouter {
           initial: true,
         ),
         AutoRoute(
+          page: LanguageSelectRoute.page,
+        ),
+        AutoRoute(
           page: OnboardingRoute.page,
         ),
         AutoRoute(

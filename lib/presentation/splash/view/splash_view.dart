@@ -79,8 +79,8 @@ class _SplashViewState extends State<SplashView> with SingleTickerProviderStateM
 
     if (mounted) {
       if (isFirstTime) {
-        // İlk açılışta onboarding'e git
-        context.router.replace(const OnboardingRoute());
+        // İlk açılışta önce dil seçimi; oradan onboarding'e geçilir.
+        context.router.replace(const LanguageSelectRoute());
       } else if (token != null && token.isNotEmpty) {
         // Token varsa ana sayfaya git
         context.router.replace(const HomeRoute());
