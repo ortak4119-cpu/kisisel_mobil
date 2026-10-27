@@ -1214,10 +1214,314 @@ class _NotesContent extends StatelessWidget {
     if (!searchActive && viewModel.notesFilter == 'archive') {
       return _archiveBoard(context, isDarkMode);
     }
+    // Açık klasör (bir kategori seçiliyken) kendi dosya görünümünü kullanır.
+    if (!searchActive &&
+        viewModel.notesFilter == 'folders' &&
+        viewModel.selectedCategoryId != null) {
+      return _folderBoard(context, isDarkMode);
+    }
     if (viewModel.notesFilter != 'all' || searchActive) {
       return _classicBody(context, isDarkMode);
     }
     return _corkBoard(context, isDarkMode);
+  }
+
+  // ==================== KLASÖR (DOSYA) GÖRÜNÜMÜ ====================
+  // Açık klasör, sayfayı kaplayan bir dosya klasörü gibi gösterilir; notlar
+  // klasör içinde kâğıt yaprakları olarak listelenir. Renk paleti notlarla
+  // aynı: klasör zemini = notlar arka planı, kâğıtlar = not kartı rengi.
+  static const List<Color> _folderAccents = [
+    Color(0xFFF6A821), // turuncu
+    Color(0xFF15788C), // teal
+    Color(0xFF9F7AEA), // mor
+    Color(0xFFE24B4A), // kırmızı
+    Color(0xFF34C759), // yeşil
+  ];
+
+  Widget _folderBoard(BuildContext context, bool isDark) {
+    final catId = viewModel.selectedCategoryId;
+    final cat = viewModel.categories.firstWhere(
+      (c) => c.id == catId,
+      orElse: () => viewModel.categories.isNotEmpty
+          ? viewModel.categories.first
+          : NoteCategory(
+              id: catId ?? 0,
+              name: 'notes.stats.folders'.tr(),
+              notesCount: 0,
+              orderIndex: 0),
+    );
+    final notes = viewModel.applyTagFilter(viewModel.applyNoteSearch(viewModel
+        .notes
+        .where((n) => !n.isArchived && n.categoryId == cat.id)
+        .toList()));
+    return Column(
+      children: [
+        const SizedBox(height: 6),
+        _folderTopBar(context, cat, notes.length),
+        const SizedBox(height: 12),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+            child: _folderFrame(
+              cat: cat,
+              child: RefreshIndicator(
+                onRefresh: () => viewModel.loadNotes(),
+                color: const Color(0xFFB794F6),
+                child: LayoutBuilder(
+                  builder: (context, cons) => SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(minHeight: cons.maxHeight),
+                      child: notes.isEmpty
+                          ? Center(child: _emptyFolderContent(context))
+                          : Column(
+                              children: [
+                                for (var i = 0; i < notes.length; i++)
+                                  _folderNoteSheet(context, notes[i], i, isDark),
+                              ],
+                            ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _folderTopBar(BuildContext context, NoteCategory cat, int count) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 2, 22, 0),
+      child: Row(
+        children: [
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => viewModel.setNotesFilter('all'),
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: const BoxDecoration(
+                color: Color(0xFFEAE0CD),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.arrow_back_rounded,
+                  size: 22, color: _boardBrown),
+            ),
+          ),
+          const SizedBox(width: 12),
+          const Icon(Icons.folder_rounded, size: 18, color: _boardBrown),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+                '${cat.name.toUpperCase()} · $count ${'notes.noteUnit'.tr().toUpperCase()}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.0,
+                    color: _boardBrown)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Dosya klasörü: üstte sekme (ikon + ad), gövde notlar arka planı rengiyle.
+  Widget _folderFrame({required NoteCategory cat, required Widget child}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 16),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: _boardBrown,
+              borderRadius:
+                  BorderRadius.vertical(top: Radius.circular(14)),
+            ),
+            padding: const EdgeInsets.fromLTRB(16, 8, 20, 10),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(cat.icon ?? '📁', style: const TextStyle(fontSize: 16)),
+                const SizedBox(width: 7),
+                Text(cat.name,
+                    style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFFEAE0CD))),
+              ],
+            ),
+          ),
+        ),
+        Expanded(
+          child: Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: ColorConstant.bgColorLight,
+              border: Border.all(color: const Color(0xFF9B7B4F), width: 2),
+              borderRadius: const BorderRadius.only(
+                topRight: Radius.circular(16),
+                bottomLeft: Radius.circular(16),
+                bottomRight: Radius.circular(16),
+              ),
+              boxShadow: [
+                BoxShadow(
+                    color: const Color(0xFF3C2A14).withOpacity(0.28),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6)),
+              ],
+            ),
+            padding: const EdgeInsets.fromLTRB(14, 16, 14, 18),
+            child: child,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Klasör içindeki bir not — kâğıt yaprağı (sol renkli kenar + ⋯ menü).
+  Widget _folderNoteSheet(
+      BuildContext context, Note note, int i, bool isDark) {
+    final accent = _folderAccents[i % _folderAccents.length];
+    final angle = ((i % 3) - 1) * 0.006;
+    final preview = _plainPreview(note);
+    final d = note.createdAt;
+    String two(int v) => v.toString().padLeft(2, '0');
+    final dateLabel =
+        '${two(d.day)}.${two(d.month)} · ${two(d.hour)}:${two(d.minute)}';
+    final title = (note.title ?? '').trim().isNotEmpty
+        ? note.title!.trim()
+        : 'notes.untitledNote'.tr();
+    return Transform.rotate(
+      angle: angle,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(5),
+          boxShadow: [
+            BoxShadow(
+                color: const Color(0xFF3C2A14).withOpacity(0.18),
+                blurRadius: 8,
+                offset: const Offset(1, 4)),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(5),
+          child: GestureDetector(
+            onTap: () => _openNote(context, note, isDark),
+            child: ColoredBox(
+              color: ColorConstant.cardColorLight,
+              child: IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(width: 4, color: accent),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(14, 12, 6, 12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (note.isLocked)
+                                  const Padding(
+                                    padding: EdgeInsets.only(right: 6, top: 1),
+                                    child: Icon(Icons.lock_rounded,
+                                        size: 15, color: Color(0xFF8A7A5E)),
+                                  ),
+                                Expanded(
+                                  child: Text(title,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                          fontFamily: 'JosefinSans',
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF3A3326))),
+                                ),
+                                SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: _cardMenu(context, note, viewModel,
+                                      isDark, AppColors(isDark)),
+                                ),
+                              ],
+                            ),
+                            if (!note.isLocked && preview.isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Text(preview,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                      fontSize: 13.5,
+                                      height: 1.35,
+                                      color: Color(0xFF6B5E4A))),
+                            ],
+                            if (note.isLocked) ...[
+                              const SizedBox(height: 4),
+                              const Text('••••••••••',
+                                  style: TextStyle(
+                                      fontSize: 13.5, color: Color(0xFF9B8A6E))),
+                            ],
+                            const SizedBox(height: 7),
+                            Text(dateLabel,
+                                style: const TextStyle(
+                                    fontSize: 11, color: Color(0xFFA8966F))),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Not içeriğinden düz önizleme metni (işaretçiler temizlenir).
+  String _plainPreview(Note note) {
+    final raw = (note.content ?? '').trim();
+    if (raw.isEmpty) return '';
+    final lines = raw.split('\n');
+    final out = <String>[];
+    for (final l in lines) {
+      var t = l.trim();
+      if (t.isEmpty) continue;
+      if (t.startsWith('☐ ') || t.startsWith('☑ ')) t = t.substring(2);
+      if (t.startsWith('• ')) t = t.substring(2);
+      t = t.replaceAll('**', '').replaceAll('__', '');
+      out.add(t);
+      if (out.length >= 2) break;
+    }
+    return out.join('  ');
+  }
+
+  Widget _emptyFolderContent(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 44),
+      child: Column(
+        children: [
+          Icon(Icons.folder_open_rounded,
+              size: 42, color: const Color(0xFF9B8A6E).withOpacity(0.7)),
+          const SizedBox(height: 12),
+          Text('notes.folders.emptyDesc'.tr(),
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF8A7A5E))),
+        ],
+      ),
+    );
   }
 
   // ==================== ARŞİV MANTAR PANOSU ====================
