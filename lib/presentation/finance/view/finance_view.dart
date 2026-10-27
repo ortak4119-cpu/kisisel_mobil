@@ -92,7 +92,7 @@ class FinanceView extends StatefulWidget {
 }
 
 class _FinanceViewState extends State<FinanceView> {
-  final PageController _acctCtrl = PageController(viewportFraction: 0.9);
+  final PageController _acctCtrl = PageController(viewportFraction: 0.7);
   int _acctIdx = 0;
   int _dashTab = 0; // 0 Genel, 1 Harcama, 2 Plan
 
@@ -339,10 +339,18 @@ class _FinanceViewState extends State<FinanceView> {
               controller: _acctCtrl,
               onPageChanged: (i) => setState(() => _acctIdx = i),
               children: [
-                _mainAccountCard(vm),
-                _subsAccountCard(vm),
-                _installmentsAccountCard(vm),
-                _savingsAccountCard(vm),
+                Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: _mainAccountCard(vm)),
+                Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: _subsAccountCard(vm)),
+                Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: _installmentsAccountCard(vm)),
+                Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: _savingsAccountCard(vm)),
               ],
             ),
           ),
