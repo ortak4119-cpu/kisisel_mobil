@@ -11,6 +11,9 @@ import '../../../core/route/app_router.gr.dart';
 import '../../../core/design/app_design.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/utils/custom_snackbar.dart';
+import '../../../core/utils/theme_provider.dart';
+import '../../../core/init/locator.dart';
+import '../../../models/settings/settings_models.dart';
 import '../../../models/social/social_model.dart';
 import '../../settings/view/settings_view.dart';
 import '../viewmodel/profile_viewmodel.dart';
@@ -180,6 +183,9 @@ class _ProfileViewState extends State<ProfileView> {
             icon: Icons.group_rounded,
             title: 'profile.friendsRow'.tr(),
             value: '$friends',
+            badge: vm.friendRequests.isNotEmpty
+                ? '${vm.friendRequests.length}'
+                : null,
             onTap: () => _openFriends(context, vm, isDark)),
         _divider(isDark),
         _navRow(context, isDark,
@@ -259,28 +265,11 @@ class _ProfileViewState extends State<ProfileView> {
             onTap: () => showAccountInfoSheet(context, vm)),
         _divider(isDark),
         _navRow(context, isDark,
-            color: _cRed,
-            icon: Icons.notifications_rounded,
-            title: 'profile.notifications'.tr(),
-            badge: vm.friendRequests.isNotEmpty
-                ? '${vm.friendRequests.length}'
-                : null,
-            onTap: () => _openSettings(context, 'notifications')),
-        _divider(isDark),
-        _navRow(context, isDark,
             color: _cPurple,
             icon: Icons.palette_rounded,
             title: 'profile.appearanceTheme'.tr(),
-            value: isDark
-                ? 'settings.appearance.themeDark'.tr()
-                : 'settings.appearance.themeLight'.tr(),
-            onTap: () => _openSettings(context, 'appearance')),
-        _divider(isDark),
-        _navRow(context, isDark,
-            color: _cGreen,
-            icon: Icons.shield_rounded,
-            title: 'profile.privacySecurity'.tr(),
-            onTap: () => _openSettings(context, 'privacy')),
+            value: _themeModeLabel(context.watch<ThemeProvider>().themeMode),
+            onTap: () => _showThemeDialog(context)),
         _divider(isDark),
         _navRow(context, isDark,
             color: _cGray,
@@ -677,6 +666,135 @@ class _ProfileViewState extends State<ProfileView> {
   void _openSettings(BuildContext context, String section) {
     SettingsView.focusSection = section;
     context.router.push(const SettingsRoute());
+  }
+
+  // Tema modunun satırda gösterilecek etiketi (Sistem/Açık/Koyu).
+  String _themeModeLabel(ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.light:
+        return 'settings.appearance.themeLight'.tr();
+      case ThemeMode.dark:
+        return 'settings.appearance.themeDark'.tr();
+      case ThemeMode.system:
+        return 'settings.appearance.themeSystem'.tr();
+    }
+  }
+
+  // Tema seçiciyi doğrudan açar (ayarlara gitmeden). Yerel ThemeProvider
+  // birincil; seçim ayrıca backend'e senkronlanır (sistem modu hariç).
+  void _showThemeDialog(BuildContext context) {
+    final themeProvider = context.read<ThemeProvider>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    Future<void> apply(ThemeMode mode) async {
+      await themeProvider.setThemeMode(mode);
+      if (mode != ThemeMode.system) {
+        try {
+          await settingsService.updateSettings(
+            SettingsUpdateRequest(darkMode: mode == ThemeMode.dark),
+          );
+        } catch (_) {/* yerel tercih birincil; sessizce geç */}
+      }
+    }
+
+    Widget option({
+      required String title,
+      required String subtitle,
+      required IconData icon,
+      required ThemeMode mode,
+    }) {
+      final selected = themeProvider.themeMode == mode;
+      return InkWell(
+        onTap: () {
+          apply(mode);
+          Navigator.pop(context);
+        },
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          decoration: BoxDecoration(
+            color: selected
+                ? ColorConstant.primaryPurple.withValues(alpha: 0.12)
+                : (isDark
+                    ? ColorConstant.cardColorDark
+                    : ColorConstant.cardColorLight),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+                color: selected
+                    ? ColorConstant.primaryPurple
+                    : _borderColor(isDark)),
+          ),
+          child: Row(children: [
+            _iconSquare(
+                selected ? ColorConstant.primaryPurple : _cGray, icon),
+            const SizedBox(width: 13),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: _textPrimary(isDark))),
+                  const SizedBox(height: 1),
+                  Text(subtitle,
+                      style:
+                          TextStyle(fontSize: 12.5, color: _textMuted(isDark))),
+                ],
+              ),
+            ),
+            if (selected)
+              Icon(Icons.check_circle_rounded,
+                  size: 22, color: ColorConstant.primaryPurple),
+          ]),
+        ),
+      );
+    }
+
+    showDialog(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        backgroundColor:
+            isDark ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Text('settings.appearance.themeSelect'.tr(),
+            style: TextStyle(
+                color: _textPrimary(isDark),
+                fontSize: 20,
+                fontWeight: FontWeight.w700)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            option(
+                title: 'settings.appearance.themeSystem'.tr(),
+                subtitle: 'settings.appearance.themeSystemSubtitle'.tr(),
+                icon: Icons.brightness_auto_rounded,
+                mode: ThemeMode.system),
+            option(
+                title: 'settings.appearance.themeLight'.tr(),
+                subtitle: 'settings.appearance.themeLightSubtitle'.tr(),
+                icon: Icons.light_mode_rounded,
+                mode: ThemeMode.light),
+            option(
+                title: 'settings.appearance.themeDark'.tr(),
+                subtitle: 'settings.appearance.themeDarkSubtitle'.tr(),
+                icon: Icons.dark_mode_rounded,
+                mode: ThemeMode.dark),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogCtx),
+            style:
+                TextButton.styleFrom(foregroundColor: ColorConstant.primaryPurple),
+            child: Text('common.close'.tr(),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
   }
 
   // Uygulama hakkında (ad + sürüm) bilgisini gösterir.
@@ -2017,8 +2135,7 @@ class _FeedbackSheetState extends State<_FeedbackSheet> {
       Navigator.pop(context);
       CustomSnackBar.showSuccess(context, 'profile.feedbackSent'.tr());
     } else {
-      CustomSnackBar.showError(
-          context, res.errorMessage ?? 'errors.general'.tr());
+      CustomSnackBar.showError(context, res.errorMessage);
     }
   }
 
