@@ -1117,7 +1117,8 @@
       "foldersArchive": "フォルダ · アーカイブ",
       "pinnedHint": "空のクリップが待っています。メモを長押しでここに留めます。",
       "newFolder": "新しい紐 / フォルダ",
-      "archiveBox": "アーカイブ箱"
+      "archiveBox": "アーカイブ箱",
+      "archiveEmpty": "アーカイブしたメモはここに留められます。"
     }
   },
   "diary": {

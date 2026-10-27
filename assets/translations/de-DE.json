@@ -1117,7 +1117,8 @@
       "foldersArchive": "ORDNER · ARCHIV",
       "pinnedHint": "Leere Klammern warten. Halte eine Notiz gedrückt, um sie hier anzuheften.",
       "newFolder": "Neue Leine / Ordner",
-      "archiveBox": "Archivbox"
+      "archiveBox": "Archivbox",
+      "archiveEmpty": "Archivierte Notizen werden hier angeheftet."
     }
   },
   "diary": {

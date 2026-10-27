@@ -1117,7 +1117,8 @@
       "foldersArchive": "KLASÖRLER · ARŞİV",
       "pinnedHint": "Boş mandallar bekliyor. Bir notu basılı tutup buraya as.",
       "newFolder": "Yeni ip / klasör",
-      "archiveBox": "Arşiv kutusu"
+      "archiveBox": "Arşiv kutusu",
+      "archiveEmpty": "Arşivlenen notlar buraya asılır."
     }
   },
   "diary": {

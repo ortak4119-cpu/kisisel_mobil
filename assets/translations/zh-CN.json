@@ -1117,7 +1117,8 @@
       "foldersArchive": "文件夹 · 归档",
       "pinnedHint": "空夹子在等待。长按便签即可固定在此。",
       "newFolder": "新绳 / 文件夹",
-      "archiveBox": "归档盒"
+      "archiveBox": "归档盒",
+      "archiveEmpty": "已归档的笔记会固定在这里。"
     }
   },
   "diary": {

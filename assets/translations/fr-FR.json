@@ -1117,7 +1117,8 @@
       "foldersArchive": "DOSSIERS · ARCHIVE",
       "pinnedHint": "Pinces vides en attente. Appuie longuement sur une note pour l'épingler ici.",
       "newFolder": "Nouvelle corde / dossier",
-      "archiveBox": "Boîte d'archives"
+      "archiveBox": "Boîte d'archives",
+      "archiveEmpty": "Les notes archivées sont épinglées ici."
     }
   },
   "diary": {

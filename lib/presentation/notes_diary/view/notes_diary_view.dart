@@ -1186,13 +1186,152 @@ class _NotesContent extends StatelessWidget {
         child: CircularProgressIndicator(color: const Color(0xFFB794F6)),
       );
     }
-    // Varsayılan görünüm = mantar panosu. Arama veya farklı filtre (sabitlenen/
-    // klasör/arşiv) seçiliyken klasik ızgara görünümüne düşer.
+    // Varsayılan görünüm = mantar panosu. Arşiv kendi mantar panosunu kullanır.
+    // Diğer filtreler (sabitlenen/klasör) veya arama klasik ızgaraya düşer.
     final searchActive = viewModel.noteSearchQuery.trim().isNotEmpty;
+    if (!searchActive && viewModel.notesFilter == 'archive') {
+      return _archiveBoard(context, isDarkMode);
+    }
     if (viewModel.notesFilter != 'all' || searchActive) {
       return _classicBody(context, isDarkMode);
     }
     return _corkBoard(context, isDarkMode);
+  }
+
+  // ==================== ARŞİV MANTAR PANOSU ====================
+  Widget _archiveBoard(BuildContext context, bool isDark) {
+    final archived = viewModel.applyTagFilter(viewModel
+        .applyNoteSearch(viewModel.notes.where((n) => n.isArchived).toList()));
+    final rows = <Widget>[];
+    for (var i = 0; i < archived.length; i += 2) {
+      final end = (i + 2) > archived.length ? archived.length : i + 2;
+      rows.add(_archiveRopeRow(context, archived.sublist(i, end), i, isDark));
+      rows.add(const SizedBox(height: 16));
+    }
+    return RefreshIndicator(
+      onRefresh: () => viewModel.loadNotes(),
+      color: const Color(0xFFB794F6),
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(0, 6, 0, 120),
+        children: [
+          _archiveTopBar(context, archived.length),
+          const SizedBox(height: 12),
+          if (archived.isEmpty)
+            _emptyArchiveRope(context)
+          else
+            ...rows,
+        ],
+      ),
+    );
+  }
+
+  Widget _archiveTopBar(BuildContext context, int count) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 2, 22, 0),
+      child: Row(
+        children: [
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => viewModel.setNotesFilter('all'),
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: const BoxDecoration(
+                color: Color(0xFFEAE0CD),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.arrow_back_rounded,
+                  size: 22, color: _boardBrown),
+            ),
+          ),
+          const SizedBox(width: 12),
+          const Icon(Icons.inventory_2_rounded, size: 18, color: _boardBrown),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+                '${'notes.stats.archive'.tr().toUpperCase()} · $count',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.0,
+                    color: _boardBrown)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Arşiv panosunda bir ip satırı — 1-2 asılı not kartı.
+  Widget _archiveRopeRow(
+      BuildContext context, List<Note> rowNotes, int startIndex, bool isDark) {
+    return SizedBox(
+      height: 220,
+      child: Stack(
+        children: [
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 14,
+            child: CustomPaint(
+                size: const Size(double.infinity, 12),
+                painter: _StringPainter()),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              mainAxisAlignment: rowNotes.length == 1
+                  ? MainAxisAlignment.center
+                  : MainAxisAlignment.spaceEvenly,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (var j = 0; j < rowNotes.length; j++)
+                  _hungCard(context, rowNotes[j], startIndex + j, isDark),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _emptyArchiveRope(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(22, 30, 22, 0),
+      child: Column(
+        children: [
+          SizedBox(
+            height: 34,
+            child: Stack(
+              children: [
+                Positioned(
+                    left: 0,
+                    right: 0,
+                    top: 8,
+                    child: CustomPaint(
+                        size: const Size(double.infinity, 10),
+                        painter: _StringPainter())),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: List.generate(4, (_) => _clothespin()),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Icon(Icons.inventory_2_outlined,
+              size: 40, color: const Color(0xFF9B8A6E).withOpacity(0.7)),
+          const SizedBox(height: 10),
+          Text('notes.board.archiveEmpty'.tr(),
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 13.5, color: Color(0xFF9B8A6E))),
+        ],
+      ),
+    );
   }
 
   Widget _classicBody(BuildContext context, bool isDarkMode) {

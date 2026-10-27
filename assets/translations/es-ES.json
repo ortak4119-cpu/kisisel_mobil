@@ -1117,7 +1117,8 @@
       "foldersArchive": "CARPETAS · ARCHIVO",
       "pinnedHint": "Pinzas vacías esperando. Mantén pulsada una nota para fijarla aquí.",
       "newFolder": "Nueva cuerda / carpeta",
-      "archiveBox": "Caja de archivo"
+      "archiveBox": "Caja de archivo",
+      "archiveEmpty": "Las notas archivadas se cuelgan aquí."
     }
   },
   "diary": {

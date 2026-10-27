@@ -1117,7 +1117,8 @@
       "foldersArchive": "PASTAS · ARQUIVO",
       "pinnedHint": "Molas vazias à espera. Mantenha uma nota premida para a fixar aqui.",
       "newFolder": "Nova corda / pasta",
-      "archiveBox": "Caixa de arquivo"
+      "archiveBox": "Caixa de arquivo",
+      "archiveEmpty": "As notas arquivadas são fixadas aqui."
     }
   },
   "diary": {

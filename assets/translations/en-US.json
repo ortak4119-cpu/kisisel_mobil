@@ -1117,7 +1117,8 @@
       "foldersArchive": "FOLDERS · ARCHIVE",
       "pinnedHint": "Empty clips waiting. Long-press a note to pin it here.",
       "newFolder": "New line / folder",
-      "archiveBox": "Archive box"
+      "archiveBox": "Archive box",
+      "archiveEmpty": "Archived notes are pinned here."
     }
   },
   "diary": {
