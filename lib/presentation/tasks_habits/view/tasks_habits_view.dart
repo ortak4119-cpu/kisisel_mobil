@@ -806,22 +806,14 @@ class _HabitHistorySheet extends StatefulWidget {
 class _HabitHistorySheetState extends State<_HabitHistorySheet> {
   static const int _weeks = 8;
   bool _loading = true;
-  bool _savingNote = false;
   HabitStats? _stats;
   final Map<String, int> _status = {}; // 1 yapıldı, 2 atlandı
   final Map<String, String> _notes = {};
-  final TextEditingController _noteCtrl = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _load();
-  }
-
-  @override
-  void dispose() {
-    _noteCtrl.dispose();
-    super.dispose();
   }
 
   Future<void> _load() async {
@@ -841,27 +833,11 @@ class _HabitHistorySheetState extends State<_HabitHistorySheet> {
       }
       if ((l.notes ?? '').trim().isNotEmpty) _notes[k] = l.notes!.trim();
     }
-    _noteCtrl.text = _notes[_key(DateTime.now())] ?? '';
     if (mounted) {
       setState(() {
         _stats = stats;
         _loading = false;
       });
-    }
-  }
-
-  Future<void> _saveNote() async {
-    setState(() => _savingNote = true);
-    final ok = await widget.viewModel
-        .setHabitTodayNote(widget.habit.id, _noteCtrl.text);
-    if (!mounted) return;
-    setState(() => _savingNote = false);
-    if (ok) {
-      _notes[_key(DateTime.now())] = _noteCtrl.text.trim();
-      _status[_key(DateTime.now())] = 1;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('habits.noteSaved'.tr())),
-      );
     }
   }
 
@@ -960,64 +936,6 @@ class _HabitHistorySheetState extends State<_HabitHistorySheet> {
                   _legend(done, 'habits.legendDone'.tr(), c),
                   _legend(skipped, 'habits.legendSkipped'.tr(), c),
                   _legend(c.bg, 'habits.legendMissed'.tr(), c, border: true),
-                ],
-              ),
-              const SizedBox(height: 18),
-              Text('habits.todayNote'.tr(),
-                  style: TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w700,
-                      color: c.textPrimary)),
-              const SizedBox(height: 8),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Expanded(
-                    child: Container(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: c.bg,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: c.border),
-                      ),
-                      child: TextField(
-                        controller: _noteCtrl,
-                        maxLength: 1000,
-                        minLines: 1,
-                        maxLines: 3,
-                        style: TextStyle(fontSize: 14.5, color: c.textPrimary),
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          isDense: true,
-                          counterText: '',
-                          hintText: 'habits.todayNoteHint'.tr(),
-                          hintStyle:
-                              TextStyle(color: c.textMuted, fontSize: 14),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  SizedBox(
-                    height: 44,
-                    child: ElevatedButton(
-                      onPressed: _savingNote ? null : _saveNote,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFF6A821),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
-                      ),
-                      child: _savingNote
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
-                                  strokeWidth: 2, color: Colors.white))
-                          : Text('common.save'.tr()),
-                    ),
-                  ),
                 ],
               ),
             ],
