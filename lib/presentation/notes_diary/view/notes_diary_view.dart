@@ -1548,14 +1548,33 @@ class _NotesContent extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontFamily: 'JosefinSans',
-                    fontSize: 21,
-                    fontWeight: FontWeight.w700,
-                    height: 1.0,
-                    color: const Color(0xFF3A3326))),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontFamily: 'JosefinSans',
+                          fontSize: 21,
+                          fontWeight: FontWeight.w700,
+                          height: 1.0,
+                          color: const Color(0xFF3A3326))),
+                ),
+                if (note.isLocked)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 2, top: 2),
+                    child: Icon(Icons.lock_rounded,
+                        size: 13, color: const Color(0xFF8A7A5E)),
+                  ),
+                SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: _cardMenu(
+                      context, note, viewModel, isDark, AppColors(isDark)),
+                ),
+              ],
+            ),
             const SizedBox(height: 7),
             Flexible(child: preview),
             if (note.tags.isNotEmpty) ...[
@@ -2487,6 +2506,15 @@ class _NotesContent extends StatelessWidget {
       shape:
           RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       itemBuilder: (context) => [
+        PopupMenuItem(
+          onTap: () => Future.delayed(const Duration(milliseconds: 100),
+              () => _openNote(context, note, isDarkMode)),
+          child: Row(children: [
+            const Icon(Icons.edit_rounded, size: 20),
+            const SizedBox(width: 12),
+            Text('common.edit'.tr()),
+          ]),
+        ),
         PopupMenuItem(
           onTap: () => Future.delayed(const Duration(milliseconds: 100),
               () => viewModel.togglePin(note.id, context)),
