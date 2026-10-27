@@ -345,7 +345,9 @@ class _AreaDonutPainter extends CustomPainter {
         );
       }
     }
-    canvas.drawCircle(center, radius * 0.56, Paint()..color = hole);
+    // Delik küçük tutulur ki renkli halka içe doğru uzasın ve çeyrek
+    // etiketleri (aynı konumda) renkli alanın içinde kalsın.
+    canvas.drawCircle(center, radius * 0.40, Paint()..color = hole);
   }
 
   @override
