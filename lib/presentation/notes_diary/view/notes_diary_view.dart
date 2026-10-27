@@ -37,35 +37,6 @@ class _StringPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-/// Kesikli (dashed) yuvarlak dikdörtgen kenar — "Yeni ip / klasör" kartı için.
-class _DashedBorderPainter extends CustomPainter {
-  final Color color;
-  final double radius;
-  _DashedBorderPainter({required this.color, this.radius = 16});
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.6;
-    final rrect = RRect.fromRectAndRadius(
-        Offset.zero & size, Radius.circular(radius));
-    final path = Path()..addRRect(rrect);
-    const dash = 6.0, gap = 5.0;
-    for (final metric in path.computeMetrics()) {
-      double dist = 0;
-      while (dist < metric.length) {
-        canvas.drawPath(
-            metric.extractPath(dist, dist + dash), paint);
-        dist += dash + gap;
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
 @RoutePage()
 class NotesDiaryView extends StatefulWidget {
   const NotesDiaryView({super.key});
@@ -1348,9 +1319,11 @@ class _NotesContent extends StatelessWidget {
               ? _emptyPins()
               : _clothesline(context, pinned, isDark),
           const SizedBox(height: 24),
-          _boardHeader('notes.board.foldersArchive'.tr(), null),
-          const SizedBox(height: 12),
-          _foldersArchive(context, archivedCount, isDark),
+          _foldersHeader(context, archivedCount),
+          const SizedBox(height: 2),
+          viewModel.categories.isEmpty
+              ? _emptyFoldersRope(context)
+              : _foldersClothesline(context, isDark),
         ],
       ),
     );
@@ -1628,72 +1601,239 @@ class _NotesContent extends StatelessWidget {
     );
   }
 
-  Widget _foldersArchive(
-      BuildContext context, int archivedCount, bool isDark) {
+  // KLASÖRLER satırı başlığı. Büyük "Arşiv kutusu" kartı kaldırıldı; arşive
+  // sağdaki küçük bağlantıdan ulaşılıyor.
+  Widget _foldersHeader(BuildContext context, int archivedCount) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(22, 0, 22, 0),
-      // Not ekleme sağ alttaki FAB ile yapıldığından "Yeni ip / klasör"
-      // kartı kaldırıldı; yalnızca Arşiv kutusu kalıyor.
       child: Row(
         children: [
-          Expanded(
-            child: _boardFolderCard(
-              dashed: false,
-              icon: Icons.inventory_2_rounded,
-              label: '${'notes.board.archiveBox'.tr()} · $archivedCount',
-              onTap: () => viewModel.setNotesFilter('archive'),
-            ),
+          Flexible(
+            child: Text(
+                '${'notes.stats.folders'.tr().toUpperCase()} · ${viewModel.categories.length}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.0,
+                    color: _boardBrown)),
           ),
           const Spacer(),
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => viewModel.setNotesFilter('archive'),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.inventory_2_rounded,
+                    size: 15, color: Color(0xFF9B7B4F)),
+                const SizedBox(width: 5),
+                Text('${'notes.board.archiveBox'.tr()} · $archivedCount',
+                    style: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF9B7B4F))),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _boardFolderCard(
-      {required bool dashed,
-      required IconData icon,
-      required String label,
-      required VoidCallback onTap}) {
-    final inner = Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+  // Klasörler — sabitlenenler gibi ipe mandalla asılı kartlar.
+  Widget _foldersClothesline(BuildContext context, bool isDark) {
+    final cats = viewModel.categories;
+    return SizedBox(
+      height: 150,
+      child: Stack(
         children: [
-          Icon(icon,
-              size: 26,
-              color: dashed
-                  ? const Color(0xFF9B8A6E)
-                  : const Color(0xFF6E5C42)),
-          const SizedBox(height: 8),
-          Text(label,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.w700,
-                  color: dashed
-                      ? const Color(0xFF8A7A5E)
-                      : const Color(0xFF4F4433))),
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 14,
+            child: CustomPaint(
+                size: const Size(double.infinity, 12),
+                painter: _StringPainter()),
+          ),
+          ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.fromLTRB(20, 2, 20, 8),
+            itemCount: cats.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 10),
+            itemBuilder: (_, i) {
+              final cat = cats[i];
+              final count = viewModel.notes
+                  .where((n) => !n.isArchived && n.categoryId == cat.id)
+                  .length;
+              return _folderHungCard(context, cat, count, i, isDark);
+            },
+          ),
         ],
       ),
     );
-    return GestureDetector(
-      onTap: onTap,
-      child: SizedBox(
-        height: 96,
-        child: dashed
-            ? CustomPaint(
-                painter: _DashedBorderPainter(color: const Color(0xFFB7A684)),
-                child: inner)
-            : Container(
+  }
+
+  Widget _folderHungCard(BuildContext context, NoteCategory cat, int count,
+      int i, bool isDark) {
+    final angle = ((i % 3) - 1) * 0.026;
+    return Transform.rotate(
+      angle: angle,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _clothespin(),
+          Transform.translate(
+            offset: const Offset(0, -3),
+            child: GestureDetector(
+              onTap: () {
+                viewModel.setNotesFilter('folders');
+                viewModel.setSelectedCategory(cat.id);
+              },
+              onLongPress: () => _showFolderActions(context, cat, isDark),
+              child: Container(
+                width: 132,
+                height: 96,
+                padding: const EdgeInsets.fromLTRB(12, 11, 12, 11),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFDED0B2),
-                  borderRadius: BorderRadius.circular(16),
+                  color: ColorConstant.cardColorLight,
+                  borderRadius: BorderRadius.circular(3),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.black.withOpacity(0.18),
+                        blurRadius: 9,
+                        offset: const Offset(2, 7)),
+                  ],
                 ),
-                child: inner,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(cat.icon ?? '📁',
+                            style: const TextStyle(fontSize: 20)),
+                        const Spacer(),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF6E5C42).withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text('$count',
+                              style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF6E5C42))),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    Text(cat.name,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            fontFamily: 'JosefinSans',
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            height: 1.05,
+                            color: Color(0xFF3A3326))),
+                  ],
+                ),
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Boş klasör durumu — boş mandallı ip + ipucu.
+  Widget _emptyFoldersRope(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(22, 10, 22, 0),
+      child: Column(
+        children: [
+          SizedBox(
+            height: 34,
+            child: Stack(
+              children: [
+                Positioned(
+                    left: 0,
+                    right: 0,
+                    top: 8,
+                    child: CustomPaint(
+                        size: const Size(double.infinity, 10),
+                        painter: _StringPainter())),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: List.generate(4, (_) => _clothespin()),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          Text('notes.folders.emptyDesc'.tr(),
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 13, color: Color(0xFF9B8A6E))),
+        ],
+      ),
+    );
+  }
+
+  // Klasöre uzun basınca: düzenle / sil.
+  void _showFolderActions(BuildContext context, NoteCategory cat, bool isDark) {
+    final c = AppColors(isDark);
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: c.card,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 10),
+            Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                    color: c.textMuted.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(2))),
+            ListTile(
+              leading:
+                  Text(cat.icon ?? '📁', style: const TextStyle(fontSize: 22)),
+              title: Text(cat.name,
+                  style: TextStyle(
+                      fontWeight: FontWeight.w800, color: c.textPrimary)),
+            ),
+            const Divider(height: 1),
+            ListTile(
+              leading: Icon(Icons.edit_rounded, color: c.textSecondary),
+              title: Text('common.edit'.tr(),
+                  style: TextStyle(color: c.textPrimary)),
+              onTap: () {
+                Navigator.pop(ctx);
+                showFolderDialog(context, viewModel, isDark, editing: cat);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete_outline_rounded,
+                  color: Color(0xFFE53E3E)),
+              title: Text('common.delete'.tr(),
+                  style: const TextStyle(color: Color(0xFFE53E3E))),
+              onTap: () {
+                Navigator.pop(ctx);
+                _confirmDeleteFolder(context, cat, c);
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
       ),
     );
   }
