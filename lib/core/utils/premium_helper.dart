@@ -34,99 +34,53 @@ class PremiumHelper {
     return false;
   }
 
-  /// Not ekleme limitini kontrol eder ve gerekirse paywall gösterir
-  /// Returns: true ise devam edebilir, false ise limit aşılmış
+  // NOT: Ücretsiz sürüm limitleri kaldırıldı. Aşağıdaki ekleme kontrolleri
+  // artık her zaman izin verir; ücretsiz hesaplar da not/alışkanlık/görev/
+  // abonelik/harcamayı sınırsız ekleyebilir. (Limit sabitleri ve paywall
+  // ileride tekrar etkinleştirilebilmek için kasıtlı olarak korunuyor.)
+
+  /// Not ekleme limiti — kaldırıldı, her zaman izin verir.
   static Future<bool> checkNoteLimit({
     required BuildContext context,
     required User? user,
     required int currentNoteCount,
   }) async {
-    // Premium kullanıcı ise sınır yok
-    if (isPremiumUser(user)) return true;
-
-    // Limit kontrolü
-    if (currentNoteCount >= FREE_NOTE_LIMIT) {
-      // Paywall göster, satın alma başarılı olursa true dön
-      final purchased = await _showPremiumPaywall(context);
-      return purchased;
-    }
-
     return true;
   }
 
-  /// Alışkanlık ekleme limitini kontrol eder ve gerekirse paywall gösterir
-  /// Returns: true ise devam edebilir, false ise limit aşılmış
+  /// Alışkanlık ekleme limiti — kaldırıldı, her zaman izin verir.
   static Future<bool> checkHabitLimit({
     required BuildContext context,
     required User? user,
     required int currentHabitCount,
   }) async {
-    // Premium kullanıcı ise sınır yok
-    if (isPremiumUser(user)) return true;
-
-    // Limit kontrolü
-    if (currentHabitCount >= FREE_HABIT_LIMIT) {
-      final purchased = await _showPremiumPaywall(context);
-      return purchased;
-    }
-
     return true;
   }
 
-  /// Görev ekleme limitini kontrol eder ve gerekirse paywall gösterir
-  /// Returns: true ise devam edebilir, false ise limit aşılmış
+  /// Görev ekleme limiti — kaldırıldı, her zaman izin verir.
   static Future<bool> checkTaskLimit({
     required BuildContext context,
     required User? user,
     required int currentTaskCount,
   }) async {
-    // Premium kullanıcı ise sınır yok
-    if (isPremiumUser(user)) return true;
-
-    // Limit kontrolü
-    if (currentTaskCount >= FREE_TASK_LIMIT) {
-      final purchased = await _showPremiumPaywall(context);
-      return purchased;
-    }
-
     return true;
   }
 
-  /// Abonelik ekleme limitini kontrol eder ve gerekirse paywall gösterir
-  /// Returns: true ise devam edebilir, false ise limit aşılmış
+  /// Abonelik ekleme limiti — kaldırıldı, her zaman izin verir.
   static Future<bool> checkSubscriptionLimit({
     required BuildContext context,
     required User? user,
     required int currentSubscriptionCount,
   }) async {
-    // Premium kullanıcı ise sınır yok
-    if (isPremiumUser(user)) return true;
-
-    // Limit kontrolü
-    if (currentSubscriptionCount >= FREE_SUBSCRIPTION_LIMIT) {
-      final purchased = await _showPremiumPaywall(context);
-      return purchased;
-    }
-
     return true;
   }
 
-  /// Harcama ekleme limitini kontrol eder ve gerekirse paywall gösterir
-  /// Returns: true ise devam edebilir, false ise limit aşılmış
+  /// Harcama ekleme limiti — kaldırıldı, her zaman izin verir.
   static Future<bool> checkExpenseLimit({
     required BuildContext context,
     required User? user,
     required int currentExpenseCount,
   }) async {
-    // Premium kullanıcı ise sınır yok
-    if (isPremiumUser(user)) return true;
-
-    // Limit kontrolü
-    if (currentExpenseCount >= FREE_EXPENSE_LIMIT) {
-      final purchased = await _showPremiumPaywall(context);
-      return purchased;
-    }
-
     return true;
   }
 
