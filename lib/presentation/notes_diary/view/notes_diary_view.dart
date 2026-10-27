@@ -5621,29 +5621,71 @@ class _EditorToolbar extends StatefulWidget {
 }
 
 class _EditorToolbarState extends State<_EditorToolbar> {
-  bool _open = false;
+  // Menü, layout akışına eklenmek yerine (sayfayı ittirip kaydırıyordu)
+  // + butonuna sabitlenmiş bir Overlay olarak açılır. Böylece hizalı kalır,
+  // içerik kaymaz ve metin alanının seçim tutamacının üstünde görünür.
+  final LayerLink _link = LayerLink();
+  OverlayEntry? _entry;
+
+  bool get _open => _entry != null;
+
+  @override
+  void dispose() {
+    _entry?.remove();
+    _entry = null;
+    super.dispose();
+  }
+
+  void _toggle() {
+    if (_entry != null) {
+      _closeMenu();
+    } else {
+      _entry = OverlayEntry(builder: (_) => _overlay());
+      Overlay.of(context).insert(_entry!);
+      setState(() {}); // + ikonunu döndür
+    }
+  }
+
+  void _closeMenu() {
+    _entry?.remove();
+    _entry = null;
+    if (mounted) setState(() {});
+  }
 
   void _run(VoidCallback cb) {
-    setState(() => _open = false);
+    _closeMenu();
     cb();
+  }
+
+  Widget _overlay() {
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: _closeMenu,
+          ),
+        ),
+        CompositedTransformFollower(
+          link: _link,
+          showWhenUnlinked: false,
+          targetAnchor: Alignment.topLeft,
+          followerAnchor: Alignment.bottomLeft,
+          offset: const Offset(0, -10),
+          child: Material(
+            color: Colors.transparent,
+            child: _menu(widget.c),
+          ),
+        ),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final c = widget.c;
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 6, 14, 12),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (_open) ...[
-            _menu(c),
-            const SizedBox(height: 10),
-          ],
-          _bar(c),
-        ],
-      ),
+      child: _bar(widget.c),
     );
   }
 
@@ -5657,21 +5699,24 @@ class _EditorToolbarState extends State<_EditorToolbar> {
       ),
       child: Row(
         children: [
-          GestureDetector(
-            onTap: () => setState(() => _open = !_open),
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                gradient:
-                    LinearGradient(colors: [widget.accent, widget.accentDark]),
-                shape: BoxShape.circle,
-              ),
-              child: AnimatedRotation(
-                duration: const Duration(milliseconds: 180),
-                turns: _open ? 0.125 : 0.0,
-                child: const Icon(Icons.add_rounded,
-                    color: Colors.white, size: 24),
+          CompositedTransformTarget(
+            link: _link,
+            child: GestureDetector(
+              onTap: _toggle,
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                      colors: [widget.accent, widget.accentDark]),
+                  shape: BoxShape.circle,
+                ),
+                child: AnimatedRotation(
+                  duration: const Duration(milliseconds: 180),
+                  turns: _open ? 0.125 : 0.0,
+                  child: const Icon(Icons.add_rounded,
+                      color: Colors.white, size: 24),
+                ),
               ),
             ),
           ),
