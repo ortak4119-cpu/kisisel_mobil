@@ -16,6 +16,7 @@ import '../../../core/design/app_design.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../models/diary/diary_models.dart';
 import '../../../models/note/note_models.dart';
+import '../../../core/utils/custom_snackbar.dart';
 import '../viewmodel/notes_diary_viewmodel.dart';
 import 'markdown_note_parser.dart';
 
@@ -2211,6 +2212,7 @@ class _NotesContent extends StatelessWidget {
   Widget _folderHungCard(BuildContext context, NoteCategory cat, int count,
       int i, bool isDark) {
     final angle = ((i % 3) - 1) * 0.026;
+    final locked = viewModel.isFolderLocked(cat.id);
     return Transform.rotate(
       angle: angle,
       child: Column(
@@ -2220,15 +2222,12 @@ class _NotesContent extends StatelessWidget {
           Transform.translate(
             offset: const Offset(0, -3),
             child: GestureDetector(
-              onTap: () {
-                viewModel.setNotesFilter('folders');
-                viewModel.setSelectedCategory(cat.id);
-              },
+              onTap: () => _openFolder(context, cat, isDark),
               onLongPress: () => _showFolderActions(context, cat, isDark),
               child: Container(
                 width: 132,
                 height: 96,
-                padding: const EdgeInsets.fromLTRB(12, 11, 12, 11),
+                padding: const EdgeInsets.fromLTRB(12, 9, 6, 11),
                 decoration: BoxDecoration(
                   color: ColorConstant.cardColorLight,
                   borderRadius: BorderRadius.circular(3),
@@ -2246,10 +2245,16 @@ class _NotesContent extends StatelessWidget {
                       children: [
                         Text(cat.icon ?? '📁',
                             style: const TextStyle(fontSize: 20)),
+                        if (locked)
+                          const Padding(
+                            padding: EdgeInsets.only(left: 4),
+                            child: Icon(Icons.lock_rounded,
+                                size: 14, color: Color(0xFF8A7A5E)),
+                          ),
                         const Spacer(),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 2),
+                              horizontal: 7, vertical: 2),
                           decoration: BoxDecoration(
                             color: const Color(0xFF6E5C42).withOpacity(0.12),
                             borderRadius: BorderRadius.circular(10),
@@ -2259,6 +2264,16 @@ class _NotesContent extends StatelessWidget {
                                   fontSize: 12,
                                   fontWeight: FontWeight.w800,
                                   color: Color(0xFF6E5C42))),
+                        ),
+                        GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () =>
+                              _showFolderActions(context, cat, isDark),
+                          child: const Padding(
+                            padding: EdgeInsets.fromLTRB(4, 2, 2, 2),
+                            child: Icon(Icons.more_horiz_rounded,
+                                size: 18, color: Color(0xFF8A7A5E)),
+                          ),
                         ),
                       ],
                     ),
@@ -2318,9 +2333,10 @@ class _NotesContent extends StatelessWidget {
     );
   }
 
-  // Klasöre uzun basınca: düzenle / sil.
+  // Klasör ⋯ / uzun bas: düzenle / kilitle / sil.
   void _showFolderActions(BuildContext context, NoteCategory cat, bool isDark) {
     final c = AppColors(isDark);
+    final locked = viewModel.isFolderLocked(cat.id);
     showModalBottomSheet(
       context: context,
       backgroundColor: c.card,
@@ -2347,11 +2363,31 @@ class _NotesContent extends StatelessWidget {
             const Divider(height: 1),
             ListTile(
               leading: Icon(Icons.edit_rounded, color: c.textSecondary),
-              title: Text('common.edit'.tr(),
+              title: Text('${'common.edit'.tr()} · ${cat.name}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(color: c.textPrimary)),
               onTap: () {
                 Navigator.pop(ctx);
                 showFolderDialog(context, viewModel, isDark, editing: cat);
+              },
+            ),
+            ListTile(
+              leading: Icon(
+                  locked ? Icons.lock_open_rounded : Icons.lock_rounded,
+                  color: c.textSecondary),
+              title: Text(
+                  locked
+                      ? 'notes.folders.unlock'.tr()
+                      : 'notes.folders.lock'.tr(),
+                  style: TextStyle(color: c.textPrimary)),
+              onTap: () {
+                Navigator.pop(ctx);
+                if (locked) {
+                  _confirmFolderRemoveLock(context, cat, isDark);
+                } else {
+                  _showFolderSetPin(context, cat, isDark);
+                }
               },
             ),
             ListTile(
@@ -2377,6 +2413,150 @@ class _NotesContent extends StatelessWidget {
     } else {
       _showEditNoteDialog(context, note, viewModel, isDark);
     }
+  }
+
+  // Klasörü aç — kilitliyse önce PIN sorar.
+  void _openFolder(BuildContext context, NoteCategory cat, bool isDark) {
+    if (viewModel.isFolderLocked(cat.id)) {
+      _showFolderUnlockToOpen(context, cat, isDark);
+    } else {
+      viewModel.setNotesFilter('folders');
+      viewModel.setSelectedCategory(cat.id);
+    }
+  }
+
+  // Ortak 4 haneli PIN dialogu.
+  void _folderPinDialog(
+    BuildContext context,
+    bool isDark, {
+    required String title,
+    required String hint,
+    required String confirmLabel,
+    required void Function(String pin) onConfirm,
+  }) {
+    final pinController = TextEditingController();
+    final bg = isDark
+        ? ColorConstant.cardColorDark
+        : ColorConstant.cardColorLight;
+    final tp = isDark
+        ? ColorConstant.textPrimaryDark
+        : ColorConstant.textPrimaryLight;
+    final ts = isDark
+        ? ColorConstant.textSecondaryDark
+        : ColorConstant.textSecondaryLight;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: bg,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(title,
+            style: TextStyle(color: tp, fontWeight: FontWeight.w800)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(hint, style: TextStyle(color: ts)),
+            const SizedBox(height: 16),
+            TextField(
+              controller: pinController,
+              keyboardType: TextInputType.number,
+              maxLength: 4,
+              obscureText: true,
+              autofocus: true,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 8,
+                  color: tp),
+              decoration: InputDecoration(
+                counterText: '',
+                filled: true,
+                fillColor: isDark
+                    ? ColorConstant.bgColorDark
+                    : ColorConstant.bgColorLight,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('common.cancel'.tr(), style: TextStyle(color: ts)),
+          ),
+          TextButton(
+            onPressed: () {
+              if (pinController.text.length == 4) {
+                Navigator.pop(ctx);
+                onConfirm(pinController.text);
+              }
+            },
+            child: Text(confirmLabel,
+                style: const TextStyle(
+                    color: Color(0xFFB794F6), fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showFolderSetPin(BuildContext context, NoteCategory cat, bool isDark) {
+    _folderPinDialog(
+      context,
+      isDark,
+      title: 'notes.folders.lock'.tr(),
+      hint: 'notes.enterPinToLock'.tr(),
+      confirmLabel: 'common.lock'.tr(),
+      onConfirm: (pin) async {
+        await viewModel.setFolderLock(cat.id, pin);
+        if (context.mounted) {
+          CustomSnackBar.showSuccess(context, 'notes.folders.locked'.tr());
+        }
+      },
+    );
+  }
+
+  void _showFolderUnlockToOpen(
+      BuildContext context, NoteCategory cat, bool isDark) {
+    _folderPinDialog(
+      context,
+      isDark,
+      title: 'notes.folders.unlockTitle'.tr(),
+      hint: 'notes.folders.enterPinOpen'.tr(),
+      confirmLabel: 'common.open'.tr(),
+      onConfirm: (pin) {
+        if (pin == viewModel.folderPin(cat.id)) {
+          viewModel.setNotesFilter('folders');
+          viewModel.setSelectedCategory(cat.id);
+        } else if (context.mounted) {
+          CustomSnackBar.showError(context, 'notes.folders.wrongPin'.tr());
+        }
+      },
+    );
+  }
+
+  void _confirmFolderRemoveLock(
+      BuildContext context, NoteCategory cat, bool isDark) {
+    _folderPinDialog(
+      context,
+      isDark,
+      title: 'notes.folders.unlock'.tr(),
+      hint: 'notes.folders.enterPinRemove'.tr(),
+      confirmLabel: 'notes.folders.unlock'.tr(),
+      onConfirm: (pin) async {
+        if (pin == viewModel.folderPin(cat.id)) {
+          await viewModel.removeFolderLock(cat.id);
+          if (context.mounted) {
+            CustomSnackBar.showSuccess(context, 'notes.folders.unlocked'.tr());
+          }
+        } else if (context.mounted) {
+          CustomSnackBar.showError(context, 'notes.folders.wrongPin'.tr());
+        }
+      },
+    );
   }
 
   String _recentDayLabel(List<Note> recent) {
@@ -2504,7 +2684,7 @@ class _NotesContent extends StatelessWidget {
         color: c.card,
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
-          onTap: () => viewModel.setSelectedCategory(cat.id),
+          onTap: () => _openFolder(context, cat, isDark),
           borderRadius: BorderRadius.circular(16),
           child: Container(
             padding: const EdgeInsets.all(16),

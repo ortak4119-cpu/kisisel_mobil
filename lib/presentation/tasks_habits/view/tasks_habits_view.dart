@@ -1,13 +1,18 @@
 import 'dart:io';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:share_plus/share_plus.dart';
+import '../../../core/init/locator.dart';
 import '../../../models/task/task_models.dart';
 import '../../../models/habit/habit_models.dart';
+import '../../../models/habit/shared_habit_models.dart';
 import '../../../core/design/app_design.dart';
 import '../../../core/utils/color_constant.dart';
+import '../../../core/utils/custom_snackbar.dart';
 import '../../../core/utils/nl_task_parser.dart';
 import 'shared_habits_view.dart';
 import '../viewmodel/tasks_habits_viewmodel.dart';
@@ -762,6 +767,15 @@ class _HabitsTab extends StatelessWidget {
                 showEditHabitSheet(context, viewModel, c.isDark, h);
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.group_add_rounded, color: _orange),
+              title: Text('habits.shareWithFriend'.tr(),
+                  style: TextStyle(color: c.textPrimary)),
+              onTap: () {
+                Navigator.pop(ctx);
+                _shareHabitWithFriend(context, c, h);
+              },
+            ),
             if (!viewModel.isHabitDoneToday(h) && !h.skippedToday)
               ListTile(
                 leading: const Icon(Icons.fast_forward_rounded, color: _orange),
@@ -787,6 +801,73 @@ class _HabitsTab extends StatelessWidget {
             const SizedBox(height: 8),
           ],
         ),
+      ),
+    );
+  }
+
+  // Bu alışkanlığı arkadaşla paylaş: paylaşımlı alışkanlık oluşturup katılım
+  // kodunu gösterir (kopyala / sistem paylaşım menüsü).
+  Future<void> _shareHabitWithFriend(
+      BuildContext context, AppColors c, Habit h) async {
+    final title =
+        h.title.trim().isEmpty ? 'habits.shared.title'.tr() : h.title.trim();
+    final r = await sharedHabitService.create(SharedHabitRequest(title: title));
+    if (!context.mounted) return;
+    if (r.isSuccess && r.data != null) {
+      _showHabitJoinCode(context, c, r.data!);
+    } else {
+      CustomSnackBar.showError(
+          context, r.errorMessage ?? 'errors.unknownError'.tr());
+    }
+  }
+
+  void _showHabitJoinCode(BuildContext context, AppColors c, SharedHabit sh) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: c.card,
+        title: Text('habits.shared.created'.tr(),
+            style: TextStyle(color: c.textPrimary, fontSize: 16)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('habits.shareWithFriendHint'.tr(),
+                style: TextStyle(color: c.textSecondary, fontSize: 13)),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SelectableText(sh.joinCode ?? '-',
+                    style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 3,
+                        color: _orange)),
+                const SizedBox(width: 10),
+                IconButton(
+                  icon: Icon(Icons.copy_rounded, color: c.textSecondary),
+                  onPressed: () {
+                    Clipboard.setData(
+                        ClipboardData(text: sh.joinCode ?? ''));
+                    CustomSnackBar.showSuccess(
+                        context, 'habits.shared.codeCopied'.tr());
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Share.share(
+                '${sh.title}\n${'habits.shared.joinCode'.tr()}: ${sh.joinCode}'),
+            child: Text('habits.shared.shareBtn'.tr()),
+          ),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text('habits.shared.ok'.tr())),
+        ],
       ),
     );
   }

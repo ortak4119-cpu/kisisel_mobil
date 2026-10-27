@@ -43,6 +43,50 @@ class NotesDiaryViewModel extends ChangeNotifier {
   // Categories
   List<NoteCategory> _categories = [];
   List<NoteCategory> get categories => _categories;
+
+  // ---- Klasör (kategori) kilidi — istemci tarafı (backend desteklemiyor) ----
+  // Kategori id -> PIN. SharedPreferences'ta JSON olarak saklanır.
+  static const String _folderPinsKey = 'note_folder_pins';
+  Map<int, String> _folderPins = {};
+  bool isFolderLocked(int id) => _folderPins.containsKey(id);
+  String? folderPin(int id) => _folderPins[id];
+
+  Future<void> _loadFolderPins() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_folderPinsKey);
+      if (raw == null || raw.isEmpty) {
+        _folderPins = {};
+        return;
+      }
+      final decoded = jsonDecode(raw) as Map<String, dynamic>;
+      _folderPins = decoded
+          .map((k, v) => MapEntry(int.tryParse(k) ?? -1, v.toString()))
+        ..removeWhere((k, v) => k < 0);
+    } catch (_) {
+      _folderPins = {};
+    }
+  }
+
+  Future<void> _persistFolderPins() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final map = _folderPins.map((k, v) => MapEntry(k.toString(), v));
+      await prefs.setString(_folderPinsKey, jsonEncode(map));
+    } catch (_) {}
+  }
+
+  Future<void> setFolderLock(int id, String pin) async {
+    _folderPins[id] = pin;
+    notifyListeners();
+    await _persistFolderPins();
+  }
+
+  Future<void> removeFolderLock(int id) async {
+    _folderPins.remove(id);
+    notifyListeners();
+    await _persistFolderPins();
+  }
   NotesViewMode _notesViewMode = NotesViewMode.grid;
   NotesViewMode get notesViewMode => _notesViewMode;
 
@@ -1184,6 +1228,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
 
   Future<void> loadCategories() async {
     try {
+      await _loadFolderPins();
       debugPrint('📂 Loading categories...');
       final response = await _noteService.getCategories();
 
