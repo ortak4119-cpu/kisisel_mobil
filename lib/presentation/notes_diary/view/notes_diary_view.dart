@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
 import 'package:share_plus/share_plus.dart';
@@ -31,6 +32,27 @@ class _StringPainter extends CustomPainter {
       ..moveTo(0, 2)
       ..quadraticBezierTo(size.width / 2, 10, size.width, 2);
     canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+/// Mantar (tıpa) yüzey dokusu — sabit konumlu küçük benekler.
+class _CorkSpecklePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rnd = math.Random(42);
+    final dark = Paint()..color = const Color(0xFF7A582D).withOpacity(0.18);
+    final light = Paint()..color = const Color(0xFFE0C089).withOpacity(0.22);
+    final count =
+        (size.width * size.height / 850).clamp(40, 600).toInt();
+    for (var i = 0; i < count; i++) {
+      final dx = rnd.nextDouble() * size.width;
+      final dy = rnd.nextDouble() * size.height;
+      final r = 0.7 + rnd.nextDouble() * 1.6;
+      canvas.drawCircle(Offset(dx, dy), r, rnd.nextBool() ? dark : light);
+    }
   }
 
   @override
@@ -1199,15 +1221,23 @@ class _NotesContent extends StatelessWidget {
   }
 
   // ==================== ARŞİV MANTAR PANOSU ====================
+  // Çerçeveli gerçek bir mantar pano: arşivlenen notlar raptiye (iğne) ile
+  // sabitlenir. Kart genişliği notlardaki _paperCard ile aynı (150).
+  static const _corkFill = Color(0xFFC9A369);
+  static const _corkFrame = Color(0xFF6E5C42);
+  static const _corkFrameInner = Color(0xFF5A4A33);
+  // Raptiye renkleri — not paletine uygun (sırayla döner):
+  // [parlak, orta, koyu]
+  static const List<List<Color>> _pinColors = [
+    [Color(0xFFFF9A9A), Color(0xFFE24B4A), Color(0xFFA32D2D)], // kırmızı
+    [Color(0xFFFFD27A), Color(0xFFF6A821), Color(0xFFB06A00)], // turuncu
+    [Color(0xFF7FD6C0), Color(0xFF15788C), Color(0xFF0C4A58)], // teal
+    [Color(0xFFC3B9F5), Color(0xFF9F7AEA), Color(0xFF5B46A8)], // mor
+  ];
+
   Widget _archiveBoard(BuildContext context, bool isDark) {
     final archived = viewModel.applyTagFilter(viewModel
         .applyNoteSearch(viewModel.notes.where((n) => n.isArchived).toList()));
-    final rows = <Widget>[];
-    for (var i = 0; i < archived.length; i += 2) {
-      final end = (i + 2) > archived.length ? archived.length : i + 2;
-      rows.add(_archiveRopeRow(context, archived.sublist(i, end), i, isDark));
-      rows.add(const SizedBox(height: 16));
-    }
     return RefreshIndicator(
       onRefresh: () => viewModel.loadNotes(),
       color: const Color(0xFFB794F6),
@@ -1216,10 +1246,120 @@ class _NotesContent extends StatelessWidget {
         children: [
           _archiveTopBar(context, archived.length),
           const SizedBox(height: 12),
-          if (archived.isEmpty)
-            _emptyArchiveRope(context)
-          else
-            ...rows,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 0, 14, 0),
+            child: _corkBoardFrame(
+              child: archived.isEmpty
+                  ? _emptyCork(context)
+                  : Wrap(
+                      spacing: 14,
+                      runSpacing: 22,
+                      alignment: WrapAlignment.center,
+                      children: [
+                        for (var i = 0; i < archived.length; i++)
+                          _pinnedCard(context, archived[i], i, isDark),
+                      ],
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Ahşap çerçeve + mantar (tıpa) yüzey.
+  Widget _corkBoardFrame({required Widget child}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: _corkFrame,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+              color: const Color(0xFF3C2A14).withOpacity(0.30),
+              blurRadius: 16,
+              offset: const Offset(0, 6)),
+        ],
+      ),
+      padding: const EdgeInsets.all(10),
+      child: Container(
+        decoration: BoxDecoration(
+          color: _corkFill,
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: _corkFrameInner, width: 2),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(5),
+          child: CustomPaint(
+            painter: _CorkSpecklePainter(),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 22, 16, 22),
+              child: child,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Raptiyeyle sabitlenmiş not — _paperCard (150px) + üstte iğne başı.
+  Widget _pinnedCard(BuildContext context, Note note, int i, bool isDark) {
+    final angle = ((i % 3) - 1) * 0.03;
+    final pin = _pinColors[i % _pinColors.length];
+    return Transform.rotate(
+      angle: angle,
+      child: SizedBox(
+        width: 150,
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.topCenter,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 9),
+              child: _paperCard(context, note, isDark),
+            ),
+            Positioned(top: 0, child: _pushpin(pin)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _pushpin(List<Color> c) {
+    return Container(
+      width: 18,
+      height: 18,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          center: const Alignment(-0.3, -0.4),
+          radius: 0.95,
+          colors: [c[0], c[1], c[2]],
+          stops: const [0.0, 0.55, 1.0],
+        ),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.35),
+              blurRadius: 3,
+              offset: const Offset(0, 2)),
+        ],
+      ),
+    );
+  }
+
+  Widget _emptyCork(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 44),
+      child: Column(
+        children: [
+          Icon(Icons.push_pin_outlined,
+              size: 42, color: const Color(0xFF5A4A33).withOpacity(0.65)),
+          const SizedBox(height: 12),
+          Text('notes.board.archiveEmpty'.tr(),
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF5A4A33))),
         ],
       ),
     );
@@ -1258,77 +1398,6 @@ class _NotesContent extends StatelessWidget {
                     letterSpacing: 1.0,
                     color: _boardBrown)),
           ),
-        ],
-      ),
-    );
-  }
-
-  // Arşiv panosunda bir ip satırı — 1-2 asılı not kartı.
-  Widget _archiveRopeRow(
-      BuildContext context, List<Note> rowNotes, int startIndex, bool isDark) {
-    return SizedBox(
-      height: 220,
-      child: Stack(
-        children: [
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 14,
-            child: CustomPaint(
-                size: const Size(double.infinity, 12),
-                painter: _StringPainter()),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
-              mainAxisAlignment: rowNotes.length == 1
-                  ? MainAxisAlignment.center
-                  : MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                for (var j = 0; j < rowNotes.length; j++)
-                  _hungCard(context, rowNotes[j], startIndex + j, isDark),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _emptyArchiveRope(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(22, 30, 22, 0),
-      child: Column(
-        children: [
-          SizedBox(
-            height: 34,
-            child: Stack(
-              children: [
-                Positioned(
-                    left: 0,
-                    right: 0,
-                    top: 8,
-                    child: CustomPaint(
-                        size: const Size(double.infinity, 10),
-                        painter: _StringPainter())),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: List.generate(4, (_) => _clothespin()),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          Icon(Icons.inventory_2_outlined,
-              size: 40, color: const Color(0xFF9B8A6E).withOpacity(0.7)),
-          const SizedBox(height: 10),
-          Text('notes.board.archiveEmpty'.tr(),
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 13.5, color: Color(0xFF9B8A6E))),
         ],
       ),
     );
