@@ -3192,14 +3192,26 @@ class _AddNoteBottomSheet extends StatelessWidget {
                     padding: EdgeInsets.only(
                       bottom: MediaQuery.of(context).viewInsets.bottom,
                     ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _toolbarAdd(context, vm, c),
-                        _toolbarFormat(context, vm, c),
-                        _actionChips(context, vm, c),
-                        _bottomBar(context, vm, c),
-                      ],
+                    child: _EditorToolbar(
+                      c: c,
+                      accent: _accent,
+                      accentDark: _accentDark,
+                      reminderLabel: vm.noteReminder != null
+                          ? '${vm.noteReminder!.day}.${vm.noteReminder!.month} ${vm.noteReminder!.hour.toString().padLeft(2, '0')}:${vm.noteReminder!.minute.toString().padLeft(2, '0')}'
+                          : null,
+                      onBold: () => _wrapSelection(vm, '**'),
+                      onItalic: () => _wrapSelection(vm, '*'),
+                      onBullet: () => _insert(vm, '• '),
+                      onNumbered: () => _insertNumbered(vm),
+                      onCheckbox: () => _insert(vm, '☐ '),
+                      onMic: () => _showDictationSheet(context, vm),
+                      onCamera: () => vm.pickNoteImage(ImageSource.camera),
+                      onPhoto: () => vm.pickNoteImage(ImageSource.gallery),
+                      onFile: () => _pickFile(context, vm),
+                      onDraw: () => _openDrawingPad(context, vm),
+                      onScan: () => vm.pickNoteImage(ImageSource.camera),
+                      onReminder: () => _pickReminder(context, vm),
+                      onShare: () => _shareNote(context, vm),
                     ),
                   ),
                 ],
@@ -3244,8 +3256,22 @@ class _AddNoteBottomSheet extends StatelessWidget {
             active: vm.notePinned,
           ),
           const SizedBox(width: 8),
-          _circleBtn(Icons.more_horiz_rounded, c,
-              () => _toast(context, 'notes.editor.moreOptions'.tr())),
+          GestureDetector(
+            onTap: () =>
+                isEditing ? vm.updateNote(context) : vm.createNote(context),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(colors: [_accent, _accentDark]),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Text('notes.editor.done'.tr(),
+                  style: const TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white)),
+            ),
+          ),
         ],
       ),
     );
@@ -3907,126 +3933,6 @@ class _AddNoteBottomSheet extends StatelessWidget {
 
 
 
-  // ---------- Araç çubuğu 1 (Ekle/Kamera/...) — işlevsel ----------
-  Widget _toolbarAdd(
-      BuildContext context, NotesDiaryViewModel vm, AppColors c) {
-    final items = <List<dynamic>>[
-      [Icons.camera_alt_outlined, 'camera', 'notes.editor.camera'.tr(), c.textSecondary],
-      [Icons.image_outlined, 'photo', 'notes.editor.photo'.tr(), c.textSecondary],
-      [Icons.attach_file_rounded, 'file', 'notes.editor.file'.tr(), c.textSecondary],
-      [Icons.gesture_rounded, 'draw', 'notes.editor.draw'.tr(), c.textSecondary],
-      [Icons.document_scanner_outlined, 'scan', 'notes.editor.scan'.tr(), c.textSecondary],
-    ];
-    return Container(
-      margin: const EdgeInsets.fromLTRB(14, 4, 14, 6),
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      decoration: BoxDecoration(
-        color: c.card,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: c.border.withOpacity(0.7)),
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: Row(
-          children: items.map((it) {
-            final id = it[1] as String;
-            final label = it[2] as String;
-            return InkWell(
-              onTap: () {
-                if (id == 'add') {
-                  vm.noteContentFocus.requestFocus();
-                } else if (id == 'link') {
-                  vm.noteContentFocus.requestFocus();
-                  insertNotePrefix(vm.noteContentController, '🔗 https://');
-                } else if (id == 'photo') {
-                  vm.pickNoteImage(ImageSource.gallery);
-                } else if (id == 'camera' || id == 'scan') {
-                  vm.pickNoteImage(ImageSource.camera);
-                } else if (id == 'draw') {
-                  _openDrawingPad(context, vm);
-                } else if (id == 'file') {
-                  _pickFile(context, vm);
-                } else if (id == 'voice') {
-                  vm.toggleRecording();
-                } else {
-                  _toast(context,
-                      'notes.editor.comingSoon'.tr(namedArgs: {'label': label}));
-                }
-              },
-              borderRadius: BorderRadius.circular(12),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(it[0] as IconData, size: 24, color: it[3] as Color),
-                    const SizedBox(height: 5),
-                    Text(
-                      label,
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w500,
-                        color: c.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      ),
-    );
-  }
-
-  // ---------- Araç çubuğu 2 (zengin metin) — işlevsel ----------
-  Widget _toolbarFormat(
-      BuildContext context, NotesDiaryViewModel vm, AppColors c) {
-    // Her buton: [ikon, aksiyon]. Liste/onay/madde/alıntı gerçekten
-    // içeriğe eklenir; kalın/italik seçimi işaretlerle sarar.
-    final buttons = <List<dynamic>>[
-      [Icons.format_bold_rounded, () => _wrapSelection(vm, '**')],
-      [Icons.format_italic_rounded, () => _wrapSelection(vm, '*')],
-      [Icons.format_list_bulleted_rounded, () => _insert(vm, '• ')],
-      [Icons.format_list_numbered_rounded, () => _insertNumbered(vm)],
-      [Icons.check_box_outlined, () => _insert(vm, '☐ ')],
-      [Icons.format_quote_rounded, () => _insert(vm, '> ')],
-      [Icons.mic_rounded, () => _showDictationSheet(context, vm)],
-      [Icons.undo_rounded, () => _toast(context, 'notes.editor.undo'.tr())],
-    ];
-    return Container(
-      margin: const EdgeInsets.fromLTRB(14, 0, 14, 6),
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      decoration: BoxDecoration(
-        color: c.card,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: c.border.withOpacity(0.7)),
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        child: Row(
-          children: List.generate(buttons.length, (i) {
-            return InkWell(
-              onTap: buttons[i][1] as VoidCallback,
-              borderRadius: BorderRadius.circular(10),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                child: Icon(
-                  buttons[i][0] as IconData,
-                  size: 22,
-                  color: i == 0 ? _accent : c.textSecondary,
-                ),
-              ),
-            );
-          }),
-        ),
-      ),
-    );
-  }
-
   /// İçerik alanına odaklanıp satır başına işaret ekler.
   void _insert(NotesDiaryViewModel vm, String prefix) {
     vm.noteContentFocus.requestFocus();
@@ -4182,128 +4088,16 @@ class _AddNoteBottomSheet extends StatelessWidget {
   }
 
   // ---------- Etiket / Hatırlatıcı / Paylaş — işlevsel ----------
-  Widget _actionChips(
-      BuildContext context, NotesDiaryViewModel vm, AppColors c) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
-      child: Row(
-        children: [
-          Expanded(
-            child: _actionChip(
-                vm.noteReminder != null
-                    ? Icons.notifications_active_rounded
-                    : Icons.notifications_none_rounded,
-                vm.noteReminder != null
-                    ? '${vm.noteReminder!.day}.${vm.noteReminder!.month} ${vm.noteReminder!.hour.toString().padLeft(2, '0')}:${vm.noteReminder!.minute.toString().padLeft(2, '0')}'
-                    : 'notes.editor.reminder'.tr(),
-                c,
-                () => _pickReminder(context, vm)),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: _actionChip(Icons.people_alt_outlined, 'notes.editor.share'.tr(), c, () {
-              final title = vm.noteTitleController.text.trim();
-              final body = vm.noteContentController.text.trim();
-              final text = [title, body].where((s) => s.isNotEmpty).join('\n\n');
-              if (text.isEmpty) {
-                _toast(context, 'notes.editor.shareEmpty'.tr());
-              } else {
-                Share.share(text);
-              }
-            }),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _actionChip(
-      IconData icon, String label, AppColors c, VoidCallback onTap) {
-    return Material(
-      color: c.card,
-      borderRadius: BorderRadius.circular(30),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(30),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 11),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(30),
-            border: Border.all(color: c.border.withOpacity(0.8)),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 16, color: c.textSecondary),
-              const SizedBox(width: 6),
-              Flexible(
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: c.textPrimary,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ---------- Alt kaydet çubuğu ----------
-  Widget _bottomBar(
-      BuildContext context, NotesDiaryViewModel vm, AppColors c) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 2, 14, 10),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 1,
-            child: GestureDetector(
-              onTap: () =>
-                  isEditing ? vm.updateNote(context) : vm.createNote(context),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 17),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [_accent, _accentDark],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: _accent.withOpacity(0.4),
-                      blurRadius: 12,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.check_rounded,
-                        color: Colors.white, size: 20),
-                    const SizedBox(width: 8),
-                    Text(
-                      isEditing ? 'notes.editor.update'.tr() : 'notes.editor.saveNote'.tr(),
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+  // ---------- Paylaş ----------
+  void _shareNote(BuildContext context, NotesDiaryViewModel vm) {
+    final title = vm.noteTitleController.text.trim();
+    final body = vm.noteContentController.text.trim();
+    final text = [title, body].where((s) => s.isNotEmpty).join('\n\n');
+    if (text.isEmpty) {
+      _toast(context, 'notes.editor.shareEmpty'.tr());
+    } else {
+      Share.share(text);
+    }
   }
 
   String _todayLabel() {
@@ -5689,6 +5483,211 @@ class _VoiceNoteChipState extends State<_VoiceNoteChip> {
             child: Icon(Icons.close_rounded, size: 18, color: c.textMuted),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ==================== EDİTÖR ALT ARAÇ ÇUBUĞU ====================
+/// Kompakt biçimlendirme çubuğu [+ B i • ≡ ☑ 🎤]; + ekleme menüsünü
+/// (Kamera/Fotoğraf/Dosya/Çizim/Tarama/Hatırlatıcı/Paylaş) açıp kapatır.
+class _EditorToolbar extends StatefulWidget {
+  final AppColors c;
+  final Color accent;
+  final Color accentDark;
+  final String? reminderLabel;
+  final VoidCallback onBold;
+  final VoidCallback onItalic;
+  final VoidCallback onBullet;
+  final VoidCallback onNumbered;
+  final VoidCallback onCheckbox;
+  final VoidCallback onMic;
+  final VoidCallback onCamera;
+  final VoidCallback onPhoto;
+  final VoidCallback onFile;
+  final VoidCallback onDraw;
+  final VoidCallback onScan;
+  final VoidCallback onReminder;
+  final VoidCallback onShare;
+
+  const _EditorToolbar({
+    required this.c,
+    required this.accent,
+    required this.accentDark,
+    required this.reminderLabel,
+    required this.onBold,
+    required this.onItalic,
+    required this.onBullet,
+    required this.onNumbered,
+    required this.onCheckbox,
+    required this.onMic,
+    required this.onCamera,
+    required this.onPhoto,
+    required this.onFile,
+    required this.onDraw,
+    required this.onScan,
+    required this.onReminder,
+    required this.onShare,
+  });
+
+  @override
+  State<_EditorToolbar> createState() => _EditorToolbarState();
+}
+
+class _EditorToolbarState extends State<_EditorToolbar> {
+  bool _open = false;
+
+  void _run(VoidCallback cb) {
+    setState(() => _open = false);
+    cb();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = widget.c;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 6, 14, 12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (_open) ...[
+            _menu(c),
+            const SizedBox(height: 10),
+          ],
+          _bar(c),
+        ],
+      ),
+    );
+  }
+
+  Widget _bar(AppColors c) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+      decoration: BoxDecoration(
+        color: c.card,
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: c.border.withOpacity(0.7)),
+      ),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => setState(() => _open = !_open),
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                gradient:
+                    LinearGradient(colors: [widget.accent, widget.accentDark]),
+                shape: BoxShape.circle,
+              ),
+              child: AnimatedRotation(
+                duration: const Duration(milliseconds: 180),
+                turns: _open ? 0.125 : 0.0,
+                child: const Icon(Icons.add_rounded,
+                    color: Colors.white, size: 24),
+              ),
+            ),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Row(
+                children: [
+                  _fmt(Icons.format_bold_rounded, widget.onBold, c),
+                  _fmt(Icons.format_italic_rounded, widget.onItalic, c),
+                  _fmt(Icons.format_list_bulleted_rounded, widget.onBullet, c),
+                  _fmt(Icons.format_list_numbered_rounded, widget.onNumbered, c),
+                  _fmt(Icons.check_box_outlined, widget.onCheckbox, c),
+                  _fmt(Icons.mic_none_rounded, widget.onMic, c),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _fmt(IconData icon, VoidCallback onTap, AppColors c) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 8),
+        child: Icon(icon, size: 22, color: c.textSecondary),
+      ),
+    );
+  }
+
+  Widget _menu(AppColors c) {
+    final items = <List<dynamic>>[
+      [Icons.camera_alt_outlined, 'notes.editor.camera'.tr(), widget.onCamera],
+      [Icons.image_outlined, 'notes.editor.photo'.tr(), widget.onPhoto],
+      [Icons.attach_file_rounded, 'notes.editor.file'.tr(), widget.onFile],
+      [Icons.gesture_rounded, 'notes.editor.draw'.tr(), widget.onDraw],
+      [
+        Icons.document_scanner_outlined,
+        'notes.editor.scan'.tr(),
+        widget.onScan
+      ],
+      [
+        widget.reminderLabel != null
+            ? Icons.notifications_active_rounded
+            : Icons.notifications_none_rounded,
+        widget.reminderLabel ?? 'notes.editor.reminder'.tr(),
+        widget.onReminder
+      ],
+      [Icons.people_alt_outlined, 'notes.editor.share'.tr(), widget.onShare],
+    ];
+    return Container(
+      width: 244,
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      decoration: BoxDecoration(
+        color: c.card,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: widget.accent.withOpacity(0.35)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.10),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: items.map((it) {
+          return InkWell(
+            onTap: () => _run(it[2] as VoidCallback),
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+              child: Row(
+                children: [
+                  Container(
+                    width: 34,
+                    height: 34,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: widget.accent.withOpacity(0.14),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(it[0] as IconData,
+                        size: 19, color: widget.accentDark),
+                  ),
+                  const SizedBox(width: 13),
+                  Text(it[1] as String,
+                      style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: c.textPrimary)),
+                ],
+              ),
+            ),
+          );
+        }).toList(),
       ),
     );
   }

@@ -1073,7 +1073,8 @@
       "comingSoon": "{label} — जल्द ही",
       "shareEmpty": "साझा करने के लिए पहले कुछ लिखें",
       "fileError": "फ़ाइल नहीं चुनी जा सकी",
-      "reminderSet": "रिमाइंडर: {date}"
+      "reminderSet": "रिमाइंडर: {date}",
+      "done": "हो गया"
     },
     "add": {
       "noteTitle": "नोट जोड़ें",

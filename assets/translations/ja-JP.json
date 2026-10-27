@@ -1073,7 +1073,8 @@
       "comingSoon": "{label} — 近日公開",
       "shareEmpty": "共有するにはまず何か書いてください",
       "fileError": "ファイルを選択できませんでした",
-      "reminderSet": "リマインダー: {date}"
+      "reminderSet": "リマインダー: {date}",
+      "done": "完了"
     },
     "add": {
       "noteTitle": "メモを追加",

@@ -1073,7 +1073,8 @@
       "comingSoon": "{label} ekleme yakında",
       "shareEmpty": "Paylaşmak için önce bir şeyler yaz",
       "fileError": "Dosya seçilemedi",
-      "reminderSet": "Hatırlatıcı: {date}"
+      "reminderSet": "Hatırlatıcı: {date}",
+      "done": "Bitti"
     },
     "add": {
       "noteTitle": "Not Ekle",

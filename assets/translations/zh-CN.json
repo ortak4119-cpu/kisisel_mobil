@@ -1073,7 +1073,8 @@
       "comingSoon": "{label} — 即将推出",
       "shareEmpty": "请先写点内容再分享",
       "fileError": "无法选择文件",
-      "reminderSet": "提醒：{date}"
+      "reminderSet": "提醒：{date}",
+      "done": "完成"
     },
     "add": {
       "noteTitle": "添加笔记",

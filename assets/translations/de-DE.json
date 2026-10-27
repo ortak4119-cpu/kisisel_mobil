@@ -1073,7 +1073,8 @@
       "comingSoon": "{label} — bald verfügbar",
       "shareEmpty": "Schreibe zuerst etwas zum Teilen",
       "fileError": "Datei konnte nicht gewählt werden",
-      "reminderSet": "Erinnerung: {date}"
+      "reminderSet": "Erinnerung: {date}",
+      "done": "Fertig"
     },
     "add": {
       "noteTitle": "Notiz hinzufügen",

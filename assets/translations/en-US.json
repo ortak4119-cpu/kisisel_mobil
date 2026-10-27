@@ -1073,7 +1073,8 @@
       "comingSoon": "{label} — coming soon",
       "shareEmpty": "Write something first to share",
       "fileError": "Could not pick file",
-      "reminderSet": "Reminder: {date}"
+      "reminderSet": "Reminder: {date}",
+      "done": "Done"
     },
     "add": {
       "noteTitle": "Add Note",

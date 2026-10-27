@@ -1073,7 +1073,8 @@
       "comingSoon": "{label} — قريبًا",
       "shareEmpty": "اكتب شيئًا أولاً للمشاركة",
       "fileError": "تعذر اختيار الملف",
-      "reminderSet": "تذكير: {date}"
+      "reminderSet": "تذكير: {date}",
+      "done": "تم"
     },
     "add": {
       "noteTitle": "إضافة ملاحظة",

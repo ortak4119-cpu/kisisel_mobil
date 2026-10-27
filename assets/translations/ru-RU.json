@@ -1073,7 +1073,8 @@
       "comingSoon": "{label} — скоро",
       "shareEmpty": "Сначала напишите что-нибудь",
       "fileError": "Не удалось выбрать файл",
-      "reminderSet": "Напоминание: {date}"
+      "reminderSet": "Напоминание: {date}",
+      "done": "Готово"
     },
     "add": {
       "noteTitle": "Добавить заметку",

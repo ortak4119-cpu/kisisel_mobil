@@ -1073,7 +1073,8 @@
       "comingSoon": "{label} — em breve",
       "shareEmpty": "Escreva algo primeiro",
       "fileError": "Não foi possível selecionar o ficheiro",
-      "reminderSet": "Lembrete: {date}"
+      "reminderSet": "Lembrete: {date}",
+      "done": "Concluído"
     },
     "add": {
       "noteTitle": "Adicionar nota",
