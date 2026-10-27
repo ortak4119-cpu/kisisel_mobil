@@ -52,6 +52,55 @@ List<TextSpan> parseMarkdownSpans(String text, TextStyle baseStyle) {
   return spans;
 }
 
+/// Not editöründe canlı markdown gösterimi için controller.
+/// Metindeki işaretçileri (** , * , _) KORUR (imleç/seçim konumu bozulmasın
+/// diye) ama sardıkları metni kalın/italik/altı-çizili gösterir; işaretçiler
+/// soluk renkte görünür.
+class MarkdownEditingController extends TextEditingController {
+  MarkdownEditingController({super.text});
+
+  @override
+  TextSpan buildTextSpan({
+    required BuildContext context,
+    TextStyle? style,
+    required bool withComposing,
+  }) {
+    final base = style ?? const TextStyle();
+    final src = text;
+    if (src.isEmpty) return TextSpan(style: base, text: '');
+
+    final children = <TextSpan>[];
+    final regex = RegExp(r'(\*\*|__|\*|_)(.+?)\1', dotAll: true);
+    final markerStyle = base.copyWith(
+      color: (base.color ?? const Color(0xFF000000)).withValues(alpha: 0.30),
+    );
+    var last = 0;
+    for (final m in regex.allMatches(src)) {
+      if (m.start > last) {
+        children.add(TextSpan(text: src.substring(last, m.start), style: base));
+      }
+      final marker = m.group(1)!;
+      final content = m.group(2)!;
+      TextStyle cs = base;
+      if (marker == '**' || marker == '__') {
+        cs = cs.copyWith(fontWeight: FontWeight.bold);
+      } else if (marker == '*') {
+        cs = cs.copyWith(fontStyle: FontStyle.italic);
+      } else if (marker == '_') {
+        cs = cs.copyWith(decoration: TextDecoration.underline);
+      }
+      children.add(TextSpan(text: marker, style: markerStyle));
+      children.add(TextSpan(text: content, style: cs));
+      children.add(TextSpan(text: marker, style: markerStyle));
+      last = m.end;
+    }
+    if (last < src.length) {
+      children.add(TextSpan(text: src.substring(last), style: base));
+    }
+    return TextSpan(style: base, children: children);
+  }
+}
+
 class MarkdownNoteText extends StatelessWidget {
   const MarkdownNoteText({
     super.key,

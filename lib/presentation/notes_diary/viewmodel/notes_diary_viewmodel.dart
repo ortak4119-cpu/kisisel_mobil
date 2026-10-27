@@ -14,6 +14,7 @@ import '../../../models/diary/diary_models.dart';
 import '../../../models/auth/auth_models.dart';
 import '../../../core/utils/custom_snackbar.dart';
 import '../../../core/utils/premium_helper.dart';
+import '../view/markdown_note_parser.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum NotesViewMode { grid, list }
@@ -47,7 +48,9 @@ class NotesDiaryViewModel extends ChangeNotifier {
 
   // Note Form State
   final TextEditingController noteTitleController = TextEditingController();
-  final TextEditingController noteContentController = TextEditingController();
+  // Canlı markdown gösterimi için özel controller (kalın/italik editörde görünür).
+  final MarkdownEditingController noteContentController =
+      MarkdownEditingController();
 
   /// İçerik alanının odak düğümü — checklist/madde çipine basıldığında
   /// klavye odağını içeriğe taşımak için kullanılır.
@@ -79,6 +82,16 @@ class NotesDiaryViewModel extends ChangeNotifier {
   bool get noteLocked => _noteLocked;
   bool _notePinned = false;
   bool get notePinned => _notePinned;
+
+  // Editörde kilit açılırken girilen PIN; kayıttan sonra lockNote ile uygulanır.
+  String? _notePendingLockPin;
+
+  /// Editörde PIN ile kilitle. [pin] null ise kilidi (yerel olarak) kaldırır.
+  void setNoteLockPin(String? pin) {
+    _notePendingLockPin = pin;
+    _noteLocked = pin != null;
+    notifyListeners();
+  }
   DateTime? _noteReminder;
   DateTime? get noteReminder => _noteReminder;
 
@@ -559,6 +572,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
     _selectedCategoryForNote = null;
     _selectedNoteColor = '#B794F6'; // Rengi de resetle
     _noteLocked = false;
+    _notePendingLockPin = null;
     _notePinned = false;
     _noteReminder = null;
     _pickedImages.clear();
@@ -721,14 +735,23 @@ class NotesDiaryViewModel extends ChangeNotifier {
         _notes.insert(0, response.data!);
         // Tüm ekleri (görsel/ses/dosya) backend'e yükle — tek doğruluk kaynağı.
         await _uploadPickedAttachments(response.data!.id);
+        // Editörde PIN ile kilitlendiyse: kaydettikten sonra PIN ile kilitle
+        // (lockNote yerel listeyi de kilitli olarak günceller).
+        final willLock = _noteLocked && _notePendingLockPin != null;
+        final lockPin = _notePendingLockPin;
+        final newId = response.data!.id;
         resetNoteForm();
         if (context.mounted) {
-          final cleanMsg = _cleanMessage(response.message);
-          CustomSnackBar.showSuccess(
-            context,
-            cleanMsg.isNotEmpty ? cleanMsg : 'success.noteAdded'.tr(),
-          );
-          Navigator.pop(context);
+          if (willLock) {
+            await lockNote(newId, lockPin!, context);
+          } else {
+            final cleanMsg = _cleanMessage(response.message);
+            CustomSnackBar.showSuccess(
+              context,
+              cleanMsg.isNotEmpty ? cleanMsg : 'success.noteAdded'.tr(),
+            );
+          }
+          if (context.mounted) Navigator.pop(context);
         }
       } else {
         if (context.mounted) {
@@ -826,14 +849,22 @@ class NotesDiaryViewModel extends ChangeNotifier {
           _notes[index] = response.data!;
         }
         await _uploadPickedAttachments(_editingNoteId!);
+        // Editörde PIN ile kilitlendiyse: PIN ile kilitle (yerel liste de güncellenir).
+        final willLock = _noteLocked && _notePendingLockPin != null;
+        final lockPin = _notePendingLockPin;
+        final noteId = _editingNoteId!;
         resetNoteForm();
         if (context.mounted) {
-          final cleanMsg = _cleanMessage(response.message);
-          CustomSnackBar.showSuccess(
-            context,
-            cleanMsg.isNotEmpty ? cleanMsg : 'success.noteUpdated'.tr(),
-          );
-          Navigator.pop(context);
+          if (willLock) {
+            await lockNote(noteId, lockPin!, context);
+          } else {
+            final cleanMsg = _cleanMessage(response.message);
+            CustomSnackBar.showSuccess(
+              context,
+              cleanMsg.isNotEmpty ? cleanMsg : 'success.noteUpdated'.tr(),
+            );
+          }
+          if (context.mounted) Navigator.pop(context);
         }
       } else {
         if (context.mounted) {

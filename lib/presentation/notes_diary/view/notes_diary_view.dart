@@ -3324,8 +3324,12 @@ class _AddNoteBottomSheet extends StatelessWidget {
             trailing: true,
             active: vm.noteLocked,
             onTap: () {
-              vm.toggleNoteLocked();
-              _toast(context, vm.noteLocked ? 'notes.editor.willLock'.tr() : 'notes.editor.lockRemoved'.tr());
+              if (vm.noteLocked) {
+                vm.setNoteLockPin(null);
+                _toast(context, 'notes.editor.lockRemoved'.tr());
+              } else {
+                _showEditorLockDialog(context, vm, isDarkMode);
+              }
             },
           ),
           const Spacer(),
@@ -3908,6 +3912,8 @@ class _AddNoteBottomSheet extends StatelessWidget {
             maxLines: null,
             minLines: 10,
             cursorColor: _accent,
+            // İmleç araç çubuğunun üstünde rahat görünsün diye geniş pay.
+            scrollPadding: const EdgeInsets.only(bottom: 160),
             style: TextStyle(fontSize: 16, height: 1.55, color: c.textPrimary),
             decoration: InputDecoration(
               isDense: true,
@@ -4098,6 +4104,86 @@ class _AddNoteBottomSheet extends StatelessWidget {
     } else {
       Share.share(text);
     }
+  }
+
+  /// Editörde (henüz kaydedilmemiş/düzenlenen not) PIN belirleme. PIN kayıttan
+  /// sonra uygulanmak üzere viewModel'de saklanır; chip "Kilitli" olur.
+  void _showEditorLockDialog(
+      BuildContext context, NotesDiaryViewModel vm, bool isDark) {
+    final pinController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (dctx) => AlertDialog(
+        backgroundColor:
+            isDark ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('notes.lockNote'.tr(),
+            style: TextStyle(
+                color: isDark
+                    ? ColorConstant.textPrimaryDark
+                    : ColorConstant.textPrimaryLight,
+                fontWeight: FontWeight.w800)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('notes.enterPinToLock'.tr(),
+                style: TextStyle(
+                    color: isDark
+                        ? ColorConstant.textSecondaryDark
+                        : ColorConstant.textSecondaryLight)),
+            const SizedBox(height: 16),
+            TextField(
+              controller: pinController,
+              keyboardType: TextInputType.number,
+              maxLength: 4,
+              obscureText: true,
+              autofocus: true,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 8,
+                  color: isDark
+                      ? ColorConstant.textPrimaryDark
+                      : ColorConstant.textPrimaryLight),
+              decoration: InputDecoration(
+                counterText: '',
+                filled: true,
+                fillColor: isDark
+                    ? ColorConstant.bgColorDark
+                    : ColorConstant.bgColorLight,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dctx),
+            child: Text('common.cancel'.tr(),
+                style: TextStyle(
+                    color: isDark
+                        ? ColorConstant.textSecondaryDark
+                        : ColorConstant.textSecondaryLight)),
+          ),
+          TextButton(
+            onPressed: () {
+              if (pinController.text.length == 4) {
+                vm.setNoteLockPin(pinController.text);
+                Navigator.pop(dctx);
+                _toast(context, 'notes.editor.willLock'.tr());
+              }
+            },
+            child: Text('common.lock'.tr(),
+                style: const TextStyle(
+                    color: _accent, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
   }
 
   String _todayLabel() {
