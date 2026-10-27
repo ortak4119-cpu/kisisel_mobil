@@ -1238,32 +1238,48 @@ class _NotesContent extends StatelessWidget {
   Widget _archiveBoard(BuildContext context, bool isDark) {
     final archived = viewModel.applyTagFilter(viewModel
         .applyNoteSearch(viewModel.notes.where((n) => n.isArchived).toList()));
-    return RefreshIndicator(
-      onRefresh: () => viewModel.loadNotes(),
-      color: const Color(0xFFB794F6),
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(0, 6, 0, 120),
-        children: [
-          _archiveTopBar(context, archived.length),
-          const SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(14, 0, 14, 0),
+    // Pano tüm sayfayı kaplar; notlar üstte iğnelenir, boş mantar alan altta
+    // görünür. İçerik taşarsa pano içinde kaydırılır.
+    return Column(
+      children: [
+        const SizedBox(height: 6),
+        _archiveTopBar(context, archived.length),
+        const SizedBox(height: 12),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
             child: _corkBoardFrame(
-              child: archived.isEmpty
-                  ? _emptyCork(context)
-                  : Wrap(
-                      spacing: 14,
-                      runSpacing: 22,
-                      alignment: WrapAlignment.center,
-                      children: [
-                        for (var i = 0; i < archived.length; i++)
-                          _pinnedCard(context, archived[i], i, isDark),
-                      ],
+              child: RefreshIndicator(
+                onRefresh: () => viewModel.loadNotes(),
+                color: const Color(0xFFB794F6),
+                child: LayoutBuilder(
+                  builder: (context, cons) => SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(minHeight: cons.maxHeight),
+                      child: archived.isEmpty
+                          ? Center(child: _emptyCork(context))
+                          : Align(
+                              alignment: Alignment.topCenter,
+                              child: Wrap(
+                                spacing: 14,
+                                runSpacing: 22,
+                                alignment: WrapAlignment.center,
+                                children: [
+                                  for (var i = 0; i < archived.length; i++)
+                                    _pinnedCard(
+                                        context, archived[i], i, isDark),
+                                ],
+                              ),
+                            ),
                     ),
+                  ),
+                ),
+              ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
