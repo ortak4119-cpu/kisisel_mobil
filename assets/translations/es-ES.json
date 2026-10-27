@@ -612,7 +612,8 @@
       "cpSendDesc": "Enviaremos un código de verificación de 6 dígitos a {email}.",
       "cpResetDesc": "Introduce el código de tu correo y tu nueva contraseña.",
       "cpUpdate": "Actualizar contraseña"
-    }
+    },
+    "settings": "Ajustes"
   },
   "calendar": {
     "screenTitle": "Calendario",

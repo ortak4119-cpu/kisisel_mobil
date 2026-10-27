@@ -612,7 +612,8 @@
       "cpSendDesc": "Nous enverrons un code de vérification à 6 chiffres à {email}.",
       "cpResetDesc": "Saisissez le code reçu par e-mail et votre nouveau mot de passe.",
       "cpUpdate": "Mettre à jour le mot de passe"
-    }
+    },
+    "settings": "Paramètres"
   },
   "calendar": {
     "screenTitle": "Calendrier",

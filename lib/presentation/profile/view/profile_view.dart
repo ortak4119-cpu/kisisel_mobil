@@ -281,6 +281,15 @@ class _ProfileViewState extends State<ProfileView> {
             icon: Icons.shield_rounded,
             title: 'profile.privacySecurity'.tr(),
             onTap: () => _openSettings(context, 'privacy')),
+        _divider(isDark),
+        _navRow(context, isDark,
+            color: _cGray,
+            icon: Icons.settings_rounded,
+            title: 'profile.settings'.tr(),
+            onTap: () {
+              SettingsView.focusSection = null;
+              context.router.push(const SettingsRoute());
+            }),
       ]),
       const SizedBox(height: 18),
 

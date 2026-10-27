@@ -612,7 +612,8 @@
       "cpSendDesc": "{email} に6桁の確認コードを送信します。",
       "cpResetDesc": "メールに届いたコードと新しいパスワードを入力してください。",
       "cpUpdate": "パスワードを更新"
-    }
+    },
+    "settings": "設定"
   },
   "calendar": {
     "screenTitle": "カレンダー",

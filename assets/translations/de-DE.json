@@ -612,7 +612,8 @@
       "cpSendDesc": "Wir senden einen 6-stelligen Bestätigungscode an {email}.",
       "cpResetDesc": "Gib den Code aus deiner E-Mail und dein neues Passwort ein.",
       "cpUpdate": "Passwort aktualisieren"
-    }
+    },
+    "settings": "Einstellungen"
   },
   "calendar": {
     "screenTitle": "Kalender",

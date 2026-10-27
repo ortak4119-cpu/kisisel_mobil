@@ -612,7 +612,8 @@
       "cpSendDesc": "{email} adresine 6 haneli bir doğrulama kodu göndereceğiz.",
       "cpResetDesc": "E-postana gelen kodu ve yeni şifreni gir.",
       "cpUpdate": "Şifreyi güncelle"
-    }
+    },
+    "settings": "Ayarlar"
   },
   "calendar": {
     "screenTitle": "Takvim",

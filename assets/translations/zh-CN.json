@@ -612,7 +612,8 @@
       "cpSendDesc": "我们将向 {email} 发送6位验证码。",
       "cpResetDesc": "请输入邮箱收到的验证码和新密码。",
       "cpUpdate": "更新密码"
-    }
+    },
+    "settings": "设置"
   },
   "calendar": {
     "screenTitle": "日历",
