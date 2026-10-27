@@ -246,6 +246,17 @@ const List<_LifeArea> kLifeAreas = [
 /// Kayıtlı kategori metnini (eski ya da yeni) bir yaşam alanına eşler.
 _LifeArea lifeAreaFor(String? category) {
   final c = (category ?? '').toLowerCase();
+  // Backend enum değerlerini doğrudan eşle (gönderilen 4 alanın tersi).
+  switch (c) {
+    case 'social_relationships':
+      return kLifeAreas[0]; // relationships
+    case 'personal_development':
+      return kLifeAreas[1]; // learning
+    case 'other':
+      return kLifeAreas[2]; // mind
+    case 'health_fitness':
+      return kLifeAreas[3]; // health
+  }
   bool has(List<String> ks) => ks.any((k) => c.contains(k));
   if (has(const [
     'relation',

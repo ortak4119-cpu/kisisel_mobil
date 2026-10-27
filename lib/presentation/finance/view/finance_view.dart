@@ -3579,8 +3579,9 @@ class _BudgetSettingsBottomSheet extends StatelessWidget {
                         ),
                         const SizedBox(height: 12),
                         InkWell(
-                          onTap: () =>
-                              _showCurrencyDialog(context, vm, isDarkMode),
+                          onTap: () => _showCurrencyDialog(
+                              context, vm, isDarkMode,
+                              popParent: true),
                           borderRadius: BorderRadius.circular(16),
                           child: Container(
                             padding: const EdgeInsets.all(16),
@@ -5389,8 +5390,8 @@ class _InstallmentsSheetState extends State<_InstallmentsSheet> {
 
 // ==================== PARA BİRİMİ ====================
 
-void _showCurrencyDialog(
-    BuildContext context, FinanceViewModel vm, bool isDark) {
+void _showCurrencyDialog(BuildContext context, FinanceViewModel vm, bool isDark,
+    {bool popParent = false}) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -5435,8 +5436,15 @@ void _showCurrencyDialog(
                         onTap: () async {
                           await AppCurrency.setCode(e.key);
                           vm.refreshFormatting();
+                          // Para birimi sheet'ini kapat.
                           if (sheetCtx.mounted) Navigator.pop(sheetCtx);
-                          if (context.mounted) Navigator.pop(context);
+                          // Yalnızca üstteki başka bir sheet'ten açıldıysa onu
+                          // da kapat (satır içi ayarlar listesinden açıldığında
+                          // bu, tüm Finans sayfasını kapatıp boş ekrana yol
+                          // açıyordu).
+                          if (popParent && context.mounted) {
+                            Navigator.pop(context);
+                          }
                         },
                         borderRadius: BorderRadius.circular(12),
                         child: Container(

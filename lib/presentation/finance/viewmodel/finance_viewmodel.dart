@@ -419,24 +419,28 @@ class FinanceViewModel extends ChangeNotifier {
     if (!canCreate) return;
 
     if (subscriptionNameController.text.trim().isEmpty) {
-      CustomSnackBar.showError(context, 'errors.subscriptionNameEmpty'.tr());
+      CustomSnackBar.showError(context, 'errors.subscriptionNameEmpty'.tr(),
+          overlay: true);
       return;
     }
 
     if (subscriptionAmountController.text.trim().isEmpty) {
-      CustomSnackBar.showError(context, 'errors.amountEmpty'.tr());
+      CustomSnackBar.showError(context, 'errors.amountEmpty'.tr(),
+          overlay: true);
       return;
     }
 
     final amount = double.tryParse(subscriptionAmountController.text.trim());
     if (amount == null || amount <= 0) {
-      CustomSnackBar.showError(context, 'errors.invalidAmount'.tr());
+      CustomSnackBar.showError(context, 'errors.invalidAmount'.tr(),
+          overlay: true);
       return;
     }
 
     final billingDate = int.tryParse(subscriptionBillingDateController.text.trim());
     if (billingDate == null || billingDate < 1 || billingDate > 31) {
-      CustomSnackBar.showError(context, 'errors.invalidPaymentDay'.tr());
+      CustomSnackBar.showError(context, 'errors.invalidPaymentDay'.tr(),
+          overlay: true);
       return;
     }
 
@@ -551,24 +555,28 @@ class FinanceViewModel extends ChangeNotifier {
 
   Future<void> updateSubscription(int id, BuildContext context) async {
     if (subscriptionNameController.text.trim().isEmpty) {
-      CustomSnackBar.showError(context, 'errors.subscriptionNameEmpty'.tr());
+      CustomSnackBar.showError(context, 'errors.subscriptionNameEmpty'.tr(),
+          overlay: true);
       return;
     }
 
     if (subscriptionAmountController.text.trim().isEmpty) {
-      CustomSnackBar.showError(context, 'errors.amountEmpty'.tr());
+      CustomSnackBar.showError(context, 'errors.amountEmpty'.tr(),
+          overlay: true);
       return;
     }
 
     final amount = double.tryParse(subscriptionAmountController.text.trim());
     if (amount == null || amount <= 0) {
-      CustomSnackBar.showError(context, 'errors.invalidAmount'.tr());
+      CustomSnackBar.showError(context, 'errors.invalidAmount'.tr(),
+          overlay: true);
       return;
     }
 
     final billingDate = int.tryParse(subscriptionBillingDateController.text.trim());
     if (billingDate == null || billingDate < 1 || billingDate > 31) {
-      CustomSnackBar.showError(context, 'errors.invalidPaymentDay'.tr());
+      CustomSnackBar.showError(context, 'errors.invalidPaymentDay'.tr(),
+          overlay: true);
       return;
     }
 
@@ -694,7 +702,8 @@ class FinanceViewModel extends ChangeNotifier {
 
     final amount = double.tryParse(budgetAmountController.text.trim());
     if (amount == null || amount <= 0) {
-      CustomSnackBar.showError(context, 'errors.invalidAmount'.tr());
+      CustomSnackBar.showError(context, 'errors.invalidAmount'.tr(),
+          overlay: true);
       return;
     }
 
@@ -769,13 +778,15 @@ class FinanceViewModel extends ChangeNotifier {
     if (!canCreate) return;
 
     if (expenseAmountController.text.trim().isEmpty) {
-      CustomSnackBar.showError(context, 'errors.amountEmpty'.tr());
+      CustomSnackBar.showError(context, 'errors.amountEmpty'.tr(),
+          overlay: true);
       return;
     }
 
     final amount = double.tryParse(expenseAmountController.text.trim());
     if (amount == null || amount <= 0) {
-      CustomSnackBar.showError(context, 'errors.invalidAmount'.tr());
+      CustomSnackBar.showError(context, 'errors.invalidAmount'.tr(),
+          overlay: true);
       return;
     }
 
@@ -861,13 +872,15 @@ class FinanceViewModel extends ChangeNotifier {
 
   Future<void> updateExpense(int id, BuildContext context) async {
     if (expenseAmountController.text.trim().isEmpty) {
-      CustomSnackBar.showError(context, 'errors.amountEmpty'.tr());
+      CustomSnackBar.showError(context, 'errors.amountEmpty'.tr(),
+          overlay: true);
       return;
     }
 
     final amount = double.tryParse(expenseAmountController.text.trim());
     if (amount == null || amount <= 0) {
-      CustomSnackBar.showError(context, 'errors.invalidAmount'.tr());
+      CustomSnackBar.showError(context, 'errors.invalidAmount'.tr(),
+          overlay: true);
       return;
     }
 
@@ -2017,7 +2030,8 @@ class FinanceViewModel extends ChangeNotifier {
     final amount = double.tryParse(
         expenseAmountController.text.trim().replaceAll(',', '.'));
     if (amount == null || amount <= 0) {
-      CustomSnackBar.showError(context, 'errors.invalidAmount'.tr());
+      CustomSnackBar.showError(context, 'errors.invalidAmount'.tr(),
+          overlay: true);
       return;
     }
     final desc = expenseDescriptionController.text.trim();

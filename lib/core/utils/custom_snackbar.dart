@@ -16,6 +16,7 @@ class CustomSnackBar {
     SnackBarType type = SnackBarType.info,
     Duration duration = const Duration(seconds: 3),
     IconData? icon,
+    bool overlay = false,
   }) {
     // Determine if dark mode is active
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -57,6 +58,21 @@ class CustomSnackBar {
         break;
     }
 
+    // Modal bottom sheet açıkken normal SnackBar sheet'in ARKASINDA kalır ve
+    // görünmez. overlay=true ise mesajı kök Overlay'e (tüm rotaların üstüne)
+    // ekranın üstünde bir toast olarak gösterir; validasyon uyarıları için.
+    if (overlay) {
+      _showOverlayToast(
+        context,
+        message: message.tr(),
+        backgroundColor: backgroundColor,
+        textColor: textColor,
+        icon: icon ?? defaultIcon,
+        duration: duration,
+      );
+      return;
+    }
+
     // Show the SnackBar
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -93,6 +109,94 @@ class CustomSnackBar {
     );
   }
 
+  /// Kök Overlay'e üstten giren, otomatik kaybolan toast (modal sheet'lerin
+  /// üstünde de görünür).
+  static void _showOverlayToast(
+    BuildContext context, {
+    required String message,
+    required Color backgroundColor,
+    required Color textColor,
+    required IconData icon,
+    required Duration duration,
+  }) {
+    final overlayState = Overlay.maybeOf(context, rootOverlay: true);
+    if (overlayState == null) {
+      // Overlay yoksa normal SnackBar'a düş.
+      try {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message), backgroundColor: backgroundColor),
+        );
+      } catch (_) {}
+      return;
+    }
+    final topPad = MediaQuery.of(context).padding.top;
+    late OverlayEntry entry;
+    final notifier = ValueNotifier<double>(0.0);
+    entry = OverlayEntry(
+      builder: (ctx) => Positioned(
+        top: topPad + 12,
+        left: 16,
+        right: 16,
+        child: IgnorePointer(
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0.0, end: notifier.value),
+            duration: const Duration(milliseconds: 220),
+            builder: (_, v, child) => Opacity(
+              opacity: v.clamp(0.0, 1.0),
+              child: Transform.translate(
+                offset: Offset(0, (1 - v) * -16),
+                child: child,
+              ),
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                decoration: BoxDecoration(
+                  color: backgroundColor,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.22),
+                        blurRadius: 14,
+                        offset: const Offset(0, 5)),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Icon(icon, color: textColor, size: 22),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(message,
+                          style: TextStyle(
+                              color: textColor,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    overlayState.insert(entry);
+    // giriş animasyonu
+    notifier.value = 1.0;
+    entry.markNeedsBuild();
+    // çıkış + kaldırma
+    Future.delayed(duration, () {
+      notifier.value = 0.0;
+      entry.markNeedsBuild();
+      Future.delayed(const Duration(milliseconds: 240), () {
+        entry.remove();
+        notifier.dispose();
+      });
+    });
+  }
+
   /// Success notification with green background
   static void showSuccess(
     BuildContext context,
@@ -115,6 +219,7 @@ class CustomSnackBar {
     String message, {
     Duration? duration,
     IconData? icon,
+    bool overlay = false,
   }) {
     show(
       context,
@@ -122,6 +227,7 @@ class CustomSnackBar {
       type: SnackBarType.error,
       duration: duration ?? const Duration(seconds: 4),
       icon: icon,
+      overlay: overlay,
     );
   }
 
@@ -131,6 +237,7 @@ class CustomSnackBar {
     String message, {
     Duration? duration,
     IconData? icon,
+    bool overlay = false,
   }) {
     show(
       context,
@@ -138,6 +245,7 @@ class CustomSnackBar {
       type: SnackBarType.warning,
       duration: duration ?? const Duration(seconds: 3),
       icon: icon,
+      overlay: overlay,
     );
   }
 

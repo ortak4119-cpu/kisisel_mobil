@@ -1120,7 +1120,8 @@ class CalendarViewModel extends ChangeNotifier {
 
   Future<void> saveEventFromForm(BuildContext context) async {
     if (eventTitleController.text.trim().isEmpty) {
-      CustomSnackBar.showError(context, 'errors.taskTitleEmpty'.tr());
+      CustomSnackBar.showError(context, 'errors.taskTitleEmpty'.tr(),
+          overlay: true);
       return;
     }
     // Faz 3: başlıktaki doğal dil (yarın 14:00 ...) tarih/saat olarak uygulanıp

@@ -1823,7 +1823,12 @@ class _NotesContent extends StatelessWidget {
     final live = viewModel.applyTagFilter(viewModel
         .applyNoteSearch(viewModel.notes.where((n) => !n.isArchived).toList()));
     final pinned = live.where((n) => n.isPinned).toList();
-    final recent = live.where((n) => !n.isPinned).toList();
+    // BUGÜN listesi yalnızca kategorisiz (klasöre atanmamış) ve sabitlenmemiş
+    // notları gösterir; klasöre/arşive/sabitlenenlere giden not burada tekrar
+    // görünmez.
+    final recent = live
+        .where((n) => !n.isPinned && n.categoryId == null)
+        .toList();
     final archivedCount = viewModel.notes.where((n) => n.isArchived).length;
 
     return RefreshIndicator(

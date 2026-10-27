@@ -17,6 +17,34 @@ import '../../../core/utils/premium_helper.dart';
 import '../../../core/utils/nl_task_parser.dart';
 import '../../../core/utils/app_locale.dart';
 
+/// Backend'in kabul ettiği alışkanlık kategori değerleri.
+const Set<String> kBackendHabitCategories = {
+  'health_fitness',
+  'personal_development',
+  'work_productivity',
+  'social_relationships',
+  'home_life',
+  'other',
+};
+
+/// İstemcideki yaşam-alanı anahtarını (relationships/learning/mind/health)
+/// backend'in beklediği kategori değerine çevirir. Zaten geçerli bir backend
+/// değeri verilirse olduğu gibi döner (idempotent).
+String habitCategoryToBackend(String value) {
+  switch (value) {
+    case 'relationships':
+      return 'social_relationships';
+    case 'learning':
+      return 'personal_development';
+    case 'mind':
+      return 'other';
+    case 'health':
+      return 'health_fitness';
+  }
+  if (kBackendHabitCategories.contains(value)) return value;
+  return 'other';
+}
+
 enum TaskFilter { all, pending, completed }
 
 /// Görevin backend'de tutulmayan ek alanları (kategori/etiket/ek/konum/bağlantı).
@@ -935,7 +963,7 @@ class TasksHabitsViewModel extends ChangeNotifier {
     return HabitRequest(
       title: habitTitleController.text.trim(),
       description: null,
-      category: _habitCategory,
+      category: habitCategoryToBackend(_habitCategory),
       icon: _selectedIcon,
       color: _habitColor,
       difficultyLevel: _habitDifficulty,
@@ -1026,7 +1054,8 @@ class TasksHabitsViewModel extends ChangeNotifier {
     }
 
     if (taskTitleController.text.trim().isEmpty) {
-      CustomSnackBar.showError(context, 'errors.taskTitleEmpty'.tr());
+      CustomSnackBar.showError(context, 'errors.taskTitleEmpty'.tr(),
+          overlay: true);
       return;
     }
 
@@ -1168,7 +1197,8 @@ class TasksHabitsViewModel extends ChangeNotifier {
     }
 
     if (habitTitleController.text.trim().isEmpty) {
-      CustomSnackBar.showError(context, 'errors.habitTitleEmpty'.tr());
+      CustomSnackBar.showError(context, 'errors.habitTitleEmpty'.tr(),
+          overlay: true);
       return;
     }
 
@@ -1264,7 +1294,8 @@ class TasksHabitsViewModel extends ChangeNotifier {
     // Doğal dil: "yarın 15:00 ... !1 #ev" → tarih/saat/öncelik/etiket.
     _applyNlParseToState();
     if (taskTitleController.text.trim().isEmpty) {
-      CustomSnackBar.showError(context, 'errors.taskTitleEmpty'.tr());
+      CustomSnackBar.showError(context, 'errors.taskTitleEmpty'.tr(),
+          overlay: true);
       return;
     }
 
@@ -1556,7 +1587,8 @@ class TasksHabitsViewModel extends ChangeNotifier {
 
   Future<void> createHabit(BuildContext context) async {
     if (habitTitleController.text.trim().isEmpty) {
-      CustomSnackBar.showError(context, 'errors.habitTitleEmpty'.tr());
+      CustomSnackBar.showError(context, 'errors.habitTitleEmpty'.tr(),
+          overlay: true);
       return;
     }
 
