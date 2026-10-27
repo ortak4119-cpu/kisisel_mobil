@@ -1613,17 +1613,10 @@ class _NotesContent extends StatelessWidget {
       BuildContext context, int archivedCount, bool isDark) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(22, 0, 22, 0),
+      // Not ekleme sağ alttaki FAB ile yapıldığından "Yeni ip / klasör"
+      // kartı kaldırıldı; yalnızca Arşiv kutusu kalıyor.
       child: Row(
         children: [
-          Expanded(
-            child: _boardFolderCard(
-              dashed: true,
-              icon: Icons.add_rounded,
-              label: 'notes.board.newFolder'.tr(),
-              onTap: () => showFolderDialog(context, viewModel, isDark),
-            ),
-          ),
-          const SizedBox(width: 12),
           Expanded(
             child: _boardFolderCard(
               dashed: false,
@@ -1632,6 +1625,7 @@ class _NotesContent extends StatelessWidget {
               onTap: () => viewModel.setNotesFilter('archive'),
             ),
           ),
+          const Spacer(),
         ],
       ),
     );
