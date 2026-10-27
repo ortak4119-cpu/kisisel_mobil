@@ -590,7 +590,29 @@
     "fbSuggestion": "提案",
     "fbComplaint": "苦情",
     "fbBug": "不具合",
-    "fbOther": "その他"
+    "fbOther": "その他",
+    "account": {
+      "title": "アカウント情報",
+      "subtitle": "アカウントとサインインの詳細",
+      "email": "メール",
+      "noEmail": "未設定",
+      "memberSince": "登録日",
+      "type": "アカウントの種類",
+      "typeGuest": "ゲストアカウント",
+      "typeEmail": "メールアカウント",
+      "verified": "認証済み",
+      "notVerified": "未認証",
+      "subscription": "サブスクリプション",
+      "subFree": "無料",
+      "subPremium": "プレミアム",
+      "changePassword": "パスワードを変更",
+      "changePasswordSub": "確認コードがメールに送信されます",
+      "guestNote": "ゲストアカウントを使用中です。データを保護するにはアカウントを作成してください。",
+      "cpTitle": "パスワードを変更",
+      "cpSendDesc": "{email} に6桁の確認コードを送信します。",
+      "cpResetDesc": "メールに届いたコードと新しいパスワードを入力してください。",
+      "cpUpdate": "パスワードを更新"
+    }
   },
   "calendar": {
     "screenTitle": "カレンダー",

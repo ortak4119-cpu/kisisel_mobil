@@ -590,7 +590,29 @@
     "fbSuggestion": "Öneri",
     "fbComplaint": "Şikayet",
     "fbBug": "Hata",
-    "fbOther": "Diğer"
+    "fbOther": "Diğer",
+    "account": {
+      "title": "Hesap bilgileri",
+      "subtitle": "Hesap ve giriş bilgilerin",
+      "email": "E-posta",
+      "noEmail": "Belirtilmemiş",
+      "memberSince": "Üyelik tarihi",
+      "type": "Hesap türü",
+      "typeGuest": "Misafir hesap",
+      "typeEmail": "E-posta hesabı",
+      "verified": "Doğrulanmış",
+      "notVerified": "Doğrulanmamış",
+      "subscription": "Abonelik",
+      "subFree": "Ücretsiz",
+      "subPremium": "Premium",
+      "changePassword": "Şifreyi değiştir",
+      "changePasswordSub": "E-postana doğrulama kodu gönderilir",
+      "guestNote": "Misafir hesaptasın. Verilerini kalıcı olarak korumak için bir hesap oluştur.",
+      "cpTitle": "Şifreyi değiştir",
+      "cpSendDesc": "{email} adresine 6 haneli bir doğrulama kodu göndereceğiz.",
+      "cpResetDesc": "E-postana gelen kodu ve yeni şifreni gir.",
+      "cpUpdate": "Şifreyi güncelle"
+    }
   },
   "calendar": {
     "screenTitle": "Takvim",

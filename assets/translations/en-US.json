@@ -590,7 +590,29 @@
     "fbSuggestion": "Suggestion",
     "fbComplaint": "Complaint",
     "fbBug": "Bug",
-    "fbOther": "Other"
+    "fbOther": "Other",
+    "account": {
+      "title": "Account info",
+      "subtitle": "Your account and sign-in details",
+      "email": "Email",
+      "noEmail": "Not set",
+      "memberSince": "Member since",
+      "type": "Account type",
+      "typeGuest": "Guest account",
+      "typeEmail": "Email account",
+      "verified": "Verified",
+      "notVerified": "Not verified",
+      "subscription": "Subscription",
+      "subFree": "Free",
+      "subPremium": "Premium",
+      "changePassword": "Change password",
+      "changePasswordSub": "A verification code is sent to your email",
+      "guestNote": "You're using a guest account. Create an account to keep your data safe.",
+      "cpTitle": "Change password",
+      "cpSendDesc": "We'll send a 6-digit verification code to {email}.",
+      "cpResetDesc": "Enter the code from your email and your new password.",
+      "cpUpdate": "Update password"
+    }
   },
   "calendar": {
     "screenTitle": "Calendar",

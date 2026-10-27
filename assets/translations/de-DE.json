@@ -590,7 +590,29 @@
     "fbSuggestion": "Vorschlag",
     "fbComplaint": "Beschwerde",
     "fbBug": "Fehler",
-    "fbOther": "Sonstiges"
+    "fbOther": "Sonstiges",
+    "account": {
+      "title": "Kontoinformationen",
+      "subtitle": "Deine Konto- und Anmeldedaten",
+      "email": "E-Mail",
+      "noEmail": "Nicht festgelegt",
+      "memberSince": "Mitglied seit",
+      "type": "Kontotyp",
+      "typeGuest": "Gastkonto",
+      "typeEmail": "E-Mail-Konto",
+      "verified": "Verifiziert",
+      "notVerified": "Nicht verifiziert",
+      "subscription": "Abonnement",
+      "subFree": "Kostenlos",
+      "subPremium": "Premium",
+      "changePassword": "Passwort ändern",
+      "changePasswordSub": "Ein Bestätigungscode wird an deine E-Mail gesendet",
+      "guestNote": "Du nutzt ein Gastkonto. Erstelle ein Konto, um deine Daten zu sichern.",
+      "cpTitle": "Passwort ändern",
+      "cpSendDesc": "Wir senden einen 6-stelligen Bestätigungscode an {email}.",
+      "cpResetDesc": "Gib den Code aus deiner E-Mail und dein neues Passwort ein.",
+      "cpUpdate": "Passwort aktualisieren"
+    }
   },
   "calendar": {
     "screenTitle": "Kalender",

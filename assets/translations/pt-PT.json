@@ -590,7 +590,29 @@
     "fbSuggestion": "Sugestão",
     "fbComplaint": "Reclamação",
     "fbBug": "Erro",
-    "fbOther": "Outro"
+    "fbOther": "Outro",
+    "account": {
+      "title": "Informações da conta",
+      "subtitle": "Dados da sua conta e início de sessão",
+      "email": "E-mail",
+      "noEmail": "Não definido",
+      "memberSince": "Membro desde",
+      "type": "Tipo de conta",
+      "typeGuest": "Conta de convidado",
+      "typeEmail": "Conta de e-mail",
+      "verified": "Verificada",
+      "notVerified": "Não verificada",
+      "subscription": "Subscrição",
+      "subFree": "Grátis",
+      "subPremium": "Premium",
+      "changePassword": "Alterar palavra-passe",
+      "changePasswordSub": "É enviado um código de verificação para o seu e-mail",
+      "guestNote": "Está a usar uma conta de convidado. Crie uma conta para proteger os seus dados.",
+      "cpTitle": "Alterar palavra-passe",
+      "cpSendDesc": "Vamos enviar um código de verificação de 6 dígitos para {email}.",
+      "cpResetDesc": "Introduza o código do seu e-mail e a nova palavra-passe.",
+      "cpUpdate": "Atualizar palavra-passe"
+    }
   },
   "calendar": {
     "screenTitle": "Calendário",

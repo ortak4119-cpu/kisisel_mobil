@@ -4,7 +4,9 @@ import 'package:auto_route/auto_route.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:get_it/get_it.dart';
 import '../../../service/base/base_api_service.dart';
+import '../../../service/auth/auth_service.dart';
 import '../../../core/route/app_router.gr.dart';
 import '../../../core/design/app_design.dart';
 import '../../../core/utils/color_constant.dart';
@@ -249,9 +251,12 @@ class _ProfileViewState extends State<ProfileView> {
       _card(isDark, [
         _navRow(context, isDark,
             color: _cGray,
-            icon: Icons.person_rounded,
+            icon: Icons.badge_rounded,
             title: 'profile.accountInfo'.tr(),
-            onTap: () => showEditProfileSheet(context, vm)),
+            value: (vm.currentUser?.email?.isNotEmpty ?? false)
+                ? vm.currentUser!.email
+                : null,
+            onTap: () => showAccountInfoSheet(context, vm)),
         _divider(isDark),
         _navRow(context, isDark,
             color: _cRed,
@@ -2343,6 +2348,485 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
             borderRadius: BorderRadius.circular(12),
             borderSide: const BorderSide(color: Color(0xFFF6A821), width: 1.5)),
       ),
+    );
+  }
+}
+
+// ==================== HESAP BİLGİLERİ ====================
+
+/// Salt okunur hesap/kimlik bilgileri + şifre değiştirme.
+void showAccountInfoSheet(BuildContext context, ProfileViewModel vm) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => _AccountInfoSheet(vm: vm),
+  );
+}
+
+class _AccountInfoSheet extends StatelessWidget {
+  final ProfileViewModel vm;
+  const _AccountInfoSheet({required this.vm});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final u = vm.currentUser;
+    final textPrimary = isDark
+        ? ColorConstant.textPrimaryDark
+        : ColorConstant.textPrimaryLight;
+    final textSecondary = isDark
+        ? ColorConstant.textSecondaryDark
+        : ColorConstant.textSecondaryLight;
+    final textMuted =
+        isDark ? ColorConstant.textMutedDark : ColorConstant.textMutedLight;
+    final cardColor =
+        isDark ? ColorConstant.cardColorDark : ColorConstant.cardColorLight;
+    final borderColor = isDark
+        ? ColorConstant.borderColorDark
+        : ColorConstant.borderColorLight;
+
+    final isGuest = u?.isGuest ?? false;
+    final hasEmail = (u?.email?.isNotEmpty ?? false);
+    final isPremium = (u?.subscriptionType != null &&
+        u!.subscriptionType!.isNotEmpty &&
+        u.subscriptionType!.toLowerCase() != 'free');
+
+    final memberSince = u != null
+        ? DateFormat('d MMMM yyyy', context.locale.toLanguageTag())
+            .format(u.createdAt)
+        : '—';
+
+    Widget infoRow(IconData icon, Color color, String label, String value,
+        {Widget? trailing}) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 11),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(11),
+              ),
+              child: Icon(icon, size: 20, color: color),
+            ),
+            const SizedBox(width: 13),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label,
+                      style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: textMuted)),
+                  const SizedBox(height: 2),
+                  Text(value,
+                      style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: textPrimary)),
+                ],
+              ),
+            ),
+            if (trailing != null) trailing,
+          ],
+        ),
+      );
+    }
+
+    Widget verifiedBadge() {
+      final ok = u?.isVerified ?? false;
+      final c = ok ? const Color(0xFF46A46B) : const Color(0xFFF2685B);
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: c.withValues(alpha: 0.14),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Icon(ok ? Icons.verified_rounded : Icons.error_outline_rounded,
+              size: 14, color: c),
+          const SizedBox(width: 5),
+          Text(
+              ok
+                  ? 'profile.account.verified'.tr()
+                  : 'profile.account.notVerified'.tr(),
+              style:
+                  TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: c)),
+        ]),
+      );
+    }
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? ColorConstant.bgColorDark : const Color(0xFFF6F4EF),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 42,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                        color: textMuted.withValues(alpha: 0.4),
+                        borderRadius: BorderRadius.circular(2)),
+                  ),
+                ),
+                Text('profile.account.title'.tr(),
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: textPrimary)),
+                const SizedBox(height: 2),
+                Text('profile.account.subtitle'.tr(),
+                    style: TextStyle(fontSize: 13, color: textSecondary)),
+                const SizedBox(height: 16),
+
+                // Bilgi kartı
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  decoration: BoxDecoration(
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: borderColor),
+                  ),
+                  child: Column(
+                    children: [
+                      infoRow(
+                          Icons.mail_rounded,
+                          const Color(0xFF4C9AFF),
+                          'profile.account.email'.tr(),
+                          hasEmail
+                              ? u!.email!
+                              : 'profile.account.noEmail'.tr(),
+                          trailing: hasEmail ? verifiedBadge() : null),
+                      Divider(height: 1, color: borderColor),
+                      infoRow(
+                          Icons.calendar_today_rounded,
+                          const Color(0xFF9C7BD9),
+                          'profile.account.memberSince'.tr(),
+                          memberSince),
+                      Divider(height: 1, color: borderColor),
+                      infoRow(
+                          isGuest
+                              ? Icons.person_outline_rounded
+                              : Icons.account_circle_rounded,
+                          const Color(0xFF2BB3A3),
+                          'profile.account.type'.tr(),
+                          isGuest
+                              ? 'profile.account.typeGuest'.tr()
+                              : 'profile.account.typeEmail'.tr()),
+                      Divider(height: 1, color: borderColor),
+                      infoRow(
+                          isPremium
+                              ? Icons.workspace_premium_rounded
+                              : Icons.card_giftcard_rounded,
+                          const Color(0xFFF6A821),
+                          'profile.account.subscription'.tr(),
+                          isPremium
+                              ? 'profile.account.subPremium'.tr()
+                              : 'profile.account.subFree'.tr()),
+                    ],
+                  ),
+                ),
+
+                if (isGuest) ...[
+                  const SizedBox(height: 14),
+                  Container(
+                    padding: const EdgeInsets.all(13),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF6A821).withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Row(children: [
+                      const Icon(Icons.info_outline_rounded,
+                          size: 20, color: Color(0xFFF6A821)),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text('profile.account.guestNote'.tr(),
+                            style:
+                                TextStyle(fontSize: 13, color: textSecondary)),
+                      ),
+                    ]),
+                  ),
+                ],
+
+                // Şifre değiştir (sadece e-postalı hesaplar)
+                if (!isGuest && hasEmail) ...[
+                  const SizedBox(height: 14),
+                  InkWell(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (_) =>
+                            _ChangePasswordDialog(email: u!.email!, isDark: isDark),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: cardColor,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: borderColor),
+                      ),
+                      child: Row(children: [
+                        Container(
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF2685B).withValues(alpha: 0.14),
+                            borderRadius: BorderRadius.circular(11),
+                          ),
+                          child: const Icon(Icons.lock_reset_rounded,
+                              size: 20, color: Color(0xFFF2685B)),
+                        ),
+                        const SizedBox(width: 13),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('profile.account.changePassword'.tr(),
+                                  style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                      color: textPrimary)),
+                              const SizedBox(height: 2),
+                              Text('profile.account.changePasswordSub'.tr(),
+                                  style: TextStyle(
+                                      fontSize: 12.5, color: textMuted)),
+                            ],
+                          ),
+                        ),
+                        Icon(Icons.arrow_forward_ios_rounded,
+                            size: 15, color: textMuted),
+                      ]),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 4),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Giriş yapmış kullanıcı için şifre değiştirme: önce e-postaya kod gönderilir,
+/// sonra kod + yeni şifre ile güncellenir (forgot/reset akışı yeniden kullanılır).
+class _ChangePasswordDialog extends StatefulWidget {
+  final String email;
+  final bool isDark;
+  const _ChangePasswordDialog({required this.email, required this.isDark});
+
+  @override
+  State<_ChangePasswordDialog> createState() => _ChangePasswordDialogState();
+}
+
+class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
+  final _codeCtrl = TextEditingController();
+  final _passCtrl = TextEditingController();
+  final _passConfirmCtrl = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+
+  bool _loading = false;
+  bool _codeSent = false;
+  bool _obscure = true;
+  bool _obscureConfirm = true;
+
+  @override
+  void dispose() {
+    _codeCtrl.dispose();
+    _passCtrl.dispose();
+    _passConfirmCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _sendCode() async {
+    setState(() => _loading = true);
+    final auth = GetIt.I<IAuthService>();
+    final res = await auth.forgotPassword(widget.email);
+    if (!mounted) return;
+    setState(() => _loading = false);
+    if (res.isSuccess) {
+      setState(() => _codeSent = true);
+      CustomSnackBar.showSuccess(context, 'auth.codeSent'.tr());
+    } else {
+      CustomSnackBar.showError(
+          context, res.message ?? 'errors.general'.tr());
+    }
+  }
+
+  Future<void> _reset() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _loading = true);
+    final auth = GetIt.I<IAuthService>();
+    final res = await auth.resetPassword(
+      widget.email,
+      _codeCtrl.text.trim(),
+      _passCtrl.text,
+      _passConfirmCtrl.text,
+    );
+    if (!mounted) return;
+    setState(() => _loading = false);
+    if (res.isSuccess) {
+      Navigator.pop(context);
+      CustomSnackBar.showSuccess(context, 'auth.passwordChanged'.tr());
+    } else {
+      CustomSnackBar.showError(
+          context, res.message ?? 'errors.general'.tr());
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final d = widget.isDark;
+    final textPrimary =
+        d ? ColorConstant.textPrimaryDark : ColorConstant.textPrimaryLight;
+    final textSecondary = d
+        ? ColorConstant.textSecondaryDark
+        : ColorConstant.textSecondaryLight;
+    return AlertDialog(
+      backgroundColor:
+          d ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
+      shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: Text('profile.account.cpTitle'.tr(),
+          style: TextStyle(color: textPrimary, fontWeight: FontWeight.w800)),
+      content: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (!_codeSent) ...[
+                Text(
+                    'profile.account.cpSendDesc'
+                        .tr(namedArgs: {'email': widget.email}),
+                    style: TextStyle(color: textSecondary)),
+              ] else ...[
+                Text('profile.account.cpResetDesc'.tr(),
+                    style: TextStyle(color: textSecondary)),
+                const SizedBox(height: 18),
+                TextFormField(
+                  controller: _codeCtrl,
+                  keyboardType: TextInputType.number,
+                  maxLength: 6,
+                  style: TextStyle(color: textPrimary),
+                  decoration: InputDecoration(
+                    labelText: 'auth.resetCode'.tr(),
+                    hintText: 'auth.resetCodeHint'.tr(),
+                    counterText: '',
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'auth.codeRequired'.tr();
+                    if (v.length != 6) return 'auth.codeInvalid'.tr();
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 14),
+                TextFormField(
+                  controller: _passCtrl,
+                  obscureText: _obscure,
+                  style: TextStyle(color: textPrimary),
+                  decoration: InputDecoration(
+                    labelText: 'auth.newPassword'.tr(),
+                    hintText: 'auth.passwordHint'.tr(),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    suffixIcon: IconButton(
+                      icon: Icon(_obscure
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined),
+                      onPressed: () => setState(() => _obscure = !_obscure),
+                    ),
+                  ),
+                  validator: (v) {
+                    if (v == null || v.isEmpty) {
+                      return 'auth.passwordRequired'.tr();
+                    }
+                    if (v.length < 6) return 'auth.passwordMinLength'.tr();
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 14),
+                TextFormField(
+                  controller: _passConfirmCtrl,
+                  obscureText: _obscureConfirm,
+                  style: TextStyle(color: textPrimary),
+                  decoration: InputDecoration(
+                    labelText: 'auth.confirmPassword'.tr(),
+                    hintText: 'auth.passwordHint'.tr(),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    suffixIcon: IconButton(
+                      icon: Icon(_obscureConfirm
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined),
+                      onPressed: () =>
+                          setState(() => _obscureConfirm = !_obscureConfirm),
+                    ),
+                  ),
+                  validator: (v) {
+                    if (v == null || v.isEmpty) {
+                      return 'auth.passwordRequired'.tr();
+                    }
+                    if (v != _passCtrl.text) {
+                      return 'auth.passwordsDoNotMatch'.tr();
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _loading ? null : () => Navigator.pop(context),
+          child: Text('common.cancel'.tr(),
+              style: TextStyle(color: textSecondary)),
+        ),
+        ElevatedButton(
+          onPressed: _loading ? null : (_codeSent ? _reset : _sendCode),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: ColorConstant.primaryPurple,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          child: _loading
+              ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                      color: Colors.white, strokeWidth: 2))
+              : Text(
+                  _codeSent
+                      ? 'profile.account.cpUpdate'.tr()
+                      : 'auth.sendCode'.tr(),
+                  style: const TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.w600)),
+        ),
+      ],
     );
   }
 }

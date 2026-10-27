@@ -590,7 +590,29 @@
     "fbSuggestion": "اقتراح",
     "fbComplaint": "شكوى",
     "fbBug": "خطأ",
-    "fbOther": "أخرى"
+    "fbOther": "أخرى",
+    "account": {
+      "title": "معلومات الحساب",
+      "subtitle": "تفاصيل حسابك وتسجيل الدخول",
+      "email": "البريد الإلكتروني",
+      "noEmail": "غير محدد",
+      "memberSince": "عضو منذ",
+      "type": "نوع الحساب",
+      "typeGuest": "حساب ضيف",
+      "typeEmail": "حساب بريد إلكتروني",
+      "verified": "موثّق",
+      "notVerified": "غير موثّق",
+      "subscription": "الاشتراك",
+      "subFree": "مجاني",
+      "subPremium": "مميّز",
+      "changePassword": "تغيير كلمة المرور",
+      "changePasswordSub": "يُرسَل رمز التحقق إلى بريدك الإلكتروني",
+      "guestNote": "أنت تستخدم حساب ضيف. أنشئ حسابًا للحفاظ على بياناتك.",
+      "cpTitle": "تغيير كلمة المرور",
+      "cpSendDesc": "سنرسل رمز تحقق مكوّنًا من 6 أرقام إلى {email}.",
+      "cpResetDesc": "أدخل الرمز الوارد في بريدك وكلمة المرور الجديدة.",
+      "cpUpdate": "تحديث كلمة المرور"
+    }
   },
   "calendar": {
     "screenTitle": "التقويم",

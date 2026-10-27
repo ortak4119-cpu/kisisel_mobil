@@ -590,7 +590,29 @@
     "fbSuggestion": "सुझाव",
     "fbComplaint": "शिकायत",
     "fbBug": "बग",
-    "fbOther": "अन्य"
+    "fbOther": "अन्य",
+    "account": {
+      "title": "खाता जानकारी",
+      "subtitle": "आपके खाते और साइन-इन का विवरण",
+      "email": "ईमेल",
+      "noEmail": "सेट नहीं है",
+      "memberSince": "सदस्य बने",
+      "type": "खाता प्रकार",
+      "typeGuest": "अतिथि खाता",
+      "typeEmail": "ईमेल खाता",
+      "verified": "सत्यापित",
+      "notVerified": "असत्यापित",
+      "subscription": "सदस्यता",
+      "subFree": "निःशुल्क",
+      "subPremium": "प्रीमियम",
+      "changePassword": "पासवर्ड बदलें",
+      "changePasswordSub": "आपके ईमेल पर एक सत्यापन कोड भेजा जाता है",
+      "guestNote": "आप अतिथि खाता उपयोग कर रहे हैं। अपना डेटा सुरक्षित रखने के लिए खाता बनाएं।",
+      "cpTitle": "पासवर्ड बदलें",
+      "cpSendDesc": "हम {email} पर 6 अंकों का सत्यापन कोड भेजेंगे।",
+      "cpResetDesc": "अपने ईमेल का कोड और नया पासवर्ड दर्ज करें।",
+      "cpUpdate": "पासवर्ड अपडेट करें"
+    }
   },
   "calendar": {
     "screenTitle": "कैलेंडर",
