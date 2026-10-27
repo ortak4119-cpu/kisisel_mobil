@@ -1519,12 +1519,12 @@ class _NotesContent extends StatelessWidget {
         ],
       );
     } else {
-      preview = Text(
-        texts.isEmpty ? ' ' : texts.take(4).join('\n'),
+      preview = MarkdownNoteText(
+        text: texts.isEmpty ? ' ' : texts.take(4).join('\n'),
         maxLines: 4,
         overflow: TextOverflow.ellipsis,
-        style: TextStyle(fontFamily: 'JosefinSans',
-            fontSize: 15.5, height: 1.15, color: const Color(0xFF473F2F)),
+        baseStyle: const TextStyle(fontFamily: 'JosefinSans',
+            fontSize: 15.5, height: 1.15, color: Color(0xFF473F2F)),
       );
     }
 

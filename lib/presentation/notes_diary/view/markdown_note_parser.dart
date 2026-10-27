@@ -71,8 +71,15 @@ class MarkdownEditingController extends TextEditingController {
 
     final children = <TextSpan>[];
     final regex = RegExp(r'(\*\*|__|\*|_)(.+?)\1', dotAll: true);
+    // İşaretçileri (** , * , _) KORUYORUZ (silinirse imleç/seçim konumu
+    // bozulur çünkü gösterilen metnin uzunluğu gerçek metinle aynı olmalı),
+    // ama GÖRÜNMEZ yapıyoruz: şeffaf renk + ~sıfır font boyutu, böylece
+    // ekranda ne görünürler ne de yer kaplarlar. Kullanıcı yalnızca
+    // kalın/italik metni görür.
     final markerStyle = base.copyWith(
-      color: (base.color ?? const Color(0xFF000000)).withValues(alpha: 0.30),
+      color: const Color(0x00000000),
+      fontSize: 0.1,
+      letterSpacing: 0,
     );
     var last = 0;
     for (final m in regex.allMatches(src)) {
