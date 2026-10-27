@@ -3,11 +3,14 @@ import 'package:provider/provider.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import '../../../service/base/base_api_service.dart';
 import '../../../core/route/app_router.gr.dart';
 import '../../../core/design/app_design.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/utils/custom_snackbar.dart';
 import '../../../models/social/social_model.dart';
+import '../../settings/view/settings_view.dart';
 import '../viewmodel/profile_viewmodel.dart';
 import '../widgets/user_profile_bottom_sheet.dart';
 
@@ -257,7 +260,7 @@ class _ProfileViewState extends State<ProfileView> {
             badge: vm.friendRequests.isNotEmpty
                 ? '${vm.friendRequests.length}'
                 : null,
-            onTap: () => context.router.push(const SettingsRoute())),
+            onTap: () => _openSettings(context, 'notifications')),
         _divider(isDark),
         _navRow(context, isDark,
             color: _cPurple,
@@ -266,13 +269,13 @@ class _ProfileViewState extends State<ProfileView> {
             value: isDark
                 ? 'settings.appearance.themeDark'.tr()
                 : 'settings.appearance.themeLight'.tr(),
-            onTap: () => context.router.push(const SettingsRoute())),
+            onTap: () => _openSettings(context, 'appearance')),
         _divider(isDark),
         _navRow(context, isDark,
             color: _cGreen,
             icon: Icons.shield_rounded,
             title: 'profile.privacySecurity'.tr(),
-            onTap: () => context.router.push(const SettingsRoute())),
+            onTap: () => _openSettings(context, 'privacy')),
       ]),
       const SizedBox(height: 18),
 
@@ -280,16 +283,22 @@ class _ProfileViewState extends State<ProfileView> {
       _sectionHeader('profile.secSupport'.tr(), isDark),
       _card(isDark, [
         _navRow(context, isDark,
+            color: _cBlue,
+            icon: Icons.feedback_rounded,
+            title: 'profile.feedback'.tr(),
+            onTap: () => _openFeedback(context, vm, isDark)),
+        _divider(isDark),
+        _navRow(context, isDark,
             color: _cTeal,
             icon: Icons.help_rounded,
             title: 'profile.helpSupport'.tr(),
-            onTap: () => context.router.push(const SettingsRoute())),
+            onTap: () => _openSettings(context, 'support')),
         _divider(isDark),
         _navRow(context, isDark,
             color: _cGray,
             icon: Icons.info_rounded,
             title: 'profile.aboutApp'.tr(),
-            onTap: () => context.router.push(const SettingsRoute())),
+            onTap: () => _showAbout(context)),
       ]),
       const SizedBox(height: 18),
 
@@ -648,6 +657,40 @@ class _ProfileViewState extends State<ProfileView> {
         ),
       ),
     ));
+  }
+
+  // Ayarlar sayfasını doğru bölüme kaydırarak açar.
+  void _openSettings(BuildContext context, String section) {
+    SettingsView.focusSection = section;
+    context.router.push(const SettingsRoute());
+  }
+
+  // Uygulama hakkında (ad + sürüm) bilgisini gösterir.
+  Future<void> _showAbout(BuildContext context) async {
+    final info = await PackageInfo.fromPlatform();
+    if (!context.mounted) return;
+    showAboutDialog(
+      context: context,
+      applicationName: 'LifeSync',
+      applicationVersion: '${info.version} (${info.buildNumber})',
+      applicationIcon: const Padding(
+        padding: EdgeInsets.all(4),
+        child: Icon(Icons.auto_awesome_rounded, color: Color(0xFFF6A821)),
+      ),
+      children: [
+        Text('profile.aboutText'.tr()),
+      ],
+    );
+  }
+
+  // Görüş / şikayet formunu açar.
+  void _openFeedback(BuildContext context, ProfileViewModel vm, bool isDark) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _FeedbackSheet(isDark: isDark),
+    );
   }
 
   String _fmtXp(int n) {
@@ -1906,6 +1949,194 @@ void _confirmLogout(BuildContext context, ProfileViewModel vm) {
 
 /// Ad / kullanıcı adı / bio düzenleme alt sayfası.
 /// Backend PUT /profile (updateProfile) hazırdı ama hiçbir UI çağırmıyordu.
+// ==================== GÖRÜŞ / ŞİKAYET FORMU ====================
+class _FeedbackSheet extends StatefulWidget {
+  final bool isDark;
+  const _FeedbackSheet({required this.isDark});
+
+  @override
+  State<_FeedbackSheet> createState() => _FeedbackSheetState();
+}
+
+class _FeedbackSheetState extends State<_FeedbackSheet> {
+  final _ctrl = TextEditingController();
+  String _category = 'suggestion';
+  bool _sending = false;
+
+  static const _cats = [
+    ['suggestion', 'profile.fbSuggestion'],
+    ['complaint', 'profile.fbComplaint'],
+    ['bug', 'profile.fbBug'],
+    ['other', 'profile.fbOther'],
+  ];
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _send() async {
+    final msg = _ctrl.text.trim();
+    if (msg.length < 10) {
+      CustomSnackBar.showError(context, 'profile.feedbackEmpty'.tr());
+      return;
+    }
+    setState(() => _sending = true);
+    // Konu: mesajın tek satırlık kısa özeti (backend zorunlu tutuyor).
+    var subject = msg.replaceAll('\n', ' ').trim();
+    if (subject.length > 80) subject = '${subject.substring(0, 80)}…';
+    String? appVersion;
+    try {
+      final info = await PackageInfo.fromPlatform();
+      appVersion = '${info.version} (${info.buildNumber})';
+    } catch (_) {}
+    final res = await BaseApiService.post('/feedback', body: {
+      'feedback_type': _category,
+      'subject': subject,
+      'message': msg,
+      if (appVersion != null) 'app_version': appVersion,
+    });
+    if (!mounted) return;
+    setState(() => _sending = false);
+    if (res.isSuccess) {
+      Navigator.pop(context);
+      CustomSnackBar.showSuccess(context, 'profile.feedbackSent'.tr());
+    } else {
+      CustomSnackBar.showError(
+          context, res.errorMessage ?? 'errors.general'.tr());
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = widget.isDark;
+    final card = isDark ? ColorConstant.cardColorDark : ColorConstant.white;
+    final fill =
+        isDark ? ColorConstant.bgColorDark : ColorConstant.bgColorLight;
+    final txtP =
+        isDark ? ColorConstant.textPrimaryDark : ColorConstant.textPrimaryLight;
+    final txtS = isDark
+        ? ColorConstant.textSecondaryDark
+        : ColorConstant.textSecondaryLight;
+    const accent = Color(0xFF4C9AFF);
+    return Container(
+      decoration: BoxDecoration(
+        color: card,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: EdgeInsets.only(
+              left: 20,
+              right: 20,
+              top: 16,
+              bottom: 16 + MediaQuery.of(context).viewInsets.bottom),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                      color: fill, borderRadius: BorderRadius.circular(2)),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text('profile.feedbackTitle'.tr(),
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: txtP)),
+              const SizedBox(height: 4),
+              Text('profile.feedbackSubtitle'.tr(),
+                  style: TextStyle(fontSize: 13, color: txtS)),
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final cat in _cats)
+                    GestureDetector(
+                      onTap: () => setState(() => _category = cat[0]),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: _category == cat[0]
+                              ? accent.withValues(alpha: 0.15)
+                              : fill,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                              color: _category == cat[0]
+                                  ? accent
+                                  : Colors.transparent,
+                              width: 1.5),
+                        ),
+                        child: Text(cat[1].tr(),
+                            style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: _category == cat[0] ? accent : txtS)),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                decoration: BoxDecoration(
+                  color: fill,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: TextField(
+                  controller: _ctrl,
+                  maxLength: 2000,
+                  minLines: 4,
+                  maxLines: 8,
+                  autofocus: true,
+                  style: TextStyle(fontSize: 15, color: txtP),
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    counterText: '',
+                    hintText: 'profile.feedbackHint'.tr(),
+                    hintStyle: TextStyle(color: txtS),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _sending ? null : _send,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: accent,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                  ),
+                  child: _sending
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white))
+                      : Text('profile.feedbackSend'.tr(),
+                          style: const TextStyle(
+                              fontSize: 15.5, fontWeight: FontWeight.w700)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 void showEditProfileSheet(BuildContext context, ProfileViewModel vm) {
   showModalBottomSheet(
     context: context,

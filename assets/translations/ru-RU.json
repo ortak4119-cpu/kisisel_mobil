@@ -578,7 +578,19 @@
     "achievementsBadges": "Достижения и значки",
     "friendsRow": "Друзья",
     "activeDays": "Активные дни",
-    "pinnedWord": "закреп."
+    "pinnedWord": "закреп.",
+    "feedback": "Оставить отзыв",
+    "feedbackTitle": "Отзыв",
+    "feedbackSubtitle": "Поделитесь мыслями, предложениями или проблемами.",
+    "feedbackHint": "Напишите сообщение...",
+    "feedbackSend": "Отправить",
+    "feedbackSent": "Сообщение отправлено. Спасибо!",
+    "feedbackEmpty": "Напишите сообщение.",
+    "aboutText": "LifeSync — личный помощник для задач, привычек, заметок, календаря и финансов в одном месте.",
+    "fbSuggestion": "Предложение",
+    "fbComplaint": "Жалоба",
+    "fbBug": "Ошибка",
+    "fbOther": "Другое"
   },
   "calendar": {
     "screenTitle": "Календарь",

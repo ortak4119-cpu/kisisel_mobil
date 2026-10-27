@@ -578,7 +578,19 @@
     "achievementsBadges": "Başarılar ve rozetler",
     "friendsRow": "Arkadaşlar",
     "activeDays": "Aktif gün",
-    "pinnedWord": "sabit"
+    "pinnedWord": "sabit",
+    "feedback": "Görüş / şikayet bildir",
+    "feedbackTitle": "Görüş / Şikayet",
+    "feedbackSubtitle": "Düşüncelerinizi, önerilerinizi veya sorunlarınızı bize iletin.",
+    "feedbackHint": "Mesajınızı yazın...",
+    "feedbackSend": "Gönder",
+    "feedbackSent": "Mesajınız gönderildi. Teşekkürler!",
+    "feedbackEmpty": "Lütfen bir mesaj yazın.",
+    "aboutText": "LifeSync — görevler, alışkanlıklar, notlar, takvim ve finansı tek yerde toplayan kişisel yaşam asistanınız.",
+    "fbSuggestion": "Öneri",
+    "fbComplaint": "Şikayet",
+    "fbBug": "Hata",
+    "fbOther": "Diğer"
   },
   "calendar": {
     "screenTitle": "Takvim",

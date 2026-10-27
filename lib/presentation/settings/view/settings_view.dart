@@ -11,8 +11,31 @@ import '../../../core/utils/premium_helper.dart';
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key});
 
+  /// Profilden "doğru bölüme git" için hedef bölüm + bölüm anahtarları.
+  static String? focusSection;
+  static final Map<String, GlobalKey> sectionKeys = {
+    'notifications': GlobalKey(),
+    'appearance': GlobalKey(),
+    'privacy': GlobalKey(),
+    'support': GlobalKey(),
+  };
+
   @override
   Widget build(BuildContext context) {
+    // Hedef bölüm belirtilmişse ilk kareden sonra ona kaydır.
+    final target = focusSection;
+    if (target != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final ctx = sectionKeys[target]?.currentContext;
+        if (ctx != null) {
+          Scrollable.ensureVisible(ctx,
+              duration: const Duration(milliseconds: 420),
+              curve: Curves.easeOut,
+              alignment: 0.08);
+        }
+        focusSection = null;
+      });
+    }
     return ChangeNotifierProvider(
       create: (_) => SettingsViewModel(),
       child: Consumer<SettingsViewModel>(
@@ -101,6 +124,7 @@ class SettingsView extends StatelessWidget {
                         // Bildirimler Bölümü
                         _buildSection(
                           title: 'settings.sections.notifications'.tr(),
+                          sectionKey: sectionKeys['notifications'],
                           isDarkMode: isDarkMode,
                           children: [
                             _buildSwitchTile(
@@ -237,6 +261,7 @@ class SettingsView extends StatelessWidget {
                         // Görünüm Bölümü
                         _buildSection(
                           title: 'settings.sections.appearance'.tr(),
+                          sectionKey: sectionKeys['appearance'],
                           isDarkMode: isDarkMode,
                           children: [
                             _buildThemeTile(
@@ -266,6 +291,7 @@ class SettingsView extends StatelessWidget {
                         // Güvenlik Bölümü
                         _buildSection(
                           title: 'settings.sections.security'.tr(),
+                          sectionKey: sectionKeys['privacy'],
                           isDarkMode: isDarkMode,
                           children: [
                             _buildSwitchTile(
@@ -456,6 +482,7 @@ class SettingsView extends StatelessWidget {
                         // Destek Bölümü
                         _buildSection(
                           title: 'settings.sections.support'.tr(),
+                          sectionKey: sectionKeys['support'],
                           isDarkMode: isDarkMode,
                           children: [
                             _buildListTile(
@@ -572,8 +599,10 @@ class SettingsView extends StatelessWidget {
     required String title,
     required List<Widget> children,
     required bool isDarkMode,
+    Key? sectionKey,
   }) {
     return Column(
+      key: sectionKey,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(

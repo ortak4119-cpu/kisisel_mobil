@@ -578,7 +578,19 @@
     "achievementsBadges": "उपलब्धियाँ और बैज",
     "friendsRow": "मित्र",
     "activeDays": "सक्रिय दिन",
-    "pinnedWord": "पिन"
+    "pinnedWord": "पिन",
+    "feedback": "प्रतिक्रिया भेजें",
+    "feedbackTitle": "प्रतिक्रिया",
+    "feedbackSubtitle": "अपने विचार, सुझाव या समस्याएँ हमसे साझा करें।",
+    "feedbackHint": "अपना संदेश लिखें...",
+    "feedbackSend": "भेजें",
+    "feedbackSent": "आपका संदेश भेज दिया गया। धन्यवाद!",
+    "feedbackEmpty": "कृपया एक संदेश लिखें।",
+    "aboutText": "LifeSync — कार्य, आदतें, नोट्स, कैलेंडर और वित्त एक ही जगह के लिए आपका निजी जीवन सहायक।",
+    "fbSuggestion": "सुझाव",
+    "fbComplaint": "शिकायत",
+    "fbBug": "बग",
+    "fbOther": "अन्य"
   },
   "calendar": {
     "screenTitle": "कैलेंडर",

@@ -578,7 +578,19 @@
     "achievementsBadges": "成就与徽章",
     "friendsRow": "好友",
     "activeDays": "活跃天数",
-    "pinnedWord": "置顶"
+    "pinnedWord": "置顶",
+    "feedback": "发送反馈",
+    "feedbackTitle": "反馈",
+    "feedbackSubtitle": "与我们分享您的想法、建议或问题。",
+    "feedbackHint": "输入您的留言…",
+    "feedbackSend": "发送",
+    "feedbackSent": "您的留言已发送。谢谢！",
+    "feedbackEmpty": "请输入留言。",
+    "aboutText": "LifeSync — 将任务、习惯、笔记、日历和财务集于一处的个人生活助手。",
+    "fbSuggestion": "建议",
+    "fbComplaint": "投诉",
+    "fbBug": "错误",
+    "fbOther": "其他"
   },
   "calendar": {
     "screenTitle": "日历",

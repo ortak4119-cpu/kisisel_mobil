@@ -578,7 +578,19 @@
     "achievementsBadges": "実績とバッジ",
     "friendsRow": "友達",
     "activeDays": "アクティブ日数",
-    "pinnedWord": "固定"
+    "pinnedWord": "固定",
+    "feedback": "フィードバックを送る",
+    "feedbackTitle": "フィードバック",
+    "feedbackSubtitle": "ご意見・ご提案・問題点をお聞かせください。",
+    "feedbackHint": "メッセージを入力...",
+    "feedbackSend": "送信",
+    "feedbackSent": "メッセージを送信しました。ありがとうございます！",
+    "feedbackEmpty": "メッセージを入力してください。",
+    "aboutText": "LifeSync — タスク・習慣・メモ・カレンダー・家計を一つにまとめる、あなたのライフアシスタント。",
+    "fbSuggestion": "提案",
+    "fbComplaint": "苦情",
+    "fbBug": "不具合",
+    "fbOther": "その他"
   },
   "calendar": {
     "screenTitle": "カレンダー",

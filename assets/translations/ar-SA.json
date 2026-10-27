@@ -578,7 +578,19 @@
     "achievementsBadges": "الإنجازات والشارات",
     "friendsRow": "الأصدقاء",
     "activeDays": "الأيام النشطة",
-    "pinnedWord": "مثبّتة"
+    "pinnedWord": "مثبّتة",
+    "feedback": "إرسال ملاحظات",
+    "feedbackTitle": "ملاحظات",
+    "feedbackSubtitle": "شاركنا أفكارك أو اقتراحاتك أو مشاكلك.",
+    "feedbackHint": "اكتب رسالتك...",
+    "feedbackSend": "إرسال",
+    "feedbackSent": "تم إرسال رسالتك. شكرًا!",
+    "feedbackEmpty": "يرجى كتابة رسالة.",
+    "aboutText": "LifeSync — مساعدك الشخصي للمهام والعادات والملاحظات والتقويم والمالية في مكان واحد.",
+    "fbSuggestion": "اقتراح",
+    "fbComplaint": "شكوى",
+    "fbBug": "خطأ",
+    "fbOther": "أخرى"
   },
   "calendar": {
     "screenTitle": "التقويم",

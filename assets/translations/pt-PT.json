@@ -578,7 +578,19 @@
     "achievementsBadges": "Conquistas e distintivos",
     "friendsRow": "Amigos",
     "activeDays": "Dias ativos",
-    "pinnedWord": "fixadas"
+    "pinnedWord": "fixadas",
+    "feedback": "Enviar feedback",
+    "feedbackTitle": "Feedback",
+    "feedbackSubtitle": "Partilhe as suas ideias, sugestões ou problemas connosco.",
+    "feedbackHint": "Escreva a sua mensagem...",
+    "feedbackSend": "Enviar",
+    "feedbackSent": "A sua mensagem foi enviada. Obrigado!",
+    "feedbackEmpty": "Escreva uma mensagem.",
+    "aboutText": "LifeSync — o seu assistente pessoal para tarefas, hábitos, notas, calendário e finanças num só lugar.",
+    "fbSuggestion": "Sugestão",
+    "fbComplaint": "Reclamação",
+    "fbBug": "Erro",
+    "fbOther": "Outro"
   },
   "calendar": {
     "screenTitle": "Calendário",

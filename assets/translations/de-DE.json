@@ -578,7 +578,19 @@
     "achievementsBadges": "Erfolge und Abzeichen",
     "friendsRow": "Freunde",
     "activeDays": "Aktive Tage",
-    "pinnedWord": "angeheftet"
+    "pinnedWord": "angeheftet",
+    "feedback": "Feedback senden",
+    "feedbackTitle": "Feedback",
+    "feedbackSubtitle": "Teilen Sie uns Ihre Gedanken, Vorschläge oder Probleme mit.",
+    "feedbackHint": "Schreiben Sie Ihre Nachricht...",
+    "feedbackSend": "Senden",
+    "feedbackSent": "Ihre Nachricht wurde gesendet. Danke!",
+    "feedbackEmpty": "Bitte schreiben Sie eine Nachricht.",
+    "aboutText": "LifeSync — Ihr persönlicher Lebensassistent für Aufgaben, Gewohnheiten, Notizen, Kalender und Finanzen an einem Ort.",
+    "fbSuggestion": "Vorschlag",
+    "fbComplaint": "Beschwerde",
+    "fbBug": "Fehler",
+    "fbOther": "Sonstiges"
   },
   "calendar": {
     "screenTitle": "Kalender",
