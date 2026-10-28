@@ -44,11 +44,27 @@ class AuthGate {
     return false;
   }
 
+  /// RevenueCat app user id'sini backend kullanıcı id'sine bağlar.
+  ///
+  /// Satın almaların doğru kullanıcıya atanması, cihazlar arası geri yükleme ve
+  /// webhook eşleşmesi için gereklidir. Çağrılmazsa RevenueCat anonim id kullanır.
+  static Future<void> _syncRevenueCatUser() async {
+    try {
+      final response = await AuthService().getCurrentUser();
+      final user = response.data;
+      if (response.isSuccess && user != null) {
+        await RevenueCatService().setUserId(user.id.toString());
+      }
+    } catch (_) {}
+  }
+
   /// Kayıt/giriş sonrası yönlendirme: abonelik varsa Home, yoksa Paywall kapısı.
   ///
   /// Paywall `replaceAll` ile kök rota olarak açılır; böylece geri yığını boş
   /// kalır ve PaywallView bunu "kapı modu" (✕ yok, geri kilitli) olarak algılar.
   static Future<void> goAfterAuth(BuildContext context) async {
+    // Entitlement kontrolünden önce RevenueCat'i backend kullanıcısına bağla.
+    await _syncRevenueCatUser();
     final subscribed = await hasActiveSubscription();
     if (!context.mounted) return;
     if (subscribed) {
