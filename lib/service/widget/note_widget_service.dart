@@ -42,11 +42,20 @@ class NoteWidgetService {
   static String _snippet(String? content) {
     if (content == null) return '';
     // İlk boş olmayan satır, tek satıra indirgenmiş, en fazla 60 karakter.
-    final firstLine = content
+    var firstLine = content
         .split('\n')
         .map((l) => l.trim())
         .firstWhere((l) => l.isNotEmpty, orElse: () => '');
-    final flat = firstLine.replaceAll(RegExp(r'\s+'), ' ');
+    // Uygulamadaki kart önizlemesiyle tutarlı olsun diye liste/markdown
+    // işaretçilerini temizle (☐ ☑ •, ** __ * _).
+    if (firstLine.startsWith('☐ ') || firstLine.startsWith('☑ ')) {
+      firstLine = firstLine.substring(2);
+    }
+    if (firstLine.startsWith('• ')) firstLine = firstLine.substring(2);
+    // Yalnızca eşleşen (çift) işaretçileri soy; sarılan metni koru.
+    firstLine = firstLine.replaceAllMapped(
+        RegExp(r'(\*\*|__|\*|_)(.+?)\1'), (m) => m.group(2) ?? '');
+    final flat = firstLine.replaceAll(RegExp(r'\s+'), ' ').trim();
     return flat.length > 60 ? '${flat.substring(0, 60)}…' : flat;
   }
 }
