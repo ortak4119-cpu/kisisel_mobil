@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../viewmodel/settings_viewmodel.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/utils/premium_helper.dart';
+import '../../../core/utils/responsive.dart';
 
 @RoutePage()
 class SettingsView extends StatelessWidget {
@@ -45,7 +46,8 @@ class SettingsView extends StatelessWidget {
             backgroundColor: isDarkMode
                 ? ColorConstant.bgColorDark
                 : ColorConstant.bgColorLight,
-            body: CustomScrollView(
+            body: ResponsiveCenter(
+              child: CustomScrollView(
               slivers: [
                 // App Bar
                 SliverAppBar(
@@ -578,6 +580,7 @@ class SettingsView extends StatelessWidget {
                   ),
                 ),
               ],
+              ),
             ),
           );
         },

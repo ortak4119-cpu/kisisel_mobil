@@ -7,6 +7,7 @@ import 'package:base/presentation/tasks_habits/view/tasks_habits_view.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../core/utils/color_constant.dart';
+import '../../../core/utils/responsive.dart';
 import '../../../core/route/app_router.gr.dart';
 import '../../../service/update/update_service.dart';
 
@@ -59,7 +60,9 @@ class _HomeViewState extends State<HomeView> {
       backgroundColor: isDarkMode
           ? ColorConstant.bgColorDark
           : ColorConstant.bgColorLight,
-      body: _pages[_selectedIndex],
+      // Geniş ekranda (iPad/tablet) içerik ortalanır ve makul genişliğe
+      // sınırlanır; telefonda tam genişlik korunur. Her sekme için tek yerden.
+      body: ResponsiveCenter(child: _pages[_selectedIndex]),
       bottomNavigationBar: BottomAppBar(
         color: isDarkMode
             ? ColorConstant.cardColorDark
