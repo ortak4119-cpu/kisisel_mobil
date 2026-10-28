@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:base/core/route/app_router.gr.dart';
+import 'package:base/core/route/auth_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
@@ -152,7 +153,7 @@ class _LoginViewState extends State<LoginView> {
                                     _passwordController.text,
                                   );
                                   if (success && mounted) {
-                                    context.router.replace(const HomeRoute());
+                                    AuthGate.goAfterAuth(context);
                                   }
                                 }
                               },
@@ -167,7 +168,7 @@ class _LoginViewState extends State<LoginView> {
                           final success =
                               await viewModel.loginWithGoogle(context);
                           if (success && mounted) {
-                            context.router.replace(const HomeRoute());
+                            AuthGate.goAfterAuth(context);
                           }
                         },
                       ),
@@ -179,7 +180,7 @@ class _LoginViewState extends State<LoginView> {
                           final success =
                               await viewModel.loginWithApple(context);
                           if (success && mounted) {
-                            context.router.replace(const HomeRoute());
+                            AuthGate.goAfterAuth(context);
                           }
                         },
                       ),

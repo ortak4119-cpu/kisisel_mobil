@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:base/core/route/app_router.gr.dart';
+import 'package:base/core/route/auth_gate.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -154,7 +155,7 @@ class _RegisterViewState extends State<RegisterView> {
                                         _passwordController.text,
                                   );
                                   if (success && mounted) {
-                                    context.router.replace(const HomeRoute());
+                                    AuthGate.goAfterAuth(context);
                                   }
                                 }
                               },
@@ -169,7 +170,7 @@ class _RegisterViewState extends State<RegisterView> {
                           final success =
                               await viewModel.registerWithGoogle(context);
                           if (success && mounted) {
-                            context.router.replace(const HomeRoute());
+                            AuthGate.goAfterAuth(context);
                           }
                         },
                       ),
@@ -181,7 +182,7 @@ class _RegisterViewState extends State<RegisterView> {
                           final success =
                               await viewModel.registerWithApple(context);
                           if (success && mounted) {
-                            context.router.replace(const HomeRoute());
+                            AuthGate.goAfterAuth(context);
                           }
                         },
                       ),

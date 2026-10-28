@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../core/route/app_router.gr.dart';
+import '../../../core/route/auth_gate.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../service/base/base_api_service.dart';
 import '../../../service/auth/auth_service.dart';
@@ -81,12 +82,9 @@ class _SplashViewState extends State<SplashView> with SingleTickerProviderStateM
       if (isFirstTime) {
         // İlk açılışta önce dil seçimi; oradan onboarding'e geçilir.
         context.router.replace(const LanguageSelectRoute());
-      } else if (token != null && token.isNotEmpty) {
-        // Token varsa ana sayfaya git
-        context.router.replace(const HomeRoute());
-      } else if (user != null) {
-        // Firebase kullanıcısı varsa ama token yoksa ana sayfaya git
-        context.router.replace(const HomeRoute());
+      } else if ((token != null && token.isNotEmpty) || user != null) {
+        // Oturum var → abonelik kapısından geç (aktifse Home, değilse Paywall).
+        await AuthGate.goAfterAuth(context);
       } else {
         // Token ve kullanıcı yoksa login'e git
         context.router.replace(const LoginRoute());

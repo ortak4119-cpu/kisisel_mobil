@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/route/app_router.gr.dart';
+import '../../../core/route/auth_gate.dart';
 import '../../../core/utils/color_constant.dart';
 import '../viewmodel/paywall_viewmodel.dart';
 
@@ -56,8 +58,13 @@ class _PaywallViewState extends State<PaywallView>
       child: Consumer<PaywallViewModel>(
         builder: (context, viewModel, _) {
           final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+          // Kök rota olarak (replaceAll ile) açıldıysa geri yığını boştur:
+          // bu "kapı modu"dur — ✕ yok, geri kilitli, tek çıkış oturumu kapatmak.
+          final isGate = !context.router.canPop();
 
-          return Scaffold(
+          return PopScope(
+            canPop: !isGate,
+            child: Scaffold(
             backgroundColor: isDarkMode
                 ? ColorConstant.bgColorDark
                 : ColorConstant.bgColorLight,
@@ -77,7 +84,7 @@ class _PaywallViewState extends State<PaywallView>
                       child: Column(
                         children: [
                           // Close Button
-                          _buildCloseButton(context, isDarkMode),
+                          _buildCloseButton(context, isDarkMode, isGate),
 
                           Expanded(
                             child: SingleChildScrollView(
@@ -113,13 +120,13 @@ class _PaywallViewState extends State<PaywallView>
 
                                   // Subscribe Button
                                   _buildSubscribeButton(
-                                      context, viewModel, isDarkMode),
+                                      context, viewModel, isDarkMode, isGate),
 
                                   const SizedBox(height: 16),
 
                                   // Restore Purchases
                                   _buildRestoreButton(
-                                      context, viewModel, isDarkMode),
+                                      context, viewModel, isDarkMode, isGate),
 
                                   const SizedBox(height: 12),
 
@@ -138,6 +145,7 @@ class _PaywallViewState extends State<PaywallView>
                 ),
               ],
             ),
+          ),
           );
         },
       ),
@@ -187,7 +195,38 @@ class _PaywallViewState extends State<PaywallView>
     );
   }
 
-  Widget _buildCloseButton(BuildContext context, bool isDarkMode) {
+  Widget _buildCloseButton(BuildContext context, bool isDarkMode, bool isGate) {
+    // Kapı modunda ✕ yok; tek çıkış "Oturumu kapat".
+    if (isGate) {
+      return Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            TextButton.icon(
+              onPressed: () => AuthGate.signOutToLogin(context),
+              icon: Icon(
+                Icons.logout_rounded,
+                size: 18,
+                color: isDarkMode
+                    ? ColorConstant.textSecondaryDark
+                    : ColorConstant.textSecondaryLight,
+              ),
+              label: Text(
+                'settings.account.logout'.tr(),
+                style: TextStyle(
+                  color: isDarkMode
+                      ? ColorConstant.textSecondaryDark
+                      : ColorConstant.textSecondaryLight,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Row(
@@ -750,6 +789,7 @@ class _PaywallViewState extends State<PaywallView>
       BuildContext context,
       PaywallViewModel viewModel,
       bool isDarkMode,
+      bool isGate,
       ) {
     // Yıllık plan ve ücretsiz deneme varsa buton metnini değiştir
     String buttonText = 'paywall.continue'.tr();
@@ -768,7 +808,12 @@ class _PaywallViewState extends State<PaywallView>
             : () async {
           final success = await viewModel.purchaseSelectedPackage();
           if (success && mounted) {
-            context.router.pop(true); // Premium oldu
+            if (isGate) {
+              // Kapı modunda arkada ekran yok; Home'a geç.
+              context.router.replaceAll([const HomeRoute()]);
+            } else {
+              context.router.pop(true); // Premium oldu
+            }
           }
         },
         style: ElevatedButton.styleFrom(
@@ -820,6 +865,7 @@ class _PaywallViewState extends State<PaywallView>
       BuildContext context,
       PaywallViewModel viewModel,
       bool isDarkMode,
+      bool isGate,
       ) {
     return TextButton(
       onPressed: viewModel.isRestoring
@@ -827,7 +873,11 @@ class _PaywallViewState extends State<PaywallView>
           : () async {
         final success = await viewModel.restorePurchases();
         if (success && mounted) {
-          context.router.pop(true); // Premium restore edildi
+          if (isGate) {
+            context.router.replaceAll([const HomeRoute()]);
+          } else {
+            context.router.pop(true); // Premium restore edildi
+          }
         } else if (!success && viewModel.errorMessage != null && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
