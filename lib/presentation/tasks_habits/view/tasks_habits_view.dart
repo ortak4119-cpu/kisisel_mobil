@@ -1464,7 +1464,8 @@ class _TasksTab extends StatelessWidget {
       children: [
         item('·', 'tasks.planner.legendTask'.tr(), _ink),
         item('×', 'tasks.planner.legendDone'.tr(), _green),
-        item('>', 'tasks.planner.legendMoved'.tr(), _orange),
+        // "taşındı" (›) durumu görev satırlarında hiç render edilmediğinden
+        // yanıltıcı açıklama öğesi kaldırıldı.
         item('!', 'tasks.planner.legendOverdue'.tr(), _red),
       ],
     );
