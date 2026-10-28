@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../viewmodel/settings_viewmodel.dart';
 import '../../../core/utils/color_constant.dart';
-import '../../../core/utils/theme_provider.dart';
 import '../../../core/utils/premium_helper.dart';
 
 @RoutePage()
@@ -41,7 +40,6 @@ class SettingsView extends StatelessWidget {
       child: Consumer<SettingsViewModel>(
         builder: (context, viewModel, _) {
           final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-          final themeProvider = Provider.of<ThemeProvider>(context);
 
           return Scaffold(
             backgroundColor: isDarkMode
@@ -264,16 +262,8 @@ class SettingsView extends StatelessWidget {
                           sectionKey: sectionKeys['appearance'],
                           isDarkMode: isDarkMode,
                           children: [
-                            _buildThemeTile(
-                              context: context,
-                              title: 'settings.appearance.theme'.tr(),
-                              subtitle:
-                                  'settings.appearance.themeSubtitle'.tr(),
-                              icon: Icons.palette_rounded,
-                              isDarkMode: isDarkMode,
-                              themeProvider: themeProvider,
-                            ),
-                            _buildDivider(isDarkMode),
+                            // Tema, Profil › "Görünüm ve tema" içinde olduğundan
+                            // tekrar olmaması için buradan kaldırıldı.
                             _buildLanguageTile(
                               context: context,
                               viewModel: viewModel,
@@ -1086,138 +1076,6 @@ class SettingsView extends StatelessWidget {
     );
   }
 
-  Widget _buildThemeTile({
-    required BuildContext context,
-    required String title,
-    String? subtitle,
-    required IconData icon,
-    required bool isDarkMode,
-    required ThemeProvider themeProvider,
-  }) {
-    String themeModeText;
-    IconData themeModeIcon;
-    switch (themeProvider.themeMode) {
-      case ThemeMode.light:
-        themeModeText = 'settings.appearance.themeLight'.tr();
-        themeModeIcon = Icons.light_mode_rounded;
-        break;
-      case ThemeMode.dark:
-        themeModeText = 'settings.appearance.themeDark'.tr();
-        themeModeIcon = Icons.dark_mode_rounded;
-        break;
-      default:
-        themeModeText = 'settings.appearance.themeSystem'.tr();
-        themeModeIcon = Icons.brightness_auto_rounded;
-    }
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => _showThemeDialog(
-          context: context,
-          themeProvider: themeProvider,
-          isDarkMode: isDarkMode,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: isDarkMode
-                      ? ColorConstant.cardPurpleDark
-                      : ColorConstant.cardPurpleLight,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Icon(
-                  icon,
-                  color: ColorConstant.primaryPurple,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        color: isDarkMode
-                            ? ColorConstant.textPrimaryDark
-                            : ColorConstant.textPrimaryLight,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    if (subtitle != null) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        subtitle,
-                        style: TextStyle(
-                          color: isDarkMode
-                              ? ColorConstant.textSecondaryDark
-                              : ColorConstant.textSecondaryLight,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: isDarkMode
-                      ? ColorConstant.borderColorDark
-                      : ColorConstant.borderColorLight,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      themeModeIcon,
-                      size: 16,
-                      color: isDarkMode
-                          ? ColorConstant.textSecondaryDark
-                          : ColorConstant.textSecondaryLight,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      themeModeText,
-                      style: TextStyle(
-                        color: isDarkMode
-                            ? ColorConstant.textSecondaryDark
-                            : ColorConstant.textSecondaryLight,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Icon(
-                Icons.arrow_forward_ios_rounded,
-                size: 18,
-                color: isDarkMode
-                    ? ColorConstant.textMutedDark
-                    : ColorConstant.textMutedLight,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildLanguageTile({
     required BuildContext context,
     required SettingsViewModel viewModel,
@@ -1353,106 +1211,6 @@ class SettingsView extends StatelessWidget {
             ? ColorConstant.borderColorDark
             : ColorConstant.borderColorLight,
       ),
-    );
-  }
-
-  void _showThemeDialog({
-    required BuildContext context,
-    required ThemeProvider themeProvider,
-    required bool isDarkMode,
-  }) {
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          backgroundColor: isDarkMode
-              ? ColorConstant.cardColorDark
-              : ColorConstant.cardColorLight,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
-          title: Text(
-            'settings.appearance.themeSelect'.tr(),
-            style: TextStyle(
-              color: isDarkMode
-                  ? ColorConstant.textPrimaryDark
-                  : ColorConstant.textPrimaryLight,
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildThemeOption(
-                context: dialogContext,
-                title: 'settings.appearance.themeSystem'.tr(),
-                subtitle: 'settings.appearance.themeSystemSubtitle'.tr(),
-                icon: Icons.brightness_auto_rounded,
-                value: ThemeMode.system,
-                groupValue: themeProvider.themeMode,
-                isDarkMode: isDarkMode,
-                onChanged: (value) {
-                  if (value != null) {
-                    themeProvider.setThemeMode(value);
-                    context.read<SettingsViewModel>().updateThemeMode(value);
-                    Navigator.pop(dialogContext);
-                  }
-                },
-              ),
-              const SizedBox(height: 8),
-              _buildThemeOption(
-                context: dialogContext,
-                title: 'settings.appearance.themeLight'.tr(),
-                subtitle: 'settings.appearance.themeLightSubtitle'.tr(),
-                icon: Icons.light_mode_rounded,
-                value: ThemeMode.light,
-                groupValue: themeProvider.themeMode,
-                isDarkMode: isDarkMode,
-                onChanged: (value) {
-                  if (value != null) {
-                    themeProvider.setThemeMode(value);
-                    context.read<SettingsViewModel>().updateThemeMode(value);
-                    Navigator.pop(dialogContext);
-                  }
-                },
-              ),
-              const SizedBox(height: 8),
-              _buildThemeOption(
-                context: dialogContext,
-                title: 'settings.appearance.themeDark'.tr(),
-                subtitle: 'settings.appearance.themeDarkSubtitle'.tr(),
-                icon: Icons.dark_mode_rounded,
-                value: ThemeMode.dark,
-                groupValue: themeProvider.themeMode,
-                isDarkMode: isDarkMode,
-                onChanged: (value) {
-                  if (value != null) {
-                    themeProvider.setThemeMode(value);
-                    context.read<SettingsViewModel>().updateThemeMode(value);
-                    Navigator.pop(dialogContext);
-                  }
-                },
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              style: TextButton.styleFrom(
-                foregroundColor: ColorConstant.primaryPurple,
-              ),
-              child: Text(
-                'common.close'.tr(),
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
     );
   }
 
@@ -1660,107 +1418,6 @@ class SettingsView extends StatelessWidget {
           ],
         );
       },
-    );
-  }
-
-  Widget _buildThemeOption({
-    required BuildContext context,
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required ThemeMode value,
-    required ThemeMode groupValue,
-    required bool isDarkMode,
-    required Function(ThemeMode?) onChanged,
-  }) {
-    final isSelected = value == groupValue;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => onChanged(value),
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? (isDarkMode
-                    ? ColorConstant.primaryDarkModePurple.withValues(alpha: 0.2)
-                    : ColorConstant.primaryPurple.withValues(alpha: 0.1))
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isSelected
-                  ? (isDarkMode
-                      ? ColorConstant.primaryDarkModePurple
-                      : ColorConstant.primaryPurple)
-                  : (isDarkMode
-                      ? ColorConstant.borderColorDark
-                      : ColorConstant.borderColorLight),
-              width: isSelected ? 2 : 1,
-            ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: isDarkMode
-                      ? ColorConstant.cardColorDark
-                      : ColorConstant.cardColorLight,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  icon,
-                  color: isSelected
-                      ? (isDarkMode
-                          ? ColorConstant.primaryDarkModePurple
-                          : ColorConstant.primaryPurple)
-                      : (isDarkMode
-                          ? ColorConstant.textSecondaryDark
-                          : ColorConstant.textSecondaryLight),
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        color: isDarkMode
-                            ? ColorConstant.textPrimaryDark
-                            : ColorConstant.textPrimaryLight,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        color: isDarkMode
-                            ? ColorConstant.textSecondaryDark
-                            : ColorConstant.textSecondaryLight,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (isSelected)
-                Icon(
-                  Icons.check_circle_rounded,
-                  color: isDarkMode
-                      ? ColorConstant.primaryDarkModePurple
-                      : ColorConstant.primaryPurple,
-                  size: 24,
-                ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 

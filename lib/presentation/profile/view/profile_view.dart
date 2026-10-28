@@ -227,7 +227,9 @@ class _ProfileViewState extends State<ProfileView> {
             color: _cPurple,
             icon: Icons.sticky_note_2_rounded,
             title: 'profile.createdNotes'.tr(),
-            value: '$notesTotal · $notesLocked ${'profile.pinnedWord'.tr()}',
+            // Değer notes.locked'tır; "sabit" (pinned) yerine doğru etiket
+            // "kilitli" kullanılır (NoteStats'te pinned alanı yok).
+            value: '$notesTotal · $notesLocked ${'notes.locked'.tr().toLowerCase()}',
             showChevron: false),
       ]),
       const SizedBox(height: 18),
