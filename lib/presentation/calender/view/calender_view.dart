@@ -521,7 +521,11 @@ class _CalendarViewState extends State<CalendarView> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                for (final cat in kEvCats.take(3)) _legend(cat, c),
+                // Kullanıcının seçebildiği tüm kategoriler açıklamada olsun
+                // (finans-türevi Abonelik/Taksit hariç). "Diğer" eksikti.
+                for (final cat in kEvCats.where(
+                    (c) => c.id != 'subscription' && c.id != 'installment'))
+                  _legend(cat, c),
               ],
             ),
           ),
