@@ -392,7 +392,9 @@ class _FinanceViewState extends State<FinanceView> {
                 if (vm.financeHasPin) {
                   vm.lockNow();
                 } else {
-                  _showBudgetSettingsDialog(context, vm, c.isDark);
+                  // PIN yoksa "Kilitle" doğrudan kilit kurulumunu açmalı
+                  // (önceden yanlışlıkla Bütçe ayarlarını açıyordu).
+                  _showFinanceLockDialog(context, vm, c.isDark);
                 }
               }),
             ],
