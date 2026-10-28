@@ -21,10 +21,9 @@ class AppInitializer {
     // Flutter engine'i başlatmadan önce binding'i başlat
     WidgetsFlutterBinding.ensureInitialized();
 
-    // Dikey yönelim için zorla
+    // Yalnızca dik (upright portre) yönelim — hem telefon hem tablet/iPad.
     await SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
     ]);
 
     // Firebase'i başlat
