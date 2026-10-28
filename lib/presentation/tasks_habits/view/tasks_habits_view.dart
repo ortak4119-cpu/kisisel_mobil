@@ -3423,8 +3423,12 @@ class _AddHabitBottomSheet extends StatelessWidget {
                         const SizedBox(height: 20),
                         _label(c, 'tasks.rowRecurrence'.tr()),
                         _recurrenceSeg(vm, c),
-                        const SizedBox(height: 12),
-                        _weekdayRow(vm, c),
+                        // Gün seçici yalnızca "Özel" tekrarda anlamlı; diğer
+                        // modlarda pasif/boş görünüp kafa karıştırıyordu.
+                        if (vm.habitRecurrence == 'custom') ...[
+                          const SizedBox(height: 12),
+                          _weekdayRow(vm, c),
+                        ],
                         const SizedBox(height: 16),
                         _detailCard(context, vm, c),
                         const SizedBox(height: 20),
