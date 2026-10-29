@@ -1402,7 +1402,20 @@
       "days": "日",
       "years": "年"
     },
-    "trial_disclosure": "{{duration}}無料、その後{{price}}/年。いつでもキャンセル可能。"
+    "trial_disclosure": "{{duration}}無料、その後{{price}}/年。いつでもキャンセル可能。",
+    "trial_headline": "無料で試して、使い心地を確かめよう。",
+    "tl_today": "今日",
+    "tl_today_desc": "すべてのPremium機能がすぐに使えます。",
+    "tl_mid": "トライアル中",
+    "tl_mid_desc": "料金はかかりません。いつでも解約できます。",
+    "tl_end": "トライアル終了時",
+    "tl_end_desc": "{price} が請求されます。",
+    "feature_header": "Premiumでできること",
+    "coupon_prompt": "割引コードはありますか？",
+    "coupon_hint": "割引コード",
+    "coupon_apply": "適用",
+    "coupon_empty": "コードを入力してください",
+    "coupon_soon": "クーポンは近日提供予定です"
   },
   "subscription": {
     "monthly": "月額",

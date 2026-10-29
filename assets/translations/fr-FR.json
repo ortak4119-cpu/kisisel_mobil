@@ -1402,7 +1402,20 @@
       "days": "jours",
       "years": "ans"
     },
-    "trial_disclosure": "Gratuit pendant {{duration}}, puis {{price}}/an. Annulez à tout moment."
+    "trial_disclosure": "Gratuit pendant {{duration}}, puis {{price}}/an. Annulez à tout moment.",
+    "trial_headline": "Essaie gratuitement, vois comment ça marche.",
+    "tl_today": "Aujourd'hui",
+    "tl_today_desc": "Toutes les fonctions Premium sont débloquées immédiatement.",
+    "tl_mid": "Pendant l'essai",
+    "tl_mid_desc": "Aucun frais, annule à tout moment.",
+    "tl_end": "À la fin de l'essai",
+    "tl_end_desc": "{price} te seront facturés.",
+    "feature_header": "Avec Premium",
+    "coupon_prompt": "Tu as un code de réduction ?",
+    "coupon_hint": "Code de réduction",
+    "coupon_apply": "Appliquer",
+    "coupon_empty": "Saisis un code",
+    "coupon_soon": "Les codes seront bientôt disponibles"
   },
   "subscription": {
     "monthly": "Mensuel",

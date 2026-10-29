@@ -1402,7 +1402,20 @@
       "days": "天",
       "years": "年"
     },
-    "trial_disclosure": "{{duration}}免费，然后{{price}}/年。随时取消。"
+    "trial_disclosure": "{{duration}}免费，然后{{price}}/年。随时取消。",
+    "trial_headline": "免费试用，看看它如何运作。",
+    "tl_today": "今天",
+    "tl_today_desc": "所有 Premium 功能立即解锁。",
+    "tl_mid": "试用期间",
+    "tl_mid_desc": "不收费，随时可取消。",
+    "tl_end": "试用结束时",
+    "tl_end_desc": "将向你收取 {price}。",
+    "feature_header": "Premium 包含",
+    "coupon_prompt": "有折扣码吗？",
+    "coupon_hint": "折扣码",
+    "coupon_apply": "应用",
+    "coupon_empty": "请输入折扣码",
+    "coupon_soon": "优惠码即将上线"
   },
   "subscription": {
     "monthly": "每月",

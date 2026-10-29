@@ -314,4 +314,53 @@ class PaywallViewModel extends ChangeNotifier {
       'price': price,
     });
   }
+
+  /// Deneme süresini gün olarak döndür (zaman çizelgesi için)
+  int getTrialDays(Package? package) {
+    if (package == null || !hasTrialPeriod(package)) return 0;
+    final p = package.storeProduct.introductoryPrice!.period;
+    if (p.isEmpty) return 0;
+    final s = p.substring(1);
+    if (s.endsWith('D')) return int.tryParse(s.replaceAll('D', '')) ?? 0;
+    if (s.endsWith('W')) return (int.tryParse(s.replaceAll('W', '')) ?? 0) * 7;
+    if (s.endsWith('M')) return (int.tryParse(s.replaceAll('M', '')) ?? 0) * 30;
+    if (s.endsWith('Y')) return (int.tryParse(s.replaceAll('Y', '')) ?? 0) * 365;
+    return 0;
+  }
+
+  // ---------- İndirim kodu (kupon) ----------
+  // TODO(backend): POST /coupons/validate {code, plan} -> indirimli offering id.
+  // Dönen offering ile indirimli paket seçilip satın aldırılacak. Şimdilik
+  // sadece UI hazır; doğrulama backend + admin panel bitince bağlanacak.
+  bool _isApplyingCoupon = false;
+  String? _couponMessage;
+  bool _couponApplied = false;
+
+  bool get isApplyingCoupon => _isApplyingCoupon;
+  String? get couponMessage => _couponMessage;
+  bool get couponApplied => _couponApplied;
+
+  Future<bool> applyCoupon(String code) async {
+    final trimmed = code.trim();
+    _couponApplied = false;
+    _couponMessage = null;
+    if (trimmed.isEmpty) {
+      _couponMessage = 'paywall.coupon_empty'.tr();
+      notifyListeners();
+      return false;
+    }
+    _isApplyingCoupon = true;
+    notifyListeners();
+    // Kupon doğrulama backend'i henüz hazır değil.
+    _couponMessage = 'paywall.coupon_soon'.tr();
+    _isApplyingCoupon = false;
+    notifyListeners();
+    return false;
+  }
+
+  void clearCoupon() {
+    _couponMessage = null;
+    _couponApplied = false;
+    notifyListeners();
+  }
 }

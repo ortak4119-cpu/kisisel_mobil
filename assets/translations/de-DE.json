@@ -1402,7 +1402,20 @@
       "days": "Tage",
       "years": "Jahre"
     },
-    "trial_disclosure": "{{duration}} kostenlos, dann {{price}}/Jahr. Jederzeit kündbar."
+    "trial_disclosure": "{{duration}} kostenlos, dann {{price}}/Jahr. Jederzeit kündbar.",
+    "trial_headline": "Kostenlos testen und sehen, wie es funktioniert.",
+    "tl_today": "Heute",
+    "tl_today_desc": "Alle Premium-Funktionen werden sofort freigeschaltet.",
+    "tl_mid": "Während der Testphase",
+    "tl_mid_desc": "Keine Kosten, jederzeit kündbar.",
+    "tl_end": "Wenn die Testphase endet",
+    "tl_end_desc": "Dir werden {price} berechnet.",
+    "feature_header": "Mit Premium",
+    "coupon_prompt": "Hast du einen Rabattcode?",
+    "coupon_hint": "Rabattcode",
+    "coupon_apply": "Anwenden",
+    "coupon_empty": "Bitte gib einen Code ein",
+    "coupon_soon": "Gutscheine sind bald verfügbar"
   },
   "subscription": {
     "monthly": "Monatlich",

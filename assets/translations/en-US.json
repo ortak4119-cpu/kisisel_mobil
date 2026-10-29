@@ -1402,7 +1402,20 @@
       "days": "days",
       "years": "years"
     },
-    "trial_disclosure": "Free for {{duration}}, then {{price}}/year. Cancel anytime."
+    "trial_disclosure": "Free for {{duration}}, then {{price}}/year. Cancel anytime.",
+    "trial_headline": "Try it free, see how it works.",
+    "tl_today": "Today",
+    "tl_today_desc": "All Premium features unlock right away.",
+    "tl_mid": "During the trial",
+    "tl_mid_desc": "No charge, cancel anytime.",
+    "tl_end": "When the trial ends",
+    "tl_end_desc": "You'll be charged {price}.",
+    "feature_header": "With Premium",
+    "coupon_prompt": "Have a discount code?",
+    "coupon_hint": "Discount code",
+    "coupon_apply": "Apply",
+    "coupon_empty": "Please enter a code",
+    "coupon_soon": "Coupons will be available soon"
   },
   "subscription": {
     "monthly": "Monthly",

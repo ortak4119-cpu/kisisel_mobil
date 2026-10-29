@@ -3,10 +3,34 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import '../../../core/route/app_router.gr.dart';
 import '../../../core/route/auth_gate.dart';
-import '../../../core/utils/color_constant.dart';
 import '../viewmodel/paywall_viewmodel.dart';
+
+/// Paywall renk paleti (uygulamanin not/kraft temasiyla uyumlu sicak tonlar).
+class _P {
+  static const bg1 = Color(0xFFEFE8D6);
+  static const bg2 = Color(0xFFE8DEC7);
+  static const bg3 = Color(0xFFE2D7BD);
+  static const ink = Color(0xFF3B3426);
+  static const muted = Color(0xFF7A6F57);
+  static const muted2 = Color(0xFF9B9079);
+  static const legal = Color(0xFFA89E86);
+  static const paper = Color(0xFFF6F1E6);
+  static const border = Color(0xFFE4D9C2);
+  static const amber = Color(0xFFC0792A);
+  static const amberText = Color(0xFFB9731E);
+  static const amberBtn1 = Color(0xFFE3952F);
+  static const amberBtn2 = Color(0xFFC06B22);
+  static const selBg = Color(0xFFF6E9CE);
+  static const radioOff = Color(0xFFCDBF9C);
+  static const green = Color(0xFF2E9E6B);
+  static const greenText = Color(0xFF2E7D52);
+  static const greenBg = Color(0xFFD7EFE1);
+  static const kraft = Color(0xFF8A6A33);
+  static const line = Color(0xFFDDD1B5);
+}
 
 @RoutePage()
 class PaywallView extends StatefulWidget {
@@ -16,38 +40,13 @@ class PaywallView extends StatefulWidget {
   State<PaywallView> createState() => _PaywallViewState();
 }
 
-class _PaywallViewState extends State<PaywallView>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    );
-
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
-    );
-
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
-    );
-
-    _animationController.forward();
-  }
+class _PaywallViewState extends State<PaywallView> {
+  bool _couponOpen = false;
+  final TextEditingController _couponController = TextEditingController();
 
   @override
   void dispose() {
-    _animationController.dispose();
+    _couponController.dispose();
     super.dispose();
   }
 
@@ -56,194 +55,211 @@ class _PaywallViewState extends State<PaywallView>
     return ChangeNotifierProvider(
       create: (_) => PaywallViewModel()..initialize(),
       child: Consumer<PaywallViewModel>(
-        builder: (context, viewModel, _) {
-          final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-          // Kök rota olarak (replaceAll ile) açıldıysa geri yığını boştur:
-          // bu "kapı modu"dur — ✕ yok, geri kilitli, tek çıkış oturumu kapatmak.
+        builder: (context, vm, _) {
+          // Kok rota olarak acildiysa (geri yigini bos) kapi modu.
           final isGate = !context.router.canPop();
-
           return PopScope(
             canPop: !isGate,
             child: Scaffold(
-            backgroundColor: isDarkMode
-                ? ColorConstant.bgColorDark
-                : ColorConstant.bgColorLight,
-            body: Stack(
-              children: [
-                // Gradient Background
-                _buildGradientBackground(isDarkMode),
-
-                // Content
-                SafeArea(
-                  child: viewModel.isLoading
-                      ? _buildLoadingState()
-                      : FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: SlideTransition(
-                      position: _slideAnimation,
-                      child: Column(
-                        children: [
-                          // Close Button
-                          _buildCloseButton(context, isDarkMode, isGate),
-
-                          Expanded(
-                            child: SingleChildScrollView(
-                              physics: const BouncingScrollPhysics(),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 24),
-                              child: Column(
-                                children: [
-                                  const SizedBox(height: 20),
-
-                                  // Crown Icon & Title
-                                  _buildHeader(isDarkMode),
-
-                                  const SizedBox(height: 32),
-
-                                  // Features List
-                                  _buildFeaturesList(isDarkMode),
-
-                                  const SizedBox(height: 40),
-
-                                  // Package Options
-                                  _buildPackageOptions(
-                                      context, viewModel, isDarkMode),
-
-                                  const SizedBox(height: 32),
-
-                                  // Trial Disclosure (Apple gereksinimi)
-                                  if (viewModel.selectedPackage != null &&
-                                      viewModel.hasTrialPeriod(
-                                          viewModel.selectedPackage))
-                                    _buildTrialDisclosure(
-                                        context, viewModel, isDarkMode),
-
-                                  // Subscribe Button
-                                  _buildSubscribeButton(
-                                      context, viewModel, isDarkMode, isGate),
-
-                                  const SizedBox(height: 16),
-
-                                  // Restore Purchases
-                                  _buildRestoreButton(
-                                      context, viewModel, isDarkMode, isGate),
-
-                                  const SizedBox(height: 12),
-
-                                  // Terms & Privacy
-                                  _buildLegalLinks(isDarkMode),
-
-                                  const SizedBox(height: 24),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+              body: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [_P.bg1, _P.bg2, _P.bg3],
+                    stops: [0.0, 0.6, 1.0],
                   ),
                 ),
-              ],
+                child: SafeArea(
+                  child: vm.isLoading
+                      ? _loading()
+                      : _content(context, vm, isGate),
+                ),
+              ),
             ),
-          ),
           );
         },
       ),
     );
   }
 
-  Widget _buildGradientBackground(bool isDarkMode) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isDarkMode
-              ? [
-            ColorConstant.primaryDarkModePurple.withValues(alpha: 0.3),
-            ColorConstant.primaryDarkModeBlue.withValues(alpha: 0.2),
-            ColorConstant.bgColorDark,
-          ]
-              : [
-            ColorConstant.primaryPurple.withValues(alpha: 0.1),
-            ColorConstant.accentBlue.withValues(alpha: 0.05),
-            ColorConstant.bgColorLight,
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLoadingState() {
+  Widget _loading() {
     return Center(
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          CircularProgressIndicator(
-            color: ColorConstant.primaryPurple,
-          ),
+          const CircularProgressIndicator(color: _P.amber),
           const SizedBox(height: 16),
-          Text(
-            'paywall.loading'.tr(),
-            style: TextStyle(
-              color: ColorConstant.textSecondaryDark,
-              fontSize: 16,
-            ),
-          ),
+          Text('paywall.loading'.tr(),
+              style: const TextStyle(color: _P.muted, fontSize: 16)),
         ],
       ),
     );
   }
 
-  Widget _buildCloseButton(BuildContext context, bool isDarkMode, bool isGate) {
-    // Kapı modunda ✕ yok; tek çıkış "Oturumu kapat".
+  Widget _content(BuildContext context, PaywallViewModel vm, bool isGate) {
+    final selected = vm.selectedPackage;
+    final hasTrial = vm.hasTrialPeriod(selected);
+
+    return Column(
+      children: [
+        _topBar(context, isGate),
+        Expanded(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  hasTrial
+                      ? 'paywall.trial_headline'.tr()
+                      : 'paywall.title'.tr(),
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    height: 1.25,
+                    letterSpacing: -0.4,
+                    color: _P.ink,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                if (hasTrial) _timeline(vm, selected) else _features(),
+                const SizedBox(height: 16),
+                _plans(vm),
+                const SizedBox(height: 12),
+                _coupon(context, vm),
+                const SizedBox(height: 14),
+                _subscribeButton(context, vm, isGate, hasTrial),
+                const SizedBox(height: 12),
+                _disclosure(vm, selected, hasTrial),
+                const SizedBox(height: 14),
+                _restore(context, vm, isGate),
+                const SizedBox(height: 12),
+                _legal(),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _topBar(BuildContext context, bool isGate) {
     if (isGate) {
       return Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             TextButton.icon(
               onPressed: () => AuthGate.signOutToLogin(context),
-              icon: Icon(
-                Icons.logout_rounded,
-                size: 18,
-                color: isDarkMode
-                    ? ColorConstant.textSecondaryDark
-                    : ColorConstant.textSecondaryLight,
-              ),
-              label: Text(
-                'settings.account.logout'.tr(),
-                style: TextStyle(
-                  color: isDarkMode
-                      ? ColorConstant.textSecondaryDark
-                      : ColorConstant.textSecondaryLight,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              icon: const Icon(Icons.logout_rounded,
+                  size: 18, color: _P.muted),
+              label: Text('settings.account.logout'.tr(),
+                  style: const TextStyle(
+                      color: _P.muted,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600)),
             ),
           ],
         ),
       );
     }
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           IconButton(
             onPressed: () => context.router.pop(),
-            icon: Icon(
-              Icons.close_rounded,
-              color: isDarkMode
-                  ? ColorConstant.textPrimaryDark
-                  : ColorConstant.textPrimaryLight,
-            ),
-            style: IconButton.styleFrom(
-              backgroundColor: isDarkMode
-                  ? ColorConstant.cardColorDark
-                  : ColorConstant.cardColorLight,
+            icon: const Icon(Icons.close_rounded, color: _P.ink),
+            style: IconButton.styleFrom(backgroundColor: _P.paper),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ---------- Deneme zaman cizelgesi ----------
+  Widget _timeline(PaywallViewModel vm, Package? pkg) {
+    final price = pkg?.storeProduct.priceString ?? '';
+    return Container(
+      decoration: BoxDecoration(
+        color: _P.paper,
+        border: Border.all(color: _P.border),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(
+              color: Color(0x1A3C3014), blurRadius: 24, offset: Offset(0, 10)),
+        ],
+      ),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+      child: Column(
+        children: [
+          _tlStep(
+            _P.green,
+            Icons.lock_open_rounded,
+            'paywall.tl_today'.tr(),
+            'paywall.tl_today_desc'.tr(),
+            true,
+          ),
+          _tlStep(
+            _P.kraft,
+            Icons.notifications_none_rounded,
+            'paywall.tl_mid'.tr(),
+            'paywall.tl_mid_desc'.tr(),
+            true,
+          ),
+          _tlStep(
+            _P.amber,
+            Icons.event_rounded,
+            'paywall.tl_end'.tr(),
+            'paywall.tl_end_desc'.tr(namedArgs: {'price': price}),
+            false,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _tlStep(
+      Color circle, IconData ic, String title, String desc, bool line) {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Column(
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(color: circle, shape: BoxShape.circle),
+                child: Icon(ic, color: Colors.white, size: 17),
+              ),
+              if (line)
+                Expanded(
+                  child: Container(width: 2, color: _P.line, margin: const EdgeInsets.only(top: 4)),
+                ),
+            ],
+          ),
+          const SizedBox(width: 13),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 3, bottom: 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: const TextStyle(
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w800,
+                          color: _P.ink)),
+                  const SizedBox(height: 2),
+                  Text(desc,
+                      style: const TextStyle(
+                          fontSize: 12.5, color: _P.muted, height: 1.4)),
+                ],
+              ),
             ),
           ),
         ],
@@ -251,713 +267,427 @@ class _PaywallViewState extends State<PaywallView>
     );
   }
 
-  Widget _buildHeader(bool isDarkMode) {
+  // ---------- Ozellik listesi (deneme yoksa) ----------
+  Widget _features() {
+    final items = [
+      'paywall.feature1_title',
+      'paywall.feature2_title',
+      'paywall.feature3_title',
+      'paywall.feature4_title',
+      'paywall.feature5_title',
+    ];
+    return Container(
+      decoration: BoxDecoration(
+        color: _P.paper,
+        border: Border.all(color: _P.border),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(
+              color: Color(0x1A3C3014), blurRadius: 24, offset: Offset(0, 10)),
+        ],
+      ),
+      padding: const EdgeInsets.fromLTRB(16, 15, 16, 15),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('paywall.feature_header'.tr(),
+              style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.3,
+                  color: Color(0xFF8A7F66))),
+          const SizedBox(height: 12),
+          ...items.map((k) => Padding(
+                padding: const EdgeInsets.only(bottom: 11),
+                child: Row(
+                  children: [
+                    const Icon(Icons.check_rounded, size: 18, color: _P.green),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(k.tr(),
+                          style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: _P.ink)),
+                    ),
+                  ],
+                ),
+              )),
+        ],
+      ),
+    );
+  }
+
+  // ---------- Plan kartlari ----------
+  Widget _plans(PaywallViewModel vm) {
+    final cards = <Widget>[];
+    if (vm.monthlyPackage != null) {
+      cards.add(_planCard(
+        vm: vm,
+        index: 0,
+        title: 'paywall.monthly'.tr(),
+        sub: 'paywall.renews_monthly'.tr(),
+        price: vm.monthlyPackage!.storeProduct.priceString,
+      ));
+    }
+    if (vm.annualPackage != null) {
+      cards.add(_planCard(
+        vm: vm,
+        index: 1,
+        title: 'paywall.annual'.tr(),
+        sub: '${vm.getMonthlyPriceForAnnual()}${'paywall.per_month'.tr()}',
+        price: vm.annualPackage!.storeProduct.priceString,
+        savings: '%${vm.getSavingsPercentage()} ${'paywall.savings'.tr()}',
+      ));
+    }
+    if (vm.lifetimePackage != null) {
+      cards.add(_planCard(
+        vm: vm,
+        index: 2,
+        title: 'paywall.lifetime'.tr(),
+        sub: 'paywall.unlimited_access'.tr(),
+        price: vm.lifetimePackage!.storeProduct.priceString,
+      ));
+    }
     return Column(
       children: [
-        // Crown Icon
-        Container(
-          width: 80,
-          height: 80,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                ColorConstant.accentYellow,
-                ColorConstant.accentOrange,
-              ],
-            ),
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: ColorConstant.accentYellow.withValues(alpha: 0.4),
-                blurRadius: 20,
-                spreadRadius: 5,
-              ),
-            ],
-          ),
-          child: Icon(
-            Icons.workspace_premium_rounded,
-            size: 40,
-            color: ColorConstant.white,
-          ),
-        ),
-
-        const SizedBox(height: 24),
-
-        // Title
-        Text(
-          'paywall.title'.tr(),
-          style: TextStyle(
-            color: isDarkMode
-                ? ColorConstant.textPrimaryDark
-                : ColorConstant.textPrimaryLight,
-            fontSize: 32,
-            fontWeight: FontWeight.w900,
-            letterSpacing: -0.5,
-          ),
-          textAlign: TextAlign.center,
-        ),
-
-        const SizedBox(height: 8),
-
-        // Subtitle
-        Text(
-          'paywall.subtitle'.tr(),
-          style: TextStyle(
-            color: isDarkMode
-                ? ColorConstant.textSecondaryDark
-                : ColorConstant.textSecondaryLight,
-            fontSize: 16,
-            height: 1.5,
-          ),
-          textAlign: TextAlign.center,
-        ),
+        for (int i = 0; i < cards.length; i++) ...[
+          if (i > 0) const SizedBox(height: 10),
+          cards[i],
+        ],
       ],
     );
   }
 
-  Widget _buildFeaturesList(bool isDarkMode) {
-    final features = [
-      {
-        'icon': Icons.task_alt_rounded,
-        'title': 'paywall.feature1_title'.tr(),
-        'subtitle': 'paywall.feature1_subtitle'.tr(),
-      },
-      {
-        'icon': Icons.notifications_active_rounded,
-        'title': 'paywall.feature2_title'.tr(),
-        'subtitle': 'paywall.feature2_subtitle'.tr(),
-      },
-      {
-        'icon': Icons.sync_rounded,
-        'title': 'paywall.feature3_title'.tr(),
-        'subtitle': 'paywall.feature3_subtitle'.tr(),
-      },
-      {
-        'icon': Icons.analytics_rounded,
-        'title': 'paywall.feature4_title'.tr(),
-        'subtitle': 'paywall.feature4_subtitle'.tr(),
-      },
-      {
-        'icon': Icons.notification_important_rounded,
-        'title': 'paywall.feature5_title'.tr(),
-        'subtitle': 'paywall.feature5_subtitle'.tr(),
-      },
-    ];
-
-    return Column(
-      children: features.map((feature) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      ColorConstant.primaryPurple,
-                      ColorConstant.accentBlue,
+  Widget _planCard({
+    required PaywallViewModel vm,
+    required int index,
+    required String title,
+    required String sub,
+    required String price,
+    String? savings,
+  }) {
+    final selected = vm.selectedPackageIndex == index;
+    return GestureDetector(
+      onTap: () => vm.selectPackage(index),
+      child: Container(
+        decoration: BoxDecoration(
+          color: selected ? _P.selBg : _P.paper,
+          border: Border.all(
+            color: selected ? _P.amber : _P.border,
+            width: selected ? 2 : 1,
+          ),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 14),
+        child: Row(
+          children: [
+            Container(
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                    color: selected ? _P.amber : _P.radioOff, width: 2),
+              ),
+              child: selected
+                  ? Center(
+                      child: Container(
+                        width: 11,
+                        height: 11,
+                        decoration: const BoxDecoration(
+                            shape: BoxShape.circle, color: _P.amber),
+                      ),
+                    )
+                  : null,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(title,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                fontSize: 15,
+                                fontWeight:
+                                    selected ? FontWeight.w800 : FontWeight.w700,
+                                color: _P.ink)),
+                      ),
+                      if (savings != null) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 7, vertical: 3),
+                          decoration: BoxDecoration(
+                              color: _P.greenBg,
+                              borderRadius: BorderRadius.circular(7)),
+                          child: Text(savings,
+                              style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  color: _P.greenText)),
+                        ),
+                      ],
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  feature['icon'] as IconData,
-                  color: ColorConstant.white,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      feature['title'] as String,
+                  const SizedBox(height: 2),
+                  Text(sub,
                       style: TextStyle(
-                        color: isDarkMode
-                            ? ColorConstant.textPrimaryDark
-                            : ColorConstant.textPrimaryLight,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      feature['subtitle'] as String,
-                      style: TextStyle(
-                        color: isDarkMode
-                            ? ColorConstant.textSecondaryDark
-                            : ColorConstant.textSecondaryLight,
-                        fontSize: 14,
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
-                ),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: selected ? _P.amberText : _P.muted2)),
+                ],
               ),
-            ],
-          ),
-        );
-      }).toList(),
+            ),
+            const SizedBox(width: 10),
+            Text(price,
+                style: const TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.w800, color: _P.ink)),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _buildPackageOptions(
-      BuildContext context,
-      PaywallViewModel viewModel,
-      bool isDarkMode,
-      ) {
+  // ---------- Indirim kodu (acilir / kapanir, varsayilan kapali) ----------
+  Widget _coupon(BuildContext context, PaywallViewModel vm) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'paywall.choose_plan'.tr(),
-          style: TextStyle(
-            color: isDarkMode
-                ? ColorConstant.textPrimaryDark
-                : ColorConstant.textPrimaryLight,
-            fontSize: 20,
-            fontWeight: FontWeight.w800,
+        GestureDetector(
+          onTap: () {
+            setState(() => _couponOpen = !_couponOpen);
+            if (!_couponOpen) vm.clearCoupon();
+          },
+          behavior: HitTestBehavior.opaque,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Row(
+              children: [
+                const Text('%',
+                    style: TextStyle(
+                        color: _P.amber, fontWeight: FontWeight.w800)),
+                const SizedBox(width: 6),
+                Text('paywall.coupon_prompt'.tr(),
+                    style: const TextStyle(
+                        color: _P.kraft,
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w700)),
+                const SizedBox(width: 4),
+                Icon(
+                    _couponOpen
+                        ? Icons.keyboard_arrow_up_rounded
+                        : Icons.keyboard_arrow_down_rounded,
+                    size: 20,
+                    color: _P.kraft),
+              ],
+            ),
           ),
         ),
-        const SizedBox(height: 16),
-
-        // Monthly Package
-        if (viewModel.monthlyPackage != null)
-          _buildPackageCard(
-            context: context,
-            viewModel: viewModel,
-            index: 0,
-            package: viewModel.monthlyPackage!,
-            title: 'paywall.monthly'.tr(),
-            badge: null, // Ücretsiz deneme badge'i artık inline gösteriliyor
-            isDarkMode: isDarkMode,
+        if (_couponOpen) ...[
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFBF8EF),
+                    border: Border.all(color: _P.border),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  child: TextField(
+                    controller: _couponController,
+                    textCapitalization: TextCapitalization.characters,
+                    style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: _P.ink),
+                    decoration: InputDecoration(
+                      isDense: true,
+                      border: InputBorder.none,
+                      hintText: 'paywall.coupon_hint'.tr(),
+                      hintStyle: const TextStyle(
+                          color: Color(0xFFB3A98F),
+                          fontWeight: FontWeight.w500),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    onChanged: (_) {
+                      if (vm.couponMessage != null) vm.clearCoupon();
+                    },
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              SizedBox(
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: vm.isApplyingCoupon
+                      ? null
+                      : () => vm.applyCoupon(_couponController.text),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _P.amberBtn2,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                  ),
+                  child: vm.isApplyingCoupon
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white))
+                      : Text('paywall.coupon_apply'.tr(),
+                          style: const TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w700)),
+                ),
+              ),
+            ],
           ),
-
-        const SizedBox(height: 12),
-
-        // Annual Package (Most Popular)
-        if (viewModel.annualPackage != null)
-          _buildPackageCard(
-            context: context,
-            viewModel: viewModel,
-            index: 1,
-            package: viewModel.annualPackage!,
-            title: 'paywall.annual'.tr(),
-            badge: 'paywall.most_popular'.tr(),
-            isPopular: true,
-            isDarkMode: isDarkMode,
-          ),
-
-        const SizedBox(height: 12),
-
-        // Lifetime Package
-        if (viewModel.lifetimePackage != null)
-          _buildPackageCard(
-            context: context,
-            viewModel: viewModel,
-            index: 2,
-            package: viewModel.lifetimePackage!,
-            title: 'paywall.lifetime'.tr(),
-            badge: 'paywall.one_time_payment'.tr(),
-            isLifetime: true,
-            isDarkMode: isDarkMode,
-          ),
+          if (vm.couponMessage != null) ...[
+            const SizedBox(height: 8),
+            Text(vm.couponMessage!,
+                style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                    color: vm.couponApplied ? _P.green : _P.amberText)),
+          ],
+        ],
       ],
     );
   }
 
-  Widget _buildPackageCard({
-    required BuildContext context,
-    required PaywallViewModel viewModel,
-    required int index,
-    required package,
-    required String title,
-    String? badge,
-    bool isPopular = false,
-    bool isLifetime = false,
-    required bool isDarkMode,
-  }) {
-    final isSelected = viewModel.selectedPackageIndex == index;
-    final price = package.storeProduct.priceString;
-    final hasTrial = viewModel.hasTrialPeriod(package);
-
-    return GestureDetector(
-      onTap: () => viewModel.selectPackage(index),
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? (isDarkMode
-                  ? ColorConstant.primaryDarkModePurple.withValues(alpha: 0.15)
-                  : ColorConstant.primaryPurple.withValues(alpha: 0.08))
-                  : (isDarkMode
-                  ? ColorConstant.cardColorDark
-                  : ColorConstant.cardColorLight),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: isSelected
-                    ? (isDarkMode
-                    ? ColorConstant.primaryDarkModePurple
-                    : ColorConstant.primaryPurple)
-                    : (isDarkMode
-                    ? ColorConstant.borderColorDark
-                    : ColorConstant.borderColorLight),
-                width: isSelected ? 2 : 1,
-              ),
-              boxShadow: isSelected
-                  ? [
-                BoxShadow(
-                  color: (isDarkMode
-                      ? ColorConstant.primaryDarkModePurple
-                      : ColorConstant.primaryPurple)
-                      .withValues(alpha: 0.2),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-                  : null,
-            ),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    // Radio Button
-                    Container(
-                      width: 24,
-                      height: 24,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: isSelected
-                              ? (isDarkMode
-                              ? ColorConstant.primaryDarkModePurple
-                              : ColorConstant.primaryPurple)
-                              : (isDarkMode
-                              ? ColorConstant.borderColorDark
-                              : ColorConstant.borderColorLight),
-                          width: 2,
-                        ),
-                      ),
-                      child: isSelected
-                          ? Center(
-                        child: Container(
-                          width: 12,
-                          height: 12,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: isDarkMode
-                                ? ColorConstant.primaryDarkModePurple
-                                : ColorConstant.primaryPurple,
-                          ),
-                        ),
-                      )
-                          : null,
-                    ),
-
-                    const SizedBox(width: 16),
-
-                    // Package Info
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                title,
-                                style: TextStyle(
-                                  color: isDarkMode
-                                      ? ColorConstant.textPrimaryDark
-                                      : ColorConstant.textPrimaryLight,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              // Ücretsiz deneme badge'i yanında göster
-                              if (hasTrial) ...[
-                                const SizedBox(width: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 3,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        ColorConstant.accentBlue,
-                                        ColorConstant.primaryPurple,
-                                      ],
-                                    ),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    '${viewModel.getTrialDurationText(package)} ${'paywall.free_badge'.tr()}',
-                                    style: TextStyle(
-                                      color: ColorConstant.white,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          // Annual plan details
-                          if (isPopular) ...[
-                            Row(
-                              children: [
-                                Text(
-                                  '${viewModel.getMonthlyPriceForAnnual()}${'paywall.per_month'.tr()}',
-                                  style: TextStyle(
-                                    color: ColorConstant.primaryPurple,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: ColorConstant.accentBlue.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(
-                                    '%${viewModel.getSavingsPercentage()} ${'paywall.savings'.tr()}',
-                                    style: TextStyle(
-                                      color: ColorConstant.accentBlue,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ] else if (index == 0)
-                            Text(
-                              'paywall.renews_monthly'.tr(),
-                              style: TextStyle(
-                                color: isDarkMode
-                                    ? ColorConstant.textSecondaryDark
-                                    : ColorConstant.textSecondaryLight,
-                                fontSize: 13,
-                              ),
-                            )
-                          else if (isLifetime)
-                              Text(
-                                'paywall.unlimited_access'.tr(),
-                                style: TextStyle(
-                                  color: isDarkMode
-                                      ? ColorConstant.textSecondaryDark
-                                      : ColorConstant.textSecondaryLight,
-                                  fontSize: 13,
-                                ),
-                              ),
-                        ],
-                      ),
-                    ),
-
-                    // Price
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          price,
-                          style: TextStyle(
-                            color: isDarkMode
-                                ? ColorConstant.textPrimaryDark
-                                : ColorConstant.textPrimaryLight,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        if (isPopular)
-                          Text(
-                            'paywall.per_year'.tr(),
-                            style: TextStyle(
-                              color: isDarkMode
-                                  ? ColorConstant.textSecondaryDark
-                                  : ColorConstant.textSecondaryLight,
-                              fontSize: 12,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          // Corner Badge - Sadece badge varsa ve ücretsiz deneme badge'i değilse göster
-          if (badge != null && !hasTrial)
-            Positioned(
-              top: -8,
-              right: 12,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: isPopular
-                      ? ColorConstant.primaryPurple
-                      : isLifetime
-                      ? ColorConstant.accentBlue
-                      : ColorConstant.primaryPurple,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  badge,
-                  style: TextStyle(
-                    color: ColorConstant.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTrialDisclosure(
-      BuildContext context,
-      PaywallViewModel viewModel,
-      bool isDarkMode,
-      ) {
-    final disclosure = viewModel.getTrialDisclosure(viewModel.selectedPackage);
-
-    if (disclosure.isEmpty) return const SizedBox.shrink();
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDarkMode
-            ? ColorConstant.cardColorDark.withValues(alpha: 0.5)
-            : ColorConstant.white.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isDarkMode
-              ? ColorConstant.borderColorDark
-              : ColorConstant.borderColorLight,
-          width: 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.info_outline_rounded,
-            color: isDarkMode
-                ? ColorConstant.primaryDarkModePurple
-                : ColorConstant.primaryPurple,
-            size: 20,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              disclosure,
-              style: TextStyle(
-                color: isDarkMode
-                    ? ColorConstant.textSecondaryDark
-                    : ColorConstant.textSecondaryLight,
-                fontSize: 13,
-                height: 1.4,
-              ),
-              textAlign: TextAlign.left,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSubscribeButton(
-      BuildContext context,
-      PaywallViewModel viewModel,
-      bool isDarkMode,
-      bool isGate,
-      ) {
-    // Yıllık plan ve ücretsiz deneme varsa buton metnini değiştir
-    String buttonText = 'paywall.continue'.tr();
-    if (viewModel.selectedPackageIndex == 1 &&
-        viewModel.annualPackage != null &&
-        viewModel.hasTrialPeriod(viewModel.annualPackage)) {
-      buttonText = 'paywall.start_free_trial'.tr();
-    }
-
+  // ---------- Satin alma butonu ----------
+  Widget _subscribeButton(
+      BuildContext context, PaywallViewModel vm, bool isGate, bool hasTrial) {
+    final label =
+        hasTrial ? 'paywall.start_free_trial'.tr() : 'paywall.continue'.tr();
     return SizedBox(
       width: double.infinity,
-      height: 56,
+      height: 54,
       child: ElevatedButton(
-        onPressed: viewModel.isPurchasing
+        onPressed: vm.isPurchasing
             ? null
             : () async {
-          final success = await viewModel.purchaseSelectedPackage();
-          if (success && mounted) {
-            if (isGate) {
-              // Kapı modunda arkada ekran yok; Home'a geç.
-              context.router.replaceAll([const HomeRoute()]);
-            } else {
-              context.router.pop(true); // Premium oldu
-            }
-          }
-        },
+                final ok = await vm.purchaseSelectedPackage();
+                if (ok && mounted) {
+                  if (isGate) {
+                    context.router.replaceAll([const HomeRoute()]);
+                  } else {
+                    context.router.pop(true);
+                  }
+                } else if (!ok && vm.errorMessage != null && mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(vm.errorMessage!)),
+                  );
+                }
+              },
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
           padding: EdgeInsets.zero,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         ),
         child: Ink(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                ColorConstant.primaryPurple,
-                ColorConstant.accentBlue,
-              ],
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [_P.amberBtn1, _P.amberBtn2],
             ),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Container(
             alignment: Alignment.center,
-            child: viewModel.isPurchasing
-                ? SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.5,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  ColorConstant.white,
-                ),
-              ),
-            )
-                : Text(
-              buttonText,
-              style: TextStyle(
-                color: ColorConstant.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
+            child: vm.isPurchasing
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2.5, color: Colors.white))
+                : Text(label,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700)),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildRestoreButton(
-      BuildContext context,
-      PaywallViewModel viewModel,
-      bool isDarkMode,
-      bool isGate,
-      ) {
-    return TextButton(
-      onPressed: viewModel.isRestoring
-          ? null
-          : () async {
-        final success = await viewModel.restorePurchases();
-        if (success && mounted) {
-          if (isGate) {
-            context.router.replaceAll([const HomeRoute()]);
-          } else {
-            context.router.pop(true); // Premium restore edildi
-          }
-        } else if (!success && viewModel.errorMessage != null && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(viewModel.errorMessage!),
-              backgroundColor: ColorConstant.errorRed,
-            ),
-          );
-        }
-      },
-      child: viewModel.isRestoring
-          ? SizedBox(
-        width: 16,
-        height: 16,
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          valueColor: AlwaysStoppedAnimation<Color>(
-            isDarkMode
-                ? ColorConstant.textSecondaryDark
-                : ColorConstant.textSecondaryLight,
-          ),
-        ),
-      )
-          : Text(
-        'paywall.restore'.tr(),
-        style: TextStyle(
-          color: isDarkMode
-              ? ColorConstant.textSecondaryDark
-              : ColorConstant.textSecondaryLight,
-          fontSize: 15,
-          fontWeight: FontWeight.w600,
-        ),
+  Widget _disclosure(PaywallViewModel vm, Package? pkg, bool hasTrial) {
+    final text = hasTrial
+        ? vm.getTrialDisclosure(pkg)
+        : '${pkg?.storeProduct.priceString ?? ''} · ${'paywall.renews_monthly'.tr()}';
+    if (text.trim().isEmpty) return const SizedBox.shrink();
+    return Text(
+      text,
+      textAlign: TextAlign.center,
+      style: const TextStyle(fontSize: 12, color: _P.muted2, height: 1.5),
+    );
+  }
+
+  Widget _restore(BuildContext context, PaywallViewModel vm, bool isGate) {
+    return Center(
+      child: TextButton(
+        onPressed: vm.isRestoring
+            ? null
+            : () async {
+                final ok = await vm.restorePurchases();
+                if (ok && mounted) {
+                  if (isGate) {
+                    context.router.replaceAll([const HomeRoute()]);
+                  } else {
+                    context.router.pop(true);
+                  }
+                } else if (!ok && vm.errorMessage != null && mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(vm.errorMessage!)),
+                  );
+                }
+              },
+        child: vm.isRestoring
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2, color: _P.muted))
+            : Text('paywall.restore'.tr(),
+                style: const TextStyle(
+                    color: _P.kraft,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600)),
       ),
     );
   }
 
-  Widget _buildLegalLinks(bool isDarkMode) {
+  Widget _legal() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         TextButton(
-          onPressed: () {
-            launchUrl(
-              Uri.parse('https://goodlifesync.com/terms'),
-              mode: LaunchMode.externalApplication,
-            );
-          },
-          child: Text(
-            'paywall.terms'.tr(),
-            style: TextStyle(
-              color: isDarkMode
-                  ? ColorConstant.textMutedDark
-                  : ColorConstant.textMutedLight,
-              fontSize: 12,
-            ),
+          onPressed: () => launchUrl(
+            Uri.parse('https://goodlifesync.com/terms'),
+            mode: LaunchMode.externalApplication,
           ),
+          child: Text('paywall.terms'.tr(),
+              style: const TextStyle(color: _P.legal, fontSize: 12)),
         ),
-        Text(
-          '•',
-          style: TextStyle(
-            color: isDarkMode
-                ? ColorConstant.textMutedDark
-                : ColorConstant.textMutedLight,
-          ),
-        ),
+        const Text('·', style: TextStyle(color: _P.legal)),
         TextButton(
-          onPressed: () {
-            launchUrl(
-              Uri.parse('https://goodlifesync.com/privacy'),
-              mode: LaunchMode.externalApplication,
-            );
-          },
-          child: Text(
-            'paywall.privacy'.tr(),
-            style: TextStyle(
-              color: isDarkMode
-                  ? ColorConstant.textMutedDark
-                  : ColorConstant.textMutedLight,
-              fontSize: 12,
-            ),
+          onPressed: () => launchUrl(
+            Uri.parse('https://goodlifesync.com/privacy'),
+            mode: LaunchMode.externalApplication,
           ),
+          child: Text('paywall.privacy'.tr(),
+              style: const TextStyle(color: _P.legal, fontSize: 12)),
         ),
       ],
     );

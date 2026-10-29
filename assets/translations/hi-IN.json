@@ -1402,7 +1402,20 @@
       "days": "दिन",
       "years": "साल"
     },
-    "trial_disclosure": "{{duration}} के लिए मुफ़्त, फिर {{price}}/वर्ष। कभी भी रद्द करें।"
+    "trial_disclosure": "{{duration}} के लिए मुफ़्त, फिर {{price}}/वर्ष। कभी भी रद्द करें।",
+    "trial_headline": "मुफ़्त आज़माएँ, देखें यह कैसे काम करता है।",
+    "tl_today": "आज",
+    "tl_today_desc": "सभी Premium सुविधाएँ तुरंत खुल जाती हैं।",
+    "tl_mid": "ट्रायल के दौरान",
+    "tl_mid_desc": "कोई शुल्क नहीं, कभी भी रद्द करें।",
+    "tl_end": "ट्रायल खत्म होने पर",
+    "tl_end_desc": "आपसे {price} लिया जाएगा।",
+    "feature_header": "Premium के साथ",
+    "coupon_prompt": "क्या आपके पास डिस्काउंट कोड है?",
+    "coupon_hint": "डिस्काउंट कोड",
+    "coupon_apply": "लागू करें",
+    "coupon_empty": "कृपया कोड दर्ज करें",
+    "coupon_soon": "कूपन जल्द ही उपलब्ध होंगे"
   },
   "subscription": {
     "monthly": "मासिक",

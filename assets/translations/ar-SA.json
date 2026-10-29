@@ -1402,7 +1402,20 @@
       "days": "أيام",
       "years": "سنوات"
     },
-    "trial_disclosure": "مجاني لمدة {{duration}}، ثم {{price}}/سنة. يمكنك الإلغاء في أي وقت."
+    "trial_disclosure": "مجاني لمدة {{duration}}، ثم {{price}}/سنة. يمكنك الإلغاء في أي وقت.",
+    "trial_headline": "جرّبه مجانًا وشاهد كيف يعمل.",
+    "tl_today": "اليوم",
+    "tl_today_desc": "تُفتح جميع ميزات Premium فورًا.",
+    "tl_mid": "خلال الفترة التجريبية",
+    "tl_mid_desc": "بدون رسوم، يمكنك الإلغاء في أي وقت.",
+    "tl_end": "عند انتهاء الفترة التجريبية",
+    "tl_end_desc": "سيتم خصم {price}.",
+    "feature_header": "مع Premium",
+    "coupon_prompt": "هل لديك رمز خصم؟",
+    "coupon_hint": "رمز الخصم",
+    "coupon_apply": "تطبيق",
+    "coupon_empty": "أدخل رمزًا",
+    "coupon_soon": "ستتوفر الرموز قريبًا"
   },
   "subscription": {
     "monthly": "شهري",

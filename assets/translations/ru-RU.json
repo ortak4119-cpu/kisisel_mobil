@@ -1402,7 +1402,20 @@
       "days": "дней",
       "years": "лет"
     },
-    "trial_disclosure": "Бесплатно {{duration}}, затем {{price}}/год. Отменить в любое время."
+    "trial_disclosure": "Бесплатно {{duration}}, затем {{price}}/год. Отменить в любое время.",
+    "trial_headline": "Попробуй бесплатно и посмотри, как это работает.",
+    "tl_today": "Сегодня",
+    "tl_today_desc": "Все функции Premium открываются сразу.",
+    "tl_mid": "Во время пробного периода",
+    "tl_mid_desc": "Без оплаты, отменить можно в любой момент.",
+    "tl_end": "По окончании пробного периода",
+    "tl_end_desc": "С тебя спишут {price}.",
+    "feature_header": "С Premium",
+    "coupon_prompt": "Есть промокод?",
+    "coupon_hint": "Промокод",
+    "coupon_apply": "Применить",
+    "coupon_empty": "Введите код",
+    "coupon_soon": "Промокоды скоро появятся"
   },
   "subscription": {
     "monthly": "Ежемесячно",

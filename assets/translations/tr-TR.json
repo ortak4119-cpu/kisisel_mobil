@@ -1402,7 +1402,20 @@
       "days": "gün",
       "years": "yıl"
     },
-    "trial_disclosure": "{{duration}} ücretsiz, sonra {{price}}/yıl. İstediğiniz zaman iptal edebilirsiniz."
+    "trial_disclosure": "{{duration}} ücretsiz, sonra {{price}}/yıl. İstediğiniz zaman iptal edebilirsiniz.",
+    "trial_headline": "Ücretsiz dene, nasıl işlediğini gör.",
+    "tl_today": "Bugün",
+    "tl_today_desc": "Tüm Premium özellikleri hemen açılır.",
+    "tl_mid": "Deneme boyunca",
+    "tl_mid_desc": "Ücret alınmaz, istediğin an iptal edebilirsin.",
+    "tl_end": "Deneme bitince",
+    "tl_end_desc": "{price} ücret alınır.",
+    "feature_header": "Premium ile",
+    "coupon_prompt": "İndirim kodun var mı?",
+    "coupon_hint": "İndirim kodu",
+    "coupon_apply": "Uygula",
+    "coupon_empty": "Lütfen bir kod gir",
+    "coupon_soon": "Kupon sistemi yakında aktif olacak"
   },
   "subscription": {
     "monthly": "Aylık",
