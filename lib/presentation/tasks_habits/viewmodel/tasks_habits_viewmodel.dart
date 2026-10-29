@@ -1137,7 +1137,7 @@ class TasksHabitsViewModel extends ChangeNotifier {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'errors.updateFailed'.tr(),
+            response.errorMessage,
           );
         }
       }
@@ -1249,7 +1249,7 @@ class TasksHabitsViewModel extends ChangeNotifier {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'errors.updateFailed'.tr(),
+            response.errorMessage,
           );
         }
       }
@@ -1401,7 +1401,7 @@ class TasksHabitsViewModel extends ChangeNotifier {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'errors.unknownError'.tr(),
+            response.errorMessage,
           );
         }
         debugPrint('Task creation error: ${response.errors}');
@@ -1548,7 +1548,7 @@ class TasksHabitsViewModel extends ChangeNotifier {
         }
       } else {
         if (context.mounted) {
-          CustomSnackBar.showError(context, response.errorMessage ?? 'errors.general'.tr());
+          CustomSnackBar.showError(context, response.errorMessage);
         }
       }
     } catch (e) {
@@ -1682,7 +1682,7 @@ class TasksHabitsViewModel extends ChangeNotifier {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'errors.unknownError'.tr(),
+            response.errorMessage,
           );
         }
         debugPrint('Habit creation error: ${response.errors}');
@@ -1723,7 +1723,7 @@ class TasksHabitsViewModel extends ChangeNotifier {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'errors.general'.tr(),
+            response.errorMessage,
           );
         }
       }
@@ -1791,7 +1791,7 @@ class TasksHabitsViewModel extends ChangeNotifier {
         }
       } else if (context.mounted) {
         CustomSnackBar.showError(
-            context, response.errorMessage ?? 'errors.general'.tr());
+            context, response.errorMessage);
       }
     } catch (e) {
       if (context.mounted) {
@@ -1817,7 +1817,7 @@ class TasksHabitsViewModel extends ChangeNotifier {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'errors.general'.tr(),
+            response.errorMessage,
           );
         }
       }

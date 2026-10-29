@@ -159,7 +159,9 @@ class _ProfileViewState extends State<ProfileView> {
         : 0;
 
     return [
+      _coverBanner(context, vm, user, isDark),
       _header(context, vm, user, isDark),
+      _completionCard(context, vm, user, isDark),
       const SizedBox(height: 22),
 
       // ─── SEVİYE ───
@@ -267,6 +269,13 @@ class _ProfileViewState extends State<ProfileView> {
             onTap: () => showAccountInfoSheet(context, vm)),
         _divider(isDark),
         _navRow(context, isDark,
+            color: _cOrange,
+            icon: Icons.workspace_premium_rounded,
+            title: 'profile.membership.title'.tr(),
+            value: membershipPlanLabel(vm.currentUser),
+            onTap: () => showMembershipSheet(context, vm)),
+        _divider(isDark),
+        _navRow(context, isDark,
             color: _cPurple,
             icon: Icons.palette_rounded,
             title: 'profile.appearanceTheme'.tr(),
@@ -304,11 +313,150 @@ class _ProfileViewState extends State<ProfileView> {
             icon: Icons.info_rounded,
             title: 'profile.aboutApp'.tr(),
             onTap: () => _showAbout(context)),
+        _divider(isDark),
+        _navRow(context, isDark,
+            color: _cPurple,
+            icon: Icons.slideshow_rounded,
+            title: 'profile.replayOnboarding'.tr(),
+            onTap: () => context.router.push(const OnboardingRoute())),
       ]),
       const SizedBox(height: 18),
 
       _logoutCard(context, vm, isDark),
+      if (vm.lastSyncedAt != null) ...[
+        const SizedBox(height: 14),
+        Center(
+          child: Text(
+            'profile.lastSync'.tr(namedArgs: {
+              'time':
+                  '${vm.lastSyncedAt!.hour.toString().padLeft(2, '0')}:${vm.lastSyncedAt!.minute.toString().padLeft(2, '0')}'
+            }),
+            style: TextStyle(fontSize: 12, color: _textMuted(isDark)),
+          ),
+        ),
+      ],
     ];
+  }
+
+  // ---------- Kapak fotoğrafı banner'ı ----------
+  Widget _coverBanner(
+      BuildContext context, ProfileViewModel vm, dynamic user, bool isDark) {
+    final String? url = user.coverImageUrl;
+    return GestureDetector(
+      onTap: () => _showImageSourceDialog(context, vm, isCover: true),
+      child: Container(
+        height: 128,
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: _borderColor(isDark)),
+          gradient: url == null
+              ? LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    _cOrange.withValues(alpha: 0.35),
+                    ColorConstant.primaryPurple.withValues(alpha: 0.35),
+                  ],
+                )
+              : null,
+          image: url != null
+              ? DecorationImage(image: NetworkImage(url), fit: BoxFit.cover)
+              : null,
+        ),
+        child: Stack(
+          children: [
+            if (url == null)
+              Center(
+                child: Text('profile.photoSelect.coverTitle'.tr(),
+                    style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: _textMuted(isDark))),
+              ),
+            Align(
+              alignment: Alignment.bottomRight,
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.38),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.photo_camera_rounded,
+                      color: Colors.white, size: 18),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ---------- Profil tamamlama göstergesi ----------
+  Widget _completionCard(
+      BuildContext context, ProfileViewModel vm, dynamic user, bool isDark) {
+    final checks = <bool>[
+      user.profilePictureUrl != null,
+      user.coverImageUrl != null,
+      ((user.bio as String?)?.trim().isNotEmpty ?? false),
+      ((user.email as String?)?.isNotEmpty ?? false),
+      (user.isVerified as bool? ?? false),
+    ];
+    final done = checks.where((e) => e).length;
+    final pct = (done / checks.length);
+    if (pct >= 1.0) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: GestureDetector(
+        onTap: () => showEditProfileSheet(context, vm),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: _cardColor(isDark),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: _borderColor(isDark)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                        'profile.completion'.tr(namedArgs: {
+                          'percent': '${(pct * 100).round()}'
+                        }),
+                        style: TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.w700,
+                            color: _textPrimary(isDark))),
+                  ),
+                  Text('profile.completeCta'.tr(),
+                      style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w800,
+                          color: ColorConstant.primaryPurple)),
+                ],
+              ),
+              const SizedBox(height: 10),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(5),
+                child: LinearProgressIndicator(
+                  value: pct,
+                  minHeight: 7,
+                  backgroundColor: ColorConstant.primaryPurple.withValues(alpha: 0.15),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                      ColorConstant.primaryPurple),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   // ---------- Profil başlık kartı ----------
@@ -2492,6 +2640,173 @@ void showAccountInfoSheet(BuildContext context, ProfileViewModel vm) {
   );
 }
 
+/// Kullanıcının abonelik planı etiketi (hem Profil satırı hem Üyelik sayfası).
+String membershipPlanLabel(dynamic u) {
+  final sub = (u?.subscriptionType ?? '').toString();
+  final isPrem = sub.isNotEmpty && sub.toLowerCase() != 'free';
+  if (!isPrem) return 'profile.membership.planFree'.tr();
+  switch (sub.toLowerCase()) {
+    case 'yearly':
+      return 'profile.membership.planYearly'.tr();
+    case 'monthly':
+      return 'profile.membership.planMonthly'.tr();
+    case 'lifetime':
+      return 'profile.membership.planLifetime'.tr();
+    default:
+      return 'profile.membership.planPremium'.tr();
+  }
+}
+
+/// Üyelik (abonelik planı) ayrı sayfası — Profil › HESAP › Üyelik'ten açılır.
+void showMembershipSheet(BuildContext context, ProfileViewModel vm) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => _MembershipSheet(vm: vm),
+  );
+}
+
+class _MembershipSheet extends StatelessWidget {
+  final ProfileViewModel vm;
+  const _MembershipSheet({required this.vm});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final u = vm.currentUser;
+    final textPrimary = isDark
+        ? ColorConstant.textPrimaryDark
+        : ColorConstant.textPrimaryLight;
+    final textSecondary = isDark
+        ? ColorConstant.textSecondaryDark
+        : ColorConstant.textSecondaryLight;
+    final textMuted =
+        isDark ? ColorConstant.textMutedDark : ColorConstant.textMutedLight;
+    final cardColor =
+        isDark ? ColorConstant.cardColorDark : ColorConstant.cardColorLight;
+    final borderColor = isDark
+        ? ColorConstant.borderColorDark
+        : ColorConstant.borderColorLight;
+
+    final sub = (u?.subscriptionType ?? '').toString();
+    final isPremium = sub.isNotEmpty && sub.toLowerCase() != 'free';
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? ColorConstant.bgColorDark : const Color(0xFFF6F4EF),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 42,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                        color: textMuted.withValues(alpha: 0.4),
+                        borderRadius: BorderRadius.circular(2)),
+                  ),
+                ),
+                Text('profile.membership.title'.tr(),
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: textPrimary)),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  decoration: BoxDecoration(
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: borderColor),
+                  ),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 11),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 38,
+                              height: 38,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF6A821)
+                                    .withValues(alpha: 0.14),
+                                borderRadius: BorderRadius.circular(11),
+                              ),
+                              child: Icon(
+                                  isPremium
+                                      ? Icons.workspace_premium_rounded
+                                      : Icons.card_giftcard_rounded,
+                                  size: 20,
+                                  color: const Color(0xFFF6A821)),
+                            ),
+                            const SizedBox(width: 13),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('profile.membership.plan'.tr(),
+                                      style: TextStyle(
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.w600,
+                                          color: textMuted)),
+                                  const SizedBox(height: 2),
+                                  Text(membershipPlanLabel(u),
+                                      style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w700,
+                                          color: textPrimary)),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (isPremium) ...[
+                        Divider(height: 1, color: borderColor),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(Icons.info_outline_rounded,
+                                  size: 18, color: textMuted),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                    'profile.membership.cancelNote'.tr(),
+                                    style: TextStyle(
+                                        fontSize: 12.5,
+                                        height: 1.45,
+                                        color: textSecondary)),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _AccountInfoSheet extends StatelessWidget {
   final ProfileViewModel vm;
   const _AccountInfoSheet({required this.vm});
@@ -2516,9 +2831,6 @@ class _AccountInfoSheet extends StatelessWidget {
 
     final isGuest = u?.isGuest ?? false;
     final hasEmail = (u?.email?.isNotEmpty ?? false);
-    final isPremium = (u?.subscriptionType != null &&
-        u!.subscriptionType!.isNotEmpty &&
-        u.subscriptionType!.toLowerCase() != 'free');
 
     final memberSince = u != null
         ? DateFormat('d MMMM yyyy', context.locale.toLanguageTag())
@@ -2586,20 +2898,6 @@ class _AccountInfoSheet extends StatelessWidget {
                   TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: c)),
         ]),
       );
-    }
-
-    String planLabel() {
-      if (!isPremium) return 'profile.membership.planFree'.tr();
-      switch ((u?.subscriptionType ?? '').toLowerCase()) {
-        case 'yearly':
-          return 'profile.membership.planYearly'.tr();
-        case 'monthly':
-          return 'profile.membership.planMonthly'.tr();
-        case 'lifetime':
-          return 'profile.membership.planLifetime'.tr();
-        default:
-          return 'profile.membership.planPremium'.tr();
-      }
     }
 
     return Padding(
@@ -2671,56 +2969,6 @@ class _AccountInfoSheet extends StatelessWidget {
                           isGuest
                               ? 'profile.account.typeGuest'.tr()
                               : 'profile.account.typeEmail'.tr()),
-                    ],
-                  ),
-                ),
-
-                // Üyelik bölümü
-                const SizedBox(height: 18),
-                Text('profile.membership.title'.tr(),
-                    style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
-                        color: textPrimary)),
-                const SizedBox(height: 10),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  decoration: BoxDecoration(
-                    color: cardColor,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: borderColor),
-                  ),
-                  child: Column(
-                    children: [
-                      infoRow(
-                          isPremium
-                              ? Icons.workspace_premium_rounded
-                              : Icons.card_giftcard_rounded,
-                          const Color(0xFFF6A821),
-                          'profile.membership.plan'.tr(),
-                          planLabel()),
-                      if (isPremium) ...[
-                        Divider(height: 1, color: borderColor),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Icon(Icons.info_outline_rounded,
-                                  size: 18, color: textMuted),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                    'profile.membership.cancelNote'.tr(),
-                                    style: TextStyle(
-                                        fontSize: 12.5,
-                                        height: 1.45,
-                                        color: textSecondary)),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
                     ],
                   ),
                 ),

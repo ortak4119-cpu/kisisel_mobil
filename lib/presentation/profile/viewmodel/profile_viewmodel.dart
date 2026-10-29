@@ -35,6 +35,10 @@ class ProfileViewModel extends ChangeNotifier {
   User? _currentUser;
   User? get currentUser => _currentUser;
 
+  // Profil verisinin en son başarıyla senkronlandığı an ("Son senkron" göstergesi).
+  DateTime? _lastSyncedAt;
+  DateTime? get lastSyncedAt => _lastSyncedAt;
+
   bool _isUserLoaded = false;
   bool get isUserLoaded => _isUserLoaded;
 
@@ -168,7 +172,7 @@ class ProfileViewModel extends ChangeNotifier {
       }
       if (context != null && context.mounted) {
         CustomSnackBar.showError(
-            context, response.errorMessage ?? 'errors.general'.tr());
+            context, response.errorMessage);
       }
       return false;
     } catch (e) {
@@ -225,7 +229,7 @@ class ProfileViewModel extends ChangeNotifier {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'profile.errors.imageUploadFailed'.tr(),
+            response.errorMessage,
           );
         }
       }
@@ -268,7 +272,7 @@ class ProfileViewModel extends ChangeNotifier {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'profile.errors.imageUploadFailed'.tr(),
+            response.errorMessage,
           );
         }
       }
@@ -372,7 +376,7 @@ class ProfileViewModel extends ChangeNotifier {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'errors.general'.tr(),
+            response.errorMessage,
           );
         }
         return false;
@@ -400,7 +404,7 @@ class ProfileViewModel extends ChangeNotifier {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'errors.general'.tr(),
+            response.errorMessage,
           );
         }
       }
@@ -426,7 +430,7 @@ class ProfileViewModel extends ChangeNotifier {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'errors.general'.tr(),
+            response.errorMessage,
           );
         }
       }
@@ -452,7 +456,7 @@ class ProfileViewModel extends ChangeNotifier {
         if (context.mounted) {
           CustomSnackBar.showError(
             context,
-            response.errorMessage ?? 'errors.general'.tr(),
+            response.errorMessage,
           );
         }
       }
@@ -490,7 +494,7 @@ class ProfileViewModel extends ChangeNotifier {
         }
       } else if (context.mounted) {
         CustomSnackBar.showError(
-            context, response.errorMessage ?? 'errors.general'.tr());
+            context, response.errorMessage);
       }
     } catch (e) {
       debugPrint('Error following user: $e');
@@ -511,7 +515,7 @@ class ProfileViewModel extends ChangeNotifier {
         }
       } else if (context.mounted) {
         CustomSnackBar.showError(
-            context, response.errorMessage ?? 'errors.general'.tr());
+            context, response.errorMessage);
       }
     } catch (e) {
       debugPrint('Error unfollowing user: $e');
@@ -586,5 +590,7 @@ class ProfileViewModel extends ChangeNotifier {
       loadAchievements(),
       loadLevelInfo(),
     ]);
+    _lastSyncedAt = DateTime.now();
+    notifyListeners();
   }
 }

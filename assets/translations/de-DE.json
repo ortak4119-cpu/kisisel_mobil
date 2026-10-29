@@ -636,7 +636,13 @@
       "planPremium": "Premium",
       "planFree": "Kostenlos",
       "cancelNote": "Du kannst dein Abo jederzeit in den Abo-Einstellungen deines Stores (App Store / Google Play) kündigen."
-    }
+    },
+    "replayOnboarding": "Intro erneut ansehen",
+    "completion": "Dein Profil ist zu {percent}% vollständig",
+    "completeCta": "Vervollständigen",
+    "lastSync": "Letzte Synchronisierung · {time}",
+    "sendVerification": "Bestätigungs-E-Mail senden",
+    "verificationSent": "Bestätigungs-E-Mail gesendet"
   },
   "calendar": {
     "screenTitle": "Kalender",
@@ -1206,7 +1212,9 @@
       "languageSubtitle": "Anwendungssprache auswählen",
       "languageSelect": "Sprache auswählen",
       "turkish": "Türkisch",
-      "english": "Englisch"
+      "english": "Englisch",
+      "disableAnimations": "Animationen ausschalten",
+      "disableAnimationsSubtitle": "Deaktiviere die Schwing- und Übergangsanimationen in Notizen"
     },
     "security": {
       "biometric": "Biometrische Authentifizierung",

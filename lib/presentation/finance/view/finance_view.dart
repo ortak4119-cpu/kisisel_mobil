@@ -7,8 +7,47 @@ import '../../../core/design/app_design.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/utils/subscription_icons.dart';
 import '../../../core/utils/currency.dart';
+import '../../../core/utils/animation_prefs.dart';
 import '../../../models/subscription/subscription_models.dart';
 import '../viewmodel/finance_viewmodel.dart';
+
+/// İlerleme çubuğu: ilk görünümde 0'dan değere dolar, değer değişince
+/// mevcut konumdan yeni değere animasyonla gider. "Animasyonları kapat"ta sabit.
+class _AnimatedProgress extends StatelessWidget {
+  final double value;
+  final double minHeight;
+  final Color background;
+  final Color fill;
+  const _AnimatedProgress({
+    required this.value,
+    required this.minHeight,
+    required this.background,
+    required this.fill,
+  });
+  @override
+  Widget build(BuildContext context) {
+    final v = value.clamp(0.0, 1.0);
+    if (!AnimationPrefs.isOn) {
+      return LinearProgressIndicator(
+        value: v,
+        minHeight: minHeight,
+        backgroundColor: background,
+        valueColor: AlwaysStoppedAnimation<Color>(fill),
+      );
+    }
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0, end: v),
+      duration: const Duration(milliseconds: 700),
+      curve: Curves.easeOutCubic,
+      builder: (_, t, __) => LinearProgressIndicator(
+        value: t,
+        minHeight: minHeight,
+        backgroundColor: background,
+        valueColor: AlwaysStoppedAnimation<Color>(fill),
+      ),
+    );
+  }
+}
 
 // ==================== FİNANS KATEGORİLERİ & YARDIMCILAR ====================
 
@@ -138,7 +177,30 @@ class _FinanceViewState extends State<FinanceView> {
                                 children: [
                                   _tabPills(c),
                                   const SizedBox(height: 16),
-                                  ..._tabContent(context, vm, c),
+                                  // Sekme içeriği çapraz geçer (Genel/Harcama/Plan).
+                                  AnimatedSwitcher(
+                                    duration: AnimationPrefs.isOn
+                                        ? const Duration(milliseconds: 280)
+                                        : Duration.zero,
+                                    switchInCurve: Curves.easeOut,
+                                    switchOutCurve: Curves.easeIn,
+                                    transitionBuilder: (ch, anim) =>
+                                        FadeTransition(
+                                      opacity: anim,
+                                      child: SlideTransition(
+                                        position: Tween<Offset>(
+                                                begin: const Offset(0, 0.03),
+                                                end: Offset.zero)
+                                            .animate(anim),
+                                        child: ch,
+                                      ),
+                                    ),
+                                    child: Column(
+                                      key: ValueKey(_dashTab),
+                                      children:
+                                          _tabContent(context, vm, c),
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -334,18 +396,26 @@ class _FinanceViewState extends State<FinanceView> {
               controller: _acctCtrl,
               onPageChanged: (i) => setState(() => _acctIdx = i),
               children: [
-                Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    child: _mainAccountCard(vm)),
-                Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    child: _subsAccountCard(vm)),
-                Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    child: _installmentsAccountCard(vm)),
-                Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    child: _savingsAccountCard(vm)),
+                _carouselCard(
+                    0,
+                    Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        child: _mainAccountCard(vm))),
+                _carouselCard(
+                    1,
+                    Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        child: _subsAccountCard(vm))),
+                _carouselCard(
+                    2,
+                    Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        child: _installmentsAccountCard(vm))),
+                _carouselCard(
+                    3,
+                    Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        child: _savingsAccountCard(vm))),
               ],
             ),
           ),
@@ -399,6 +469,23 @@ class _FinanceViewState extends State<FinanceView> {
     );
   }
 
+  // Carousel'de kaydırdıkça aktif kart büyür, yanlar hafif küçülür.
+  Widget _carouselCard(int index, Widget card) {
+    if (!AnimationPrefs.isOn) return card;
+    return AnimatedBuilder(
+      animation: _acctCtrl,
+      child: card,
+      builder: (context, child) {
+        double page = _acctIdx.toDouble();
+        if (_acctCtrl.hasClients && _acctCtrl.position.haveDimensions) {
+          page = _acctCtrl.page ?? page;
+        }
+        final diff = (page - index).abs().clamp(0.0, 1.0);
+        return Transform.scale(scale: 1 - diff * 0.07, child: child);
+      },
+    );
+  }
+
   Widget _tealIconBtn(IconData icon, VoidCallback onTap) => Material(
         color: Colors.black.withOpacity(0.05),
         shape: const CircleBorder(),
@@ -443,11 +530,21 @@ class _FinanceViewState extends State<FinanceView> {
             ],
           ),
           const SizedBox(height: 8),
-          Text(tl(vm.availableBalance),
-              style: const TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white)),
+          AnimatedSwitcher(
+            duration: AnimationPrefs.isOn
+                ? const Duration(milliseconds: 340)
+                : Duration.zero,
+            transitionBuilder: (ch, anim) => ScaleTransition(
+              scale: Tween<double>(begin: 0.85, end: 1).animate(anim),
+              child: FadeTransition(opacity: anim, child: ch),
+            ),
+            child: Text(tl(vm.availableBalance),
+                key: ValueKey<String>(tl(vm.availableBalance)),
+                style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white)),
+          ),
           const Spacer(),
           Text(
             '${'finance.spendableToday'.tr()} · ${tl0(vm.safeToSpendPerDay)}',
@@ -494,11 +591,11 @@ class _FinanceViewState extends State<FinanceView> {
           const Spacer(),
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
+            child: _AnimatedProgress(
               value: pct,
               minHeight: 6,
-              backgroundColor: Colors.white.withOpacity(0.3),
-              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+              background: Colors.white.withOpacity(0.3),
+              fill: Colors.white,
             ),
           ),
           const SizedBox(height: 6),
@@ -677,12 +774,11 @@ class _FinanceViewState extends State<FinanceView> {
           const SizedBox(height: 12),
           ClipRRect(
             borderRadius: BorderRadius.circular(5),
-            child: LinearProgressIndicator(
+            child: _AnimatedProgress(
               value: ratio,
               minHeight: 8,
-              backgroundColor: const Color(0xFF48BB78).withOpacity(0.18),
-              valueColor:
-                  const AlwaysStoppedAnimation<Color>(Color(0xFFF6894B)),
+              background: const Color(0xFF48BB78).withOpacity(0.18),
+              fill: const Color(0xFFF6894B),
             ),
           ),
           const SizedBox(height: 8),
@@ -1025,11 +1121,11 @@ class _FinanceViewState extends State<FinanceView> {
                     const SizedBox(height: 7),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
+                      child: _AnimatedProgress(
                         value: pct,
                         minHeight: 6,
-                        backgroundColor: color.withOpacity(0.14),
-                        valueColor: AlwaysStoppedAnimation<Color>(color),
+                        background: color.withOpacity(0.14),
+                        fill: color,
                       ),
                     ),
                   ],
@@ -1079,12 +1175,11 @@ class _FinanceViewState extends State<FinanceView> {
           const SizedBox(height: 10),
           ClipRRect(
             borderRadius: BorderRadius.circular(5),
-            child: LinearProgressIndicator(
+            child: _AnimatedProgress(
               value: pct,
               minHeight: 8,
-              backgroundColor: _fOrange.withOpacity(0.15),
-              valueColor: AlwaysStoppedAnimation<Color>(
-                  pct >= 1 ? const Color(0xFFF6524B) : _fOrange),
+              background: _fOrange.withOpacity(0.15),
+              fill: pct >= 1 ? const Color(0xFFF6524B) : _fOrange,
             ),
           ),
           const SizedBox(height: 8),

@@ -636,7 +636,13 @@
       "planPremium": "Premium",
       "planFree": "Ücretsiz",
       "cancelNote": "Aboneliğini cihazındaki mağaza (App Store / Google Play) abonelik ayarlarından istediğin zaman iptal edebilirsin."
-    }
+    },
+    "replayOnboarding": "Tanıtımı tekrar izle",
+    "completion": "Profilin %{percent} tamamlandı",
+    "completeCta": "Tamamla",
+    "lastSync": "Son senkron · {time}",
+    "sendVerification": "Doğrulama e-postası gönder",
+    "verificationSent": "Doğrulama e-postası gönderildi"
   },
   "calendar": {
     "screenTitle": "Takvim",
@@ -1206,7 +1212,9 @@
       "languageSubtitle": "Uygulama dilini seçin",
       "languageSelect": "Dil Seç",
       "turkish": "Türkçe",
-      "english": "İngilizce"
+      "english": "İngilizce",
+      "disableAnimations": "Animasyonları kapat",
+      "disableAnimationsSubtitle": "Notlardaki salınım ve geçiş animasyonlarını devre dışı bırak"
     },
     "security": {
       "biometric": "Biyometrik Kimlik Doğrulama",

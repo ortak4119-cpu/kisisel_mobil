@@ -14,6 +14,7 @@ import '../../../core/design/app_design.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/utils/custom_snackbar.dart';
 import '../../../core/utils/nl_task_parser.dart';
+import '../../../core/utils/animation_prefs.dart';
 import 'shared_habits_view.dart';
 import '../viewmodel/tasks_habits_viewmodel.dart';
 
@@ -97,37 +98,10 @@ class _TasksHabitsViewState extends State<TasksHabitsView> {
                 ],
               ),
             ),
-            floatingActionButton: FloatingActionButton(
-              heroTag: 'th_fab',
-              onPressed: () => _tab == 0
+            floatingActionButton: _ThFab(
+              onOpen: () => _tab == 0
                   ? showAddTaskSheet(context, viewModel, isDarkMode)
                   : showAddHabitSheet(context, viewModel, isDarkMode),
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              child: Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      ColorConstant.accentYellow,
-                      ColorConstant.accentOrange,
-                    ],
-                  ),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: ColorConstant.accentOrange.withValues(alpha: 0.45),
-                      blurRadius: 14,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: const Icon(Icons.add_rounded,
-                    color: Colors.white, size: 30),
-              ),
             ),
           );
         },
@@ -136,12 +110,383 @@ class _TasksHabitsViewState extends State<TasksHabitsView> {
   }
 }
 
+/// FAB: dokununca + simgesi × olacak şekilde döner; ekleme sayfası açıkken döner.
+class _ThFab extends StatefulWidget {
+  final Future<void> Function() onOpen;
+  const _ThFab({required this.onOpen});
+  @override
+  State<_ThFab> createState() => _ThFabState();
+}
+
+class _ThFabState extends State<_ThFab> {
+  bool _open = false;
+  @override
+  Widget build(BuildContext context) {
+    return FloatingActionButton(
+      heroTag: 'th_fab',
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      onPressed: () async {
+        setState(() => _open = true);
+        await widget.onOpen();
+        if (mounted) setState(() => _open = false);
+      },
+      child: Container(
+        width: 60,
+        height: 60,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              ColorConstant.accentYellow,
+              ColorConstant.accentOrange,
+            ],
+          ),
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: ColorConstant.accentOrange.withValues(alpha: 0.45),
+              blurRadius: 14,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: AnimatedRotation(
+          turns: (_open && AnimationPrefs.isOn) ? 0.125 : 0, // 45° → + yerine ×
+          duration: const Duration(milliseconds: 260),
+          curve: Curves.easeOut,
+          child: const Icon(Icons.add_rounded, color: Colors.white, size: 30),
+        ),
+      ),
+    );
+  }
+}
+
+// Kök katmana geçici bir overlay ekler (kutlama animasyonları için).
+void _showRootOverlay(
+    OverlayState overlay, Widget Function(VoidCallback remove) builder) {
+  late OverlayEntry entry;
+  entry = OverlayEntry(builder: (_) => builder(() {
+        if (entry.mounted) entry.remove();
+      }));
+  overlay.insert(entry);
+}
+
+/// Alışkanlık tamamlanınca seri kutlaması: alev rozeti zıplayarak belirir,
+/// kıvılcımlar saçılır, altında güncel seri (gün) yazar.
+class _StreakCelebrationOverlay extends StatefulWidget {
+  final int streak;
+  final VoidCallback onDone;
+  const _StreakCelebrationOverlay(
+      {required this.streak, required this.onDone});
+  @override
+  State<_StreakCelebrationOverlay> createState() =>
+      _StreakCelebrationOverlayState();
+}
+
+class _StreakCelebrationOverlayState extends State<_StreakCelebrationOverlay>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c;
+  static const List<Offset> _sparks = [
+    Offset(-72, -46),
+    Offset(70, -38),
+    Offset(-54, 42),
+    Offset(60, 48),
+    Offset(0, -78),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _c = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 1700))
+      ..forward();
+    _c.addStatusListener((s) {
+      if (s == AnimationStatus.completed) widget.onDone();
+    });
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: Material(
+        type: MaterialType.transparency,
+        child: AnimatedBuilder(
+        animation: _c,
+        builder: (_, __) {
+          final t = _c.value;
+          final appear = Curves.easeOutBack.transform((t / 0.3).clamp(0.0, 1.0));
+          final out = ((t - 0.82) / 0.18).clamp(0.0, 1.0);
+          final flick = 1 + 0.05 * math.sin(t * 40);
+          final sparkT = ((t - 0.28) / 0.34).clamp(0.0, 1.0);
+          final sparkOp = math.sin(sparkT * math.pi).clamp(0.0, 1.0);
+          return Center(
+            child: Opacity(
+              opacity: (1 - out).clamp(0.0, 1.0),
+              child: Transform.scale(
+                scale: appear.clamp(0.0, 1.2),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 170,
+                      height: 170,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        clipBehavior: Clip.none,
+                        children: [
+                          for (final o in _sparks)
+                            Transform.translate(
+                              offset: Offset.lerp(Offset.zero, o,
+                                  Curves.easeOut.transform(sparkT))!,
+                              child: Opacity(
+                                opacity: sparkOp,
+                                child: Container(
+                                  width: 9,
+                                  height: 9,
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Color(0xFFF4C06A),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          Transform.scale(
+                            scale: flick,
+                            child: Container(
+                              width: 120,
+                              height: 120,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: RadialGradient(
+                                  center: Alignment(0, -0.2),
+                                  colors: [Color(0xFFFBE2B8), Color(0xFFF4A024)],
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                      color: Color(0x66E08C1E),
+                                      blurRadius: 30,
+                                      spreadRadius: 2),
+                                ],
+                              ),
+                              child: const Icon(
+                                  Icons.local_fire_department_rounded,
+                                  color: Colors.white,
+                                  size: 62),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 18, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE0893C),
+                        borderRadius: BorderRadius.circular(22),
+                      ),
+                      child: Text(
+                        'habits.streakN'
+                            .tr(namedArgs: {'n': '${widget.streak}'}),
+                        style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+        ),
+      ),
+    );
+  }
+}
+
+/// Filtre menüsü öğesi: açılırken kademeli (soldan kayarak + belirerek) gelir.
+class _MenuItemIn extends StatefulWidget {
+  final int index;
+  final Widget child;
+  const _MenuItemIn({required this.index, required this.child});
+  @override
+  State<_MenuItemIn> createState() => _MenuItemInState();
+}
+
+class _MenuItemInState extends State<_MenuItemIn>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c;
+  @override
+  void initState() {
+    super.initState();
+    _c = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 260));
+    if (!AnimationPrefs.isOn) {
+      _c.value = 1;
+    } else {
+      Future.delayed(Duration(milliseconds: widget.index * 45), () {
+        if (mounted) _c.forward();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _c,
+      child: widget.child,
+      builder: (_, child) {
+        final v = Curves.easeOutCubic.transform(_c.value);
+        return Opacity(
+          opacity: v,
+          child: Transform.translate(offset: Offset((1 - v) * 16, 0), child: child),
+        );
+      },
+    );
+  }
+}
+
+/// Gecikmiş görev satırı: "Bugüne al"a basınca sağa kayıp solarak çıkar,
+/// sonra görev bugüne taşınır (liste tazelenince satır listeden düşer).
+class _OverdueRow extends StatefulWidget {
+  final TasksHabitsViewModel viewModel;
+  final Task task;
+  final AppColors c;
+  final bool isDark;
+  const _OverdueRow({
+    required this.viewModel,
+    required this.task,
+    required this.c,
+    required this.isDark,
+  });
+  @override
+  State<_OverdueRow> createState() => _OverdueRowState();
+}
+
+class _OverdueRowState extends State<_OverdueRow> {
+  bool _leaving = false;
+  static const _red = Color(0xFFF6524B);
+  static const _orange = Color(0xFFF6A821);
+
+  void _moveToToday() {
+    if (!AnimationPrefs.isOn) {
+      widget.viewModel.moveTaskToToday(widget.task, context);
+      return;
+    }
+    setState(() => _leaving = true);
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) widget.viewModel.moveTaskToToday(widget.task, context);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final vm = widget.viewModel;
+    final c = widget.c;
+    final t = widget.task;
+    final d = vm.dueDateOf(t);
+    final dateStr = d != null ? '${d.day}.${d.month}' : '';
+    final dur = AnimationPrefs.isOn
+        ? const Duration(milliseconds: 300)
+        : Duration.zero;
+    return AnimatedSlide(
+      offset: _leaving ? const Offset(1.15, 0) : Offset.zero,
+      duration: dur,
+      curve: Curves.easeInCubic,
+      child: AnimatedOpacity(
+        opacity: _leaving ? 0 : 1,
+        duration: dur,
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => vm.toggleTaskComplete(t, context),
+                child: Container(
+                  width: 22,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: _red.withOpacity(0.6), width: 2),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () =>
+                      showEditTaskSheet(context, vm, widget.isDark, t),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(t.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              fontSize: 15.5,
+                              fontWeight: FontWeight.w700,
+                              color: c.textPrimary)),
+                      const SizedBox(height: 2),
+                      Text(
+                          '${'tasks.overdue'.tr()}${dateStr.isNotEmpty ? ' · $dateStr' : ''}',
+                          style: const TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w600,
+                              color: _red)),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              GestureDetector(
+                onTap: _moveToToday,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: _orange.withOpacity(0.14),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text('tasks.moveToToday'.tr(),
+                      style: const TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                          color: _orange)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Görev ekleme sayfasını açar.
 /// Üst seviyede tutuluyor ki hem FAB hem de boş durum butonu aynı yeri açsın.
-void showAddTaskSheet(
+Future<void> showAddTaskSheet(
     BuildContext context, TasksHabitsViewModel viewModel, bool isDarkMode) {
   viewModel.resetTaskForm(); // temiz form + varsayılan bugün tarihi
-  showModalBottomSheet(
+  return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
@@ -153,9 +498,9 @@ void showAddTaskSheet(
 }
 
 /// Alışkanlık ekleme sayfasını açar.
-void showAddHabitSheet(
+Future<void> showAddHabitSheet(
     BuildContext context, TasksHabitsViewModel viewModel, bool isDarkMode) {
-  showModalBottomSheet(
+  return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
@@ -344,6 +689,94 @@ class _AreaDonutPainter extends CustomPainter {
       old.ratio != ratio || old.hasHabits != hasHabits || old.hole != hole;
 }
 
+/// Çeyrek-donut'u animasyonlu çizer: tamamlanma yayları eski orandan yeni
+/// orana doğru büyüyerek dolar (ilk açılışta 0'dan). Alışkanlık işaretleyince
+/// ilgili dilim yumuşakça dolar.
+class _AnimatedAreaDonut extends StatefulWidget {
+  final Map<String, double> ratio;
+  final Map<String, bool> hasHabits;
+  final Color hole;
+  const _AnimatedAreaDonut({
+    required this.ratio,
+    required this.hasHabits,
+    required this.hole,
+  });
+  @override
+  State<_AnimatedAreaDonut> createState() => _AnimatedAreaDonutState();
+}
+
+class _AnimatedAreaDonutState extends State<_AnimatedAreaDonut>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c;
+  late Map<String, double> _from;
+  late Map<String, double> _to;
+
+  @override
+  void initState() {
+    super.initState();
+    _c = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 700));
+    _from = {for (final a in kLifeAreas) a.key: 0.0};
+    _to = Map<String, double>.from(widget.ratio);
+    if (AnimationPrefs.isOn) {
+      _c.forward();
+    } else {
+      _c.value = 1;
+    }
+  }
+
+  bool _sameRatios(Map<String, double> a, Map<String, double> b) {
+    for (final k in a.keys) {
+      if (((a[k] ?? 0) - (b[k] ?? 0)).abs() > 0.0001) return false;
+    }
+    return true;
+  }
+
+  @override
+  void didUpdateWidget(covariant _AnimatedAreaDonut old) {
+    super.didUpdateWidget(old);
+    if (!_sameRatios(old.ratio, widget.ratio)) {
+      final t = _c.value;
+      _from = {
+        for (final a in kLifeAreas)
+          a.key: (_from[a.key] ?? 0) +
+              ((_to[a.key] ?? 0) - (_from[a.key] ?? 0)) * t
+      };
+      _to = Map<String, double>.from(widget.ratio);
+      if (AnimationPrefs.isOn) {
+        _c.forward(from: 0);
+      } else {
+        _c.value = 1;
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _c,
+      builder: (_, __) {
+        final t = _c.value;
+        final cur = {
+          for (final a in kLifeAreas)
+            a.key: (_from[a.key] ?? 0) +
+                ((_to[a.key] ?? 0) - (_from[a.key] ?? 0)) * t
+        };
+        return CustomPaint(
+          painter: _AreaDonutPainter(
+              ratio: cur, hasHabits: widget.hasHabits, hole: widget.hole),
+        );
+      },
+    );
+  }
+}
+
 /// Alışkanlık düzenleme sayfasını açar.
 void showEditHabitSheet(BuildContext context, TasksHabitsViewModel viewModel,
     bool isDarkMode, Habit habit) {
@@ -482,10 +915,8 @@ class _HabitsTab extends StatelessWidget {
           child: Stack(
             children: [
               Positioned.fill(
-                child: CustomPaint(
-                  painter: _AreaDonutPainter(
-                      ratio: ratio, hasHabits: hasH, hole: c.card),
-                ),
+                child: _AnimatedAreaDonut(
+                    ratio: ratio, hasHabits: hasH, hole: c.card),
               ),
               Center(
                 child: Column(
@@ -580,21 +1011,56 @@ class _HabitsTab extends StatelessWidget {
               // ---- Checkbox: dokun = tamamla / artır ----
               Center(
                 child: GestureDetector(
-                  onTap: () => viewModel.tapHabit(h, context),
+                  onTap: () async {
+                    final wasDone = viewModel.isHabitDoneToday(h);
+                    final overlay = Overlay.of(context, rootOverlay: true);
+                    await viewModel.tapHabit(h, context);
+                    // Yeni tamamlandıysa seri kutlaması oynat.
+                    if (!wasDone &&
+                        AnimationPrefs.isOn &&
+                        viewModel.isHabitDoneToday(h)) {
+                      final fresh = viewModel.habits.firstWhere(
+                          (x) => x.id == h.id,
+                          orElse: () => h);
+                      final streak = fresh.currentStreak > 0
+                          ? fresh.currentStreak
+                          : h.currentStreak + 1;
+                      _showRootOverlay(
+                        overlay,
+                        (remove) => _StreakCelebrationOverlay(
+                            streak: streak, onDone: remove),
+                      );
+                    }
+                  },
                   behavior: HitTestBehavior.opaque,
-                  child: Container(
-                    width: 26,
-                    height: 26,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: done ? _green : Colors.transparent,
-                      border: Border.all(
-                          color: done ? _green : area.main, width: 2),
-                    ),
+                  child: AnimatedSwitcher(
+                    duration: AnimationPrefs.isOn
+                        ? const Duration(milliseconds: 280)
+                        : Duration.zero,
+                    transitionBuilder: (ch, anim) =>
+                        ScaleTransition(scale: anim, child: ch),
                     child: done
-                        ? const Icon(Icons.check_rounded,
-                            color: Colors.white, size: 16)
-                        : null,
+                        ? Container(
+                            key: const ValueKey('h-done'),
+                            width: 26,
+                            height: 26,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _green,
+                            ),
+                            child: const Icon(Icons.check_rounded,
+                                color: Colors.white, size: 16),
+                          )
+                        : Container(
+                            key: const ValueKey('h-todo'),
+                            width: 26,
+                            height: 26,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border:
+                                  Border.all(color: area.main, width: 2),
+                            ),
+                          ),
                   ),
                 ),
               ),
@@ -790,7 +1256,7 @@ class _HabitsTab extends StatelessWidget {
       _showHabitJoinCode(context, c, r.data!);
     } else {
       CustomSnackBar.showError(
-          context, r.errorMessage ?? 'errors.unknownError'.tr());
+          context, r.errorMessage);
     }
   }
 
@@ -870,17 +1336,27 @@ class _HabitHistorySheet extends StatefulWidget {
   State<_HabitHistorySheet> createState() => _HabitHistorySheetState();
 }
 
-class _HabitHistorySheetState extends State<_HabitHistorySheet> {
+class _HabitHistorySheetState extends State<_HabitHistorySheet>
+    with SingleTickerProviderStateMixin {
   static const int _weeks = 8;
   bool _loading = true;
   HabitStats? _stats;
   final Map<String, int> _status = {}; // 1 yapıldı, 2 atlandı
   final Map<String, String> _notes = {};
+  late final AnimationController _reveal; // ısı haritası hücre girişi
 
   @override
   void initState() {
     super.initState();
+    _reveal = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 750));
     _load();
+  }
+
+  @override
+  void dispose() {
+    _reveal.dispose();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -905,6 +1381,12 @@ class _HabitHistorySheetState extends State<_HabitHistorySheet> {
         _stats = stats;
         _loading = false;
       });
+      // Veri gelince ısı haritası hücreleri kademeli belirir.
+      if (AnimationPrefs.isOn) {
+        _reveal.forward(from: 0);
+      } else {
+        _reveal.value = 1;
+      }
     }
   }
 
@@ -1063,43 +1545,60 @@ class _HabitHistorySheetState extends State<_HabitHistorySheet> {
       const gap = 4.0;
       final cell =
           ((cons.maxWidth - gap * (_weeks - 1)) / _weeks).clamp(10.0, 26.0);
-      final cols = <Widget>[];
-      for (var w = 0; w < _weeks; w++) {
-        final cells = <Widget>[];
-        for (var d = 0; d < 7; d++) {
-          final date = gridStart.add(Duration(days: w * 7 + d));
-          Color fill;
-          Border? bd;
-          if (date.isAfter(today)) {
-            fill = Colors.transparent;
-            bd = Border.all(color: c.border.withOpacity(0.4));
-          } else {
-            final s = _status[_key(date)];
-            if (s == 1) {
-              fill = done;
-            } else if (s == 2) {
-              fill = skipped;
-            } else {
-              fill = c.bg;
-              bd = Border.all(color: c.border);
+      return AnimatedBuilder(
+        animation: _reveal,
+        builder: (context, _) {
+          final rev = _reveal.value;
+          final cols = <Widget>[];
+          for (var w = 0; w < _weeks; w++) {
+            // Sütun sütun (haftalar) soldan sağa kademeli belirir.
+            final start = (w / _weeks) * 0.55;
+            final v = Curves.easeOut
+                .transform(((rev - start) / 0.45).clamp(0.0, 1.0));
+            final cells = <Widget>[];
+            for (var d = 0; d < 7; d++) {
+              final date = gridStart.add(Duration(days: w * 7 + d));
+              Color fill;
+              Border? bd;
+              if (date.isAfter(today)) {
+                fill = Colors.transparent;
+                bd = Border.all(color: c.border.withOpacity(0.4));
+              } else {
+                final s = _status[_key(date)];
+                if (s == 1) {
+                  fill = done;
+                } else if (s == 2) {
+                  fill = skipped;
+                } else {
+                  fill = c.bg;
+                  bd = Border.all(color: c.border);
+                }
+              }
+              cells.add(Padding(
+                padding: EdgeInsets.only(bottom: d == 6 ? 0 : gap),
+                child: Opacity(
+                  opacity: v,
+                  child: Transform.scale(
+                    scale: 0.6 + 0.4 * v,
+                    child: Container(
+                      width: cell,
+                      height: cell,
+                      decoration: BoxDecoration(
+                          color: fill,
+                          borderRadius: BorderRadius.circular(3),
+                          border: bd),
+                    ),
+                  ),
+                ),
+              ));
             }
+            cols.add(Column(children: cells));
           }
-          cells.add(Padding(
-            padding: EdgeInsets.only(bottom: d == 6 ? 0 : gap),
-            child: Container(
-              width: cell,
-              height: cell,
-              decoration: BoxDecoration(
-                  color: fill,
-                  borderRadius: BorderRadius.circular(3),
-                  border: bd),
-            ),
-          ));
-        }
-        cols.add(Column(children: cells));
-      }
-      return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween, children: cols);
+          return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: cols);
+        },
+      );
     });
   }
 }
@@ -1427,21 +1926,24 @@ class _TasksTabState extends State<_TasksTab> {
       onSelected: (v) => setState(() => _filter = v),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       itemBuilder: (_) => [
-        for (final f in _filters)
+        for (var i = 0; i < _filters.length; i++)
           PopupMenuItem(
-            value: f[0],
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 18,
-                  child: f[0] == _filter
-                      ? const Icon(Icons.check_rounded,
-                          size: 18, color: _orange)
-                      : null,
-                ),
-                const SizedBox(width: 8),
-                Text(f[1].tr()),
-              ],
+            value: _filters[i][0],
+            child: _MenuItemIn(
+              index: i,
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 18,
+                    child: _filters[i][0] == _filter
+                        ? const Icon(Icons.check_rounded,
+                            size: 18, color: _orange)
+                        : null,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(_filters[i][1].tr()),
+                ],
+              ),
             ),
           ),
       ],
@@ -1568,22 +2070,36 @@ class _TasksTabState extends State<_TasksTab> {
                               color: accent)),
                     ),
                     const SizedBox(width: 8),
-                    Icon(
-                        open
-                            ? Icons.keyboard_arrow_up_rounded
-                            : Icons.keyboard_arrow_down_rounded,
-                        size: 22,
-                        color: c.textMuted),
+                    AnimatedRotation(
+                      turns: open ? 0.5 : 0, // aşağı → yukarı
+                      duration: AnimationPrefs.isOn
+                          ? const Duration(milliseconds: 240)
+                          : Duration.zero,
+                      curve: Curves.easeInOut,
+                      child: Icon(Icons.keyboard_arrow_down_rounded,
+                          size: 22, color: c.textMuted),
+                    ),
                   ],
                 ),
               ),
             ),
           ),
-          if (open)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
-              child: child,
+          // Yumuşak açılma/kapanma (yükseklik animasyonu).
+          ClipRect(
+            child: AnimatedSize(
+              duration: AnimationPrefs.isOn
+                  ? const Duration(milliseconds: 240)
+                  : Duration.zero,
+              curve: Curves.easeInOut,
+              alignment: Alignment.topCenter,
+              child: open
+                  ? Padding(
+                      padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
+                      child: child,
+                    )
+                  : const SizedBox(width: double.infinity),
             ),
+          ),
         ],
       ),
     );
@@ -1615,73 +2131,10 @@ class _TasksTabState extends State<_TasksTab> {
                 fontSize: 13.5, height: 1.4, color: c.textSecondary)),
       );
 
-  // Gecikmiş görev satırı: daire + başlık/"Gecikti · tarih" + "Bugüne al".
+  // Gecikmiş görev satırı: "Bugüne al"a basınca kayarak çıkar (bkz _OverdueRow).
   Widget _overdueRow(BuildContext context, AppColors c, bool isDark, Task t) {
-    final d = viewModel.dueDateOf(t);
-    final dateStr = d != null ? '${d.day}.${d.month}' : '';
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () => viewModel.toggleTaskComplete(t, context),
-            child: Container(
-              width: 22,
-              height: 22,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: _red.withOpacity(0.6), width: 2),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () => showEditTaskSheet(context, viewModel, isDark, t),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(t.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                          fontSize: 15.5,
-                          fontWeight: FontWeight.w700,
-                          color: c.textPrimary)),
-                  const SizedBox(height: 2),
-                  Text(
-                      '${'tasks.overdue'.tr()}${dateStr.isNotEmpty ? ' · $dateStr' : ''}',
-                      style: const TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w600,
-                          color: _red)),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          GestureDetector(
-            onTap: () => viewModel.moveTaskToToday(t, context),
-            child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: _orange.withOpacity(0.14),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text('tasks.moveToToday'.tr(),
-                  style: const TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w700,
-                      color: _orange)),
-            ),
-          ),
-        ],
-      ),
-    );
+    return _OverdueRow(
+        viewModel: viewModel, task: t, c: c, isDark: isDark);
   }
 
   // Liste tonları ("Tüm Görevler" sayfası + görev satırı).
@@ -1953,18 +2406,28 @@ class _TasksTabState extends State<_TasksTab> {
                           viewModel.toggleTaskComplete(task, context),
                       child: Padding(
                         padding: const EdgeInsets.only(top: 1, right: 12),
-                        child: done
-                            ? const Icon(Icons.check_circle_rounded,
-                                size: 26, color: _green)
-                            : Container(
-                                width: 24,
-                                height: 24,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                      color: c.border, width: 2),
+                        child: AnimatedSwitcher(
+                          duration: AnimationPrefs.isOn
+                              ? const Duration(milliseconds: 280)
+                              : Duration.zero,
+                          transitionBuilder: (ch, anim) =>
+                              ScaleTransition(scale: anim, child: ch),
+                          child: done
+                              ? const Icon(Icons.check_circle_rounded,
+                                  key: ValueKey('t-done'),
+                                  size: 26,
+                                  color: _green)
+                              : Container(
+                                  key: const ValueKey('t-todo'),
+                                  width: 24,
+                                  height: 24,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                        color: c.border, width: 2),
+                                  ),
                                 ),
-                              ),
+                        ),
                       ),
                     ),
                     Expanded(

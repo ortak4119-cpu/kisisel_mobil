@@ -636,7 +636,13 @@
       "planPremium": "Premium",
       "planFree": "免费",
       "cancelNote": "你可以随时在设备商店（App Store / Google Play）的订阅设置中取消订阅。"
-    }
+    },
+    "replayOnboarding": "重新观看介绍",
+    "completion": "你的资料已完成 {percent}%",
+    "completeCta": "完善",
+    "lastSync": "上次同步 · {time}",
+    "sendVerification": "发送验证邮件",
+    "verificationSent": "验证邮件已发送"
   },
   "calendar": {
     "screenTitle": "日历",
@@ -1206,7 +1212,9 @@
       "languageSubtitle": "选择应用程序语言",
       "languageSelect": "选择语言",
       "turkish": "Türkçe",
-      "english": "英语"
+      "english": "英语",
+      "disableAnimations": "关闭动画",
+      "disableAnimationsSubtitle": "停用笔记中的摆动和过渡动画"
     },
     "security": {
       "biometric": "生物识别认证",

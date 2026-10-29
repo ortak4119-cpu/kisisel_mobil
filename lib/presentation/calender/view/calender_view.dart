@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../../core/design/app_design.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/utils/custom_snackbar.dart';
+import '../../../core/utils/animation_prefs.dart';
 import '../../../models/calender/calendar_models.dart';
 import '../../../models/subscription/subscription_models.dart';
 import '../../../models/installment/installment_models.dart';
@@ -95,14 +96,15 @@ String midDate(DateTime d) =>
     '${d.day} ${_monthName(d.month)}, ${_dayName(d.weekday)}';
 
 /// Etkinlik ekleme/düzenleme sayfasını açar.
-void showAddEventSheet(BuildContext context, CalendarViewModel vm, bool isDark,
+Future<void> showAddEventSheet(
+    BuildContext context, CalendarViewModel vm, bool isDark,
     {CalendarEvent? edit, DateTime? date}) {
   if (edit != null) {
     vm.prepareEditEvent(edit);
   } else {
     vm.resetEventForm(date: date);
   }
-  showModalBottomSheet(
+  return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
@@ -112,6 +114,113 @@ void showAddEventSheet(BuildContext context, CalendarViewModel vm, bool isDark,
       isEditing: edit != null,
     ),
   );
+}
+
+/// FAB: dokununca + simgesi × olacak şekilde döner; sayfa açıkken döndürür.
+class _CalFab extends StatefulWidget {
+  final Future<void> Function() onOpen;
+  const _CalFab({required this.onOpen});
+  @override
+  State<_CalFab> createState() => _CalFabState();
+}
+
+class _CalFabState extends State<_CalFab> {
+  bool _open = false;
+  @override
+  Widget build(BuildContext context) {
+    return FloatingActionButton(
+      heroTag: 'calendar_fab',
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      onPressed: () async {
+        setState(() => _open = true);
+        await widget.onOpen();
+        if (mounted) setState(() => _open = false);
+      },
+      child: Container(
+        width: 60,
+        height: 60,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFF6C23E), _cOrange],
+          ),
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+                color: _cOrange.withOpacity(0.45),
+                blurRadius: 14,
+                offset: const Offset(0, 6)),
+          ],
+        ),
+        child: AnimatedRotation(
+          turns: (_open && AnimationPrefs.isOn) ? 0.125 : 0,
+          duration: const Duration(milliseconds: 260),
+          curve: Curves.easeOut,
+          child: const Icon(Icons.add_rounded, color: Colors.white, size: 30),
+        ),
+      ),
+    );
+  }
+}
+
+/// Yeni eklenen etkinlik kartı yukarıdan düşerek listeye yerleşir.
+class _DropIn extends StatefulWidget {
+  final bool animate;
+  final VoidCallback? onAnimated;
+  final Widget child;
+  const _DropIn({required this.animate, this.onAnimated, required this.child});
+  @override
+  State<_DropIn> createState() => _DropInState();
+}
+
+class _DropInState extends State<_DropIn>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c;
+  @override
+  void initState() {
+    super.initState();
+    _c = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 440));
+    if (widget.animate) {
+      _c.forward();
+      _c.addStatusListener((s) {
+        if (s == AnimationStatus.completed) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            widget.onAnimated?.call();
+          });
+        }
+      });
+    } else {
+      _c.value = 1;
+    }
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.animate) return widget.child;
+    return AnimatedBuilder(
+      animation: _c,
+      child: widget.child,
+      builder: (_, child) {
+        final v = Curves.easeOutCubic.transform(_c.value);
+        return Opacity(
+          opacity: v,
+          child: Transform.translate(
+            offset: Offset(0, (1 - v) * -24),
+            child: Transform.scale(scale: 0.96 + 0.04 * v, child: child),
+          ),
+        );
+      },
+    );
+  }
 }
 
 @RoutePage()
@@ -125,6 +234,7 @@ class CalendarView extends StatefulWidget {
 class _CalendarViewState extends State<CalendarView> {
   String _query = '';
   bool _searchOpen = false;
+  int _monthDir = 1; // 1 = ileri ay, -1 = geri ay (ızgara kayma yönü)
 
   @override
   Widget build(BuildContext context) {
@@ -153,32 +263,9 @@ class _CalendarViewState extends State<CalendarView> {
                 ],
               ),
             ),
-            floatingActionButton: FloatingActionButton(
-              heroTag: 'calendar_fab',
-              onPressed: () =>
+            floatingActionButton: _CalFab(
+              onOpen: () =>
                   showAddEventSheet(context, vm, isDark, date: vm.selectedDate),
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              child: Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFFF6C23E), _cOrange],
-                  ),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                        color: _cOrange.withOpacity(0.45),
-                        blurRadius: 14,
-                        offset: const Offset(0, 6)),
-                  ],
-                ),
-                child: const Icon(Icons.add_rounded,
-                    color: Colors.white, size: 30),
-              ),
             ),
           );
         },
@@ -302,7 +389,11 @@ class _CalendarViewState extends State<CalendarView> {
                       child: GestureDetector(
                         onTap: () => vm.setCalendarViewType(
                             it[0] as CalendarViewType),
-                        child: Container(
+                        child: AnimatedContainer(
+                          duration: AnimationPrefs.isOn
+                              ? const Duration(milliseconds: 240)
+                              : Duration.zero,
+                          curve: Curves.easeOut,
                           padding: const EdgeInsets.symmetric(vertical: 9),
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
@@ -357,42 +448,71 @@ class _CalendarViewState extends State<CalendarView> {
 
   // ---------- İçerik ----------
   Widget _content(BuildContext context, CalendarViewModel vm, AppColors c) {
-    if (_query.trim().isNotEmpty) return _searchResults(context, vm, c);
-    switch (vm.calendarViewType) {
-      case CalendarViewType.agenda:
-        return _agenda(context, vm, c);
-      case CalendarViewType.day:
-        return ListView(
-          padding: const EdgeInsets.fromLTRB(20, 4, 20, 120),
-          children: [
-            _dayHero(vm, c),
-            const SizedBox(height: 16),
-            ..._dayEventsSection(context, vm, c, vm.selectedDate),
-          ],
-        );
-      case CalendarViewType.week:
-        return ListView(
-          padding: const EdgeInsets.fromLTRB(20, 4, 20, 120),
-          children: [
-            _weekStrip(vm, c),
-            const SizedBox(height: 16),
-            ..._dayEventsSection(context, vm, c, vm.selectedDate),
-            const SizedBox(height: 12),
-            _tomorrowRow(context, vm, c),
-          ],
-        );
-      case CalendarViewType.month:
-        return ListView(
-          padding: const EdgeInsets.fromLTRB(20, 4, 20, 120),
-          children: [
-            _monthCard(vm, c),
-            const SizedBox(height: 16),
-            ..._dayEventsSection(context, vm, c, vm.selectedDate),
-            const SizedBox(height: 12),
-            _tomorrowRow(context, vm, c),
-          ],
-        );
+    Widget child;
+    String key;
+    if (_query.trim().isNotEmpty) {
+      child = _searchResults(context, vm, c);
+      key = 'search';
+    } else {
+      switch (vm.calendarViewType) {
+        case CalendarViewType.agenda:
+          child = _agenda(context, vm, c);
+          break;
+        case CalendarViewType.day:
+          child = ListView(
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 120),
+            children: [
+              _dayHero(vm, c),
+              const SizedBox(height: 16),
+              ..._dayEventsSection(context, vm, c, vm.selectedDate),
+            ],
+          );
+          break;
+        case CalendarViewType.week:
+          child = ListView(
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 120),
+            children: [
+              _weekStrip(vm, c),
+              const SizedBox(height: 16),
+              ..._dayEventsSection(context, vm, c, vm.selectedDate),
+              const SizedBox(height: 12),
+              _tomorrowRow(context, vm, c),
+            ],
+          );
+          break;
+        case CalendarViewType.month:
+          child = ListView(
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 120),
+            children: [
+              _monthCard(vm, c),
+              const SizedBox(height: 16),
+              ..._dayEventsSection(context, vm, c, vm.selectedDate),
+              const SizedBox(height: 12),
+              _tomorrowRow(context, vm, c),
+            ],
+          );
+          break;
+      }
+      key = vm.calendarViewType.name;
     }
+    // Görünümler arası çapraz geçiş.
+    return AnimatedSwitcher(
+      duration: AnimationPrefs.isOn
+          ? const Duration(milliseconds: 280)
+          : Duration.zero,
+      switchInCurve: Curves.easeOut,
+      switchOutCurve: Curves.easeIn,
+      transitionBuilder: (ch, anim) => FadeTransition(
+        opacity: anim,
+        child: SlideTransition(
+          position: Tween<Offset>(
+                  begin: const Offset(0, 0.03), end: Offset.zero)
+              .animate(anim),
+          child: ch,
+        ),
+      ),
+      child: KeyedSubtree(key: ValueKey(key), child: child),
+    );
   }
 
   // ---------- Ay kartı ----------
@@ -418,7 +538,11 @@ class _CalendarViewState extends State<CalendarView> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
+            AnimatedContainer(
+              duration: AnimationPrefs.isOn
+                  ? const Duration(milliseconds: 240)
+                  : Duration.zero,
+              curve: Curves.easeOut,
               width: 38,
               height: 38,
               alignment: Alignment.center,
@@ -427,7 +551,7 @@ class _CalendarViewState extends State<CalendarView> {
                 shape: BoxShape.circle,
                 border: today && !sel
                     ? Border.all(color: _cOrange, width: 1.5)
-                    : null,
+                    : Border.all(color: Colors.transparent, width: 1.5),
                 boxShadow: sel
                     ? [
                         BoxShadow(
@@ -478,7 +602,10 @@ class _CalendarViewState extends State<CalendarView> {
         children: [
           Row(
             children: [
-              _navBtn(c, Icons.chevron_left_rounded, vm.previousMonth),
+              _navBtn(c, Icons.chevron_left_rounded, () {
+                _monthDir = -1;
+                vm.previousMonth();
+              }),
               Expanded(
                 child: Text('${_monthName(fm.month)} ${fm.year}',
                     textAlign: TextAlign.center,
@@ -487,7 +614,10 @@ class _CalendarViewState extends State<CalendarView> {
                         fontWeight: FontWeight.w800,
                         color: c.textPrimary)),
               ),
-              _navBtn(c, Icons.chevron_right_rounded, vm.nextMonth),
+              _navBtn(c, Icons.chevron_right_rounded, () {
+                _monthDir = 1;
+                vm.nextMonth();
+              }),
             ],
           ),
           const SizedBox(height: 12),
@@ -506,12 +636,30 @@ class _CalendarViewState extends State<CalendarView> {
             ],
           ),
           const SizedBox(height: 8),
-          GridView.count(
-            crossAxisCount: 7,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            childAspectRatio: 0.72,
-            children: cells,
+          // Ay değişince ızgara yana kayarak geçer.
+          AnimatedSwitcher(
+            duration: AnimationPrefs.isOn
+                ? const Duration(milliseconds: 300)
+                : Duration.zero,
+            switchInCurve: Curves.easeOut,
+            switchOutCurve: Curves.easeIn,
+            transitionBuilder: (ch, anim) => FadeTransition(
+              opacity: anim,
+              child: SlideTransition(
+                position: Tween<Offset>(
+                        begin: Offset(0.28 * _monthDir, 0), end: Offset.zero)
+                    .animate(anim),
+                child: ch,
+              ),
+            ),
+            child: GridView.count(
+              key: ValueKey('${fm.year}-${fm.month}'),
+              crossAxisCount: 7,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              childAspectRatio: 0.72,
+              children: cells,
+            ),
           ),
           const SizedBox(height: 10),
           Container(
@@ -715,11 +863,19 @@ class _CalendarViewState extends State<CalendarView> {
         _emptyDay(c)
       else ...[
         for (final e in allDay) ...[
-          _allDayCard(context, vm, c, e),
+          _DropIn(
+            animate: AnimationPrefs.isOn && e.id == vm.justCreatedEventId,
+            onAnimated: () => vm.justCreatedEventId = null,
+            child: _allDayCard(context, vm, c, e),
+          ),
           const SizedBox(height: 10),
         ],
         for (final e in timed) ...[
-          _timedCard(context, vm, c, e),
+          _DropIn(
+            animate: AnimationPrefs.isOn && e.id == vm.justCreatedEventId,
+            onAnimated: () => vm.justCreatedEventId = null,
+            child: _timedCard(context, vm, c, e),
+          ),
           const SizedBox(height: 12),
         ],
       ],

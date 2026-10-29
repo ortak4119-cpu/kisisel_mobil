@@ -14,6 +14,7 @@ import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 import '../../../service/stt/stt_service.dart';
 import '../../../core/design/app_design.dart';
 import '../../../core/utils/color_constant.dart';
+import '../../../core/utils/animation_prefs.dart';
 import '../../../models/diary/diary_models.dart';
 import '../../../models/note/note_models.dart';
 import '../../../core/utils/custom_snackbar.dart';
@@ -58,6 +59,490 @@ class _CorkSpecklePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// ======================================================================
+// ESİNTİ (rüzgâr) altyapısı
+// Askıdaki kartlar mandal/raptiye noktasından sürekli hafifçe sallanır.
+// Hem DİKEY (sayfa) hem de YATAY (ip) kaydırma salınım gücünü artırır.
+// ======================================================================
+class _BreezeScope extends StatefulWidget {
+  final Widget child;
+  const _BreezeScope({required this.child});
+
+  static _BreezeScopeState? of(BuildContext context) =>
+      context.findAncestorStateOfType<_BreezeScopeState>();
+
+  @override
+  State<_BreezeScope> createState() => _BreezeScopeState();
+}
+
+class _BreezeScopeState extends State<_BreezeScope>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController clock;
+  double energy = 0; // 0..1 — kaydırmayla artan esinti gücü
+
+  @override
+  void initState() {
+    super.initState();
+    clock = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 3600),
+    );
+    if (AnimationPrefs.isOn) clock.repeat();
+    clock.addListener(_decay);
+    AnimationPrefs.enabled.addListener(_onAnimFlag);
+  }
+
+  // Animasyon tercihi değişince saati durdur/başlat.
+  void _onAnimFlag() {
+    if (!mounted) return;
+    if (AnimationPrefs.isOn) {
+      if (!clock.isAnimating) clock.repeat();
+    } else {
+      clock.stop();
+    }
+  }
+
+  // Her karede esinti gücü biraz söner (kaydırma durunca sakinleşir).
+  void _decay() {
+    if (energy > 0) energy = math.max(0.0, energy - 0.016);
+  }
+
+  // Dikey sayfa ve yatay ip kaydırmalarının ikisi de buraya düşer.
+  bool _onScroll(ScrollNotification n) {
+    if (n is ScrollUpdateNotification) {
+      final d = (n.scrollDelta ?? 0).abs();
+      energy = (energy + d * 0.010).clamp(0.0, 1.0);
+    } else if (n is OverscrollNotification) {
+      energy = (energy + n.overscroll.abs() * 0.010).clamp(0.0, 1.0);
+    }
+    return false;
+  }
+
+  @override
+  void dispose() {
+    AnimationPrefs.enabled.removeListener(_onAnimFlag);
+    clock.removeListener(_decay);
+    clock.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return NotificationListener<ScrollNotification>(
+      onNotification: _onScroll,
+      child: widget.child,
+    );
+  }
+}
+
+/// Tek bir askıdaki kartı mandal/raptiye noktasından (üst-orta) sallar.
+class _Sway extends StatelessWidget {
+  final int index;
+  final double idleAmp; // boştaki salınım genliği (rad)
+  final Widget child;
+  const _Sway({
+    required this.index,
+    required this.child,
+    this.idleAmp = 0.028,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // Animasyonlar kapalıysa (Ayarlar › Görünüm) kart sabit durur.
+    return ValueListenableBuilder<bool>(
+      valueListenable: AnimationPrefs.enabled,
+      builder: (context, animOn, _) {
+        if (!animOn) return child;
+        final breeze = _BreezeScope.of(context);
+        if (breeze == null) return child;
+        return AnimatedBuilder(
+          animation: breeze.clock,
+          child: child,
+          builder: (context, inner) {
+            final phase = breeze.clock.value * 2 * math.pi + index * 1.15;
+            final amp = idleAmp + breeze.energy * 0.11; // kaydırınca güçlenir
+            return Transform.rotate(
+              angle: math.sin(phase) * amp,
+              alignment: Alignment.topCenter,
+              child: inner,
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+// ======================================================================
+// Kök katman (Overlay) animasyonları: kaydetme kutlaması + kilit/aç
+// ======================================================================
+void _showRootOverlay(
+    OverlayState overlay, Widget Function(VoidCallback remove) builder) {
+  late OverlayEntry entry;
+  entry = OverlayEntry(builder: (_) => builder(() {
+        if (entry.mounted) entry.remove();
+      }));
+  overlay.insert(entry);
+}
+
+/// Yeni not kaydedilince: yeşil daire + çizilen onay işareti belirir,
+/// ardından küçülüp bir not kartına dönüşerek panoya doğru uçup kaybolur.
+class _SaveCelebrationOverlay extends StatefulWidget {
+  final VoidCallback onDone;
+  const _SaveCelebrationOverlay({required this.onDone});
+  @override
+  State<_SaveCelebrationOverlay> createState() =>
+      _SaveCelebrationOverlayState();
+}
+
+class _SaveCelebrationOverlayState extends State<_SaveCelebrationOverlay>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c;
+
+  @override
+  void initState() {
+    super.initState();
+    _c = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 1750))
+      ..forward();
+    _c.addStatusListener((s) {
+      if (s == AnimationStatus.completed) widget.onDone();
+    });
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: AnimatedBuilder(
+        animation: _c,
+        builder: (_, __) {
+          final t = _c.value;
+          final appear = Curves.easeOutBack.transform((t / 0.26).clamp(0.0, 1.0));
+          final check = ((t - 0.22) / 0.26).clamp(0.0, 1.0);
+          final fly =
+              Curves.easeInCubic.transform(((t - 0.62) / 0.38).clamp(0.0, 1.0));
+          final scale = appear * (1 - 0.5 * fly);
+          final opacity = t < 0.62 ? 1.0 : (1 - fly);
+          return Center(
+            child: Transform.translate(
+              offset: Offset(fly * 120, -fly * 300),
+              child: Opacity(
+                opacity: opacity.clamp(0.0, 1.0),
+                child: Transform.scale(
+                  scale: scale.clamp(0.0, 1.25),
+                  child: _badge(check, fly),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _badge(double check, double fly) {
+    return SizedBox(
+      width: 110,
+      height: 110,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // yeşil onay dairesi (uçmaya başlayınca solar)
+          Opacity(
+            opacity: (1 - fly).clamp(0.0, 1.0),
+            child: Container(
+              width: 92,
+              height: 92,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFF34C759),
+                boxShadow: [
+                  BoxShadow(
+                      color: const Color(0xFF34C759).withOpacity(0.45),
+                      blurRadius: 26,
+                      spreadRadius: 2),
+                ],
+              ),
+              child: CustomPaint(painter: _CheckPainter(check)),
+            ),
+          ),
+          // uçarken beliren mini not kartı
+          Opacity(
+            opacity: fly.clamp(0.0, 1.0),
+            child: Container(
+              width: 74,
+              height: 90,
+              decoration: BoxDecoration(
+                color: ColorConstant.cardColorLight,
+                borderRadius: BorderRadius.circular(4),
+                boxShadow: [
+                  BoxShadow(
+                      color: Colors.black.withOpacity(0.25),
+                      blurRadius: 12,
+                      offset: const Offset(0, 6)),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CheckPainter extends CustomPainter {
+  final double p; // 0..1 çizim ilerlemesi
+  _CheckPainter(this.p);
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 7
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final w = size.width, h = size.height;
+    final p1 = Offset(w * 0.30, h * 0.52);
+    final p2 = Offset(w * 0.44, h * 0.66);
+    final p3 = Offset(w * 0.72, h * 0.36);
+    final seg1 = (p * 2).clamp(0.0, 1.0);
+    final seg2 = ((p * 2) - 1).clamp(0.0, 1.0);
+    final path = Path()..moveTo(p1.dx, p1.dy);
+    final a = Offset.lerp(p1, p2, seg1)!;
+    path.lineTo(a.dx, a.dy);
+    if (seg2 > 0) {
+      final b = Offset.lerp(p2, p3, seg2)!;
+      path.lineTo(b.dx, b.dy);
+    }
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(_CheckPainter old) => old.p != p;
+}
+
+/// Kilitleme / kilit açma için AYRI animasyonlar.
+/// Kilitleme: asma kilit yukarıdan düşer, halka kapanır (kehribar).
+/// Açma: halka yukarı açılır, kilit hafif yükselir (yeşil).
+class _LockCelebrationOverlay extends StatefulWidget {
+  final bool locking;
+  final VoidCallback onDone;
+  const _LockCelebrationOverlay(
+      {required this.locking, required this.onDone});
+  @override
+  State<_LockCelebrationOverlay> createState() =>
+      _LockCelebrationOverlayState();
+}
+
+class _LockCelebrationOverlayState extends State<_LockCelebrationOverlay>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c;
+
+  @override
+  void initState() {
+    super.initState();
+    _c = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 1250))
+      ..forward();
+    _c.addStatusListener((s) {
+      if (s == AnimationStatus.completed) widget.onDone();
+    });
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = widget.locking
+        ? const Color(0xFFF6A821) // kehribar
+        : const Color(0xFF34C759); // yeşil
+    return IgnorePointer(
+      child: AnimatedBuilder(
+        animation: _c,
+        builder: (_, __) {
+          final t = _c.value;
+          final appear =
+              Curves.easeOutBack.transform((t / 0.34).clamp(0.0, 1.0));
+          final out = ((t - 0.78) / 0.22).clamp(0.0, 1.0);
+          // İkon durumu: kilitlemede ortadan sonra kapanır, açmada açılır.
+          final closed = widget.locking ? (t > 0.45) : (t < 0.45);
+          // Hareket: kilit düşerek gelir / açılırken yükselir.
+          final dy = widget.locking
+              ? -26 * (1 - appear)
+              : -14 * appear;
+          // Küçük sarsıntı/eğim.
+          final tilt = widget.locking
+              ? (t > 0.4 && t < 0.62 ? math.sin(t * 60) * 0.05 : 0.0)
+              : -0.14 * appear;
+          return Center(
+            child: Opacity(
+              opacity: (1 - out).clamp(0.0, 1.0),
+              child: Transform.translate(
+                offset: Offset(0, dy),
+                child: Transform.rotate(
+                  angle: tilt,
+                  child: Transform.scale(
+                    scale: appear.clamp(0.0, 1.2),
+                    child: Container(
+                      width: 104,
+                      height: 104,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: color,
+                        boxShadow: [
+                          BoxShadow(
+                              color: color.withOpacity(0.45),
+                              blurRadius: 26,
+                              spreadRadius: 2),
+                        ],
+                      ),
+                      child: Icon(
+                        closed
+                            ? Icons.lock_rounded
+                            : Icons.lock_open_rounded,
+                        color: Colors.white,
+                        size: 52,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// İçindeki öğeleri sırayla (kayarak + belirerek) içeri getirir.
+class _StaggerIn extends StatefulWidget {
+  final List<Widget> children;
+  final double gap;
+  const _StaggerIn({required this.children}) : gap = 12;
+  @override
+  State<_StaggerIn> createState() => _StaggerInState();
+}
+
+class _StaggerInState extends State<_StaggerIn>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c;
+
+  @override
+  void initState() {
+    super.initState();
+    _c = AnimationController(
+        vsync: this,
+        duration: Duration(
+            milliseconds: 260 + widget.children.length * 110))
+      ..forward();
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final n = widget.children.length;
+    // Animasyonlar kapalıysa öğeler doğrudan görünür.
+    if (!AnimationPrefs.isOn) {
+      final rows = <Widget>[];
+      for (var i = 0; i < n; i++) {
+        if (i > 0) rows.add(SizedBox(height: widget.gap));
+        rows.add(widget.children[i]);
+      }
+      return Column(mainAxisSize: MainAxisSize.min, children: rows);
+    }
+    return AnimatedBuilder(
+      animation: _c,
+      builder: (_, __) {
+        final rows = <Widget>[];
+        for (var i = 0; i < n; i++) {
+          final start = n == 1 ? 0.0 : (i / n) * 0.6;
+          final v = Curves.easeOutCubic
+              .transform(((_c.value - start) / 0.4).clamp(0.0, 1.0));
+          if (i > 0) rows.add(SizedBox(height: widget.gap));
+          rows.add(Opacity(
+            opacity: v,
+            child: Transform.translate(
+              offset: Offset(0, (1 - v) * 22),
+              child: widget.children[i],
+            ),
+          ));
+        }
+        return Column(mainAxisSize: MainAxisSize.min, children: rows);
+      },
+    );
+  }
+}
+
+/// FAB: dokununca + simgesi × olacak şekilde döner; sayfa açıkken döndürür.
+class _AddFab extends StatefulWidget {
+  final Future<void> Function() onOpen;
+  const _AddFab({required this.onOpen});
+  @override
+  State<_AddFab> createState() => _AddFabState();
+}
+
+class _AddFabState extends State<_AddFab> {
+  bool _open = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return FloatingActionButton(
+      heroTag: 'notes_diary_fab',
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      onPressed: () async {
+        setState(() => _open = true);
+        await widget.onOpen();
+        if (mounted) setState(() => _open = false);
+      },
+      child: Container(
+        width: 60,
+        height: 60,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              ColorConstant.accentYellow,
+              ColorConstant.accentOrange,
+            ],
+          ),
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: ColorConstant.accentOrange.withValues(alpha: 0.45),
+              blurRadius: 14,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: AnimatedRotation(
+          turns: (_open && AnimationPrefs.isOn) ? 0.125 : 0, // 45° → + yerine ×
+          duration: const Duration(milliseconds: 260),
+          curve: Curves.easeOut,
+          child: const Icon(Icons.add_rounded, color: Colors.white, size: 30),
+        ),
+      ),
+    );
+  }
 }
 
 @RoutePage()
@@ -117,44 +602,15 @@ class _NotesDiaryViewState extends State<NotesDiaryView> {
                     ),
                   ),
                   Expanded(
-                    child: _NotesContent(viewModel: viewModel),
+                    child: _BreezeScope(
+                      child: _NotesContent(viewModel: viewModel),
+                    ),
                   ),
                 ],
               ),
             ),
-            floatingActionButton: FloatingActionButton(
-              heroTag: 'notes_diary_fab',
-              onPressed: () =>
-                  _showAddChooser(context, viewModel, isDarkMode),
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              child: Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      ColorConstant.accentYellow,
-                      ColorConstant.accentOrange,
-                    ],
-                  ),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: ColorConstant.accentOrange.withValues(alpha: 0.45),
-                      blurRadius: 14,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.add_rounded,
-                  color: Colors.white,
-                  size: 30,
-                ),
-              ),
+            floatingActionButton: _AddFab(
+              onOpen: () => _showAddChooser(context, viewModel, isDarkMode),
             ),
           );
         },
@@ -224,10 +680,10 @@ class _NotesDiaryViewState extends State<NotesDiaryView> {
   }
 
   /// FAB seçici: Klasör Ekle / Not Ekle (açıklamalı).
-  void _showAddChooser(BuildContext context, NotesDiaryViewModel viewModel,
-      bool isDarkMode) {
+  Future<void> _showAddChooser(BuildContext context,
+      NotesDiaryViewModel viewModel, bool isDarkMode) {
     final c = AppColors(isDarkMode);
-    showModalBottomSheet(
+    return showModalBottomSheet<void>(
       context: context,
       backgroundColor: c.card,
       shape: const RoundedRectangleBorder(
@@ -246,28 +702,31 @@ class _NotesDiaryViewState extends State<NotesDiaryView> {
                     color: c.border, borderRadius: BorderRadius.circular(2)),
               ),
               const SizedBox(height: 18),
-              _chooserCard(
-                c,
-                icon: Icons.note_add_rounded,
-                accent: const Color(0xFFB794F6),
-                title: 'notes.add.noteTitle'.tr(),
-                desc: 'notes.add.noteDesc'.tr(),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  showAddNoteSheet(context, viewModel, isDarkMode);
-                },
-              ),
-              const SizedBox(height: 12),
-              _chooserCard(
-                c,
-                icon: Icons.create_new_folder_rounded,
-                accent: const Color(0xFF9F7AEA),
-                title: 'notes.add.folderTitle'.tr(),
-                desc: 'notes.add.folderDesc'.tr(),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _showAddFolderDialog(context, viewModel, isDarkMode);
-                },
+              _StaggerIn(
+                children: [
+                  _chooserCard(
+                    c,
+                    icon: Icons.note_add_rounded,
+                    accent: const Color(0xFFB794F6),
+                    title: 'notes.add.noteTitle'.tr(),
+                    desc: 'notes.add.noteDesc'.tr(),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      showAddNoteSheet(context, viewModel, isDarkMode);
+                    },
+                  ),
+                  _chooserCard(
+                    c,
+                    icon: Icons.create_new_folder_rounded,
+                    accent: const Color(0xFF9F7AEA),
+                    title: 'notes.add.folderTitle'.tr(),
+                    desc: 'notes.add.folderDesc'.tr(),
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      _showAddFolderDialog(context, viewModel, isDarkMode);
+                    },
+                  ),
+                ],
               ),
             ],
           ),
@@ -1624,10 +2083,10 @@ class _NotesContent extends StatelessWidget {
 
   // Raptiyeyle sabitlenmiş not — _paperCard (150px) + üstte iğne başı.
   Widget _pinnedCard(BuildContext context, Note note, int i, bool isDark) {
-    final angle = ((i % 3) - 1) * 0.03;
     final pin = _pinColors[i % _pinColors.length];
-    return Transform.rotate(
-      angle: angle,
+    return _Sway(
+      index: i,
+      idleAmp: 0.022,
       child: SizedBox(
         width: 150,
         child: Stack(
@@ -1922,9 +2381,8 @@ class _NotesContent extends StatelessWidget {
   }
 
   Widget _hungCard(BuildContext context, Note note, int i, bool isDark) {
-    final angle = ((i % 3) - 1) * 0.026;
-    return Transform.rotate(
-      angle: angle,
+    return _Sway(
+      index: i,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -2211,10 +2669,9 @@ class _NotesContent extends StatelessWidget {
 
   Widget _folderHungCard(BuildContext context, NoteCategory cat, int count,
       int i, bool isDark) {
-    final angle = ((i % 3) - 1) * 0.026;
     final locked = viewModel.isFolderLocked(cat.id);
-    return Transform.rotate(
-      angle: angle,
+    return _Sway(
+      index: i,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -2512,8 +2969,16 @@ class _NotesContent extends StatelessWidget {
       hint: 'notes.enterPinToLock'.tr(),
       confirmLabel: 'common.lock'.tr(),
       onConfirm: (pin) async {
+        final overlay = Overlay.of(context, rootOverlay: true);
         await viewModel.setFolderLock(cat.id, pin);
         if (context.mounted) {
+          if (AnimationPrefs.isOn) {
+            _showRootOverlay(
+              overlay,
+              (remove) =>
+                  _LockCelebrationOverlay(locking: true, onDone: remove),
+            );
+          }
           CustomSnackBar.showSuccess(context, 'notes.folders.locked'.tr());
         }
       },
@@ -2549,8 +3014,16 @@ class _NotesContent extends StatelessWidget {
       confirmLabel: 'notes.folders.unlock'.tr(),
       onConfirm: (pin) async {
         if (pin == viewModel.folderPin(cat.id)) {
+          final overlay = Overlay.of(context, rootOverlay: true);
           await viewModel.removeFolderLock(cat.id);
           if (context.mounted) {
+            if (AnimationPrefs.isOn) {
+              _showRootOverlay(
+                overlay,
+                (remove) =>
+                    _LockCelebrationOverlay(locking: false, onDone: remove),
+              );
+            }
             CustomSnackBar.showSuccess(context, 'notes.folders.unlocked'.tr());
           }
         } else if (context.mounted) {
@@ -3495,8 +3968,16 @@ class _NotesContent extends StatelessWidget {
           TextButton(
             onPressed: () {
               if (pinController.text.length == 4) {
+                final overlay = Overlay.of(context, rootOverlay: true);
                 Navigator.pop(context);
                 viewModel.lockNote(note.id, pinController.text, context);
+                if (AnimationPrefs.isOn) {
+                  _showRootOverlay(
+                    overlay,
+                    (remove) =>
+                        _LockCelebrationOverlay(locking: true, onDone: remove),
+                  );
+                }
               }
             },
             child:  Text(
@@ -3599,6 +4080,7 @@ class _NotesContent extends StatelessWidget {
             onPressed: () {
               if (pinController.text.length == 4) {
                 final pin = pinController.text;
+                final overlay = Overlay.of(context, rootOverlay: true);
                 Navigator.pop(dialogCtx);
 
                 if (reLockAfter) {
@@ -3629,6 +4111,13 @@ class _NotesContent extends StatelessWidget {
                 } else {
                   // Kalıcı kilit açma: editör açılmaz, not açık kalır.
                   viewModel.unlockNote(note.id, pin, context, null);
+                  if (AnimationPrefs.isOn) {
+                    _showRootOverlay(
+                      overlay,
+                      (remove) => _LockCelebrationOverlay(
+                          locking: false, onDone: remove),
+                    );
+                  }
                 }
               }
             },
@@ -4110,8 +4599,22 @@ class _AddNoteBottomSheet extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           GestureDetector(
-            onTap: () =>
-                isEditing ? vm.updateNote(context) : vm.createNote(context),
+            onTap: () async {
+              if (isEditing) {
+                vm.updateNote(context);
+                return;
+              }
+              // Kaydetme kutlaması kök katmanda oynatılır; createNote sayfayı
+              // kendisi kapattığı için overlay referansını önceden alıyoruz.
+              final overlay = Overlay.of(context, rootOverlay: true);
+              await vm.createNote(context);
+              if (vm.consumeJustCreated() && AnimationPrefs.isOn) {
+                _showRootOverlay(
+                  overlay,
+                  (remove) => _SaveCelebrationOverlay(onDone: remove),
+                );
+              }
+            },
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
               decoration: BoxDecoration(

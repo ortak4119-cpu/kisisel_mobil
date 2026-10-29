@@ -665,7 +665,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
   void setDiaryForEdit(Diary diary) {
     _editingDiaryDate = diary.diaryDate.toIso8601String().split('T')[0];
     diaryTitleController.text = diary.title ?? '';
-    diaryContentController.text = diary.content ?? '';
+    diaryContentController.text = diary.content;
     _selectedMood = diary.moodIcon ?? '😊';
     notifyListeners();
   }
@@ -739,6 +739,15 @@ class NotesDiaryViewModel extends ChangeNotifier {
     }
   }
 
+  // Yeni not başarıyla eklendiğinde view katmanının bir kez okuyup
+  // kutlama animasyonunu oynatması için tek seferlik bayrak.
+  bool _justCreated = false;
+  bool consumeJustCreated() {
+    final v = _justCreated;
+    _justCreated = false;
+    return v;
+  }
+
   Future<void> createNote(BuildContext context) async {
     if (noteTitleController.text.trim().isEmpty) {
       CustomSnackBar.showError(context, 'errors.noteTitleEmpty'.tr());
@@ -777,6 +786,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
 
       if (response.isSuccess && response.data != null) {
         _notes.insert(0, response.data!);
+        _justCreated = true; // kaydetme kutlaması animasyonu için
         // Tüm ekleri (görsel/ses/dosya) backend'e yükle — tek doğruluk kaynağı.
         await _uploadPickedAttachments(response.data!.id);
         // Editörde PIN ile kilitlendiyse: kaydettikten sonra PIN ile kilitle

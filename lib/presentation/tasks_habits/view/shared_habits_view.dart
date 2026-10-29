@@ -73,7 +73,7 @@ class _SharedHabitsPageState extends State<SharedHabitsPage> {
       await _load();
       if (mounted) _showJoinCode(r.data!);
     } else {
-      _toast(r.errorMessage ?? 'errors.general'.tr());
+      _toast(r.errorMessage);
     }
   }
 
@@ -109,7 +109,7 @@ class _SharedHabitsPageState extends State<SharedHabitsPage> {
       _toast('habits.shared.joined'.tr());
       await _load();
     } else {
-      _toast(r.errorMessage ?? 'errors.general'.tr());
+      _toast(r.errorMessage);
     }
   }
 
@@ -390,7 +390,7 @@ class _SharedHabitDetailSheetState extends State<_SharedHabitDetailSheet> {
                         await _load();
                         await widget.onChanged();
                       } else {
-                        _toast(r.errorMessage ?? 'errors.general'.tr());
+                        _toast(r.errorMessage);
                       }
                     },
                     icon: const Icon(Icons.check_rounded, size: 20),
@@ -412,7 +412,7 @@ class _SharedHabitDetailSheetState extends State<_SharedHabitDetailSheet> {
                       if (mounted) Navigator.pop(context);
                       await widget.onChanged();
                     } else {
-                      _toast(r.errorMessage ?? 'errors.general'.tr());
+                      _toast(r.errorMessage);
                     }
                   },
                   style: OutlinedButton.styleFrom(

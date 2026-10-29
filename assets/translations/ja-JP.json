@@ -636,7 +636,13 @@
       "planPremium": "Premium",
       "planFree": "無料",
       "cancelNote": "サブスクリプションは、端末のストア（App Store / Google Play）のサブスク設定からいつでも解約できます。"
-    }
+    },
+    "replayOnboarding": "イントロをもう一度見る",
+    "completion": "プロフィールの完成度は{percent}%です",
+    "completeCta": "完成させる",
+    "lastSync": "最終同期 · {time}",
+    "sendVerification": "確認メールを送信",
+    "verificationSent": "確認メールを送信しました"
   },
   "calendar": {
     "screenTitle": "カレンダー",
@@ -1206,7 +1212,9 @@
       "languageSubtitle": "アプリケーションの言語を選択",
       "languageSelect": "言語を選択",
       "turkish": "トルコ語",
-      "english": "英語"
+      "english": "英語",
+      "disableAnimations": "アニメーションをオフ",
+      "disableAnimationsSubtitle": "メモの揺れとトランジションのアニメーションを無効にする"
     },
     "security": {
       "biometric": "生体認証",

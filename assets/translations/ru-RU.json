@@ -636,7 +636,13 @@
       "planPremium": "Premium",
       "planFree": "Бесплатно",
       "cancelNote": "Отменить подписку можно в любой момент в настройках подписок магазина (App Store / Google Play)."
-    }
+    },
+    "replayOnboarding": "Посмотреть интро снова",
+    "completion": "Профиль заполнен на {percent}%",
+    "completeCta": "Заполнить",
+    "lastSync": "Последняя синхронизация · {time}",
+    "sendVerification": "Отправить письмо для подтверждения",
+    "verificationSent": "Письмо для подтверждения отправлено"
   },
   "calendar": {
     "screenTitle": "Календарь",
@@ -1206,7 +1212,9 @@
       "languageSubtitle": "Выбрать язык приложения",
       "languageSelect": "Выбрать Язык",
       "turkish": "Турецкий",
-      "english": "Английский"
+      "english": "Английский",
+      "disableAnimations": "Отключить анимации",
+      "disableAnimationsSubtitle": "Отключить анимации покачивания и переходов в заметках"
     },
     "security": {
       "biometric": "Биометрическая Аутентификация",

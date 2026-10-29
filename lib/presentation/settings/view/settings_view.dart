@@ -6,6 +6,7 @@ import '../viewmodel/settings_viewmodel.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/utils/premium_helper.dart';
 import '../../../core/utils/responsive.dart';
+import '../../../core/utils/animation_prefs.dart';
 
 @RoutePage()
 class SettingsView extends StatelessWidget {
@@ -281,6 +282,26 @@ class SettingsView extends StatelessWidget {
                                   'settings.appearance.languageSubtitle'.tr(),
                               icon: Icons.language_rounded,
                               isDarkMode: isDarkMode,
+                            ),
+                            // Animasyonları kapat (switch açık = animasyonlar KAPALI)
+                            ValueListenableBuilder<bool>(
+                              valueListenable: AnimationPrefs.enabled,
+                              builder: (_, animEnabled, __) => _buildSwitchTile(
+                                title:
+                                    'settings.appearance.disableAnimations'.tr(),
+                                subtitle:
+                                    'settings.appearance.disableAnimationsSubtitle'
+                                        .tr(),
+                                icon: Icons.motion_photos_off_rounded,
+                                isDarkMode: isDarkMode,
+                                value: !animEnabled,
+                                onChanged: (v) =>
+                                    AnimationPrefs.setEnabled(!v),
+                                iconColor: ColorConstant.accentOrange,
+                                iconBgColor: isDarkMode
+                                    ? ColorConstant.cardColorDark
+                                    : ColorConstant.cardColorLight,
+                              ),
                             ),
                           ],
                         ),

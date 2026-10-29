@@ -636,7 +636,13 @@
       "planPremium": "Premium",
       "planFree": "मुफ़्त",
       "cancelNote": "आप अपनी सदस्यता कभी भी अपने डिवाइस के स्टोर (App Store / Google Play) की सब्सक्रिप्शन सेटिंग से रद्द कर सकते हैं।"
-    }
+    },
+    "replayOnboarding": "परिचय फिर से देखें",
+    "completion": "आपकी प्रोफ़ाइल {percent}% पूर्ण है",
+    "completeCta": "पूरा करें",
+    "lastSync": "पिछला सिंक · {time}",
+    "sendVerification": "सत्यापन ईमेल भेजें",
+    "verificationSent": "सत्यापन ईमेल भेजा गया"
   },
   "calendar": {
     "screenTitle": "कैलेंडर",
@@ -1206,7 +1212,9 @@
       "languageSubtitle": "एप्लिकेशन भाषा चुनें",
       "languageSelect": "भाषा चुनें",
       "turkish": "Türkçe",
-      "english": "अंग्रेजी"
+      "english": "अंग्रेजी",
+      "disableAnimations": "एनिमेशन बंद करें",
+      "disableAnimationsSubtitle": "नोट्स में झूलने और ट्रांज़िशन एनिमेशन बंद करें"
     },
     "security": {
       "biometric": "बायोमेट्रिक प्रमाणीकरण",

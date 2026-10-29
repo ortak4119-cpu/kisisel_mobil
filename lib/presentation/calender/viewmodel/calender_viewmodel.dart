@@ -1118,6 +1118,9 @@ class CalendarViewModel extends ChangeNotifier {
   String _fmtTime(TimeOfDay t) =>
       '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
 
+  // Yeni etkinlik eklenince, o kartın listeye düşme animasyonu için id.
+  int? justCreatedEventId;
+
   Future<void> saveEventFromForm(BuildContext context) async {
     if (eventTitleController.text.trim().isEmpty) {
       CustomSnackBar.showError(context, 'errors.taskTitleEmpty'.tr(),
@@ -1201,6 +1204,7 @@ class CalendarViewModel extends ChangeNotifier {
     final resp = await _calendarService.createEvent(request);
     if (resp.isSuccess && resp.data != null) {
       _calendarEvents.add(resp.data!);
+      justCreatedEventId = resp.data!.id; // listeye düşme animasyonu
       _eventMeta[resp.data!.id] = meta;
       await _persistEventMeta();
       CalendarWidgetService.update();

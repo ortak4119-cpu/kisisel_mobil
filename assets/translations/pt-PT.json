@@ -636,7 +636,13 @@
       "planPremium": "Premium",
       "planFree": "Gratuito",
       "cancelNote": "Podes cancelar a tua subscrição quando quiseres nas definições de subscrições da tua loja (App Store / Google Play)."
-    }
+    },
+    "replayOnboarding": "Rever a introdução",
+    "completion": "O teu perfil está {percent}% completo",
+    "completeCta": "Completar",
+    "lastSync": "Última sincronização · {time}",
+    "sendVerification": "Enviar e-mail de verificação",
+    "verificationSent": "E-mail de verificação enviado"
   },
   "calendar": {
     "screenTitle": "Calendário",
@@ -1206,7 +1212,9 @@
       "languageSubtitle": "Selecionar idioma da aplicação",
       "languageSelect": "Selecionar Idioma",
       "turkish": "Turco",
-      "english": "Inglês"
+      "english": "Inglês",
+      "disableAnimations": "Desligar animações",
+      "disableAnimationsSubtitle": "Desativa as animações de balanço e transição nas notas"
     },
     "security": {
       "biometric": "Autenticação Biológica",

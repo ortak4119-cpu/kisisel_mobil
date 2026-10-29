@@ -636,7 +636,13 @@
       "planPremium": "Premium",
       "planFree": "مجاني",
       "cancelNote": "يمكنك إلغاء اشتراكك في أي وقت من إعدادات الاشتراكات في متجر جهازك (App Store / Google Play)."
-    }
+    },
+    "replayOnboarding": "إعادة مشاهدة المقدمة",
+    "completion": "ملفك مكتمل بنسبة {percent}%",
+    "completeCta": "إكمال",
+    "lastSync": "آخر مزامنة · {time}",
+    "sendVerification": "إرسال بريد التحقق",
+    "verificationSent": "تم إرسال بريد التحقق"
   },
   "calendar": {
     "screenTitle": "التقويم",
@@ -1206,7 +1212,9 @@
       "languageSubtitle": "اختر لغة التطبيق",
       "languageSelect": "اختر اللغة",
       "turkish": "التركية",
-      "english": "الإنجليزية"
+      "english": "الإنجليزية",
+      "disableAnimations": "إيقاف الحركات",
+      "disableAnimationsSubtitle": "تعطيل حركات التأرجح والانتقال في الملاحظات"
     },
     "security": {
       "biometric": "المصادقة البيومترية",

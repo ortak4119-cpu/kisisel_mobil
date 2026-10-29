@@ -636,7 +636,13 @@
       "planPremium": "Premium",
       "planFree": "Free",
       "cancelNote": "You can cancel your subscription anytime from your device's store (App Store / Google Play) subscription settings."
-    }
+    },
+    "replayOnboarding": "Replay the intro",
+    "completion": "Your profile is {percent}% complete",
+    "completeCta": "Complete",
+    "lastSync": "Last sync · {time}",
+    "sendVerification": "Send verification email",
+    "verificationSent": "Verification email sent"
   },
   "calendar": {
     "screenTitle": "Calendar",
@@ -1206,7 +1212,9 @@
       "languageSubtitle": "Select application language",
       "languageSelect": "Select Language",
       "turkish": "Turkish",
-      "english": "English"
+      "english": "English",
+      "disableAnimations": "Turn off animations",
+      "disableAnimationsSubtitle": "Disable the sway and transition animations in notes"
     },
     "security": {
       "biometric": "Biometric Authentication",

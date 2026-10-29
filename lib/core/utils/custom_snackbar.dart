@@ -49,7 +49,6 @@ class CustomSnackBar {
         defaultIcon = Icons.warning_rounded;
         break;
       case SnackBarType.info:
-      default:
         backgroundColor = isDarkMode
             ? ColorConstant.primaryDarkModePurple
             : ColorConstant.primaryPurple;
