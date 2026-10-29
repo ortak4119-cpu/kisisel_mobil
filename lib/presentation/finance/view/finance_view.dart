@@ -59,7 +59,7 @@ _FinCat finCatById(String? id) {
 const _fOrange = Color(0xFFF6A821);
 // Mockup'taki koyu teal başlık + hesap kartı tonları.
 const _fTeal = Color(0xFF0F524E);
-const _fTealDark = Color(0xFF0B3C39);
+const _fTealCard = Color(0xFF0A3F3C);
 
 // Tutar biçimlendirme artık seçili para birimine (AppCurrency) göre yapılır.
 String tl(double v) {
@@ -263,11 +263,7 @@ class _FinanceViewState extends State<FinanceView> {
     return Container(
       padding: EdgeInsets.fromLTRB(20, topPad + 10, 20, 20),
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [_fTeal, _fTealDark],
-        ),
+        color: Color(0xFFEFE8D6),
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
       ),
       child: Column(
@@ -278,13 +274,13 @@ class _FinanceViewState extends State<FinanceView> {
             children: [
               CircleAvatar(
                 radius: 20,
-                backgroundColor: Colors.white.withOpacity(0.18),
+                backgroundColor: Colors.black.withOpacity(0.06),
                 backgroundImage: (user?.profilePictureUrl != null)
                     ? NetworkImage(user!.profilePictureUrl!)
                     : null,
                 child: user?.profilePictureUrl == null
                     ? const Icon(Icons.person_rounded,
-                        color: Colors.white, size: 22)
+                        color: Color(0xFF3B3426), size: 22)
                     : null,
               ),
               const SizedBox(width: 12),
@@ -299,17 +295,17 @@ class _FinanceViewState extends State<FinanceView> {
                           InkWell(
                             onTap: () => vm.changeMonth(-1),
                             child: const Icon(Icons.chevron_left_rounded,
-                                size: 18, color: Colors.white70),
+                                size: 18, color: Color(0xFF8A7F66)),
                           ),
                           Text(monthLabel,
                               style: const TextStyle(
                                   fontSize: 12.5,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.white70)),
+                                  color: Color(0xFF8A7F66))),
                           InkWell(
                             onTap: () => vm.changeMonth(1),
                             child: const Icon(Icons.chevron_right_rounded,
-                                size: 18, color: Colors.white70),
+                                size: 18, color: Color(0xFF8A7F66)),
                           ),
                         ],
                       ),
@@ -318,7 +314,7 @@ class _FinanceViewState extends State<FinanceView> {
                         style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.w900,
-                            color: Colors.white,
+                            color: Color(0xFF2E2A22),
                             height: 1.1)),
                   ],
                 ),
@@ -365,7 +361,7 @@ class _FinanceViewState extends State<FinanceView> {
                 width: sel ? 18 : 6,
                 height: 6,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(sel ? 0.95 : 0.4),
+                  color: Colors.black.withOpacity(sel ? 0.55 : 0.2),
                   borderRadius: BorderRadius.circular(3),
                 ),
               );
@@ -404,14 +400,14 @@ class _FinanceViewState extends State<FinanceView> {
   }
 
   Widget _tealIconBtn(IconData icon, VoidCallback onTap) => Material(
-        color: Colors.white.withOpacity(0.15),
+        color: Colors.black.withOpacity(0.05),
         shape: const CircleBorder(),
         child: InkWell(
           onTap: onTap,
           customBorder: const CircleBorder(),
           child: Padding(
               padding: const EdgeInsets.all(9),
-              child: Icon(icon, size: 20, color: Colors.white)),
+              child: Icon(icon, size: 20, color: const Color(0xFF3B3426))),
         ),
       );
 
@@ -419,9 +415,9 @@ class _FinanceViewState extends State<FinanceView> {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFFE8DFCD),
+        color: _fTealCard,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: Colors.black.withOpacity(0.05)),
+        border: Border.all(color: Colors.white.withOpacity(0.08)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -429,20 +425,20 @@ class _FinanceViewState extends State<FinanceView> {
           Row(
             children: [
               Text('finance.mainAccount'.tr(),
-                  style: const TextStyle(
-                      fontSize: 13.5, color: Color(0xFF8A7F66))),
+                  style: TextStyle(
+                      fontSize: 13.5, color: Colors.white.withOpacity(0.7))),
               const Spacer(),
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                 decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.06),
+                    color: Colors.white.withOpacity(0.14),
                     borderRadius: BorderRadius.circular(10)),
                 child: Text(AppCurrency.code,
                     style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF5B4E33))),
+                        color: Colors.white)),
               ),
             ],
           ),
@@ -451,14 +447,14 @@ class _FinanceViewState extends State<FinanceView> {
               style: const TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.w900,
-                  color: Color(0xFF2E2A22))),
+                  color: Colors.white)),
           const Spacer(),
           Text(
             '${'finance.spendableToday'.tr()} · ${tl0(vm.safeToSpendPerDay)}',
             style: const TextStyle(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF2F9E5E)),
+                color: Color(0xFF5FE3B3)),
           ),
         ],
       ),
@@ -475,9 +471,11 @@ class _FinanceViewState extends State<FinanceView> {
       margin: const EdgeInsets.only(left: 4),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFFE8DFCD),
+        gradient: const LinearGradient(
+            colors: [Color(0xFFF6894B), _fOrange],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: Colors.black.withOpacity(0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -485,22 +483,22 @@ class _FinanceViewState extends State<FinanceView> {
           Text(title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                  fontSize: 13.5, color: Color(0xFF8A7F66))),
+              style: TextStyle(
+                  fontSize: 13.5, color: Colors.white.withOpacity(0.9))),
           const SizedBox(height: 8),
           Text(tl(vm.savingsCurrent),
               style: const TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.w900,
-                  color: Color(0xFF2E2A22))),
+                  color: Colors.white)),
           const Spacer(),
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
               value: pct,
               minHeight: 6,
-              backgroundColor: const Color(0xFFD9CDB2),
-              valueColor: const AlwaysStoppedAnimation<Color>(_fOrange),
+              backgroundColor: Colors.white.withOpacity(0.3),
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
             ),
           ),
           const SizedBox(height: 6),
@@ -509,7 +507,7 @@ class _FinanceViewState extends State<FinanceView> {
             style: const TextStyle(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF8A7F66)),
+                color: Colors.white),
           ),
         ],
       ),
@@ -527,9 +525,11 @@ class _FinanceViewState extends State<FinanceView> {
       margin: const EdgeInsets.only(left: 4),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFE8DFCD),
+        gradient: LinearGradient(
+            colors: grad,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: Colors.black.withOpacity(0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -537,10 +537,10 @@ class _FinanceViewState extends State<FinanceView> {
           Row(
             children: [
               Text(label,
-                  style: const TextStyle(
-                      fontSize: 13.5, color: Color(0xFF8A7F66))),
+                  style: TextStyle(
+                      fontSize: 13.5, color: Colors.white.withOpacity(0.92))),
               const Spacer(),
-              Icon(icon, color: grad.first, size: 18),
+              Icon(icon, color: Colors.white70, size: 18),
             ],
           ),
           const SizedBox(height: 8),
@@ -550,7 +550,7 @@ class _FinanceViewState extends State<FinanceView> {
               style: const TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.w900,
-                  color: Color(0xFF2E2A22))),
+                  color: Colors.white)),
           const Spacer(),
           Text(sub,
               maxLines: 1,
@@ -558,7 +558,7 @@ class _FinanceViewState extends State<FinanceView> {
               style: const TextStyle(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF8A7F66))),
+                  color: Colors.white)),
         ],
       ),
     );
@@ -597,7 +597,7 @@ class _FinanceViewState extends State<FinanceView> {
             width: 52,
             height: 52,
             decoration: BoxDecoration(
-              color: const Color(0xFFE8DFCD),
+              color: Colors.white,
               shape: BoxShape.circle,
               border: Border.all(color: Colors.black.withOpacity(0.05)),
             ),
@@ -608,7 +608,7 @@ class _FinanceViewState extends State<FinanceView> {
               style: const TextStyle(
                   fontSize: 11.5,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white)),
+                  color: Color(0xFF3B3426))),
         ],
       ),
     );

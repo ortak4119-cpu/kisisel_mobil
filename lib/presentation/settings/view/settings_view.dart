@@ -54,7 +54,11 @@ class SettingsView extends StatelessWidget {
                   expandedHeight: 120,
                   floating: false,
                   pinned: true,
-                  backgroundColor: Colors.transparent,
+                  backgroundColor: isDarkMode
+                      ? ColorConstant.bgColorDark
+                      : ColorConstant.bgColorLight,
+                  surfaceTintColor: Colors.transparent,
+                  elevation: 0,
                   leading: IconButton(
                     icon: Icon(
                       Icons.arrow_back_ios_new_rounded,
@@ -105,8 +109,11 @@ class SettingsView extends StatelessWidget {
                       children: [
                         const SizedBox(height: 8),
 
-                        // Premium Bölümü - sadece kullanıcı yüklendikten sonra göster
-                        if (viewModel.isUserLoaded)
+                        // Premium Bölümü - sadece premium OLMAYAN kullanıcıya göster.
+                        // Premium kullanıcıda en üstte "Premium" başlığı görünmez.
+                        if (viewModel.isUserLoaded &&
+                            !PremiumHelper.isPremiumUser(
+                                viewModel.currentUser)) ...[
                           _buildSection(
                             title: 'settings.sections.premium'.tr(),
                             isDarkMode: isDarkMode,
@@ -118,8 +125,8 @@ class SettingsView extends StatelessWidget {
                               ),
                             ],
                           ),
-
-                        if (viewModel.isUserLoaded) const SizedBox(height: 20),
+                          const SizedBox(height: 20),
+                        ],
 
                         // Bildirimler Bölümü
                         _buildSection(
