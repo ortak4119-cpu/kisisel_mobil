@@ -336,7 +336,9 @@
     "todayEmptyHint": "Today is empty. Add one above or move overdue tasks here.",
     "doneWord": "done",
     "soon": "Soon",
-    "scopeAll": "All"
+    "scopeAll": "All",
+    "filterRecurring": "Recurring",
+    "filterHighPriority": "High priority"
   },
   "habits": {
     "title": "Habits",

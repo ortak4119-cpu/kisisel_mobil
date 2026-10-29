@@ -336,7 +336,9 @@
     "todayEmptyHint": "Bugün boş. Yukarıdan ekle ya da gecikenleri bugüne al.",
     "doneWord": "tamam",
     "soon": "Yakında",
-    "scopeAll": "Tümü"
+    "scopeAll": "Tümü",
+    "filterRecurring": "Tekrarlı",
+    "filterHighPriority": "Yüksek öncelik"
   },
   "habits": {
     "title": "Alışkanlıklar",

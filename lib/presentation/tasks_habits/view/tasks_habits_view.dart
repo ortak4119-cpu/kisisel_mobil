@@ -97,41 +97,38 @@ class _TasksHabitsViewState extends State<TasksHabitsView> {
                 ],
               ),
             ),
-            // Görevler sekmesinde satır içi "+" var; FAB yalnızca Alışkanlık'ta.
-            floatingActionButton: _tab == 0
-                ? null
-                : FloatingActionButton(
-                    heroTag: 'th_fab',
-                    onPressed: () =>
-                        showAddHabitSheet(context, viewModel, isDarkMode),
-                    backgroundColor: Colors.transparent,
-                    elevation: 0,
-                    child: Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            ColorConstant.accentYellow,
-                            ColorConstant.accentOrange,
-                          ],
-                        ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: ColorConstant.accentOrange
-                                .withValues(alpha: 0.45),
-                            blurRadius: 14,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(Icons.add_rounded,
-                          color: Colors.white, size: 30),
-                    ),
+            floatingActionButton: FloatingActionButton(
+              heroTag: 'th_fab',
+              onPressed: () => _tab == 0
+                  ? showAddTaskSheet(context, viewModel, isDarkMode)
+                  : showAddHabitSheet(context, viewModel, isDarkMode),
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              child: Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      ColorConstant.accentYellow,
+                      ColorConstant.accentOrange,
+                    ],
                   ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: ColorConstant.accentOrange.withValues(alpha: 0.45),
+                      blurRadius: 14,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: const Icon(Icons.add_rounded,
+                    color: Colors.white, size: 30),
+              ),
+            ),
           );
         },
       ),
@@ -1170,8 +1167,41 @@ class _TasksTabState extends State<_TasksTab> {
 
   // Açık bölümler (default: hepsi kapalı).
   final Set<String> _open = {};
-  // Görünüm kapsamı: today | all
-  String _scope = 'today';
+  // Filtre: all | recurring | daily | weekly | monthly | once | high
+  String _filter = 'all';
+
+  // Aktif filtreye göre görevi gösterelim mi?
+  bool _matchesFilter(Task t) {
+    switch (_filter) {
+      case 'recurring':
+        return t.isRecurring;
+      case 'daily':
+        return t.isRecurring && t.recurringPattern == 'daily';
+      case 'weekly':
+        return t.isRecurring && t.recurringPattern == 'weekly';
+      case 'monthly':
+        return t.isRecurring && t.recurringPattern == 'monthly';
+      case 'once':
+        return !t.isRecurring;
+      case 'high':
+        return t.priority == 2;
+      default:
+        return true;
+    }
+  }
+
+  // Filtre etiketleri (değer -> çeviri anahtarı).
+  static const List<List<String>> _filters = [
+    ['all', 'tasks.scopeAll'],
+    ['recurring', 'tasks.filterRecurring'],
+    ['daily', 'tasks.recurrence.daily'],
+    ['weekly', 'tasks.recurrence.weekly'],
+    ['monthly', 'tasks.recurrence.monthly'],
+    ['once', 'tasks.recurrence.once'],
+    ['high', 'tasks.filterHighPriority'],
+  ];
+  String get _filterLabelKey =>
+      _filters.firstWhere((f) => f[0] == _filter, orElse: () => _filters[0])[1];
 
   static const _orange = Color(0xFFF6A821);
   static const _purple = Color(0xFF9F7AEA);
@@ -1207,15 +1237,22 @@ class _TasksTabState extends State<_TasksTab> {
 
   // ==================== BÖLÜMLÜ GÖRÜNÜM (Gecikmiş / Bugün / Yakında) ====================
   Widget _sectionsLayout(BuildContext context, AppColors c, bool isDark) {
-    // Tek kaynak sınıflandırma (VM) — ayrık gruplar, çift görünme yok.
-    final overdue = viewModel.pastOverdueTasks;
-    final todayOpen = viewModel.todayTasks;
-    final upcoming = viewModel.upcomingTasksList;
-    final undated = viewModel.undatedTasks;
-    final completed = viewModel.completedTasksList;
+    // Tek kaynak sınıflandırma (VM) + aktif filtre (ayrık gruplar).
+    final overdue =
+        viewModel.pastOverdueTasks.where(_matchesFilter).toList();
+    final todayOpen = viewModel.todayTasks.where(_matchesFilter).toList();
+    final upcoming =
+        viewModel.upcomingTasksList.where(_matchesFilter).toList();
+    final undated = viewModel.undatedTasks.where(_matchesFilter).toList();
+    final completed =
+        viewModel.completedTasksList.where(_matchesFilter).toList();
 
-    // Başlık "X / Y tamam": bugünkü ilerleme + gecikmiş yük.
-    final todayDone = viewModel.todayCompletedCount;
+    // Başlık "X / Y tamam": bugünkü ilerleme + gecikmiş yük (filtreye göre).
+    final now = DateTime.now();
+    final todayDone = completed.where((t) {
+      final d = viewModel.dueDateOf(t);
+      return d != null && viewModel.isSameDay(d, now);
+    }).length;
     final total = overdue.length + todayOpen.length + todayDone;
     final done = todayDone;
 
@@ -1281,44 +1318,42 @@ class _TasksTabState extends State<_TasksTab> {
                 ],
               ),
       ),
-      if (_scope == 'all') ...[
-        if (undated.isNotEmpty)
-          _sectionCard(
-            c: c,
-            keyId: 'undated',
-            title: 'tasks.allUndated'.tr(),
-            icon: Icons.inbox_rounded,
-            accent: const Color(0xFF4C9AFF),
-            count: undated.length,
-            child: Column(
-              children: [
-                for (final t in undated)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: _taskCard(context, c, t),
-                  ),
-              ],
-            ),
+      if (undated.isNotEmpty)
+        _sectionCard(
+          c: c,
+          keyId: 'undated',
+          title: 'tasks.allUndated'.tr(),
+          icon: Icons.inbox_rounded,
+          accent: const Color(0xFF4C9AFF),
+          count: undated.length,
+          child: Column(
+            children: [
+              for (final t in undated)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: _taskCard(context, c, t),
+                ),
+            ],
           ),
-        if (completed.isNotEmpty)
-          _sectionCard(
-            c: c,
-            keyId: 'completed',
-            title: 'tasks.allCompleted'.tr(),
-            icon: Icons.check_circle_rounded,
-            accent: _green,
-            count: completed.length,
-            child: Column(
-              children: [
-                for (final t in completed)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: _taskCard(context, c, t),
-                  ),
-              ],
-            ),
+        ),
+      if (completed.isNotEmpty)
+        _sectionCard(
+          c: c,
+          keyId: 'completed',
+          title: 'tasks.allCompleted'.tr(),
+          icon: Icons.check_circle_rounded,
+          accent: _green,
+          count: completed.length,
+          child: Column(
+            children: [
+              for (final t in completed)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: _taskCard(context, c, t),
+                ),
+            ],
           ),
-      ],
+        ),
     ];
 
     return RefreshIndicator(
@@ -1378,42 +1413,59 @@ class _TasksTabState extends State<_TasksTab> {
   Widget _filterRow(BuildContext context, AppColors c, bool isDark) {
     return Row(
       children: [
-        _scopeChip(c),
+        _filterChip(c),
         const SizedBox(width: 10),
         Expanded(child: _allTasksBtn(context, isDark)),
-        const SizedBox(width: 10),
-        _addBtn(context, isDark),
       ],
     );
   }
 
-  Widget _scopeChip(AppColors c) {
-    final label =
-        _scope == 'today' ? 'tasks.allToday'.tr() : 'tasks.scopeAll'.tr();
+  // Tekrarlama/öncelik bazlı filtre seçici (default "Tümü").
+  Widget _filterChip(AppColors c) {
+    final active = _filter != 'all';
     return PopupMenuButton<String>(
-      onSelected: (v) => setState(() => _scope = v),
+      onSelected: (v) => setState(() => _filter = v),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       itemBuilder: (_) => [
-        PopupMenuItem(value: 'today', child: Text('tasks.allToday'.tr())),
-        PopupMenuItem(value: 'all', child: Text('tasks.scopeAll'.tr())),
+        for (final f in _filters)
+          PopupMenuItem(
+            value: f[0],
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 18,
+                  child: f[0] == _filter
+                      ? const Icon(Icons.check_rounded,
+                          size: 18, color: _orange)
+                      : null,
+                ),
+                const SizedBox(width: 8),
+                Text(f[1].tr()),
+              ],
+            ),
+          ),
       ],
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
         decoration: BoxDecoration(
-          color: c.card,
+          color: active ? _orange.withOpacity(0.12) : c.card,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: c.border.withOpacity(0.7)),
+          border: Border.all(
+              color: active
+                  ? _orange.withOpacity(0.5)
+                  : c.border.withOpacity(0.7)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(label,
+            Icon(Icons.filter_list_rounded,
+                size: 18, color: active ? _orange : c.textMuted),
+            const SizedBox(width: 6),
+            Text(_filterLabelKey.tr(),
                 style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: c.textPrimary)),
-            const SizedBox(width: 4),
-            Icon(Icons.unfold_more_rounded, size: 18, color: c.textMuted),
+                    color: active ? _orange : c.textPrimary)),
           ],
         ),
       ),
@@ -1445,25 +1497,6 @@ class _TasksTabState extends State<_TasksTab> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _addBtn(BuildContext context, bool isDark) {
-    return GestureDetector(
-      onTap: () => showAddTaskSheet(context, viewModel, isDark),
-      child: Container(
-        width: 46,
-        height: 46,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [ColorConstant.accentYellow, ColorConstant.accentOrange],
-          ),
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: const Icon(Icons.add_rounded, color: Colors.white, size: 26),
       ),
     );
   }

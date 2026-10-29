@@ -336,7 +336,9 @@
     "todayEmptyHint": "اليوم فارغ. أضف من الأعلى أو انقل المهام المتأخرة إلى هنا.",
     "doneWord": "تم",
     "soon": "قريبًا",
-    "scopeAll": "الكل"
+    "scopeAll": "الكل",
+    "filterRecurring": "متكرّر",
+    "filterHighPriority": "أولوية عالية"
   },
   "habits": {
     "title": "العادات",

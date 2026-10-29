@@ -336,7 +336,9 @@
     "todayEmptyHint": "今天是空的。在上方添加，或把逾期任务移到这里。",
     "doneWord": "完成",
     "soon": "即将",
-    "scopeAll": "全部"
+    "scopeAll": "全部",
+    "filterRecurring": "重复",
+    "filterHighPriority": "高优先级"
   },
   "habits": {
     "title": "习惯",

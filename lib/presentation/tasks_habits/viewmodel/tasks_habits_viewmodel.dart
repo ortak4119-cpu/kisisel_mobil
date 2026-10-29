@@ -574,16 +574,6 @@ class TasksHabitsViewModel extends ChangeNotifier {
   List<Task> get undatedTasks =>
       _applySort(_openParents.where((t) => dueDateOf(t) == null).toList());
 
-  // Bugün tamamlanmış üst görev sayısı (başlık "X / Y tamam" için).
-  int get todayCompletedCount {
-    final now = DateTime.now();
-    return parentTasks.where((t) {
-      if (!t.isCompleted) return false;
-      final d = dueDateOf(t);
-      return d != null && isSameDay(d, now);
-    }).length;
-  }
-
   // Seçili güne ait görevler + "daha sonra"
   List<Task> get tasksForSelectedDay {
     return parentTasks.where((t) {

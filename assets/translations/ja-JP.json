@@ -336,7 +336,9 @@
     "todayEmptyHint": "今日は空です。上から追加するか、期限切れをここに移動しましょう。",
     "doneWord": "完了",
     "soon": "まもなく",
-    "scopeAll": "すべて"
+    "scopeAll": "すべて",
+    "filterRecurring": "繰り返し",
+    "filterHighPriority": "高優先度"
   },
   "habits": {
     "title": "習慣",

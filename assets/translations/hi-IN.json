@@ -336,7 +336,9 @@
     "todayEmptyHint": "आज खाली है। ऊपर से जोड़ें या बकाया काम यहाँ लाएँ।",
     "doneWord": "पूर्ण",
     "soon": "जल्द",
-    "scopeAll": "सभी"
+    "scopeAll": "सभी",
+    "filterRecurring": "दोहराव",
+    "filterHighPriority": "उच्च प्राथमिकता"
   },
   "habits": {
     "title": "आदतें",

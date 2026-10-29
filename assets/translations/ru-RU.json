@@ -336,7 +336,9 @@
     "todayEmptyHint": "На сегодня пусто. Добавьте сверху или перенесите просроченные сюда.",
     "doneWord": "готово",
     "soon": "Скоро",
-    "scopeAll": "Все"
+    "scopeAll": "Все",
+    "filterRecurring": "Повторяющиеся",
+    "filterHighPriority": "Высокий приоритет"
   },
   "habits": {
     "title": "Привычки",

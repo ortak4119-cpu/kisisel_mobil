@@ -336,7 +336,9 @@
     "todayEmptyHint": "Hoy está vacío. Añade arriba o mueve aquí las tareas atrasadas.",
     "doneWord": "hecho",
     "soon": "Pronto",
-    "scopeAll": "Todas"
+    "scopeAll": "Todas",
+    "filterRecurring": "Recurrente",
+    "filterHighPriority": "Prioridad alta"
   },
   "habits": {
     "title": "Hábitos",

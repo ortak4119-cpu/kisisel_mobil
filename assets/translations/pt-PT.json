@@ -336,7 +336,9 @@
     "todayEmptyHint": "Hoje está vazio. Adiciona acima ou move as tarefas atrasadas para aqui.",
     "doneWord": "feito",
     "soon": "Em breve",
-    "scopeAll": "Todas"
+    "scopeAll": "Todas",
+    "filterRecurring": "Recorrente",
+    "filterHighPriority": "Prioridade alta"
   },
   "habits": {
     "title": "Hábitos",

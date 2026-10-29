@@ -336,7 +336,9 @@
     "todayEmptyHint": "Heute ist leer. Füge oben etwas hinzu oder verschiebe überfällige Aufgaben hierher.",
     "doneWord": "erledigt",
     "soon": "Demnächst",
-    "scopeAll": "Alle"
+    "scopeAll": "Alle",
+    "filterRecurring": "Wiederkehrend",
+    "filterHighPriority": "Hohe Priorität"
   },
   "habits": {
     "title": "Gewohnheiten",
