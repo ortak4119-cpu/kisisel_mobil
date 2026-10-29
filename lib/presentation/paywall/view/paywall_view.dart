@@ -493,33 +493,36 @@ class _PaywallViewState extends State<PaywallView> {
           Row(
             children: [
               Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFBF8EF),
-                    border: Border.all(color: _P.border),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  child: TextField(
-                    controller: _couponController,
-                    textCapitalization: TextCapitalization.characters,
-                    style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: _P.ink),
-                    decoration: InputDecoration(
-                      isDense: true,
-                      border: InputBorder.none,
-                      hintText: 'paywall.coupon_hint'.tr(),
-                      hintStyle: const TextStyle(
-                          color: Color(0xFFB3A98F),
-                          fontWeight: FontWeight.w500),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                child: TextField(
+                  controller: _couponController,
+                  textCapitalization: TextCapitalization.characters,
+                  style: const TextStyle(
+                      fontSize: 14, fontWeight: FontWeight.w600, color: _P.ink),
+                  decoration: InputDecoration(
+                    isDense: true,
+                    filled: true,
+                    fillColor: const Color(0xFFFBF8EF),
+                    hintText: 'paywall.coupon_hint'.tr(),
+                    hintStyle: const TextStyle(
+                        color: Color(0xFFB3A98F), fontWeight: FontWeight.w500),
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: _P.border),
                     ),
-                    onChanged: (_) {
-                      if (vm.couponMessage != null) vm.clearCoupon();
-                    },
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: _P.amber, width: 1.5),
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: _P.border),
+                    ),
                   ),
+                  onChanged: (_) {
+                    if (vm.couponMessage != null) vm.clearCoupon();
+                  },
                 ),
               ),
               const SizedBox(width: 10),
