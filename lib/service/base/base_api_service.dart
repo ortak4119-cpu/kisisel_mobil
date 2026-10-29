@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../response/service_response.dart';
 import '../../core/utils/app_locale.dart';
@@ -14,29 +15,46 @@ abstract class BaseApiService {
 
   static String? _authToken;
 
-  // Token'ı kaydet (SharedPreferences ile kalıcı)
+  // Oturum token'ı güvenli depoda saklanır (Android Keystore / iOS Keychain).
+  // Eski sürümdeki düz-metin SharedPreferences kaydı tek seferlik buraya taşınır.
+  static const FlutterSecureStorage _secure = FlutterSecureStorage();
+  static const String _tokenKey = 'auth_token';
+
+  // Token'ı kaydet (güvenli depo)
   static Future<void> setAuthToken(String? token) async {
     _authToken = token;
     if (token != null) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('auth_token', token);
+      await _secure.write(key: _tokenKey, value: token);
+    } else {
+      await _secure.delete(key: _tokenKey);
     }
   }
 
-  // Token'ı al (SharedPreferences'tan)
+  // Token'ı al (güvenli depo; eski düz-metin kaydı varsa taşı)
   static Future<String?> getAuthToken() async {
     if (_authToken != null) return _authToken;
 
+    _authToken = await _secure.read(key: _tokenKey);
+    if (_authToken != null) return _authToken;
+
+    // Geriye dönük uyum: eski sürümde token SharedPreferences'ta düz metindi.
+    // Varsa güvenli depoya taşı ve düz-metin kopyayı sil (kullanıcı çıkış yapmaz).
     final prefs = await SharedPreferences.getInstance();
-    _authToken = prefs.getString('auth_token');
+    final legacy = prefs.getString(_tokenKey);
+    if (legacy != null && legacy.isNotEmpty) {
+      _authToken = legacy;
+      await _secure.write(key: _tokenKey, value: legacy);
+      await prefs.remove(_tokenKey);
+    }
     return _authToken;
   }
 
-  // Token'ı temizle
+  // Token'ı temizle (güvenli depo + eski düz-metin kalıntısı)
   static Future<void> clearAuthToken() async {
     _authToken = null;
+    await _secure.delete(key: _tokenKey);
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('auth_token');
+    await prefs.remove(_tokenKey);
   }
 
   // Base headers

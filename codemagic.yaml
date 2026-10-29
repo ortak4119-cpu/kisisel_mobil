@@ -60,7 +60,8 @@ workflows:
           LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID" 2>/dev/null || echo 0)
           BUILD_NUMBER=$((LATEST + 1))
           flutter build ipa --release \
-            --build-name=2.0 \
+            --obfuscate --split-debug-info=build/debug-info \
+            --build-name=3.0.0 \
             --build-number=$BUILD_NUMBER \
             --export-options-plist=/Users/builder/export_options.plist
     artifacts:
@@ -132,7 +133,8 @@ workflows:
       - name: Ad-hoc IPA derle
         script: |
           flutter build ipa --release \
-            --build-name=2.0 \
+            --obfuscate --split-debug-info=build/debug-info \
+            --build-name=3.0.0 \
             --build-number=1 \
             --export-options-plist=/Users/builder/export_options.plist
     artifacts:
@@ -167,7 +169,8 @@ workflows:
       - name: AAB derle
         script: |
           flutter build appbundle --release \
-            --build-name=2.0 \
+            --obfuscate --split-debug-info=build/debug-info \
+            --build-name=3.0.0 \
             --build-number=$(($(google-play get-latest-build-number \
               --package-name "$PACKAGE_NAME" \
               --tracks internal) + 1))

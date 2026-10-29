@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -93,6 +94,8 @@ class _SplashViewState extends State<SplashView> with SingleTickerProviderStateM
   }
 
   Future<void> _logUserPremiumStatus() async {
+    // Yalnızca debug'da çalışır; release'de kullanıcı bilgisi toplanmaz/loglanmaz.
+    if (!kDebugMode) return;
     try {
       final authService = AuthService();
       final response = await authService.getCurrentUser();

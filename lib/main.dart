@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'core/constant/constants.dart';
@@ -8,10 +9,19 @@ import 'core/theme/app_theme.dart';
 import 'core/init/app_initializer.dart';
 import 'core/init/app_providers.dart';
 import 'core/utils/app_locale.dart';
+import 'core/utils/animation_prefs.dart';
 import 'service/share/share_intent_handler.dart';
 
 void main() async {
+  // Release derlemelerinde hiçbir debug log cihaz loglarına (logcat) yazılmasın;
+  // PII (e-posta/kullanıcı adı) ve token'ların sızmasını önler.
+  if (kReleaseMode) {
+    debugPrint = (String? message, {int? wrapWidth}) {};
+  }
   await AppInitializer.init();
+
+  // Animasyon tercihini (Ayarlar › Görünüm) belleğe yükle.
+  await AnimationPrefs.load();
 
   // Başka uygulamadan "Paylaş" ile gelen metni not olarak içe aktar.
   ShareIntentHandler.init();
