@@ -17,33 +17,6 @@ import '../../../core/utils/nl_task_parser.dart';
 import 'shared_habits_view.dart';
 import '../viewmodel/tasks_habits_viewmodel.dart';
 
-/// Kesikli yuvarlak dikdörtgen kenar — "Gecikenleri bugüne taşı" butonu.
-class _DashedRectPainter extends CustomPainter {
-  final Color color;
-  _DashedRectPainter({required this.color});
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.4;
-    final rrect = RRect.fromRectAndRadius(
-        Offset.zero & size, const Radius.circular(10));
-    final path = Path()..addRRect(rrect);
-    const dash = 5.0, gap = 4.0;
-    for (final metric in path.computeMetrics()) {
-      double dist = 0;
-      while (dist < metric.length) {
-        canvas.drawPath(metric.extractPath(dist, dist + dash), paint);
-        dist += dash + gap;
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
 class TasksHabitsView extends StatefulWidget {
   /// 'both' = görev/alışkanlık toggle'lı; 'tasks' = sadece görevler;
   /// 'habits' = sadece alışkanlıklar (alt menüde ayrı sekmeler için).
@@ -124,38 +97,41 @@ class _TasksHabitsViewState extends State<TasksHabitsView> {
                 ],
               ),
             ),
-            floatingActionButton: FloatingActionButton(
-              heroTag: 'th_fab',
-              onPressed: () => _tab == 0
-                  ? showAddTaskSheet(context, viewModel, isDarkMode)
-                  : showAddHabitSheet(context, viewModel, isDarkMode),
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              child: Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      ColorConstant.accentYellow,
-                      ColorConstant.accentOrange,
-                    ],
-                  ),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: ColorConstant.accentOrange.withValues(alpha: 0.45),
-                      blurRadius: 14,
-                      offset: const Offset(0, 6),
+            // Görevler sekmesinde satır içi "+" var; FAB yalnızca Alışkanlık'ta.
+            floatingActionButton: _tab == 0
+                ? null
+                : FloatingActionButton(
+                    heroTag: 'th_fab',
+                    onPressed: () =>
+                        showAddHabitSheet(context, viewModel, isDarkMode),
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    child: Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            ColorConstant.accentYellow,
+                            ColorConstant.accentOrange,
+                          ],
+                        ),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: ColorConstant.accentOrange
+                                .withValues(alpha: 0.45),
+                            blurRadius: 14,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(Icons.add_rounded,
+                          color: Colors.white, size: 30),
                     ),
-                  ],
-                ),
-                child: const Icon(Icons.add_rounded,
-                    color: Colors.white, size: 30),
-              ),
-            ),
+                  ),
           );
         },
       ),
@@ -1231,37 +1207,20 @@ class _TasksTabState extends State<_TasksTab> {
 
   // ==================== BÖLÜMLÜ GÖRÜNÜM (Gecikmiş / Bugün / Yakında) ====================
   Widget _sectionsLayout(BuildContext context, AppColors c, bool isDark) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    // Gecikmiş = yalnızca geçmiş GÜNLERE ait açık görevler (bugün hariç),
-    // böylece bugüne tarihli görev saatsizken Gecikmiş'te çift görünmez.
-    final overdue = viewModel.tasks.where((t) {
-      if (t.parentTaskId != null || t.isCompleted) return false;
-      final d = viewModel.dueDateOf(t);
-      return d != null && DateTime(d.year, d.month, d.day).isBefore(today);
-    }).toList()
-      ..sort((a, b) =>
-          viewModel.dueDateOf(a)!.compareTo(viewModel.dueDateOf(b)!));
-    final todayAll = viewModel.tasks.where((t) {
-      if (t.parentTaskId != null) return false;
-      final d = viewModel.dueDateOf(t);
-      return d != null && viewModel.isSameDay(d, today);
-    }).toList();
-    final todayOpen = todayAll.where((t) => !t.isCompleted).toList();
+    // Tek kaynak sınıflandırma (VM) — ayrık gruplar, çift görünme yok.
+    final overdue = viewModel.pastOverdueTasks;
+    final todayOpen = viewModel.todayTasks;
     final upcoming = viewModel.upcomingTasksList;
-    final undated = viewModel.tasks
-        .where((t) =>
-            t.parentTaskId == null &&
-            !t.isCompleted &&
-            viewModel.dueDateOf(t) == null)
-        .toList();
+    final undated = viewModel.undatedTasks;
     final completed = viewModel.completedTasksList;
 
-    final relevant = [...overdue, ...todayAll];
-    final done = relevant.where((t) => t.isCompleted).length;
+    // Başlık "X / Y tamam": bugünkü ilerleme + gecikmiş yük.
+    final todayDone = viewModel.todayCompletedCount;
+    final total = overdue.length + todayOpen.length + todayDone;
+    final done = todayDone;
 
     final children = <Widget>[
-      _headerBlock(c, done, relevant.length),
+      _headerBlock(c, done, total),
       const SizedBox(height: 14),
       _filterRow(context, c, isDark),
       const SizedBox(height: 16),
@@ -1277,6 +1236,10 @@ class _TasksTabState extends State<_TasksTab> {
             : Column(
                 children: [
                   for (final t in overdue) _overdueRow(context, c, isDark, t),
+                  if (overdue.length >= 2) ...[
+                    const SizedBox(height: 2),
+                    _bulkMoveBtn(context),
+                  ],
                 ],
               ),
       ),
@@ -1593,6 +1556,25 @@ class _TasksTabState extends State<_TasksTab> {
     );
   }
 
+  // Gecikmiş bölümünde (2+ görev) tüm gecikenleri bugüne taşır.
+  Widget _bulkMoveBtn(BuildContext context) => GestureDetector(
+        onTap: () => viewModel.carryOverdueToToday(context),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: _orange.withOpacity(0.10),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text('tasks.planner.moveOverdue'.tr(),
+              style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: _orange)),
+        ),
+      );
+
   Widget _sectionEmpty(AppColors c, String text) => Padding(
         padding: const EdgeInsets.fromLTRB(2, 2, 2, 4),
         child: Text(text,
@@ -1669,129 +1651,9 @@ class _TasksTabState extends State<_TasksTab> {
     );
   }
 
-  // ==================== HAFTALIK PLANLAYICI (defter) ====================
+  // Liste tonları ("Tüm Görevler" sayfası + görev satırı).
   static const _ink = Color(0xFF4A3F2E);
   static const _inkMuted = Color(0xFF9B8A6E);
-
-  Widget _planner(BuildContext context, AppColors c, bool isDark) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final sunday = today.add(Duration(days: 7 - now.weekday)); // haftanın pazarı
-    final sections = <Widget>[
-      _plannerHeader(context, isDark),
-      const SizedBox(height: 10),
-      _legend(),
-      const SizedBox(height: 12),
-    ];
-    // Bugün her zaman kendi bölümünde (gecikmiş + ekle + taşı ile).
-    sections.add(_daySection(context, c, isDark, today, today, isToday: true));
-    final weekend = <DateTime>[];
-    for (DateTime d = today.add(const Duration(days: 1));
-        !d.isAfter(sunday);
-        d = d.add(const Duration(days: 1))) {
-      if (d.weekday >= 5) {
-        weekend.add(d);
-      } else {
-        sections.add(_daySection(context, c, isDark, d, today));
-      }
-    }
-    if (weekend.isNotEmpty) {
-      sections.add(_weekendSection(context, c, isDark, weekend));
-    }
-    // Bu haftadan sonrasına tarihli görevler.
-    final later = _laterTasks(sunday);
-    if (later.isNotEmpty) {
-      sections.add(
-          _listSection(context, isDark, 'tasks.planner.later'.tr(), later));
-    }
-    // Tarihsiz (tarihi olmayan) görevler kaybolmasın diye kendi bölümünde.
-    final undated = _undatedTasks();
-    if (undated.isNotEmpty) {
-      sections.add(_listSection(
-          context, isDark, 'tasks.planner.undated'.tr(), undated));
-    }
-    sections.add(const SizedBox(height: 10));
-    sections.add(_weekSummary(c));
-    return RefreshIndicator(
-      onRefresh: () => viewModel.refreshAll(),
-      color: _orange,
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(22, 4, 22, 140),
-        children: sections,
-      ),
-    );
-  }
-
-  // Üstte "Tüm Görevler" kısayolu.
-  Widget _plannerHeader(BuildContext context, bool isDark) {
-    return Align(
-      alignment: Alignment.centerRight,
-      child: GestureDetector(
-        onTap: () => _openAllTasks(context, isDark),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-          decoration: BoxDecoration(
-            color: _orange.withOpacity(0.12),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.list_alt_rounded, size: 18, color: _orange),
-              const SizedBox(width: 5),
-              Text('tasks.allTitle'.tr(),
-                  style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: _orange)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Bu haftadan sonrasına tarihli, tamamlanmamış görevler.
-  List<Task> _laterTasks(DateTime sunday) {
-    final list = viewModel.tasks.where((t) {
-      if (t.parentTaskId != null || t.isCompleted) return false;
-      final d = viewModel.dueDateOf(t);
-      if (d == null) return false;
-      return DateTime(d.year, d.month, d.day).isAfter(sunday);
-    }).toList();
-    list.sort((a, b) {
-      final da = viewModel.dueDateOf(a)!;
-      final db = viewModel.dueDateOf(b)!;
-      return da.compareTo(db);
-    });
-    return list;
-  }
-
-  // Tarihi olmayan, tamamlanmamış görevler.
-  List<Task> _undatedTasks() {
-    return viewModel.tasks
-        .where((t) =>
-            t.parentTaskId == null &&
-            !t.isCompleted &&
-            viewModel.dueDateOf(t) == null)
-        .toList();
-  }
-
-  // Başlık + çizgi + görev satırları (ekleme butonu yok).
-  Widget _listSection(
-      BuildContext context, bool isDark, String title, List<Task> tasks) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _dayHeader(title),
-          _rule(),
-          for (final t in tasks) _taskLine(context, isDark, t),
-        ],
-      ),
-    );
-  }
 
   // ---------- Tüm Görevler sayfası (gruplu) ----------
   void _openAllTasks(BuildContext context, bool isDark) {
@@ -1801,28 +1663,11 @@ class _TasksTabState extends State<_TasksTab> {
         value: viewModel,
         child: Consumer<TasksHabitsViewModel>(
           builder: (ctx, vm, _) {
-            final now = DateTime.now();
-            final today = DateTime(now.year, now.month, now.day);
-            // Gecikmiş = yalnızca geçmiş günlere ait (bugün hariç) açık görevler;
-            // bugüne tarihli görev saatsizken Gecikmiş'te çift görünmesin.
-            final overdue = vm.tasks.where((t) {
-              if (t.parentTaskId != null || t.isCompleted) return false;
-              final d = vm.dueDateOf(t);
-              return d != null &&
-                  DateTime(d.year, d.month, d.day).isBefore(today);
-            }).toList();
-            final todayList = vm.tasks.where((t) {
-              if (t.parentTaskId != null || t.isCompleted) return false;
-              final d = vm.dueDateOf(t);
-              return d != null && vm.isSameDay(d, today);
-            }).toList();
+            // Ana ekranla aynı tek kaynak sınıflandırma.
+            final overdue = vm.pastOverdueTasks;
+            final todayList = vm.todayTasks;
             final upcoming = vm.upcomingTasksList;
-            final undated = vm.tasks
-                .where((t) =>
-                    t.parentTaskId == null &&
-                    !t.isCompleted &&
-                    vm.dueDateOf(t) == null)
-                .toList();
+            final undated = vm.undatedTasks;
             final completed = vm.completedTasksList;
             final groups = <List<dynamic>>[
               ['tasks.allOverdue', overdue, true],
@@ -1904,84 +1749,6 @@ class _TasksTabState extends State<_TasksTab> {
     );
   }
 
-  Widget _legend() {
-    Widget item(String mark, String label, Color color) => Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(mark,
-                style: TextStyle(
-                    fontSize: 13, fontWeight: FontWeight.w900, color: color)),
-            const SizedBox(width: 3),
-            Text(label,
-                style: TextStyle(fontFamily: 'JosefinSans',
-                    fontSize: 15, color: _inkMuted, fontWeight: FontWeight.w600)),
-          ],
-        );
-    return Wrap(
-      spacing: 14,
-      runSpacing: 4,
-      children: [
-        item('·', 'tasks.planner.legendTask'.tr(), _ink),
-        item('×', 'tasks.planner.legendDone'.tr(), _green),
-        // "taşındı" (›) durumu görev satırlarında hiç render edilmediğinden
-        // yanıltıcı açıklama öğesi kaldırıldı.
-        item('!', 'tasks.planner.legendOverdue'.tr(), _red),
-      ],
-    );
-  }
-
-  List<Task> _tasksForDay(DateTime day) {
-    return viewModel.tasks.where((t) {
-      if (t.parentTaskId != null) return false;
-      if (t.dueDate == null) return false;
-      final d = DateTime.tryParse(t.dueDate!);
-      return d != null && viewModel.isSameDay(d, day);
-    }).toList();
-  }
-
-  String _dayShort(int weekday) {
-    final names = 'tasks.weekShort'.tr().split(',');
-    return (weekday >= 1 && weekday <= names.length) ? names[weekday - 1] : '';
-  }
-
-  Widget _dayHeader(String text, {String? todaySuffix, String? count}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.baseline,
-        textBaseline: TextBaseline.alphabetic,
-        children: [
-          Flexible(
-            child: Text(text,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontFamily: 'JosefinSans',
-                    fontSize: 23, fontWeight: FontWeight.w700, color: _ink)),
-          ),
-          if (todaySuffix != null) ...[
-            const SizedBox(width: 6),
-            Text('· $todaySuffix',
-                style: TextStyle(fontFamily: 'JosefinSans',
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: _orange)),
-          ],
-          if (count != null) ...[
-            const SizedBox(width: 6),
-            Text(count,
-                style: TextStyle(
-                    fontSize: 13, fontWeight: FontWeight.w700, color: _inkMuted)),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _rule() => Container(
-      height: 1.3,
-      margin: const EdgeInsets.only(bottom: 8),
-      color: const Color(0xFFCBB89A));
-
   Widget _taskLine(BuildContext context, bool isDark, Task t,
       {bool overdue = false, bool showDelete = false}) {
     final mark = t.isCompleted ? '×' : (overdue || t.isOverdue ? '!' : '·');
@@ -2046,155 +1813,6 @@ class _TasksTabState extends State<_TasksTab> {
                     size: 18, color: Color(0xFFE53E3E)),
               ),
             ),
-        ],
-      ),
-    );
-  }
-
-  Widget _daySection(BuildContext context, AppColors c, bool isDark,
-      DateTime day, DateTime today,
-      {bool isToday = false}) {
-    final dayTasks = _tasksForDay(day);
-    final overdue = isToday ? viewModel.overdueTasksList : const <Task>[];
-    final doneT = dayTasks.where((t) => t.isCompleted).length;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _dayHeader('${_dayShort(day.weekday)} ${day.day}',
-              todaySuffix: isToday ? 'tasks.planner.today'.tr() : null,
-              count: isToday ? '$doneT/${dayTasks.length}' : null),
-          _rule(),
-          for (final t in overdue) _taskLine(context, isDark, t, overdue: true),
-          for (final t in dayTasks) _taskLine(context, isDark, t),
-          if (isToday) ...[
-            const SizedBox(height: 2),
-            GestureDetector(
-              onTap: () {
-                viewModel.setSelectedDay(day);
-                showAddTaskSheet(context, viewModel, isDark);
-              },
-              behavior: HitTestBehavior.opaque,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Text('tasks.planner.tapToAdd'.tr(),
-                    style: TextStyle(fontFamily: 'JosefinSans',
-                        fontSize: 18,
-                        fontStyle: FontStyle.italic,
-                        color: _inkMuted)),
-              ),
-            ),
-            if (overdue.isNotEmpty) ...[
-              const SizedBox(height: 6),
-              _moveOverdueBtn(context),
-            ],
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _moveOverdueBtn(BuildContext context) {
-    return GestureDetector(
-      onTap: () => viewModel.carryOverdueToToday(context),
-      child: CustomPaint(
-        painter: _DashedRectPainter(color: _orange),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('> ',
-                  style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w900,
-                      color: _orange)),
-              Text('tasks.planner.moveOverdue'.tr(),
-                  style: const TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w700,
-                      color: _orange)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _weekendSection(BuildContext context, AppColors c, bool isDark,
-      List<DateTime> days) {
-    final label = days
-        .map((d) => '${_dayShort(d.weekday)} ${d.day}')
-        .join(' · ');
-    final tasks = <Task>[];
-    for (final d in days) {
-      tasks.addAll(_tasksForDay(d));
-    }
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _dayHeader(label),
-          _rule(),
-          if (tasks.isEmpty)
-            Text('— ${'tasks.planner.noUpcoming'.tr()}',
-                style: TextStyle(fontFamily: 'JosefinSans',
-                    fontSize: 18, fontStyle: FontStyle.italic, color: _inkMuted))
-          else
-            for (final t in tasks) _taskLine(context, isDark, t),
-        ],
-      ),
-    );
-  }
-
-  Widget _weekSummary(AppColors c) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final sunday = today.add(Duration(days: 7 - now.weekday));
-    int done = 0, upcoming = 0;
-    for (final t in viewModel.tasks) {
-      if (t.parentTaskId != null || t.dueDate == null) continue;
-      final d = DateTime.tryParse(t.dueDate!);
-      if (d == null) continue;
-      final dd = DateTime(d.year, d.month, d.day);
-      if (dd.isBefore(today)) continue;
-      if (dd.isAfter(sunday)) continue;
-      if (t.isCompleted) {
-        done++;
-      } else if (dd.isAfter(today)) {
-        upcoming++;
-      }
-    }
-    final overdue = viewModel.overdueTaskCount;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: ColorConstant.cardColorLight,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFCBB89A)),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('tasks.planner.weekSummary'.tr(),
-                    style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.0,
-                        color: _ink)),
-                const SizedBox(height: 4),
-                Text(
-                  '$done ${'tasks.planner.done'.tr()} · $overdue ${'tasks.planner.overdue'.tr()} · $upcoming ${'tasks.planner.upcoming'.tr()}',
-                  style: const TextStyle(fontSize: 14, color: _inkMuted),
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );

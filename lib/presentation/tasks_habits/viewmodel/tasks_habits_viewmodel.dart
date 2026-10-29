@@ -549,6 +549,41 @@ class TasksHabitsViewModel extends ChangeNotifier {
   List<Task> get completedTasksList =>
       _applySort(parentTasks.where((t) => t.isCompleted).toList());
 
+  // ---- Görevler ekranı bölümleri için TEK kaynak sınıflandırma ----
+  // Açık (tamamlanmamış) üst görevler tarihe göre birbirinden ayrık 4 gruba
+  // dağılır: geçmiş gün / bugün / ileri tarih / tarihsiz. Böylece aynı görev
+  // hem ana ekranda hem "Tüm Görevler"de iki bölümde birden görünmez.
+  List<Task> get pastOverdueTasks {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    return _applySort(_openParents.where((t) {
+      final d = dueDateOf(t);
+      return d != null && DateTime(d.year, d.month, d.day).isBefore(today);
+    }).toList());
+  }
+
+  List<Task> get todayTasks {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    return _applySort(_openParents.where((t) {
+      final d = dueDateOf(t);
+      return d != null && isSameDay(d, today);
+    }).toList());
+  }
+
+  List<Task> get undatedTasks =>
+      _applySort(_openParents.where((t) => dueDateOf(t) == null).toList());
+
+  // Bugün tamamlanmış üst görev sayısı (başlık "X / Y tamam" için).
+  int get todayCompletedCount {
+    final now = DateTime.now();
+    return parentTasks.where((t) {
+      if (!t.isCompleted) return false;
+      final d = dueDateOf(t);
+      return d != null && isSameDay(d, now);
+    }).length;
+  }
+
   // Seçili güne ait görevler + "daha sonra"
   List<Task> get tasksForSelectedDay {
     return parentTasks.where((t) {
