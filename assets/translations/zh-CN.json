@@ -331,7 +331,12 @@
     "allUpcoming": "即将到来",
     "allUndated": "无日期",
     "allCompleted": "已完成",
-    "allEmpty": "还没有任务"
+    "allEmpty": "还没有任务",
+    "moveToToday": "移到今天",
+    "todayEmptyHint": "今天是空的。在上方添加，或把逾期任务移到这里。",
+    "doneWord": "完成",
+    "soon": "即将",
+    "scopeAll": "全部"
   },
   "habits": {
     "title": "习惯",

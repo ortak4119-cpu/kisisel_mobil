@@ -331,7 +331,12 @@
     "allUpcoming": "आगामी",
     "allUndated": "बिना तारीख",
     "allCompleted": "पूर्ण",
-    "allEmpty": "अभी कोई कार्य नहीं"
+    "allEmpty": "अभी कोई कार्य नहीं",
+    "moveToToday": "आज पर लाएँ",
+    "todayEmptyHint": "आज खाली है। ऊपर से जोड़ें या बकाया काम यहाँ लाएँ।",
+    "doneWord": "पूर्ण",
+    "soon": "जल्द",
+    "scopeAll": "सभी"
   },
   "habits": {
     "title": "आदतें",

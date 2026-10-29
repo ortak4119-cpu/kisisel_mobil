@@ -331,7 +331,12 @@
     "allUpcoming": "Anstehend",
     "allUndated": "Ohne Datum",
     "allCompleted": "Erledigt",
-    "allEmpty": "Noch keine Aufgaben"
+    "allEmpty": "Noch keine Aufgaben",
+    "moveToToday": "Auf heute",
+    "todayEmptyHint": "Heute ist leer. Füge oben etwas hinzu oder verschiebe überfällige Aufgaben hierher.",
+    "doneWord": "erledigt",
+    "soon": "Demnächst",
+    "scopeAll": "Alle"
   },
   "habits": {
     "title": "Gewohnheiten",

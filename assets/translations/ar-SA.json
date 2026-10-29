@@ -331,7 +331,12 @@
     "allUpcoming": "قادمة",
     "allUndated": "بدون تاريخ",
     "allCompleted": "مكتملة",
-    "allEmpty": "لا مهام بعد"
+    "allEmpty": "لا مهام بعد",
+    "moveToToday": "نقل إلى اليوم",
+    "todayEmptyHint": "اليوم فارغ. أضف من الأعلى أو انقل المهام المتأخرة إلى هنا.",
+    "doneWord": "تم",
+    "soon": "قريبًا",
+    "scopeAll": "الكل"
   },
   "habits": {
     "title": "العادات",

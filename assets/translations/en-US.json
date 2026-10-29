@@ -331,7 +331,12 @@
     "allUpcoming": "Upcoming",
     "allUndated": "No date",
     "allCompleted": "Completed",
-    "allEmpty": "No tasks yet"
+    "allEmpty": "No tasks yet",
+    "moveToToday": "Move to today",
+    "todayEmptyHint": "Today is empty. Add one above or move overdue tasks here.",
+    "doneWord": "done",
+    "soon": "Soon",
+    "scopeAll": "All"
   },
   "habits": {
     "title": "Habits",

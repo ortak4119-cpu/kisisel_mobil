@@ -331,7 +331,12 @@
     "allUpcoming": "今後",
     "allUndated": "日付なし",
     "allCompleted": "完了",
-    "allEmpty": "タスクはまだありません"
+    "allEmpty": "タスクはまだありません",
+    "moveToToday": "今日へ",
+    "todayEmptyHint": "今日は空です。上から追加するか、期限切れをここに移動しましょう。",
+    "doneWord": "完了",
+    "soon": "まもなく",
+    "scopeAll": "すべて"
   },
   "habits": {
     "title": "習慣",

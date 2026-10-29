@@ -81,7 +81,7 @@ class _TasksHabitsViewState extends State<TasksHabitsView> {
               bottom: false,
               child: Column(
                 children: [
-                  if (!_showToggle)
+                  if (!_showToggle && _tab != 0)
                     Padding(
                       padding: const EdgeInsets.fromLTRB(22, 10, 22, 2),
                       child: Align(
@@ -1181,9 +1181,21 @@ void showEditTaskSheet(BuildContext context, TasksHabitsViewModel viewModel,
 
 // ==================== GÖREVLER TAB ====================
 
-class _TasksTab extends StatelessWidget {
+class _TasksTab extends StatefulWidget {
   final TasksHabitsViewModel viewModel;
   const _TasksTab({required this.viewModel});
+
+  @override
+  State<_TasksTab> createState() => _TasksTabState();
+}
+
+class _TasksTabState extends State<_TasksTab> {
+  TasksHabitsViewModel get viewModel => widget.viewModel;
+
+  // Açık bölümler (default: hepsi kapalı).
+  final Set<String> _open = {};
+  // Görünüm kapsamı: today | all
+  String _scope = 'today';
 
   static const _orange = Color(0xFFF6A821);
   static const _purple = Color(0xFF9F7AEA);
@@ -1214,7 +1226,447 @@ class _TasksTab extends StatelessWidget {
         ),
       );
     }
-    return _planner(context, c, isDark);
+    return _sectionsLayout(context, c, isDark);
+  }
+
+  // ==================== BÖLÜMLÜ GÖRÜNÜM (Gecikmiş / Bugün / Yakında) ====================
+  Widget _sectionsLayout(BuildContext context, AppColors c, bool isDark) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    // Gecikmiş = yalnızca geçmiş GÜNLERE ait açık görevler (bugün hariç),
+    // böylece bugüne tarihli görev saatsizken Gecikmiş'te çift görünmez.
+    final overdue = viewModel.tasks.where((t) {
+      if (t.parentTaskId != null || t.isCompleted) return false;
+      final d = viewModel.dueDateOf(t);
+      return d != null && DateTime(d.year, d.month, d.day).isBefore(today);
+    }).toList()
+      ..sort((a, b) =>
+          viewModel.dueDateOf(a)!.compareTo(viewModel.dueDateOf(b)!));
+    final todayAll = viewModel.tasks.where((t) {
+      if (t.parentTaskId != null) return false;
+      final d = viewModel.dueDateOf(t);
+      return d != null && viewModel.isSameDay(d, today);
+    }).toList();
+    final todayOpen = todayAll.where((t) => !t.isCompleted).toList();
+    final upcoming = viewModel.upcomingTasksList;
+    final undated = viewModel.tasks
+        .where((t) =>
+            t.parentTaskId == null &&
+            !t.isCompleted &&
+            viewModel.dueDateOf(t) == null)
+        .toList();
+    final completed = viewModel.completedTasksList;
+
+    final relevant = [...overdue, ...todayAll];
+    final done = relevant.where((t) => t.isCompleted).length;
+
+    final children = <Widget>[
+      _headerBlock(c, done, relevant.length),
+      const SizedBox(height: 14),
+      _filterRow(context, c, isDark),
+      const SizedBox(height: 16),
+      _sectionCard(
+        c: c,
+        keyId: 'overdue',
+        title: 'tasks.allOverdue'.tr(),
+        icon: Icons.error_outline_rounded,
+        accent: _red,
+        count: overdue.length,
+        child: overdue.isEmpty
+            ? _sectionEmpty(c, 'tasks.allEmpty'.tr())
+            : Column(
+                children: [
+                  for (final t in overdue) _overdueRow(context, c, isDark, t),
+                ],
+              ),
+      ),
+      _sectionCard(
+        c: c,
+        keyId: 'today',
+        title: 'tasks.allToday'.tr(),
+        icon: Icons.wb_sunny_rounded,
+        accent: _orange,
+        count: todayOpen.length,
+        child: todayOpen.isEmpty
+            ? _sectionEmpty(c, 'tasks.todayEmptyHint'.tr())
+            : Column(
+                children: [
+                  for (final t in todayOpen)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: _taskCard(context, c, t),
+                    ),
+                ],
+              ),
+      ),
+      _sectionCard(
+        c: c,
+        keyId: 'upcoming',
+        title: 'tasks.soon'.tr(),
+        icon: Icons.event_rounded,
+        accent: _purple,
+        count: upcoming.length,
+        child: upcoming.isEmpty
+            ? _sectionEmpty(c, 'tasks.allEmpty'.tr())
+            : Column(
+                children: [
+                  for (final t in upcoming)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: _taskCard(context, c, t),
+                    ),
+                ],
+              ),
+      ),
+      if (_scope == 'all') ...[
+        if (undated.isNotEmpty)
+          _sectionCard(
+            c: c,
+            keyId: 'undated',
+            title: 'tasks.allUndated'.tr(),
+            icon: Icons.inbox_rounded,
+            accent: const Color(0xFF4C9AFF),
+            count: undated.length,
+            child: Column(
+              children: [
+                for (final t in undated)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: _taskCard(context, c, t),
+                  ),
+              ],
+            ),
+          ),
+        if (completed.isNotEmpty)
+          _sectionCard(
+            c: c,
+            keyId: 'completed',
+            title: 'tasks.allCompleted'.tr(),
+            icon: Icons.check_circle_rounded,
+            accent: _green,
+            count: completed.length,
+            child: Column(
+              children: [
+                for (final t in completed)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: _taskCard(context, c, t),
+                  ),
+              ],
+            ),
+          ),
+      ],
+    ];
+
+    return RefreshIndicator(
+      onRefresh: () => viewModel.refreshAll(),
+      color: _orange,
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 2, 20, 140),
+        children: children,
+      ),
+    );
+  }
+
+  // Tarih + "Görevler" + "X / Y tamam".
+  Widget _headerBlock(AppColors c, int done, int total) {
+    final now = DateTime.now();
+    final days = 'calendar.dayNames'.tr().split(',');
+    final months = 'calendar.monthNames'.tr().split(',');
+    final dayName =
+        (now.weekday >= 1 && now.weekday <= days.length) ? days[now.weekday - 1] : '';
+    final monthName =
+        (now.month >= 1 && now.month <= months.length) ? months[now.month - 1] : '';
+    final dateStr = '$dayName, ${now.day} $monthName';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(dateStr,
+            style: TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w600,
+                color: c.textSecondary)),
+        const SizedBox(height: 1),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text('tasks.title'.tr(),
+                style: TextStyle(
+                    fontFamily: 'JosefinSans',
+                    fontSize: 34,
+                    fontWeight: FontWeight.w700,
+                    height: 1.0,
+                    color: c.isDark
+                        ? ColorConstant.textPrimaryDark
+                        : const Color(0xFF3A3326))),
+            const Spacer(),
+            Text('$done / $total ${'tasks.doneWord'.tr()}',
+                style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w700,
+                    color: c.textSecondary)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // Kapsam seçici + "Tüm Görevler" + "+" .
+  Widget _filterRow(BuildContext context, AppColors c, bool isDark) {
+    return Row(
+      children: [
+        _scopeChip(c),
+        const SizedBox(width: 10),
+        Expanded(child: _allTasksBtn(context, isDark)),
+        const SizedBox(width: 10),
+        _addBtn(context, isDark),
+      ],
+    );
+  }
+
+  Widget _scopeChip(AppColors c) {
+    final label =
+        _scope == 'today' ? 'tasks.allToday'.tr() : 'tasks.scopeAll'.tr();
+    return PopupMenuButton<String>(
+      onSelected: (v) => setState(() => _scope = v),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      itemBuilder: (_) => [
+        PopupMenuItem(value: 'today', child: Text('tasks.allToday'.tr())),
+        PopupMenuItem(value: 'all', child: Text('tasks.scopeAll'.tr())),
+      ],
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+        decoration: BoxDecoration(
+          color: c.card,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: c.border.withOpacity(0.7)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(label,
+                style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: c.textPrimary)),
+            const SizedBox(width: 4),
+            Icon(Icons.unfold_more_rounded, size: 18, color: c.textMuted),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _allTasksBtn(BuildContext context, bool isDark) {
+    return GestureDetector(
+      onTap: () => _openAllTasks(context, isDark),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: _orange.withOpacity(0.12),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.list_alt_rounded, size: 18, color: _orange),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text('tasks.allTitle'.tr(),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: _orange)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _addBtn(BuildContext context, bool isDark) {
+    return GestureDetector(
+      onTap: () => showAddTaskSheet(context, viewModel, isDark),
+      child: Container(
+        width: 46,
+        height: 46,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [ColorConstant.accentYellow, ColorConstant.accentOrange],
+          ),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: const Icon(Icons.add_rounded, color: Colors.white, size: 26),
+      ),
+    );
+  }
+
+  // Açılır/kapanır bölüm kartı (default kapalı).
+  Widget _sectionCard({
+    required AppColors c,
+    required String keyId,
+    required String title,
+    required IconData icon,
+    required Color accent,
+    required int count,
+    required Widget child,
+  }) {
+    final open = _open.contains(keyId);
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: c.card,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: c.border.withOpacity(0.7)),
+      ),
+      child: Column(
+        children: [
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(18),
+              onTap: () => setState(() {
+                if (open) {
+                  _open.remove(keyId);
+                } else {
+                  _open.add(keyId);
+                }
+              }),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(14, 13, 14, 13),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 34,
+                      height: 34,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: accent.withOpacity(0.14),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(icon, size: 19, color: accent),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(title,
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              color: c.textPrimary)),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 9, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: accent.withOpacity(0.14),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text('$count',
+                          style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w800,
+                              color: accent)),
+                    ),
+                    const SizedBox(width: 8),
+                    Icon(
+                        open
+                            ? Icons.keyboard_arrow_up_rounded
+                            : Icons.keyboard_arrow_down_rounded,
+                        size: 22,
+                        color: c.textMuted),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          if (open)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
+              child: child,
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _sectionEmpty(AppColors c, String text) => Padding(
+        padding: const EdgeInsets.fromLTRB(2, 2, 2, 4),
+        child: Text(text,
+            style: TextStyle(
+                fontSize: 13.5, height: 1.4, color: c.textSecondary)),
+      );
+
+  // Gecikmiş görev satırı: daire + başlık/"Gecikti · tarih" + "Bugüne al".
+  Widget _overdueRow(BuildContext context, AppColors c, bool isDark, Task t) {
+    final d = viewModel.dueDateOf(t);
+    final dateStr = d != null ? '${d.day}.${d.month}' : '';
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => viewModel.toggleTaskComplete(t, context),
+            child: Container(
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: _red.withOpacity(0.6), width: 2),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => showEditTaskSheet(context, viewModel, isDark, t),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(t.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          fontSize: 15.5,
+                          fontWeight: FontWeight.w700,
+                          color: c.textPrimary)),
+                  const SizedBox(height: 2),
+                  Text(
+                      '${'tasks.overdue'.tr()}${dateStr.isNotEmpty ? ' · $dateStr' : ''}',
+                      style: const TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: _red)),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          GestureDetector(
+            onTap: () => viewModel.moveTaskToToday(t, context),
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: _orange.withOpacity(0.14),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text('tasks.moveToToday'.tr(),
+                  style: const TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      color: _orange)),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   // ==================== HAFTALIK PLANLAYICI (defter) ====================
@@ -1351,7 +1803,14 @@ class _TasksTab extends StatelessWidget {
           builder: (ctx, vm, _) {
             final now = DateTime.now();
             final today = DateTime(now.year, now.month, now.day);
-            final overdue = vm.overdueTasksList;
+            // Gecikmiş = yalnızca geçmiş günlere ait (bugün hariç) açık görevler;
+            // bugüne tarihli görev saatsizken Gecikmiş'te çift görünmesin.
+            final overdue = vm.tasks.where((t) {
+              if (t.parentTaskId != null || t.isCompleted) return false;
+              final d = vm.dueDateOf(t);
+              return d != null &&
+                  DateTime(d.year, d.month, d.day).isBefore(today);
+            }).toList();
             final todayList = vm.tasks.where((t) {
               if (t.parentTaskId != null || t.isCompleted) return false;
               final d = vm.dueDateOf(t);

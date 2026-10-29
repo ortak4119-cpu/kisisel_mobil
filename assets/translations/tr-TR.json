@@ -331,7 +331,12 @@
     "allUpcoming": "Yaklaşan",
     "allUndated": "Tarihsiz",
     "allCompleted": "Tamamlanan",
-    "allEmpty": "Henüz görev yok"
+    "allEmpty": "Henüz görev yok",
+    "moveToToday": "Bugüne al",
+    "todayEmptyHint": "Bugün boş. Yukarıdan ekle ya da gecikenleri bugüne al.",
+    "doneWord": "tamam",
+    "soon": "Yakında",
+    "scopeAll": "Tümü"
   },
   "habits": {
     "title": "Alışkanlıklar",

@@ -331,7 +331,12 @@
     "allUpcoming": "Próximas",
     "allUndated": "Sin fecha",
     "allCompleted": "Completadas",
-    "allEmpty": "Aún sin tareas"
+    "allEmpty": "Aún sin tareas",
+    "moveToToday": "A hoy",
+    "todayEmptyHint": "Hoy está vacío. Añade arriba o mueve aquí las tareas atrasadas.",
+    "doneWord": "hecho",
+    "soon": "Pronto",
+    "scopeAll": "Todas"
   },
   "habits": {
     "title": "Hábitos",

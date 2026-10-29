@@ -1431,6 +1431,41 @@ class TasksHabitsViewModel extends ChangeNotifier {
     }
   }
 
+  /// Tek bir gecikmiş görevi bugüne taşır (verisini koruyarak sadece
+  /// dueDate'i bugün yapar). Görevler ekranındaki "Bugüne al" butonu.
+  Future<void> moveTaskToToday(Task t, BuildContext context) async {
+    final today = _fmtDueDate(DateTime.now());
+    final req = TaskRequest(
+      title: t.title,
+      description: t.description,
+      taskType: t.taskType,
+      priority: t.priority,
+      reminderEnabled: t.reminderEnabled,
+      isRecurring: t.isRecurring,
+      recurringPattern: t.recurringPattern,
+      dueDate: today,
+      dueTime: t.dueTime,
+      reminderBeforeMinutes: t.reminderBeforeMinutes,
+      reminderTime: t.reminderTime,
+      estimatedDurationMinutes: t.estimatedDurationMinutes,
+      parentTaskId: t.parentTaskId,
+      category: t.category,
+      tags: t.tags.isEmpty ? null : List.from(t.tags),
+      location: t.location,
+      link: t.link,
+    );
+    try {
+      final resp = await _taskService.updateTask(t.id, req);
+      if (resp.isSuccess) {
+        await refreshAll();
+        if (context.mounted) {
+          CustomSnackBar.showSuccess(context,
+              'tasks.planner.movedCount'.tr(namedArgs: {'n': '1'}));
+        }
+      }
+    } catch (_) {}
+  }
+
   Future<void> toggleTaskComplete(Task task, BuildContext context) async {
     try {
       if (task.isCompleted) {

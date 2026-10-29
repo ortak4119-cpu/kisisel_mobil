@@ -331,7 +331,12 @@
     "allUpcoming": "Предстоящие",
     "allUndated": "Без даты",
     "allCompleted": "Завершённые",
-    "allEmpty": "Пока нет задач"
+    "allEmpty": "Пока нет задач",
+    "moveToToday": "На сегодня",
+    "todayEmptyHint": "На сегодня пусто. Добавьте сверху или перенесите просроченные сюда.",
+    "doneWord": "готово",
+    "soon": "Скоро",
+    "scopeAll": "Все"
   },
   "habits": {
     "title": "Привычки",
