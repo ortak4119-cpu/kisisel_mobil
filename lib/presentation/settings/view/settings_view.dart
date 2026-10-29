@@ -641,71 +641,10 @@ class SettingsView extends StatelessWidget {
   }) {
     final isPremium = PremiumHelper.isPremiumUser(viewModel.currentUser);
 
-    // Premium kullanıcı için farklı kart
+    // Premium kullanıcıya ayarlarda "üyesiniz" uyarısı gösterilmez
+    // (üyelik bilgisi artık Profil > Üyelik bölümünde).
     if (isPremium) {
-      return Container(
-        margin: const EdgeInsets.all(20),
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              ColorConstant.accentGreen,
-              ColorConstant.accentBlue,
-            ],
-          ),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: ColorConstant.accentGreen.withValues(alpha: 0.3),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: ColorConstant.white.withValues(alpha: 0.3),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.verified_rounded,
-                color: ColorConstant.white,
-                size: 32,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'settings.premium.active'.tr(),
-                    style: TextStyle(
-                      color: ColorConstant.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'settings.premium.enjoyFeatures'.tr(),
-                    style: TextStyle(
-                      color: ColorConstant.white.withValues(alpha: 0.9),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      );
+      return const SizedBox.shrink();
     }
 
     // Premium olmayan kullanıcı için mevcut kart

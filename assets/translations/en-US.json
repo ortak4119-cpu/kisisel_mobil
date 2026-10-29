@@ -619,7 +619,17 @@
       "cpResetDesc": "Enter the code from your email and your new password.",
       "cpUpdate": "Update password"
     },
-    "settings": "Settings"
+    "settings": "Settings",
+    "membership": {
+      "title": "Membership",
+      "plan": "Plan",
+      "planYearly": "Yearly Premium",
+      "planMonthly": "Monthly Premium",
+      "planLifetime": "Lifetime Premium",
+      "planPremium": "Premium",
+      "planFree": "Free",
+      "cancelNote": "You can cancel your subscription anytime from your device's store (App Store / Google Play) subscription settings."
+    }
   },
   "calendar": {
     "screenTitle": "Calendar",

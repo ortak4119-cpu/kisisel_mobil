@@ -619,7 +619,17 @@
       "cpResetDesc": "Saisissez le code reçu par e-mail et votre nouveau mot de passe.",
       "cpUpdate": "Mettre à jour le mot de passe"
     },
-    "settings": "Paramètres"
+    "settings": "Paramètres",
+    "membership": {
+      "title": "Abonnement",
+      "plan": "Formule",
+      "planYearly": "Premium annuel",
+      "planMonthly": "Premium mensuel",
+      "planLifetime": "Premium à vie",
+      "planPremium": "Premium",
+      "planFree": "Gratuit",
+      "cancelNote": "Tu peux annuler ton abonnement à tout moment dans les réglages d'abonnement de ton store (App Store / Google Play)."
+    }
   },
   "calendar": {
     "screenTitle": "Calendrier",

@@ -619,7 +619,17 @@
       "cpResetDesc": "Gib den Code aus deiner E-Mail und dein neues Passwort ein.",
       "cpUpdate": "Passwort aktualisieren"
     },
-    "settings": "Einstellungen"
+    "settings": "Einstellungen",
+    "membership": {
+      "title": "Mitgliedschaft",
+      "plan": "Plan",
+      "planYearly": "Premium (jährlich)",
+      "planMonthly": "Premium (monatlich)",
+      "planLifetime": "Premium (lebenslang)",
+      "planPremium": "Premium",
+      "planFree": "Kostenlos",
+      "cancelNote": "Du kannst dein Abo jederzeit in den Abo-Einstellungen deines Stores (App Store / Google Play) kündigen."
+    }
   },
   "calendar": {
     "screenTitle": "Kalender",

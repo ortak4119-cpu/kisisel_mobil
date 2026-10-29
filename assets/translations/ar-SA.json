@@ -619,7 +619,17 @@
       "cpResetDesc": "أدخل الرمز الوارد في بريدك وكلمة المرور الجديدة.",
       "cpUpdate": "تحديث كلمة المرور"
     },
-    "settings": "الإعدادات"
+    "settings": "الإعدادات",
+    "membership": {
+      "title": "العضوية",
+      "plan": "الخطة",
+      "planYearly": "Premium السنوي",
+      "planMonthly": "Premium الشهري",
+      "planLifetime": "Premium مدى الحياة",
+      "planPremium": "Premium",
+      "planFree": "مجاني",
+      "cancelNote": "يمكنك إلغاء اشتراكك في أي وقت من إعدادات الاشتراكات في متجر جهازك (App Store / Google Play)."
+    }
   },
   "calendar": {
     "screenTitle": "التقويم",

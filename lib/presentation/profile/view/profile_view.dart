@@ -2588,6 +2588,20 @@ class _AccountInfoSheet extends StatelessWidget {
       );
     }
 
+    String planLabel() {
+      if (!isPremium) return 'profile.membership.planFree'.tr();
+      switch ((u?.subscriptionType ?? '').toLowerCase()) {
+        case 'yearly':
+          return 'profile.membership.planYearly'.tr();
+        case 'monthly':
+          return 'profile.membership.planMonthly'.tr();
+        case 'lifetime':
+          return 'profile.membership.planLifetime'.tr();
+        default:
+          return 'profile.membership.planPremium'.tr();
+      }
+    }
+
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Container(
@@ -2657,16 +2671,56 @@ class _AccountInfoSheet extends StatelessWidget {
                           isGuest
                               ? 'profile.account.typeGuest'.tr()
                               : 'profile.account.typeEmail'.tr()),
-                      Divider(height: 1, color: borderColor),
+                    ],
+                  ),
+                ),
+
+                // Üyelik bölümü
+                const SizedBox(height: 18),
+                Text('profile.membership.title'.tr(),
+                    style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: textPrimary)),
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  decoration: BoxDecoration(
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: borderColor),
+                  ),
+                  child: Column(
+                    children: [
                       infoRow(
                           isPremium
                               ? Icons.workspace_premium_rounded
                               : Icons.card_giftcard_rounded,
                           const Color(0xFFF6A821),
-                          'profile.account.subscription'.tr(),
-                          isPremium
-                              ? 'profile.account.subPremium'.tr()
-                              : 'profile.account.subFree'.tr()),
+                          'profile.membership.plan'.tr(),
+                          planLabel()),
+                      if (isPremium) ...[
+                        Divider(height: 1, color: borderColor),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(Icons.info_outline_rounded,
+                                  size: 18, color: textMuted),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                    'profile.membership.cancelNote'.tr(),
+                                    style: TextStyle(
+                                        fontSize: 12.5,
+                                        height: 1.45,
+                                        color: textSecondary)),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),

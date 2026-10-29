@@ -619,7 +619,17 @@
       "cpResetDesc": "E-postana gelen kodu ve yeni şifreni gir.",
       "cpUpdate": "Şifreyi güncelle"
     },
-    "settings": "Ayarlar"
+    "settings": "Ayarlar",
+    "membership": {
+      "title": "Üyelik",
+      "plan": "Plan",
+      "planYearly": "Yıllık Premium",
+      "planMonthly": "Aylık Premium",
+      "planLifetime": "Ömür Boyu Premium",
+      "planPremium": "Premium",
+      "planFree": "Ücretsiz",
+      "cancelNote": "Aboneliğini cihazındaki mağaza (App Store / Google Play) abonelik ayarlarından istediğin zaman iptal edebilirsin."
+    }
   },
   "calendar": {
     "screenTitle": "Takvim",

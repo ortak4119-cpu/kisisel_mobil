@@ -619,7 +619,17 @@
       "cpResetDesc": "メールに届いたコードと新しいパスワードを入力してください。",
       "cpUpdate": "パスワードを更新"
     },
-    "settings": "設定"
+    "settings": "設定",
+    "membership": {
+      "title": "メンバーシップ",
+      "plan": "プラン",
+      "planYearly": "年間Premium",
+      "planMonthly": "月額Premium",
+      "planLifetime": "買い切りPremium",
+      "planPremium": "Premium",
+      "planFree": "無料",
+      "cancelNote": "サブスクリプションは、端末のストア（App Store / Google Play）のサブスク設定からいつでも解約できます。"
+    }
   },
   "calendar": {
     "screenTitle": "カレンダー",

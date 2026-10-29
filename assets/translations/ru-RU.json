@@ -619,7 +619,17 @@
       "cpResetDesc": "Введите код из письма и новый пароль.",
       "cpUpdate": "Обновить пароль"
     },
-    "settings": "Настройки"
+    "settings": "Настройки",
+    "membership": {
+      "title": "Подписка",
+      "plan": "Тариф",
+      "planYearly": "Premium на год",
+      "planMonthly": "Premium на месяц",
+      "planLifetime": "Premium навсегда",
+      "planPremium": "Premium",
+      "planFree": "Бесплатно",
+      "cancelNote": "Отменить подписку можно в любой момент в настройках подписок магазина (App Store / Google Play)."
+    }
   },
   "calendar": {
     "screenTitle": "Календарь",

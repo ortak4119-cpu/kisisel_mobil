@@ -619,7 +619,17 @@
       "cpResetDesc": "अपने ईमेल का कोड और नया पासवर्ड दर्ज करें।",
       "cpUpdate": "पासवर्ड अपडेट करें"
     },
-    "settings": "सेटिंग्स"
+    "settings": "सेटिंग्स",
+    "membership": {
+      "title": "सदस्यता",
+      "plan": "प्लान",
+      "planYearly": "वार्षिक Premium",
+      "planMonthly": "मासिक Premium",
+      "planLifetime": "आजीवन Premium",
+      "planPremium": "Premium",
+      "planFree": "मुफ़्त",
+      "cancelNote": "आप अपनी सदस्यता कभी भी अपने डिवाइस के स्टोर (App Store / Google Play) की सब्सक्रिप्शन सेटिंग से रद्द कर सकते हैं।"
+    }
   },
   "calendar": {
     "screenTitle": "कैलेंडर",

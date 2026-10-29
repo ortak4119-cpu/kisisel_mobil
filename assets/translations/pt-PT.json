@@ -619,7 +619,17 @@
       "cpResetDesc": "Introduza o código do seu e-mail e a nova palavra-passe.",
       "cpUpdate": "Atualizar palavra-passe"
     },
-    "settings": "Definições"
+    "settings": "Definições",
+    "membership": {
+      "title": "Subscrição",
+      "plan": "Plano",
+      "planYearly": "Premium anual",
+      "planMonthly": "Premium mensal",
+      "planLifetime": "Premium vitalício",
+      "planPremium": "Premium",
+      "planFree": "Gratuito",
+      "cancelNote": "Podes cancelar a tua subscrição quando quiseres nas definições de subscrições da tua loja (App Store / Google Play)."
+    }
   },
   "calendar": {
     "screenTitle": "Calendário",
