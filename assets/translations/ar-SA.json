@@ -1415,7 +1415,9 @@
     "coupon_hint": "رمز الخصم",
     "coupon_apply": "تطبيق",
     "coupon_empty": "أدخل رمزًا",
-    "coupon_soon": "ستتوفر الرموز قريبًا"
+    "coupon_soon": "ستتوفر الرموز قريبًا",
+    "coupon_applied": "تم تطبيق الكود، Premium مفعّل.",
+    "coupon_invalid": "تعذّر تطبيق الكود."
   },
   "subscription": {
     "monthly": "شهري",

@@ -1415,7 +1415,9 @@
     "coupon_hint": "Rabattcode",
     "coupon_apply": "Anwenden",
     "coupon_empty": "Bitte gib einen Code ein",
-    "coupon_soon": "Gutscheine sind bald verfügbar"
+    "coupon_soon": "Gutscheine sind bald verfügbar",
+    "coupon_applied": "Code angewendet, Premium ist aktiv.",
+    "coupon_invalid": "Code konnte nicht angewendet werden."
   },
   "subscription": {
     "monthly": "Monatlich",

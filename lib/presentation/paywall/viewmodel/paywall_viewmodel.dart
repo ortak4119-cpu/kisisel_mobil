@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import '../../../service/revenue_cat/revenue_cat_service.dart';
 import '../../../service/profile/profile_service.dart';
+import '../../../service/base/base_api_service.dart';
 import '../../../core/init/locator.dart';
 
 class PaywallViewModel extends ChangeNotifier {
@@ -351,11 +352,28 @@ class PaywallViewModel extends ChangeNotifier {
     }
     _isApplyingCoupon = true;
     notifyListeners();
-    // Kupon doğrulama backend'i henüz hazır değil.
-    _couponMessage = 'paywall.coupon_soon'.tr();
-    _isApplyingCoupon = false;
-    notifyListeners();
-    return false;
+    try {
+      final res = await BaseApiService.post<void>(
+        '/coupons/redeem',
+        body: {'code': trimmed},
+        requiresAuth: true,
+      );
+      if (res.isSuccess) {
+        _couponApplied = true;
+        _couponMessage = 'paywall.coupon_applied'.tr();
+        return true;
+      }
+      _couponMessage = (res.message != null && res.message!.isNotEmpty)
+          ? res.message!
+          : 'paywall.coupon_invalid'.tr();
+      return false;
+    } catch (e) {
+      _couponMessage = 'paywall.coupon_invalid'.tr();
+      return false;
+    } finally {
+      _isApplyingCoupon = false;
+      notifyListeners();
+    }
   }
 
   void clearCoupon() {

@@ -1415,7 +1415,9 @@
     "coupon_hint": "İndirim kodu",
     "coupon_apply": "Uygula",
     "coupon_empty": "Lütfen bir kod gir",
-    "coupon_soon": "Kupon sistemi yakında aktif olacak"
+    "coupon_soon": "Kupon sistemi yakında aktif olacak",
+    "coupon_applied": "Kod uygulandı, premium aktif.",
+    "coupon_invalid": "Kod uygulanamadı."
   },
   "subscription": {
     "monthly": "Aylık",

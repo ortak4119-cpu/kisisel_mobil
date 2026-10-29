@@ -1415,7 +1415,9 @@
     "coupon_hint": "Código de desconto",
     "coupon_apply": "Aplicar",
     "coupon_empty": "Introduz um código",
-    "coupon_soon": "Os códigos estarão disponíveis em breve"
+    "coupon_soon": "Os códigos estarão disponíveis em breve",
+    "coupon_applied": "Código aplicado, Premium ativo.",
+    "coupon_invalid": "Não foi possível aplicar o código."
   },
   "subscription": {
     "monthly": "Mensal",

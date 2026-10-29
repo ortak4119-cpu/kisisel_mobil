@@ -1415,7 +1415,9 @@
     "coupon_hint": "डिस्काउंट कोड",
     "coupon_apply": "लागू करें",
     "coupon_empty": "कृपया कोड दर्ज करें",
-    "coupon_soon": "कूपन जल्द ही उपलब्ध होंगे"
+    "coupon_soon": "कूपन जल्द ही उपलब्ध होंगे",
+    "coupon_applied": "कोड लागू हुआ, Premium सक्रिय है।",
+    "coupon_invalid": "कोड लागू नहीं हो सका।"
   },
   "subscription": {
     "monthly": "मासिक",

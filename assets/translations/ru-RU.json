@@ -1415,7 +1415,9 @@
     "coupon_hint": "Промокод",
     "coupon_apply": "Применить",
     "coupon_empty": "Введите код",
-    "coupon_soon": "Промокоды скоро появятся"
+    "coupon_soon": "Промокоды скоро появятся",
+    "coupon_applied": "Код применён, Premium активен.",
+    "coupon_invalid": "Не удалось применить код."
   },
   "subscription": {
     "monthly": "Ежемесячно",

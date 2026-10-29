@@ -128,7 +128,7 @@ class _PaywallViewState extends State<PaywallView> {
                 const SizedBox(height: 16),
                 _plans(vm),
                 const SizedBox(height: 12),
-                _coupon(context, vm),
+                _coupon(context, vm, isGate),
                 const SizedBox(height: 14),
                 _subscribeButton(context, vm, isGate, hasTrial),
                 const SizedBox(height: 12),
@@ -454,7 +454,7 @@ class _PaywallViewState extends State<PaywallView> {
   }
 
   // ---------- Indirim kodu (acilir / kapanir, varsayilan kapali) ----------
-  Widget _coupon(BuildContext context, PaywallViewModel vm) {
+  Widget _coupon(BuildContext context, PaywallViewModel vm, bool isGate) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -528,7 +528,17 @@ class _PaywallViewState extends State<PaywallView> {
                 child: ElevatedButton(
                   onPressed: vm.isApplyingCoupon
                       ? null
-                      : () => vm.applyCoupon(_couponController.text),
+                      : () async {
+                          final ok =
+                              await vm.applyCoupon(_couponController.text);
+                          if (ok && mounted) {
+                            if (isGate) {
+                              context.router.replaceAll([const HomeRoute()]);
+                            } else {
+                              context.router.pop(true);
+                            }
+                          }
+                        },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _P.amberBtn2,
                     foregroundColor: Colors.white,

@@ -1415,7 +1415,9 @@
     "coupon_hint": "折扣码",
     "coupon_apply": "应用",
     "coupon_empty": "请输入折扣码",
-    "coupon_soon": "优惠码即将上线"
+    "coupon_soon": "优惠码即将上线",
+    "coupon_applied": "已应用优惠码，Premium 已激活。",
+    "coupon_invalid": "无法应用该优惠码。"
   },
   "subscription": {
     "monthly": "每月",

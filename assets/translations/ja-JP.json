@@ -1415,7 +1415,9 @@
     "coupon_hint": "割引コード",
     "coupon_apply": "適用",
     "coupon_empty": "コードを入力してください",
-    "coupon_soon": "クーポンは近日提供予定です"
+    "coupon_soon": "クーポンは近日提供予定です",
+    "coupon_applied": "コードを適用しました。Premiumが有効です。",
+    "coupon_invalid": "コードを適用できませんでした。"
   },
   "subscription": {
     "monthly": "月額",
