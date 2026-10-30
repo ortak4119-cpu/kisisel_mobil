@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:auto_route/auto_route.dart';
@@ -2785,7 +2786,12 @@ class _MembershipSheet extends StatelessWidget {
                               const SizedBox(width: 10),
                               Expanded(
                                 child: Text(
-                                    'profile.membership.cancelNote'.tr(),
+                                    'profile.membership.cancelNote'.tr(
+                                        namedArgs: {
+                                          'store': Platform.isIOS
+                                              ? 'App Store'
+                                              : 'Google Play'
+                                        }),
                                     style: TextStyle(
                                         fontSize: 12.5,
                                         height: 1.45,

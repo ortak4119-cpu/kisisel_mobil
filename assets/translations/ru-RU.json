@@ -635,7 +635,7 @@
       "planLifetime": "Premium навсегда",
       "planPremium": "Premium",
       "planFree": "Бесплатно",
-      "cancelNote": "Отменить подписку можно в любой момент в настройках подписок магазина (App Store / Google Play)."
+      "cancelNote": "Отменить подписку можно в любой момент в настройках подписок магазина ({store})."
     },
     "replayOnboarding": "Посмотреть интро снова",
     "completion": "Профиль заполнен на {percent}%",

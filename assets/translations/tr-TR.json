@@ -635,7 +635,7 @@
       "planLifetime": "Ömür Boyu Premium",
       "planPremium": "Premium",
       "planFree": "Ücretsiz",
-      "cancelNote": "Aboneliğini cihazındaki mağaza (App Store / Google Play) abonelik ayarlarından istediğin zaman iptal edebilirsin."
+      "cancelNote": "Aboneliğini cihazındaki mağaza ({store}) abonelik ayarlarından istediğin zaman iptal edebilirsin."
     },
     "replayOnboarding": "Tanıtımı tekrar izle",
     "completion": "Profilin %{percent} tamamlandı",

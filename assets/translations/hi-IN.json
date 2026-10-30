@@ -635,7 +635,7 @@
       "planLifetime": "आजीवन Premium",
       "planPremium": "Premium",
       "planFree": "मुफ़्त",
-      "cancelNote": "आप अपनी सदस्यता कभी भी अपने डिवाइस के स्टोर (App Store / Google Play) की सब्सक्रिप्शन सेटिंग से रद्द कर सकते हैं।"
+      "cancelNote": "आप अपनी सदस्यता कभी भी अपने डिवाइस के स्टोर ({store}) की सब्सक्रिप्शन सेटिंग से रद्द कर सकते हैं।"
     },
     "replayOnboarding": "परिचय फिर से देखें",
     "completion": "आपकी प्रोफ़ाइल {percent}% पूर्ण है",

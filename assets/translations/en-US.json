@@ -635,7 +635,7 @@
       "planLifetime": "Lifetime Premium",
       "planPremium": "Premium",
       "planFree": "Free",
-      "cancelNote": "You can cancel your subscription anytime from your device's store (App Store / Google Play) subscription settings."
+      "cancelNote": "You can cancel your subscription anytime from your device's store ({store}) subscription settings."
     },
     "replayOnboarding": "Replay the intro",
     "completion": "Your profile is {percent}% complete",

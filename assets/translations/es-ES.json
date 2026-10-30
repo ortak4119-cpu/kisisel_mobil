@@ -635,7 +635,7 @@
       "planLifetime": "Premium de por vida",
       "planPremium": "Premium",
       "planFree": "Gratis",
-      "cancelNote": "Puedes cancelar tu suscripción cuando quieras desde los ajustes de suscripciones de tu tienda (App Store / Google Play)."
+      "cancelNote": "Puedes cancelar tu suscripción cuando quieras desde los ajustes de suscripciones de tu tienda ({store})."
     },
     "replayOnboarding": "Volver a ver la introducción",
     "completion": "Tu perfil está completo al {percent}%",

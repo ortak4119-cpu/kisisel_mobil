@@ -635,7 +635,7 @@
       "planLifetime": "终身 Premium",
       "planPremium": "Premium",
       "planFree": "免费",
-      "cancelNote": "你可以随时在设备商店（App Store / Google Play）的订阅设置中取消订阅。"
+      "cancelNote": "你可以随时在设备商店（{store}）的订阅设置中取消订阅。"
     },
     "replayOnboarding": "重新观看介绍",
     "completion": "你的资料已完成 {percent}%",

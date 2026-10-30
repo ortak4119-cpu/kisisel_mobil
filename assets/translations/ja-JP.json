@@ -635,7 +635,7 @@
       "planLifetime": "買い切りPremium",
       "planPremium": "Premium",
       "planFree": "無料",
-      "cancelNote": "サブスクリプションは、端末のストア（App Store / Google Play）のサブスク設定からいつでも解約できます。"
+      "cancelNote": "サブスクリプションは、端末のストア（{store}）のサブスク設定からいつでも解約できます。"
     },
     "replayOnboarding": "イントロをもう一度見る",
     "completion": "プロフィールの完成度は{percent}%です",

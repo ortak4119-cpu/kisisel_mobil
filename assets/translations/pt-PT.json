@@ -635,7 +635,7 @@
       "planLifetime": "Premium vitalício",
       "planPremium": "Premium",
       "planFree": "Gratuito",
-      "cancelNote": "Podes cancelar a tua subscrição quando quiseres nas definições de subscrições da tua loja (App Store / Google Play)."
+      "cancelNote": "Podes cancelar a tua subscrição quando quiseres nas definições de subscrições da tua loja ({store})."
     },
     "replayOnboarding": "Rever a introdução",
     "completion": "O teu perfil está {percent}% completo",

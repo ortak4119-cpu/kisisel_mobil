@@ -635,7 +635,7 @@
       "planLifetime": "Premium (lebenslang)",
       "planPremium": "Premium",
       "planFree": "Kostenlos",
-      "cancelNote": "Du kannst dein Abo jederzeit in den Abo-Einstellungen deines Stores (App Store / Google Play) kündigen."
+      "cancelNote": "Du kannst dein Abo jederzeit in den Abo-Einstellungen deines Stores ({store}) kündigen."
     },
     "replayOnboarding": "Intro erneut ansehen",
     "completion": "Dein Profil ist zu {percent}% vollständig",

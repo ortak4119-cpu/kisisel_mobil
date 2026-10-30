@@ -635,7 +635,7 @@
       "planLifetime": "Premium à vie",
       "planPremium": "Premium",
       "planFree": "Gratuit",
-      "cancelNote": "Tu peux annuler ton abonnement à tout moment dans les réglages d'abonnement de ton store (App Store / Google Play)."
+      "cancelNote": "Tu peux annuler ton abonnement à tout moment dans les réglages d'abonnement de ton store ({store})."
     },
     "replayOnboarding": "Revoir l'intro",
     "completion": "Ton profil est complété à {percent}%",
