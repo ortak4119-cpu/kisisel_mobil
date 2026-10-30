@@ -40,7 +40,7 @@ workflows:
           flutter pub get
       - name: "CocoaPods yükle - native pod'lar (ses/dosya/firebase)"
         script: |
-          find . -name "Podfile" -execdir pod install \;
+          find . -name "Podfile" -execdir pod install --repo-update \;
       - name: Kod imzalama (sertifika + profil olustur/getir)
         script: |
           keychain initialize
@@ -114,7 +114,7 @@ workflows:
           flutter pub get
       - name: "CocoaPods yükle"
         script: |
-          find . -name "Podfile" -execdir pod install \;
+          find . -name "Podfile" -execdir pod install --repo-update \;
       - name: Cihazi kaydet + ad-hoc imzalama
         script: |
           keychain initialize
