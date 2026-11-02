@@ -14,8 +14,9 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
 
-    <!-- Galeri erişimi (Android 13+) -->
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <!-- Android 13+ galeri: image_picker sistem Foto Seçici'yi (Photo Picker)
+         kullanır; geniş READ_MEDIA_IMAGES iznine gerek yoktur ve Play'in
+         foto/video izin gerekçelendirmesini tetiklememek için eklenmedi. -->
 
     <!-- Push notification (Android 13+) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
