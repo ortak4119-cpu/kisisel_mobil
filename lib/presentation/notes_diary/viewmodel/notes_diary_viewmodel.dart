@@ -9,6 +9,8 @@ import '../../../core/init/locator.dart';
 import '../../../service/note/note_service.dart';
 import '../../../service/diary/diary_service.dart';
 import '../../../service/profile/profile_service.dart';
+import '../../../service/share/share_service.dart';
+import '../../../models/share/shared_item_models.dart';
 import '../../../models/note/note_models.dart';
 import '../../../models/diary/diary_models.dart';
 import '../../../models/auth/auth_models.dart';
@@ -22,6 +24,35 @@ class NotesDiaryViewModel extends ChangeNotifier {
   final INoteService _noteService = locator.get<INoteService>();
   final IDiaryService _diaryService = locator.get<IDiaryService>();
   final IProfileService _profileService = locator.get<IProfileService>();
+  final IShareService _shareService = locator.get<IShareService>();
+
+  // Paylaşım bilgisi: sahibi olduğum paylaşılmış not id'leri (rozet için) +
+  // benimle paylaşılan notlar (ana listede "Paylaşılanlar" bölümü için).
+  final Set<int> _sharedOwnedNoteIds = {};
+  List<SharedNoteItem> _sharedWithMeNotes = [];
+  Set<int> get sharedOwnedNoteIds => _sharedOwnedNoteIds;
+  List<SharedNoteItem> get sharedWithMeNotes => _sharedWithMeNotes;
+  bool isNoteShared(int id) => _sharedOwnedNoteIds.contains(id);
+
+  Future<void> loadSharedNotesInfo() async {
+    try {
+      final r = await _shareService.getSharedNotes();
+      if (!r.isSuccess || r.data == null) return;
+      _sharedOwnedNoteIds.clear();
+      final withMe = <SharedNoteItem>[];
+      for (final s in r.data!) {
+        if (s.isOwner && s.note != null) {
+          _sharedOwnedNoteIds.add(s.note!.id);
+        } else if (!s.isOwner && s.note != null) {
+          withMe.add(s);
+        }
+      }
+      _sharedWithMeNotes = withMe;
+      notifyListeners();
+    } catch (_) {
+      // Paylaşım bilgisi alınamazsa sessiz geç (ana akışı bozmaz).
+    }
+  }
 
   User? _currentUser;
   User? get currentUser => _currentUser;
@@ -1654,6 +1685,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
       loadDiaryEntries(),
       loadCategories(),
       loadViewMode(), // Bu satırı ekleyin
+      loadSharedNotesInfo(),
     ]);
   }
 }

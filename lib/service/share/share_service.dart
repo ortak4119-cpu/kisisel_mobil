@@ -34,6 +34,7 @@ abstract class IShareService {
   // Canlı düzenleme kilidi
   Future<ServiceResponse<ShareLockState>> lockNote(int id);
   Future<ServiceResponse<void>> unlockNote(int id);
+  Future<ServiceResponse<void>> pushNoteDraft(int id, String content);
   Future<ServiceResponse<ShareLockState>> lockTask(int id);
   Future<ServiceResponse<void>> unlockTask(int id);
 
@@ -166,6 +167,10 @@ class ShareService implements IShareService {
   @override
   Future<ServiceResponse<void>> unlockNote(int id) =>
       BaseApiService.post<void>('/shared-notes/$id/unlock', requiresAuth: true);
+  @override
+  Future<ServiceResponse<void>> pushNoteDraft(int id, String content) =>
+      BaseApiService.post<void>('/shared-notes/$id/draft',
+          requiresAuth: true, body: {'content': content});
   @override
   Future<ServiceResponse<ShareLockState>> lockTask(int id) =>
       BaseApiService.post<ShareLockState>('/shared-tasks/$id/lock',

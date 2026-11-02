@@ -19,9 +19,11 @@ import '../../../core/utils/color_constant.dart';
 import '../../../core/utils/animation_prefs.dart';
 import '../../../models/diary/diary_models.dart';
 import '../../../models/note/note_models.dart';
+import '../../../models/share/shared_item_models.dart';
 import '../../../core/utils/custom_snackbar.dart';
 import '../../share/share_with_friends_sheet.dart';
 import '../../share/shared_hub_sheet.dart';
+import '../../share/shared_item_editor_sheet.dart';
 import '../viewmodel/notes_diary_viewmodel.dart';
 import 'markdown_note_parser.dart';
 
@@ -2435,6 +2437,81 @@ class _NotesContent extends StatelessWidget {
     );
   }
 
+  /// Benimle paylaşılan not kartı (ana listedeki "Paylaşılanlar" şeridi).
+  /// Dokununca ortak düzenleyiciyi (canlı önizleme + kilit) açar.
+  Widget _sharedWithMeCard(BuildContext context, SharedNoteItem item,
+      NotesDiaryViewModel viewModel, bool isDark) {
+    final c = AppColors(isDark);
+    return SizedBox(
+      width: 160,
+      child: GestureDetector(
+        onTap: () async {
+          await showSharedNoteEditor(context, item: item);
+          viewModel.loadSharedNotesInfo();
+        },
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: c.card,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFF6A821).withOpacity(0.4)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.group_rounded,
+                      size: 14, color: Color(0xFFF6A821)),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      item.canEdit
+                          ? 'share.canEdit'.tr()
+                          : 'share.viewOnly'.tr(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFFB07B18)),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                (item.note?.title ?? '').isNotEmpty
+                    ? item.note!.title!
+                    : 'notes.untitledNote'.tr(),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    fontFamily: 'JosefinSans',
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: c.textPrimary),
+              ),
+              const SizedBox(height: 4),
+              Expanded(
+                child: Text(
+                  (item.note?.content ?? '').replaceAll('\n', ' '),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 11.5, color: c.textSecondary),
+                ),
+              ),
+              Text('share.sharedBy'.tr(namedArgs: {'name': item.owner?.name ?? '—'}),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 10.5, color: c.textMuted)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _paperCard(BuildContext context, Note note, bool isDark) {
     const w = 150.0;
     final lines = (note.content ?? '').split('\n');
@@ -2554,6 +2631,12 @@ class _NotesContent extends StatelessWidget {
                           height: 1.0,
                           color: const Color(0xFF3A3326))),
                 ),
+                if (viewModel.isNoteShared(note.id))
+                  const Padding(
+                    padding: EdgeInsets.only(left: 2, top: 2),
+                    child: Icon(Icons.group_rounded,
+                        size: 13, color: Color(0xFFF6A821)),
+                  ),
                 if (note.isLocked)
                   Padding(
                     padding: const EdgeInsets.only(left: 2, top: 2),
@@ -3141,6 +3224,23 @@ class _NotesContent extends StatelessWidget {
         ];
       default: // all
         return [
+          // Benimle paylaşılan notlar — ana listede (Paylaşım Merkezi dışında da).
+          if (viewModel.sharedWithMeNotes.isNotEmpty) ...[
+            _sectionRow('share.sharedWithMe'.tr(), isDarkMode: isDarkMode),
+            const SizedBox(height: 10),
+            SizedBox(
+              height: 92,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: viewModel.sharedWithMeNotes.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 10),
+                itemBuilder: (context, i) => _sharedWithMeCard(
+                    context, viewModel.sharedWithMeNotes[i], viewModel,
+                    isDarkMode),
+              ),
+            ),
+            const SizedBox(height: 14),
+          ],
           if (pinned.isNotEmpty) ...[
             _sectionRow('notes.pinnedSection'.tr(),
                 trailing: 'notes.seeAll'.tr(),

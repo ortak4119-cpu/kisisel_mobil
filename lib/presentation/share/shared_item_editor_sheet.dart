@@ -118,28 +118,52 @@ class _SharedNoteEditorState extends State<_SharedNoteEditor> {
       TextEditingController(text: widget.item.note?.content ?? '');
   bool _saving = false;
 
-  // Canlı tek-editör kilidi.
+  // Canlı tek-editör kilidi + canlı taslak önizlemesi.
   ShareLockState? _lock;
   Timer? _timer;
+  Timer? _draftDebounce;
 
   @override
   void initState() {
     super.initState();
+    // Düzenleyebilen kilidi dener ve taslağını canlı iter.
     if (widget.item.canEdit) {
-      _acquire();
-      _timer = Timer.periodic(const Duration(seconds: 8), (_) => _acquire());
+      _poll();
+      _content.addListener(_onContentChanged);
+    }
+    // HERKES 2 sn'de bir yoklar: düzenleyen heartbeat, izleyen canlı önizleme.
+    _timer = Timer.periodic(const Duration(seconds: 2), (_) => _poll());
+  }
+
+  Future<void> _poll() async {
+    final r = await _share.lockNote(widget.item.id);
+    if (!mounted || !r.isSuccess || r.data == null) return;
+    final lock = r.data!;
+    setState(() => _lock = lock);
+    // İzleyen: düzenleyenin canlı taslağını salt-okunur alana yansıt.
+    if (lock.lockedByOther &&
+        lock.draftContent != null &&
+        lock.draftContent != _content.text) {
+      _content.text = lock.draftContent!;
     }
   }
 
-  Future<void> _acquire() async {
-    final r = await _share.lockNote(widget.item.id);
-    if (!mounted) return;
-    if (r.isSuccess && r.data != null) setState(() => _lock = r.data);
+  // Düzenleyen yazdıkça taslağı (debounce) sunucuya iter.
+  void _onContentChanged() {
+    if (_lock?.isMe != true) return;
+    _draftDebounce?.cancel();
+    _draftDebounce = Timer(const Duration(milliseconds: 600), () {
+      if (_lock?.isMe == true) {
+        _share.pushNoteDraft(widget.item.id, _content.text);
+      }
+    });
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    _draftDebounce?.cancel();
+    _content.removeListener(_onContentChanged);
     if (_lock?.isMe == true) _share.unlockNote(widget.item.id);
     _title.dispose();
     _content.dispose();

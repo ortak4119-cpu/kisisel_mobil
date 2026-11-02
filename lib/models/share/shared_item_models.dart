@@ -212,12 +212,14 @@ class ShareLockState {
   final int? editorId; // şu an düzenleyen kişi (null = serbest)
   final String? editorName;
   final bool isMe;
+  final String? draftContent; // düzenleyenin canlı (kaydedilmemiş) taslağı
 
   ShareLockState({
     this.acquired = false,
     this.editorId,
     this.editorName,
     this.isMe = false,
+    this.draftContent,
   });
 
   bool get lockedByOther => editorId != null && !isMe;
@@ -227,6 +229,7 @@ class ShareLockState {
         editorId: j['editor_id'] as int?,
         editorName: j['editor_name'] as String?,
         isMe: j['is_me'] as bool? ?? false,
+        draftContent: j['draft_content'] as String?,
       );
 }
 

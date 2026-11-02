@@ -9,6 +9,8 @@ import '../../../core/init/locator.dart';
 import '../../../service/task/task_service.dart';
 import '../../../service/habit/habit_service.dart';
 import '../../../service/profile/profile_service.dart';
+import '../../../service/share/share_service.dart';
+import '../../../models/share/shared_item_models.dart';
 import '../../../models/task/task_models.dart';
 import '../../../models/habit/habit_models.dart';
 import '../../../models/auth/auth_models.dart';
@@ -100,6 +102,35 @@ class TasksHabitsViewModel extends ChangeNotifier {
   final ITaskService _taskService = locator.get<ITaskService>();
   final IHabitService _habitService = locator.get<IHabitService>();
   final IProfileService _profileService = locator.get<IProfileService>();
+  final IShareService _shareService = locator.get<IShareService>();
+
+  // Paylaşım bilgisi: sahibi olduğum paylaşılmış görev id'leri (rozet) +
+  // benimle paylaşılan görevler (ana listede "Paylaşılanlar").
+  final Set<int> _sharedOwnedTaskIds = {};
+  List<SharedTaskItem> _sharedWithMeTasks = [];
+  Set<int> get sharedOwnedTaskIds => _sharedOwnedTaskIds;
+  List<SharedTaskItem> get sharedWithMeTasks => _sharedWithMeTasks;
+  bool isTaskShared(int id) => _sharedOwnedTaskIds.contains(id);
+
+  Future<void> loadSharedTasksInfo() async {
+    try {
+      final r = await _shareService.getSharedTasks();
+      if (!r.isSuccess || r.data == null) return;
+      _sharedOwnedTaskIds.clear();
+      final withMe = <SharedTaskItem>[];
+      for (final s in r.data!) {
+        if (s.isOwner && s.task != null) {
+          _sharedOwnedTaskIds.add(s.task!.id);
+        } else if (!s.isOwner && s.task != null) {
+          withMe.add(s);
+        }
+      }
+      _sharedWithMeTasks = withMe;
+      notifyListeners();
+    } catch (_) {
+      // Sessiz geç — ana akışı bozma.
+    }
+  }
 
   User? _currentUser;
   User? get currentUser => _currentUser;
@@ -1848,6 +1879,7 @@ class TasksHabitsViewModel extends ChangeNotifier {
     await Future.wait([
       loadTasks(),
       loadHabits(),
+      loadSharedTasksInfo(),
     ]);
     // Eski yerel task meta'sını bir kez backend'e taşı (ilk yüklemeden sonra).
     if (!_taskMetaMigrated) {

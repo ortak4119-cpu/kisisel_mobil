@@ -18,6 +18,8 @@ import '../../../core/utils/animation_prefs.dart';
 import 'shared_habits_view.dart';
 import '../../share/share_with_friends_sheet.dart';
 import '../../share/shared_hub_sheet.dart';
+import '../../share/shared_item_editor_sheet.dart';
+import '../../../models/share/shared_item_models.dart';
 import '../viewmodel/tasks_habits_viewmodel.dart';
 
 class TasksHabitsView extends StatefulWidget {
@@ -1774,6 +1776,11 @@ class _TasksTabState extends State<_TasksTab> {
       const SizedBox(height: 14),
       _filterRow(context, c, isDark),
       const SizedBox(height: 16),
+      // Benimle paylaşılan görevler — ana listede (Paylaşım Merkezi dışında da).
+      if (viewModel.sharedWithMeTasks.isNotEmpty) ...[
+        _sharedTasksStrip(context, c),
+        const SizedBox(height: 16),
+      ],
       _sectionCard(
         c: c,
         keyId: 'overdue',
@@ -2389,6 +2396,86 @@ class _TasksTabState extends State<_TasksTab> {
   /// "Elle" sıralama modunda sürükle-bırak görev listesi.
 
   // ---------- Görev kartı ----------
+  /// Benimle paylaşılan görevler — yatay şerit.
+  Widget _sharedTasksStrip(BuildContext context, AppColors c) {
+    final items = viewModel.sharedWithMeTasks;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 8),
+          child: Row(
+            children: [
+              const Icon(Icons.group_rounded, size: 16, color: Color(0xFFF6A821)),
+              const SizedBox(width: 6),
+              Text('share.sharedWithMe'.tr(),
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: c.textPrimary)),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: 78,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: items.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 10),
+            itemBuilder: (context, i) =>
+                _sharedWithMeTaskCard(context, c, items[i]),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _sharedWithMeTaskCard(
+      BuildContext context, AppColors c, SharedTaskItem item) {
+    final doneCount = item.participants.where((p) => p.isCompleted).length;
+    final total = item.participants.length;
+    return SizedBox(
+      width: 170,
+      child: GestureDetector(
+        onTap: () async {
+          await showSharedTaskEditor(context, item: item);
+          viewModel.loadSharedTasksInfo();
+        },
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: c.card,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFF6A821).withOpacity(0.4)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                (item.task?.title ?? '').isNotEmpty
+                    ? item.task!.title
+                    : '—',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: c.textPrimary),
+              ),
+              const Spacer(),
+              Text(
+                '${item.owner?.name ?? '—'} · $doneCount/$total ✓',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 11, color: c.textMuted),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _taskCard(BuildContext context, AppColors c, Task task) {
     final done = task.isCompleted;
     final subs = viewModel.subtasksOf(task.id);
@@ -2485,6 +2572,12 @@ class _TasksTabState extends State<_TasksTab> {
                         ],
                       ),
                     ),
+                    if (viewModel.isTaskShared(task.id))
+                      const Padding(
+                        padding: EdgeInsets.only(right: 2, top: 2),
+                        child: Icon(Icons.group_rounded,
+                            size: 16, color: Color(0xFFF6A821)),
+                      ),
                     _cardMenu(context, c, task),
                   ],
                 ),
