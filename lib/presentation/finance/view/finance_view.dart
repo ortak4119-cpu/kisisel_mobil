@@ -122,6 +122,14 @@ void showFinanceFormSheet(BuildContext context, FinanceViewModel vm, bool isDark
 }
 
 
+/// Yaklaşan ödemeler kartında tek bir satır (abonelik veya taksit).
+/// [date] sıralama için; null ise sona atılır.
+class _UpcomingEntry {
+  final DateTime? date;
+  final Widget Function() builder;
+  _UpcomingEntry({required this.date, required this.builder});
+}
+
 class FinanceView extends StatefulWidget {
   const FinanceView({super.key});
 
@@ -134,10 +142,59 @@ class _FinanceViewState extends State<FinanceView> {
   int _acctIdx = 0;
   int _dashTab = 0; // 0 Genel, 1 Harcama, 2 Plan
 
+  // Son İşlemler ve Yaklaşan Ödemeler kartları: 5'er öğe + sayfalama.
+  static const int _pageSize = 5;
+  int _txnPage = 0;
+  int _upcomingPage = 0;
+
   @override
   void dispose() {
     _acctCtrl.dispose();
     super.dispose();
+  }
+
+  /// Kart altı sayfalama çubuğu (‹ Önceki · Sayfa x/y · Sonraki ›).
+  Widget _pageNav(
+    AppColors c, {
+    required int page,
+    required int pageCount,
+    required ValueChanged<int> onChange,
+  }) {
+    if (pageCount <= 1) return const SizedBox.shrink();
+    final canPrev = page > 0;
+    final canNext = page < pageCount - 1;
+    Widget arrow(IconData icon, bool enabled, VoidCallback onTap) => InkWell(
+          onTap: enabled ? onTap : null,
+          borderRadius: BorderRadius.circular(10),
+          child: Padding(
+            padding: const EdgeInsets.all(6),
+            child: Icon(icon,
+                size: 22,
+                color: enabled ? _fOrange : c.textMuted.withOpacity(0.4)),
+          ),
+        );
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          arrow(Icons.chevron_left_rounded, canPrev, () => onChange(page - 1)),
+          const SizedBox(width: 8),
+          Text(
+            'common.pageOf'.tr(namedArgs: {
+              'current': '${page + 1}',
+              'total': '$pageCount',
+            }),
+            style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: c.textSecondary),
+          ),
+          const SizedBox(width: 8),
+          arrow(Icons.chevron_right_rounded, canNext, () => onChange(page + 1)),
+        ],
+      ),
+    );
   }
 
   double _subsMonthly(FinanceViewModel vm) {
@@ -296,6 +353,9 @@ class _FinanceViewState extends State<FinanceView> {
           _coloredStatCards(context, vm, c),
           const SizedBox(height: 14),
           _transactionsCard(context, vm, c),
+          const SizedBox(height: 14),
+          // Son işlemlerin hemen altında yaklaşan ödemeler (abonelik + taksit).
+          _planUpcomingCard(context, vm, c),
           const SizedBox(height: 22),
           // Bütçe ayarları bölümü — en altta, tüm ayarlar doğrudan erişilebilir.
           Padding(
@@ -1256,27 +1316,65 @@ class _FinanceViewState extends State<FinanceView> {
 
   Widget _planUpcomingCard(
       BuildContext context, FinanceViewModel vm, AppColors c) {
-    final rows = <Widget>[];
+    // Abonelikler + taksitler → tarihe göre (en yakın önce) sıralı, 5'er sayfa.
+    final entries = <_UpcomingEntry>[];
     for (final s in vm.activeSubscriptions) {
-      rows.add(_payRow(c, Icons.sync_rounded, const Color(0xFF9F7AEA), s.name,
-          _shortDate(s.nextBillingDate), tl0(s.amount),
-          onTap: () => _openEditSubscription(context, vm, s, c.isDark)));
+      entries.add(_UpcomingEntry(
+        date: s.nextBillingDate,
+        builder: () => _payRow(c, Icons.sync_rounded,
+            const Color(0xFF9F7AEA), s.name,
+            _shortDate(s.nextBillingDate), tl0(s.amount),
+            onTap: () => _openEditSubscription(context, vm, s, c.isDark)),
+      ));
     }
     for (final it in vm.installments.where((i) => !i.isDone)) {
-      rows.add(_payRow(c, Icons.credit_card_rounded, const Color(0xFF3B82C4),
-          it.name, '${it.paidCount}/${it.installmentCount}',
-          tl0(it.monthlyAmount)));
+      final due = it.nextDueDate;
+      entries.add(_UpcomingEntry(
+        date: due,
+        builder: () => _payRow(c, Icons.credit_card_rounded,
+            const Color(0xFF3B82C4), it.name,
+            due != null
+                ? '${_shortDate(due)} · ${it.paidCount}/${it.installmentCount}'
+                : '${it.paidCount}/${it.installmentCount}',
+            tl0(it.monthlyAmount)),
+      ));
     }
+    entries.sort((a, b) {
+      final ad = a.date, bd = b.date;
+      if (ad == null && bd == null) return 0;
+      if (ad == null) return 1;
+      if (bd == null) return -1;
+      return ad.compareTo(bd);
+    });
+
+    final pageCount = (entries.length / _pageSize).ceil().clamp(1, 9999);
+    if (_upcomingPage >= pageCount) _upcomingPage = pageCount - 1;
+    if (_upcomingPage < 0) _upcomingPage = 0;
+    final pageItems =
+        entries.skip(_upcomingPage * _pageSize).take(_pageSize).toList();
+
     return _panel(
       c,
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _panelHead(c, 'finance.upcoming'.tr()),
-          if (rows.isEmpty)
-            Text('—', style: TextStyle(color: c.textMuted))
-          else
-            ...rows,
+          if (entries.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text('finance.noUpcoming'.tr(),
+                  style: TextStyle(color: c.textMuted)),
+            )
+          else ...[
+            for (final e in pageItems) e.builder(),
+            if (entries.length > _pageSize)
+              _pageNav(
+                c,
+                page: _upcomingPage,
+                pageCount: pageCount,
+                onChange: (p) => setState(() => _upcomingPage = p),
+              ),
+          ],
         ],
       ),
     );
@@ -1468,7 +1566,10 @@ class _FinanceViewState extends State<FinanceView> {
   Widget _transactionsCard(
       BuildContext context, FinanceViewModel vm, AppColors c) {
     final items = _allTxns(vm);
-    final top = items.take(5).toList();
+    final pageCount = (items.length / _pageSize).ceil().clamp(1, 9999);
+    if (_txnPage >= pageCount) _txnPage = pageCount - 1;
+    if (_txnPage < 0) _txnPage = 0;
+    final top = items.skip(_txnPage * _pageSize).take(_pageSize).toList();
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -1502,13 +1603,19 @@ class _FinanceViewState extends State<FinanceView> {
             )
           else
             for (final t in top) _txnRow(context, vm, t, c),
-          if (items.length > 5) ...[
+          if (items.length > _pageSize) ...[
             Divider(height: 1, color: c.border.withOpacity(0.6)),
+            _pageNav(
+              c,
+              page: _txnPage,
+              pageCount: pageCount,
+              onChange: (p) => setState(() => _txnPage = p),
+            ),
             InkWell(
               onTap: () => _openAllTransactions(context, vm, c),
               borderRadius: BorderRadius.circular(12),
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -1516,13 +1623,13 @@ class _FinanceViewState extends State<FinanceView> {
                       'finance.seeAllTxn'
                           .tr(namedArgs: {'n': '${items.length}'}),
                       style: const TextStyle(
-                          fontSize: 13.5,
+                          fontSize: 13,
                           fontWeight: FontWeight.w700,
                           color: _fOrange),
                     ),
                     const SizedBox(width: 4),
                     const Icon(Icons.chevron_right_rounded,
-                        size: 18, color: _fOrange),
+                        size: 16, color: _fOrange),
                   ],
                 ),
               ),

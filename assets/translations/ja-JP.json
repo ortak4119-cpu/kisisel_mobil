@@ -92,7 +92,9 @@
       "gray": "グレー"
     },
     "showAll": "すべて表示",
-    "showLess": "表示を減らす"
+    "showLess": "表示を減らす",
+    "pageOf": "ページ {current}/{total}",
+    "saved": "保存しました"
   },
   "auth": {
     "welcomeBack": "おかえりなさい！ 👋",
@@ -991,7 +993,8 @@
     "seeAllTxn": "すべて表示 ({n})",
     "noSubscriptions": "サブスクはまだありません",
     "nextBilling": "次回: {date}",
-    "deleteSubscriptionConfirm": "このサブスクを削除しますか？"
+    "deleteSubscriptionConfirm": "このサブスクを削除しますか？",
+    "budgetIncomeDesc": "月間予算"
   },
   "notes": {
     "title": "マイノート",
@@ -1095,7 +1098,8 @@
       "shareEmpty": "共有するにはまず何か書いてください",
       "fileError": "ファイルを選択できませんでした",
       "reminderSet": "リマインダー: {date}",
-      "done": "完了"
+      "done": "完了",
+      "saving": "保存中…"
     },
     "add": {
       "noteTitle": "メモを追加",
@@ -1326,7 +1330,8 @@
     "habitDeleteFailed": "習慣の削除に失敗しました",
     "timeout": "リクエストがタイムアウトしました",
     "connectionFailed": "サーバーに接続できませんでした",
-    "unexpected": "予期しないエラーが発生しました"
+    "unexpected": "予期しないエラーが発生しました",
+    "generic": "エラーが発生しました"
   },
   "success": {
     "saved": "保存しました",
@@ -1505,5 +1510,32 @@
     "yearAgo": "1年前",
     "yearsAgo": "{count}年前",
     "aWhileAgo": "しばらく前"
+  },
+  "share": {
+    "shareWithFriend": "友達と共有",
+    "selectFriends": "共有する友達を選択",
+    "permission": "権限",
+    "canEdit": "編集可能",
+    "viewOnly": "閲覧のみ",
+    "shareBtn": "共有",
+    "noFriends": "まだ友達がいません。プロフィールから追加してください。",
+    "shared": "共有しました",
+    "shareFailed": "共有できませんでした",
+    "notFriendSkipped": "一部は友達でないためスキップ",
+    "invites": "招待",
+    "sharedWithMe": "共有",
+    "accept": "承認",
+    "reject": "拒否",
+    "leave": "退出",
+    "sharedBy": "{name} が共有",
+    "youShared": "あなたが共有",
+    "editing": "{name} が編集中",
+    "lockedBusy": "{name} が編集中です",
+    "noShared": "共有はまだありません",
+    "noInvites": "保留中の招待はありません",
+    "participants": "参加者",
+    "completed": "完了",
+    "notCompleted": "未完了",
+    "viewerCannotEdit": "閲覧のみ — 編集不可"
   }
 }

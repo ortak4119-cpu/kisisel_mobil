@@ -223,6 +223,15 @@ class _DropInState extends State<_DropIn>
   }
 }
 
+/// Ajanda listesinde tek bir öğe (etkinlik/görev/abonelik/taksit).
+/// [date] + [time] sıralama için; [card] ekranda gösterilen widget.
+class _AgendaItem {
+  final DateTime date;
+  final String? time;
+  final Widget card;
+  _AgendaItem({required this.date, required this.time, required this.card});
+}
+
 @RoutePage()
 class CalendarView extends StatefulWidget {
   const CalendarView({super.key});
@@ -543,8 +552,8 @@ class _CalendarViewState extends State<CalendarView> {
                   ? const Duration(milliseconds: 240)
                   : Duration.zero,
               curve: Curves.easeOut,
-              width: 38,
-              height: 38,
+              width: 32,
+              height: 32,
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: sel ? _cOrange : Colors.transparent,
@@ -563,13 +572,13 @@ class _CalendarViewState extends State<CalendarView> {
               ),
               child: Text('$day',
                   style: TextStyle(
-                      fontSize: 15,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: sel
                           ? Colors.white
                           : (today ? _cOrange : c.textPrimary))),
             ),
-            const SizedBox(height: 3),
+            const SizedBox(height: 2),
             SizedBox(
               height: 6,
               child: Row(
@@ -657,7 +666,7 @@ class _CalendarViewState extends State<CalendarView> {
               crossAxisCount: 7,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              childAspectRatio: 0.72,
+              childAspectRatio: 1.0,
               children: cells,
             ),
           ),
@@ -1201,31 +1210,89 @@ class _CalendarViewState extends State<CalendarView> {
   }
 
   // ---------- Ajanda ----------
+  // Takvimde görünen TÜM öğeleri tek listede gösterir: etkinlikler + görevler
+  // + abonelikler + taksitler. İleriye dönük, tarihe göre sıralı ve gruplu.
   Widget _agenda(BuildContext context, CalendarViewModel vm, AppColors c) {
     final now = DateTime.now();
-    final events = List<CalendarEvent>.from(vm.calendarEvents);
-    final upcoming = events.where((e) {
+    final today = DateTime(now.year, now.month, now.day);
+    String keyOf(DateTime d) =>
+        '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+    final items = <_AgendaItem>[];
+
+    // 1) Takvim etkinlikleri
+    for (final e in vm.calendarEvents) {
       try {
         final d = DateTime.parse(e.eventDate);
-        return !d.isBefore(DateTime(now.year, now.month, now.day));
-      } catch (_) {
-        return false;
+        final day = DateTime(d.year, d.month, d.day);
+        if (day.isBefore(today)) continue;
+        items.add(_AgendaItem(
+          date: day,
+          time: e.eventTime,
+          card: _timedCard(context, vm, c, e),
+        ));
+      } catch (_) {}
+    }
+    // 2) Görevler (bitiş tarihi olanlar)
+    for (final t in vm.tasks) {
+      if (t.dueDate == null) continue;
+      try {
+        final d = DateTime.parse(t.dueDate!);
+        final day = DateTime(d.year, d.month, d.day);
+        if (day.isBefore(today)) continue;
+        items.add(_AgendaItem(
+          date: day,
+          time: null,
+          card: _agendaMiniRow(c, Icons.check_circle_outline_rounded,
+              dotColorById('task'), t.title, 'calendar.tasksTitle'.tr()),
+        ));
+      } catch (_) {}
+    }
+    // 3) Abonelikler (yaklaşan ödeme günü)
+    for (final s in vm.subscriptions) {
+      if (!s.isActive) continue;
+      final day = DateTime(s.nextBillingDate.year, s.nextBillingDate.month,
+          s.nextBillingDate.day);
+      if (day.isBefore(today)) continue;
+      items.add(_AgendaItem(
+        date: day,
+        time: null,
+        card: _agendaMiniRow(c, Icons.sync_rounded,
+            dotColorById('subscription'), s.name, 'finance.subscriptions'.tr()),
+      ));
+    }
+    // 4) Taksitler (yaklaşan ödeme günleri)
+    for (final it in vm.installments) {
+      for (final due in vm.installmentDueDates(it)) {
+        final day = DateTime(due.year, due.month, due.day);
+        if (day.isBefore(today)) continue;
+        items.add(_AgendaItem(
+          date: day,
+          time: null,
+          card: _agendaMiniRow(c, Icons.credit_card_rounded,
+              dotColorById('installment'), it.name,
+              'finance.installment.title'.tr()),
+        ));
       }
-    }).toList()
-      ..sort((a, b) {
-        final ka = '${a.eventDate} ${a.eventTime ?? '99:99'}';
-        final kb = '${b.eventDate} ${b.eventTime ?? '99:99'}';
-        return ka.compareTo(kb);
-      });
-    if (upcoming.isEmpty) {
+    }
+
+    if (items.isEmpty) {
       return ListView(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 120),
           children: [_emptyDay(c)]);
     }
-    final byDate = <String, List<CalendarEvent>>{};
-    for (final e in upcoming) {
-      (byDate[e.eventDate] ??= []).add(e);
+
+    items.sort((a, b) {
+      final cmp = a.date.compareTo(b.date);
+      if (cmp != 0) return cmp;
+      return (a.time ?? '99:99').compareTo(b.time ?? '99:99');
+    });
+
+    final byDate = <String, List<_AgendaItem>>{};
+    for (final it in items) {
+      (byDate[keyOf(it.date)] ??= []).add(it);
     }
+
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 4, 20, 120),
       children: [
@@ -1238,12 +1305,55 @@ class _CalendarViewState extends State<CalendarView> {
                     fontWeight: FontWeight.w800,
                     color: c.textPrimary)),
           ),
-          for (final e in entry.value) ...[
-            _timedCard(context, vm, c, e),
+          for (final it in entry.value) ...[
+            it.card,
             const SizedBox(height: 12),
           ],
         ],
       ],
+    );
+  }
+
+  /// Ajandada görev/abonelik/taksit için kompakt satır kartı.
+  Widget _agendaMiniRow(AppColors c, IconData icon, Color color, String title,
+      String typeLabel) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: c.card,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: c.border.withOpacity(0.7)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+                color: color.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(12)),
+            child: Icon(icon, size: 20, color: color),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w700,
+                        color: c.textPrimary)),
+                const SizedBox(height: 2),
+                Text(typeLabel,
+                    style: TextStyle(fontSize: 12, color: c.textMuted)),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 

@@ -10,6 +10,8 @@ import 'package:share_plus/share_plus.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 import '../../../service/stt/stt_service.dart';
 import '../../../core/design/app_design.dart';
@@ -18,6 +20,8 @@ import '../../../core/utils/animation_prefs.dart';
 import '../../../models/diary/diary_models.dart';
 import '../../../models/note/note_models.dart';
 import '../../../core/utils/custom_snackbar.dart';
+import '../../share/share_with_friends_sheet.dart';
+import '../../share/shared_hub_sheet.dart';
 import '../viewmodel/notes_diary_viewmodel.dart';
 import 'markdown_note_parser.dart';
 
@@ -590,7 +594,16 @@ class _NotesDiaryViewState extends State<NotesDiaryView> {
                             ),
                           ),
                         ),
-                        // Not ekleme tek yerden (FAB). Başlıkta yalnızca arama.
+                        // Paylaşım Merkezi — davetler + benimle paylaşılan notlar.
+                        _headerCircleBtn(
+                          icon: Icons.diversity_3_rounded,
+                          bg: ColorConstant.cardColorLight,
+                          fg: const Color(0xFF3A3326),
+                          onTap: () =>
+                              showSharedHubSheet(context, kind: 'note'),
+                        ),
+                        const SizedBox(width: 8),
+                        // Not ekleme tek yerden (FAB). Başlıkta arama + paylaşım.
                         _headerCircleBtn(
                           icon: Icons.search_rounded,
                           bg: ColorConstant.cardColorLight,
@@ -2439,7 +2452,22 @@ class _NotesContent extends StatelessWidget {
         (note.title ?? '').trim().isNotEmpty ? note.title!.trim() : 'notes.untitledNote'.tr();
 
     Widget preview;
-    if (imgs.isNotEmpty) {
+    if (note.isLocked) {
+      // Kilitli not: içerik/görsel gizli — yalnızca başlık + kilit göstergesi.
+      preview = Row(
+        children: [
+          const Icon(Icons.lock_rounded,
+              size: 15, color: Color(0xFF8A7A5E)),
+          const SizedBox(width: 5),
+          Text('notes.lockedNote'.tr(),
+              style: const TextStyle(
+                  fontFamily: 'JosefinSans',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF9B8A6E))),
+        ],
+      );
+    } else if (imgs.isNotEmpty) {
       preview = ClipRRect(
         borderRadius: BorderRadius.circular(3),
         child: Image.network(imgs.first.thumbnailUrl ?? imgs.first.fileUrl,
@@ -2542,7 +2570,7 @@ class _NotesContent extends StatelessWidget {
             ),
             const SizedBox(height: 7),
             Flexible(child: preview),
-            if (note.tags.isNotEmpty) ...[
+            if (!note.isLocked && note.tags.isNotEmpty) ...[
               const SizedBox(height: 7),
               Text('#${note.tags.first}',
                   maxLines: 1,
@@ -3605,7 +3633,8 @@ class _NotesContent extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   // Küçük görsel önizleme — backend eki öncelikli, yoksa yerel.
-                  if (note.attachments.any((a) => a.isImage)) ...[
+                  // Kilitli notta görsel/ek de gizlenir (sadece başlık görünür).
+                  if (!note.isLocked && note.attachments.any((a) => a.isImage)) ...[
                     Builder(builder: (_) {
                       final img =
                           note.attachments.firstWhere((a) => a.isImage);
@@ -3626,7 +3655,7 @@ class _NotesContent extends StatelessWidget {
                       );
                     }),
                     const SizedBox(height: 4),
-                  ] else if (imgs.isNotEmpty) ...[
+                  ] else if (!note.isLocked && imgs.isNotEmpty) ...[
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Image.file(
@@ -3640,7 +3669,8 @@ class _NotesContent extends StatelessWidget {
                     const SizedBox(height: 4),
                   ],
                   // Ek göstergeleri (ses / dosya).
-                  if (note.attachments.any((a) => a.isAudio || a.isFile)) ...[
+                  if (!note.isLocked &&
+                      note.attachments.any((a) => a.isAudio || a.isFile)) ...[
                     Row(
                       children: [
                         if (note.attachments.any((a) => a.isAudio)) ...[
@@ -3841,6 +3871,17 @@ class _NotesContent extends StatelessWidget {
             const Icon(Icons.content_copy_rounded, size: 20),
             const SizedBox(width: 12),
             Text('common.copy'.tr()),
+          ]),
+        ),
+        // Arkadaşla ortak paylaşım (davet gönderir).
+        PopupMenuItem(
+          onTap: () => Future.delayed(const Duration(milliseconds: 100),
+              () => showShareWithFriendsSheet(context,
+                  kind: 'note', itemId: note.id)),
+          child: Row(children: [
+            const Icon(Icons.group_add_rounded, size: 20),
+            const SizedBox(width: 12),
+            Text('share.shareWithFriend'.tr()),
           ]),
         ),
         PopupMenuItem(
@@ -4485,6 +4526,294 @@ class _DictationSheetState extends State<_DictationSheet> {
 /// Editör alt çubuğundaki ekleme çipi (checklist / madde işareti).
 
 // ==================== NOT EKLEME BOTTOM SHEET ====================
+/// Tam ekran resim görüntüleyici — thumbnail'a dokununca açılır.
+/// Yakınlaştırma (pinch) + alt çubukta Kaydet / Paylaş / Sil seçenekleri.
+/// Hem backend (network) hem yerel (File) görseller için çalışır.
+void _openImageViewer(
+  BuildContext context, {
+  String? networkUrl,
+  File? file,
+  VoidCallback? onDelete,
+}) {
+  Navigator.of(context, rootNavigator: true).push(
+    MaterialPageRoute(
+      fullscreenDialog: true,
+      builder: (_) => _ImageViewerPage(
+        networkUrl: networkUrl,
+        file: file,
+        onDelete: onDelete,
+      ),
+    ),
+  );
+}
+
+class _ImageViewerPage extends StatefulWidget {
+  final String? networkUrl;
+  final File? file;
+  final VoidCallback? onDelete;
+  const _ImageViewerPage({this.networkUrl, this.file, this.onDelete});
+
+  @override
+  State<_ImageViewerPage> createState() => _ImageViewerPageState();
+}
+
+class _ImageViewerPageState extends State<_ImageViewerPage> {
+  bool _busy = false;
+
+  /// Paylaşım/kaydetme için yerel bir dosya döndürür.
+  /// Network görselini geçici klasöre indirir.
+  Future<File?> _resolveLocalFile() async {
+    if (widget.file != null) return widget.file;
+    final url = widget.networkUrl;
+    if (url == null) return null;
+    try {
+      final resp = await http.get(Uri.parse(url));
+      if (resp.statusCode != 200) return null;
+      final dir = await getTemporaryDirectory();
+      var name = url.split('/').last.split('?').first;
+      if (name.isEmpty || !name.contains('.')) {
+        name = 'image_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      }
+      final f = File('${dir.path}/$name');
+      await f.writeAsBytes(resp.bodyBytes);
+      return f;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _saveOrShare() async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      final f = await _resolveLocalFile();
+      if (f == null) {
+        if (mounted) {
+          CustomSnackBar.showError(context, 'errors.generic'.tr());
+        }
+        return;
+      }
+      // Sistem paylaşım sayfası: "Fotoğraflara Kaydet" / "Dosyalara Kaydet".
+      await Share.shareXFiles([XFile(f.path)]);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final Widget img = widget.file != null
+        ? Image.file(widget.file!, fit: BoxFit.contain)
+        : Image.network(
+            widget.networkUrl ?? '',
+            fit: BoxFit.contain,
+            loadingBuilder: (_, child, prog) => prog == null
+                ? child
+                : const Center(
+                    child: CircularProgressIndicator(color: Colors.white)),
+            errorBuilder: (_, __, ___) => const Center(
+              child: Icon(Icons.broken_image_rounded,
+                  color: Colors.white54, size: 48),
+            ),
+          );
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: InteractiveViewer(
+              minScale: 0.8,
+              maxScale: 4.0,
+              child: Center(child: img),
+            ),
+          ),
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _viewerAction(
+                    icon: Icons.download_rounded,
+                    label: 'common.save'.tr(),
+                    onTap: _busy ? null : _saveOrShare,
+                  ),
+                  _viewerAction(
+                    icon: Icons.ios_share_rounded,
+                    label: 'notes.editor.share'.tr(),
+                    onTap: _busy ? null : _saveOrShare,
+                  ),
+                  if (widget.onDelete != null)
+                    _viewerAction(
+                      icon: Icons.delete_outline_rounded,
+                      label: 'common.delete'.tr(),
+                      danger: true,
+                      onTap: () {
+                        Navigator.pop(context);
+                        widget.onDelete!();
+                      },
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _viewerAction({
+    required IconData icon,
+    required String label,
+    required VoidCallback? onTap,
+    bool danger = false,
+  }) {
+    final color = danger ? const Color(0xFFFF6B6B) : Colors.white;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 26),
+            const SizedBox(height: 6),
+            Text(label,
+                style: TextStyle(
+                    color: color,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Kaydet butonu — tıklanınca anında "Kaydediliyor…" durumuna geçer,
+/// tekrar basılmayı engeller (çift kayıt fix) ve bitince yeni not için
+/// yeşil onay + panoya uçuş animasyonunu (kök overlay) tetikler.
+class _SaveNoteButton extends StatefulWidget {
+  final NotesDiaryViewModel vm;
+  final bool isEditing;
+  final Color accent;
+  final Color accentDark;
+  const _SaveNoteButton({
+    required this.vm,
+    required this.isEditing,
+    required this.accent,
+    required this.accentDark,
+  });
+
+  @override
+  State<_SaveNoteButton> createState() => _SaveNoteButtonState();
+}
+
+class _SaveNoteButtonState extends State<_SaveNoteButton> {
+  bool _saving = false;
+
+  Future<void> _onTap() async {
+    // Çift tık / çoklu kayıt engeli: zaten kaydediliyorsa yok say.
+    if (_saving || widget.vm.isSavingNote) return;
+    setState(() => _saving = true);
+    // createNote sayfayı kendisi kapattığı için overlay referansını önceden al.
+    final overlay = Overlay.of(context, rootOverlay: true);
+    try {
+      if (widget.isEditing) {
+        await widget.vm.updateNote(context);
+      } else {
+        await widget.vm.createNote(context);
+        if (widget.vm.consumeJustCreated() && AnimationPrefs.isOn) {
+          _showRootOverlay(
+            overlay,
+            (remove) => _SaveCelebrationOverlay(onDone: remove),
+          );
+        }
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOut,
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(colors: [widget.accent, widget.accentDark]),
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: _saving
+              ? [
+                  BoxShadow(
+                    color: widget.accentDark.withOpacity(0.45),
+                    blurRadius: 14,
+                    offset: const Offset(0, 5),
+                  ),
+                ]
+              : const [],
+        ),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 220),
+          transitionBuilder: (child, anim) => FadeTransition(
+            opacity: anim,
+            child: ScaleTransition(
+              scale: Tween<double>(begin: 0.85, end: 1.0).animate(anim),
+              child: child,
+            ),
+          ),
+          child: _saving
+              ? Row(
+                  key: const ValueKey('saving'),
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(
+                      width: 15,
+                      height: 15,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text('notes.editor.saving'.tr(),
+                        style: const TextStyle(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white)),
+                  ],
+                )
+              : Row(
+                  key: const ValueKey('idle'),
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.check_rounded,
+                        size: 18, color: Colors.white),
+                    const SizedBox(width: 6),
+                    Text('common.save'.tr(),
+                        style: const TextStyle(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white)),
+                  ],
+                ),
+        ),
+      ),
+    );
+  }
+}
+
 class _AddNoteBottomSheet extends StatelessWidget {
   final NotesDiaryViewModel viewModel;
   final bool isDarkMode;
@@ -4598,35 +4927,11 @@ class _AddNoteBottomSheet extends StatelessWidget {
             active: vm.notePinned,
           ),
           const SizedBox(width: 8),
-          GestureDetector(
-            onTap: () async {
-              if (isEditing) {
-                vm.updateNote(context);
-                return;
-              }
-              // Kaydetme kutlaması kök katmanda oynatılır; createNote sayfayı
-              // kendisi kapattığı için overlay referansını önceden alıyoruz.
-              final overlay = Overlay.of(context, rootOverlay: true);
-              await vm.createNote(context);
-              if (vm.consumeJustCreated() && AnimationPrefs.isOn) {
-                _showRootOverlay(
-                  overlay,
-                  (remove) => _SaveCelebrationOverlay(onDone: remove),
-                );
-              }
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [_accent, _accentDark]),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Text('notes.editor.done'.tr(),
-                  style: const TextStyle(
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white)),
-            ),
+          _SaveNoteButton(
+            vm: vm,
+            isEditing: isEditing,
+            accent: _accent,
+            accentDark: _accentDark,
           ),
         ],
       ),
@@ -4961,7 +5266,13 @@ class _AddNoteBottomSheet extends StatelessWidget {
                 for (int i = 0; i < vm.editingExistingImages.length; i++)
                   Stack(
                     children: [
-                      ClipRRect(
+                      GestureDetector(
+                        onTap: () => _openImageViewer(
+                          context,
+                          file: File(vm.editingExistingImages[i]),
+                          onDelete: () => vm.removeExistingImage(i),
+                        ),
+                        child: ClipRRect(
                         borderRadius: BorderRadius.circular(14),
                         child: Image.file(
                           File(vm.editingExistingImages[i]),
@@ -4976,7 +5287,7 @@ class _AddNoteBottomSheet extends StatelessWidget {
                                 color: c.textMuted),
                           ),
                         ),
-                      ),
+                      )),
                       Positioned(
                         top: 4,
                         right: 4,
@@ -5020,7 +5331,16 @@ class _AddNoteBottomSheet extends StatelessWidget {
                         for (final a in imgs)
                           Stack(
                             children: [
-                              ClipRRect(
+                              GestureDetector(
+                                onTap: () => _openImageViewer(
+                                  ctx,
+                                  networkUrl: a.fileUrl,
+                                  onDelete: noteId != null
+                                      ? () => vm.removeAttachment(
+                                          noteId, a.id, ctx)
+                                      : null,
+                                ),
+                                child: ClipRRect(
                                 borderRadius: BorderRadius.circular(14),
                                 child: Image.network(
                                   a.thumbnailUrl ?? a.fileUrl,
@@ -5052,7 +5372,7 @@ class _AddNoteBottomSheet extends StatelessWidget {
                                         color: c.textMuted),
                                   ),
                                 ),
-                              ),
+                              )),
                               if (noteId != null)
                                 Positioned(
                                   top: 4,
@@ -5140,7 +5460,13 @@ class _AddNoteBottomSheet extends StatelessWidget {
                 for (int i = 0; i < vm.pickedImages.length; i++)
                   Stack(
                     children: [
-                      ClipRRect(
+                      GestureDetector(
+                        onTap: () => _openImageViewer(
+                          context,
+                          file: vm.pickedImages[i],
+                          onDelete: () => vm.removePickedImage(i),
+                        ),
+                        child: ClipRRect(
                         borderRadius: BorderRadius.circular(14),
                         child: Image.file(
                           vm.pickedImages[i],
@@ -5148,7 +5474,7 @@ class _AddNoteBottomSheet extends StatelessWidget {
                           height: 100,
                           fit: BoxFit.cover,
                         ),
-                      ),
+                      )),
                       Positioned(
                         top: 4,
                         right: 4,

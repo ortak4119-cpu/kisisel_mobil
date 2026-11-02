@@ -92,7 +92,9 @@
       "orange": "Orange",
       "red": "Red",
       "gray": "Gray"
-    }
+    },
+    "pageOf": "Page {current}/{total}",
+    "saved": "Saved"
   },
   "auth": {
     "welcomeBack": "Welcome Back! 👋",
@@ -991,7 +993,8 @@
     "seeAllTxn": "See all ({n})",
     "noSubscriptions": "No subscriptions yet",
     "nextBilling": "Next: {date}",
-    "deleteSubscriptionConfirm": "Delete this subscription?"
+    "deleteSubscriptionConfirm": "Delete this subscription?",
+    "budgetIncomeDesc": "Monthly budget"
   },
   "notes": {
     "title": "My Notes",
@@ -1095,7 +1098,8 @@
       "shareEmpty": "Write something first to share",
       "fileError": "Could not pick file",
       "reminderSet": "Reminder: {date}",
-      "done": "Done"
+      "done": "Done",
+      "saving": "Saving…"
     },
     "add": {
       "noteTitle": "Add Note",
@@ -1326,7 +1330,8 @@
     "habitDeleteFailed": "Failed to delete habit",
     "timeout": "The request timed out",
     "connectionFailed": "Could not connect to the server",
-    "unexpected": "An unexpected error occurred"
+    "unexpected": "An unexpected error occurred",
+    "generic": "Something went wrong"
   },
   "success": {
     "saved": "Saved",
@@ -1505,5 +1510,32 @@
     "yearAgo": "1 yr ago",
     "yearsAgo": "{count} yrs ago",
     "aWhileAgo": "a while ago"
+  },
+  "share": {
+    "shareWithFriend": "Share with friend",
+    "selectFriends": "Select friends to share with",
+    "permission": "Permission",
+    "canEdit": "Can edit",
+    "viewOnly": "View only",
+    "shareBtn": "Share",
+    "noFriends": "You have no friends yet. Add friends from your profile first.",
+    "shared": "Shared",
+    "shareFailed": "Could not share",
+    "notFriendSkipped": "Some people were skipped (not friends)",
+    "invites": "Invites",
+    "sharedWithMe": "Shared",
+    "accept": "Accept",
+    "reject": "Reject",
+    "leave": "Leave",
+    "sharedBy": "Shared by {name}",
+    "youShared": "You shared",
+    "editing": "{name} is editing",
+    "lockedBusy": "{name} is editing right now",
+    "noShared": "No shares yet",
+    "noInvites": "No pending invites",
+    "participants": "Participants",
+    "completed": "Completed",
+    "notCompleted": "Not completed",
+    "viewerCannotEdit": "View only — you cannot edit"
   }
 }

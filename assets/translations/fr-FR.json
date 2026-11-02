@@ -92,7 +92,9 @@
       "gray": "Gris"
     },
     "showAll": "Tout afficher",
-    "showLess": "Afficher moins"
+    "showLess": "Afficher moins",
+    "pageOf": "Page {current}/{total}",
+    "saved": "Enregistré"
   },
   "auth": {
     "welcomeBack": "Bienvenue de Retour! 👋",
@@ -991,7 +993,8 @@
     "seeAllTxn": "Voir tout ({n})",
     "noSubscriptions": "Aucun abonnement",
     "nextBilling": "Prochain : {date}",
-    "deleteSubscriptionConfirm": "Supprimer cet abonnement ?"
+    "deleteSubscriptionConfirm": "Supprimer cet abonnement ?",
+    "budgetIncomeDesc": "Budget mensuel"
   },
   "notes": {
     "title": "Mes Notes",
@@ -1095,7 +1098,8 @@
       "shareEmpty": "Écrivez d'abord quelque chose à partager",
       "fileError": "Impossible de sélectionner le fichier",
       "reminderSet": "Rappel : {date}",
-      "done": "Terminé"
+      "done": "Terminé",
+      "saving": "Enregistrement…"
     },
     "add": {
       "noteTitle": "Ajouter une note",
@@ -1326,7 +1330,8 @@
     "habitDeleteFailed": "Échec de la suppression de l'habitude",
     "timeout": "La requête a expiré",
     "connectionFailed": "Impossible de se connecter au serveur",
-    "unexpected": "Une erreur inattendue s'est produite"
+    "unexpected": "Une erreur inattendue s'est produite",
+    "generic": "Une erreur est survenue"
   },
   "success": {
     "saved": "Enregistré",
@@ -1505,5 +1510,32 @@
     "yearAgo": "il y a 1 an",
     "yearsAgo": "il y a {count} ans",
     "aWhileAgo": "il y a un moment"
+  },
+  "share": {
+    "shareWithFriend": "Partager avec un ami",
+    "selectFriends": "Choisir les amis",
+    "permission": "Autorisation",
+    "canEdit": "Peut modifier",
+    "viewOnly": "Lecture seule",
+    "shareBtn": "Partager",
+    "noFriends": "Vous n'avez pas encore d'amis. Ajoutez-en depuis votre profil.",
+    "shared": "Partagé",
+    "shareFailed": "Échec du partage",
+    "notFriendSkipped": "Certains ignorés (pas amis)",
+    "invites": "Invitations",
+    "sharedWithMe": "Partagés",
+    "accept": "Accepter",
+    "reject": "Refuser",
+    "leave": "Quitter",
+    "sharedBy": "Partagé par {name}",
+    "youShared": "Vous avez partagé",
+    "editing": "{name} modifie",
+    "lockedBusy": "{name} modifie en ce moment",
+    "noShared": "Aucun partage",
+    "noInvites": "Aucune invitation en attente",
+    "participants": "Participants",
+    "completed": "Terminé",
+    "notCompleted": "Non terminé",
+    "viewerCannotEdit": "Lecture seule — non modifiable"
   }
 }

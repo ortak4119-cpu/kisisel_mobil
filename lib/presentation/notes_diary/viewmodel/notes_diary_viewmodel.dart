@@ -748,7 +748,13 @@ class NotesDiaryViewModel extends ChangeNotifier {
     return v;
   }
 
+  // "Bitti"ye birden fazla basınca aynı notu çoğaltmayı önler.
+  // Kaydetme sürerken butona tekrar basılsa bile ikinci istek atılmaz.
+  bool _savingNote = false;
+  bool get isSavingNote => _savingNote;
+
   Future<void> createNote(BuildContext context) async {
+    if (_savingNote) return; // zaten kaydediliyor — çift kayıt engeli
     if (noteTitleController.text.trim().isEmpty) {
       CustomSnackBar.showError(context, 'errors.noteTitleEmpty'.tr());
       return;
@@ -766,6 +772,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
     }
 
     try {
+      _savingNote = true;
       _isLoading = true;
       notifyListeners();
 
@@ -822,6 +829,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
       }
       debugPrint('Note creation exception: $e');
     } finally {
+      _savingNote = false;
       _isLoading = false;
       notifyListeners();
     }
@@ -867,6 +875,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
   }
 
   Future<void> updateNote(BuildContext context) async {
+    if (_savingNote) return; // zaten kaydediliyor — çift kayıt engeli
     if (_editingNoteId == null) {
       CustomSnackBar.showError(context, 'errors.noteNotFound'.tr());
       return;
@@ -878,6 +887,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
     }
 
     try {
+      _savingNote = true;
       _isLoading = true;
       notifyListeners();
 
@@ -935,6 +945,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
       }
       debugPrint('Note update exception: $e');
     } finally {
+      _savingNote = false;
       _isLoading = false;
       notifyListeners();
     }

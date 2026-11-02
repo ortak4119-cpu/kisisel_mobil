@@ -92,7 +92,9 @@
       "gray": "Grau"
     },
     "showAll": "Alle anzeigen",
-    "showLess": "Weniger anzeigen"
+    "showLess": "Weniger anzeigen",
+    "pageOf": "Seite {current}/{total}",
+    "saved": "Gespeichert"
   },
   "auth": {
     "welcomeBack": "Willkommen zurück! 👋",
@@ -991,7 +993,8 @@
     "seeAllTxn": "Alle ansehen ({n})",
     "noSubscriptions": "Noch keine Abos",
     "nextBilling": "Nächste: {date}",
-    "deleteSubscriptionConfirm": "Dieses Abo löschen?"
+    "deleteSubscriptionConfirm": "Dieses Abo löschen?",
+    "budgetIncomeDesc": "Monatsbudget"
   },
   "notes": {
     "title": "Meine Notizen",
@@ -1095,7 +1098,8 @@
       "shareEmpty": "Schreibe zuerst etwas zum Teilen",
       "fileError": "Datei konnte nicht gewählt werden",
       "reminderSet": "Erinnerung: {date}",
-      "done": "Fertig"
+      "done": "Fertig",
+      "saving": "Wird gespeichert…"
     },
     "add": {
       "noteTitle": "Notiz hinzufügen",
@@ -1326,7 +1330,8 @@
     "habitDeleteFailed": "Fehler beim Löschen der Gewohnheit",
     "timeout": "Zeitüberschreitung der Anfrage",
     "connectionFailed": "Verbindung zum Server fehlgeschlagen",
-    "unexpected": "Ein unerwarteter Fehler ist aufgetreten"
+    "unexpected": "Ein unerwarteter Fehler ist aufgetreten",
+    "generic": "Ein Fehler ist aufgetreten"
   },
   "success": {
     "saved": "Gespeichert",
@@ -1505,5 +1510,32 @@
     "yearAgo": "vor 1 Jahr",
     "yearsAgo": "vor {count} Jahren",
     "aWhileAgo": "vor einiger Zeit"
+  },
+  "share": {
+    "shareWithFriend": "Mit Freund teilen",
+    "selectFriends": "Freunde zum Teilen auswählen",
+    "permission": "Berechtigung",
+    "canEdit": "Bearbeiten",
+    "viewOnly": "Nur ansehen",
+    "shareBtn": "Teilen",
+    "noFriends": "Du hast noch keine Freunde. Füge zuerst Freunde im Profil hinzu.",
+    "shared": "Geteilt",
+    "shareFailed": "Konnte nicht geteilt werden",
+    "notFriendSkipped": "Einige wurden übersprungen (keine Freunde)",
+    "invites": "Einladungen",
+    "sharedWithMe": "Geteilt",
+    "accept": "Annehmen",
+    "reject": "Ablehnen",
+    "leave": "Verlassen",
+    "sharedBy": "Geteilt von {name}",
+    "youShared": "Du hast geteilt",
+    "editing": "{name} bearbeitet",
+    "lockedBusy": "{name} bearbeitet gerade",
+    "noShared": "Noch keine Freigaben",
+    "noInvites": "Keine ausstehenden Einladungen",
+    "participants": "Teilnehmer",
+    "completed": "Erledigt",
+    "notCompleted": "Nicht erledigt",
+    "viewerCannotEdit": "Nur ansehen — nicht bearbeitbar"
   }
 }

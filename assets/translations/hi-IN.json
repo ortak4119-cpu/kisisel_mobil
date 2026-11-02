@@ -92,7 +92,9 @@
       "gray": "ग्रे"
     },
     "showAll": "सभी दिखाएं",
-    "showLess": "कम दिखाएं"
+    "showLess": "कम दिखाएं",
+    "pageOf": "पृष्ठ {current}/{total}",
+    "saved": "सहेजा गया"
   },
   "auth": {
     "welcomeBack": "वापस स्वागत है! 👋",
@@ -991,7 +993,8 @@
     "seeAllTxn": "सभी देखें ({n})",
     "noSubscriptions": "अभी कोई सदस्यता नहीं",
     "nextBilling": "अगला: {date}",
-    "deleteSubscriptionConfirm": "यह सदस्यता हटाएँ?"
+    "deleteSubscriptionConfirm": "यह सदस्यता हटाएँ?",
+    "budgetIncomeDesc": "मासिक बजट"
   },
   "notes": {
     "title": "मेरे नोट्स",
@@ -1095,7 +1098,8 @@
       "shareEmpty": "साझा करने के लिए पहले कुछ लिखें",
       "fileError": "फ़ाइल नहीं चुनी जा सकी",
       "reminderSet": "रिमाइंडर: {date}",
-      "done": "हो गया"
+      "done": "हो गया",
+      "saving": "सहेजा जा रहा है…"
     },
     "add": {
       "noteTitle": "नोट जोड़ें",
@@ -1326,7 +1330,8 @@
     "habitDeleteFailed": "आदत हटाने में विफल",
     "timeout": "अनुरोध का समय समाप्त हो गया",
     "connectionFailed": "सर्वर से कनेक्ट नहीं हो सका",
-    "unexpected": "एक अप्रत्याशित त्रुटि हुई"
+    "unexpected": "एक अप्रत्याशित त्रुटि हुई",
+    "generic": "कुछ गलत हुआ"
   },
   "success": {
     "saved": "सहेजा गया",
@@ -1505,5 +1510,32 @@
     "yearAgo": "1 साल पहले",
     "yearsAgo": "{count} साल पहले",
     "aWhileAgo": "कुछ समय पहले"
+  },
+  "share": {
+    "shareWithFriend": "मित्र के साथ साझा करें",
+    "selectFriends": "साझा करने के लिए मित्र चुनें",
+    "permission": "अनुमति",
+    "canEdit": "संपादित कर सकते हैं",
+    "viewOnly": "केवल देखें",
+    "shareBtn": "साझा करें",
+    "noFriends": "अभी कोई मित्र नहीं है। पहले प्रोफ़ाइल से मित्र जोड़ें।",
+    "shared": "साझा किया",
+    "shareFailed": "साझा नहीं हो सका",
+    "notFriendSkipped": "कुछ लोग छोड़े गए (मित्र नहीं)",
+    "invites": "निमंत्रण",
+    "sharedWithMe": "साझा किए",
+    "accept": "स्वीकारें",
+    "reject": "अस्वीकारें",
+    "leave": "छोड़ें",
+    "sharedBy": "{name} ने साझा किया",
+    "youShared": "आपने साझा किया",
+    "editing": "{name} संपादित कर रहा है",
+    "lockedBusy": "{name} अभी संपादित कर रहा है",
+    "noShared": "अभी कोई साझा नहीं",
+    "noInvites": "कोई लंबित निमंत्रण नहीं",
+    "participants": "प्रतिभागी",
+    "completed": "पूर्ण",
+    "notCompleted": "अपूर्ण",
+    "viewerCannotEdit": "केवल देखें — संपादन नहीं"
   }
 }

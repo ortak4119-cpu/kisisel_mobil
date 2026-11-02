@@ -92,7 +92,9 @@
       "gray": "Серый"
     },
     "showAll": "Показать все",
-    "showLess": "Показать меньше"
+    "showLess": "Показать меньше",
+    "pageOf": "Стр. {current}/{total}",
+    "saved": "Сохранено"
   },
   "auth": {
     "welcomeBack": "С возвращением! 👋",
@@ -991,7 +993,8 @@
     "seeAllTxn": "Показать все ({n})",
     "noSubscriptions": "Пока нет подписок",
     "nextBilling": "Следующий: {date}",
-    "deleteSubscriptionConfirm": "Удалить эту подписку?"
+    "deleteSubscriptionConfirm": "Удалить эту подписку?",
+    "budgetIncomeDesc": "Месячный бюджет"
   },
   "notes": {
     "title": "Мои Заметки",
@@ -1095,7 +1098,8 @@
       "shareEmpty": "Сначала напишите что-нибудь",
       "fileError": "Не удалось выбрать файл",
       "reminderSet": "Напоминание: {date}",
-      "done": "Готово"
+      "done": "Готово",
+      "saving": "Сохранение…"
     },
     "add": {
       "noteTitle": "Добавить заметку",
@@ -1326,7 +1330,8 @@
     "habitDeleteFailed": "Не удалось удалить привычку",
     "timeout": "Время ожидания запроса истекло",
     "connectionFailed": "Не удалось подключиться к серверу",
-    "unexpected": "Произошла непредвиденная ошибка"
+    "unexpected": "Произошла непредвиденная ошибка",
+    "generic": "Произошла ошибка"
   },
   "success": {
     "saved": "Сохранено",
@@ -1505,5 +1510,32 @@
     "yearAgo": "1 г назад",
     "yearsAgo": "{count} г назад",
     "aWhileAgo": "некоторое время назад"
+  },
+  "share": {
+    "shareWithFriend": "Поделиться с другом",
+    "selectFriends": "Выберите друзей",
+    "permission": "Доступ",
+    "canEdit": "Может редактировать",
+    "viewOnly": "Только просмотр",
+    "shareBtn": "Поделиться",
+    "noFriends": "У вас пока нет друзей. Сначала добавьте друзей в профиле.",
+    "shared": "Отправлено",
+    "shareFailed": "Не удалось поделиться",
+    "notFriendSkipped": "Некоторые пропущены (не друзья)",
+    "invites": "Приглашения",
+    "sharedWithMe": "Общие",
+    "accept": "Принять",
+    "reject": "Отклонить",
+    "leave": "Выйти",
+    "sharedBy": "Поделился {name}",
+    "youShared": "Вы поделились",
+    "editing": "{name} редактирует",
+    "lockedBusy": "{name} сейчас редактирует",
+    "noShared": "Пока нет общих",
+    "noInvites": "Нет ожидающих приглашений",
+    "participants": "Участники",
+    "completed": "Выполнено",
+    "notCompleted": "Не выполнено",
+    "viewerCannotEdit": "Только просмотр — нельзя редактировать"
   }
 }

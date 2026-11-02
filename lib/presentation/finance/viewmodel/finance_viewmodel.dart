@@ -720,6 +720,8 @@ class FinanceViewModel extends ChangeNotifier {
 
       if (response.isSuccess) {
         await loadBudgetStats();
+        // Belirlenen aylık bütçe bu ay için gelir olarak sayılır/eklenir.
+        await _syncBudgetIncome(amount);
         resetBudgetForm();
         if (context.mounted) {
           CustomSnackBar.showSuccess(context, 'success.budgetUpdated'.tr());
@@ -1566,6 +1568,39 @@ class FinanceViewModel extends ChangeNotifier {
     if (resp.isSuccess) {
       _income.removeWhere((e) => e.id == id);
       notifyListeners();
+    }
+  }
+
+  /// Aylık bütçe belirlenince o tutar bu ay için gelir olarak eklenir.
+  /// Çoğalmayı önlemek için bu ayın önceki bütçe-gelir kayıtları silinip
+  /// güncel tutarla tek bir kayıt oluşturulur (tek doğruluk kaynağı).
+  static const String budgetIncomeCategory = 'budget';
+  Future<void> _syncBudgetIncome(double amount) async {
+    try {
+      final now = DateTime.now();
+      bool sameMonth(String d) {
+        try {
+          final dt = DateTime.parse(d);
+          return dt.year == now.year && dt.month == now.month;
+        } catch (_) {
+          return false;
+        }
+      }
+
+      final existing = _income
+          .where((i) =>
+              i.category == budgetIncomeCategory && sameMonth(i.date))
+          .toList();
+      for (final e in existing) {
+        final resp = await _incomeService.deleteIncome(e.id);
+        if (resp.isSuccess) _income.removeWhere((x) => x.id == e.id);
+      }
+      final dateStr =
+          '${now.year}-${now.month.toString().padLeft(2, '0')}-01';
+      await addIncome(amount, 'finance.budgetIncomeDesc'.tr(),
+          budgetIncomeCategory, dateStr, 0);
+    } catch (e) {
+      debugPrint('Budget income sync exception: $e');
     }
   }
 

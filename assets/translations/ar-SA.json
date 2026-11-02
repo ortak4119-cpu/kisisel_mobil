@@ -92,7 +92,9 @@
       "gray": "رمادي"
     },
     "showAll": "عرض الكل",
-    "showLess": "عرض أقل"
+    "showLess": "عرض أقل",
+    "pageOf": "صفحة {current}/{total}",
+    "saved": "تم الحفظ"
   },
   "auth": {
     "welcomeBack": "أهلاً بعودتك! 👋",
@@ -991,7 +993,8 @@
     "seeAllTxn": "عرض الكل ({n})",
     "noSubscriptions": "لا اشتراكات بعد",
     "nextBilling": "التالي: {date}",
-    "deleteSubscriptionConfirm": "حذف هذا الاشتراك؟"
+    "deleteSubscriptionConfirm": "حذف هذا الاشتراك؟",
+    "budgetIncomeDesc": "الميزانية الشهرية"
   },
   "notes": {
     "title": "ملاحظاتي",
@@ -1095,7 +1098,8 @@
       "shareEmpty": "اكتب شيئًا أولاً للمشاركة",
       "fileError": "تعذر اختيار الملف",
       "reminderSet": "تذكير: {date}",
-      "done": "تم"
+      "done": "تم",
+      "saving": "جارٍ الحفظ…"
     },
     "add": {
       "noteTitle": "إضافة ملاحظة",
@@ -1326,7 +1330,8 @@
     "habitDeleteFailed": "فشل حذف العادة",
     "timeout": "انتهت مهلة الطلب",
     "connectionFailed": "تعذّر الاتصال بالخادم",
-    "unexpected": "حدث خطأ غير متوقع"
+    "unexpected": "حدث خطأ غير متوقع",
+    "generic": "حدث خطأ"
   },
   "success": {
     "saved": "تم الحفظ",
@@ -1505,5 +1510,32 @@
     "yearAgo": "قبل سنة",
     "yearsAgo": "قبل {count} سنة",
     "aWhileAgo": "منذ فترة"
+  },
+  "share": {
+    "shareWithFriend": "مشاركة مع صديق",
+    "selectFriends": "اختر الأصدقاء للمشاركة",
+    "permission": "الإذن",
+    "canEdit": "يمكن التعديل",
+    "viewOnly": "عرض فقط",
+    "shareBtn": "مشاركة",
+    "noFriends": "ليس لديك أصدقاء بعد. أضف أصدقاء من ملفك الشخصي أولاً.",
+    "shared": "تمت المشاركة",
+    "shareFailed": "تعذرت المشاركة",
+    "notFriendSkipped": "تم تخطي البعض (ليسوا أصدقاء)",
+    "invites": "الدعوات",
+    "sharedWithMe": "المشاركات",
+    "accept": "قبول",
+    "reject": "رفض",
+    "leave": "مغادرة",
+    "sharedBy": "شارك {name}",
+    "youShared": "أنت شاركت",
+    "editing": "{name} يحرر الآن",
+    "lockedBusy": "{name} يحرر الآن",
+    "noShared": "لا مشاركات بعد",
+    "noInvites": "لا دعوات معلقة",
+    "participants": "المشاركون",
+    "completed": "مكتمل",
+    "notCompleted": "غير مكتمل",
+    "viewerCannotEdit": "عرض فقط — لا يمكن التعديل"
   }
 }

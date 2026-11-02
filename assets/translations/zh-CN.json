@@ -92,7 +92,9 @@
       "gray": "灰色"
     },
     "showAll": "显示全部",
-    "showLess": "显示更少"
+    "showLess": "显示更少",
+    "pageOf": "第 {current}/{total} 页",
+    "saved": "已保存"
   },
   "auth": {
     "welcomeBack": "欢迎回来! 👋",
@@ -991,7 +993,8 @@
     "seeAllTxn": "查看全部 ({n})",
     "noSubscriptions": "还没有订阅",
     "nextBilling": "下次：{date}",
-    "deleteSubscriptionConfirm": "删除此订阅？"
+    "deleteSubscriptionConfirm": "删除此订阅？",
+    "budgetIncomeDesc": "每月预算"
   },
   "notes": {
     "title": "我的笔记",
@@ -1095,7 +1098,8 @@
       "shareEmpty": "请先写点内容再分享",
       "fileError": "无法选择文件",
       "reminderSet": "提醒：{date}",
-      "done": "完成"
+      "done": "完成",
+      "saving": "保存中…"
     },
     "add": {
       "noteTitle": "添加笔记",
@@ -1326,7 +1330,8 @@
     "habitDeleteFailed": "删除习惯失败",
     "timeout": "请求超时",
     "connectionFailed": "无法连接到服务器",
-    "unexpected": "发生意外错误"
+    "unexpected": "发生意外错误",
+    "generic": "出错了"
   },
   "success": {
     "saved": "已保存",
@@ -1505,5 +1510,32 @@
     "yearAgo": "1年前",
     "yearsAgo": "{count}年前",
     "aWhileAgo": "一段时间前"
+  },
+  "share": {
+    "shareWithFriend": "与好友共享",
+    "selectFriends": "选择要共享的好友",
+    "permission": "权限",
+    "canEdit": "可编辑",
+    "viewOnly": "仅查看",
+    "shareBtn": "共享",
+    "noFriends": "你还没有好友。请先在个人资料中添加好友。",
+    "shared": "已共享",
+    "shareFailed": "无法共享",
+    "notFriendSkipped": "部分已跳过（非好友）",
+    "invites": "邀请",
+    "sharedWithMe": "共享",
+    "accept": "接受",
+    "reject": "拒绝",
+    "leave": "退出",
+    "sharedBy": "{name} 共享",
+    "youShared": "你已共享",
+    "editing": "{name} 正在编辑",
+    "lockedBusy": "{name} 正在编辑",
+    "noShared": "暂无共享",
+    "noInvites": "没有待处理的邀请",
+    "participants": "参与者",
+    "completed": "已完成",
+    "notCompleted": "未完成",
+    "viewerCannotEdit": "仅查看 — 无法编辑"
   }
 }

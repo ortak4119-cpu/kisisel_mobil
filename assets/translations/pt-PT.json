@@ -92,7 +92,9 @@
       "gray": "Cinzento"
     },
     "showAll": "Mostrar tudo",
-    "showLess": "Mostrar menos"
+    "showLess": "Mostrar menos",
+    "pageOf": "Página {current}/{total}",
+    "saved": "Guardado"
   },
   "auth": {
     "welcomeBack": "Bem-vindo de Volta! 👋",
@@ -991,7 +993,8 @@
     "seeAllTxn": "Ver tudo ({n})",
     "noSubscriptions": "Ainda sem subscrições",
     "nextBilling": "Próximo: {date}",
-    "deleteSubscriptionConfirm": "Eliminar esta subscrição?"
+    "deleteSubscriptionConfirm": "Eliminar esta subscrição?",
+    "budgetIncomeDesc": "Orçamento mensal"
   },
   "notes": {
     "title": "Minhas Notas",
@@ -1095,7 +1098,8 @@
       "shareEmpty": "Escreva algo primeiro",
       "fileError": "Não foi possível selecionar o ficheiro",
       "reminderSet": "Lembrete: {date}",
-      "done": "Concluído"
+      "done": "Concluído",
+      "saving": "A guardar…"
     },
     "add": {
       "noteTitle": "Adicionar nota",
@@ -1326,7 +1330,8 @@
     "habitDeleteFailed": "Falha ao eliminar o hábito",
     "timeout": "O pedido expirou",
     "connectionFailed": "Não foi possível ligar ao servidor",
-    "unexpected": "Ocorreu um erro inesperado"
+    "unexpected": "Ocorreu um erro inesperado",
+    "generic": "Ocorreu um erro"
   },
   "success": {
     "saved": "Guardado",
@@ -1505,5 +1510,32 @@
     "yearAgo": "há 1 ano",
     "yearsAgo": "há {count} anos",
     "aWhileAgo": "há algum tempo"
+  },
+  "share": {
+    "shareWithFriend": "Partilhar com amigo",
+    "selectFriends": "Escolher amigos",
+    "permission": "Permissão",
+    "canEdit": "Pode editar",
+    "viewOnly": "Apenas ver",
+    "shareBtn": "Partilhar",
+    "noFriends": "Ainda não tens amigos. Adiciona amigos no perfil primeiro.",
+    "shared": "Partilhado",
+    "shareFailed": "Não foi possível partilhar",
+    "notFriendSkipped": "Alguns ignorados (não são amigos)",
+    "invites": "Convites",
+    "sharedWithMe": "Partilhados",
+    "accept": "Aceitar",
+    "reject": "Recusar",
+    "leave": "Sair",
+    "sharedBy": "Partilhado por {name}",
+    "youShared": "Partilhaste",
+    "editing": "{name} está a editar",
+    "lockedBusy": "{name} está a editar agora",
+    "noShared": "Sem partilhas",
+    "noInvites": "Sem convites pendentes",
+    "participants": "Participantes",
+    "completed": "Concluído",
+    "notCompleted": "Não concluído",
+    "viewerCannotEdit": "Apenas ver — não editável"
   }
 }

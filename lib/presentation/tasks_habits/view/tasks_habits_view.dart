@@ -16,6 +16,8 @@ import '../../../core/utils/custom_snackbar.dart';
 import '../../../core/utils/nl_task_parser.dart';
 import '../../../core/utils/animation_prefs.dart';
 import 'shared_habits_view.dart';
+import '../../share/share_with_friends_sheet.dart';
+import '../../share/shared_hub_sheet.dart';
 import '../viewmodel/tasks_habits_viewmodel.dart';
 
 class TasksHabitsView extends StatefulWidget {
@@ -1208,11 +1210,23 @@ class _HabitsTab extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.group_add_rounded, color: _orange),
-              title: Text('habits.shareWithFriend'.tr(),
+              title: Text('share.shareWithFriend'.tr(),
+                  style: TextStyle(color: c.textPrimary)),
+              subtitle: Text('share.canEdit'.tr() + ' / ' + 'share.viewOnly'.tr(),
+                  style: TextStyle(color: c.textMuted, fontSize: 12)),
+              onTap: () {
+                Navigator.pop(ctx);
+                // Yeni arkadaş-davet modeli (ortak alışkanlık + ısı haritası).
+                showShareWithFriendsSheet(context, kind: 'habit', itemId: h.id);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.diversity_3_rounded, color: _orange),
+              title: Text('share.sharedWithMe'.tr(),
                   style: TextStyle(color: c.textPrimary)),
               onTap: () {
                 Navigator.pop(ctx);
-                _shareHabitWithFriend(context, c, h);
+                showSharedHubSheet(context, kind: 'habit');
               },
             ),
             if (!viewModel.isHabitDoneToday(h) && !h.skippedToday)
@@ -1896,6 +1910,17 @@ class _TasksTabState extends State<_TasksTab> {
                     color: c.isDark
                         ? ColorConstant.textPrimaryDark
                         : const Color(0xFF3A3326))),
+            const SizedBox(width: 8),
+            // Paylaşım Merkezi — görev davetleri + paylaşılan görevler.
+            InkWell(
+              onTap: () => showSharedHubSheet(context, kind: 'task'),
+              borderRadius: BorderRadius.circular(20),
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: Icon(Icons.diversity_3_rounded,
+                    size: 22, color: c.textSecondary),
+              ),
+            ),
             const Spacer(),
             Text('$done / $total ${'tasks.doneWord'.tr()}',
                 style: TextStyle(
@@ -2564,6 +2589,8 @@ class _TasksTabState extends State<_TasksTab> {
       onSelected: (v) {
         if (v == 'edit') {
           showEditTaskSheet(context, viewModel, c.isDark, task);
+        } else if (v == 'share') {
+          showShareWithFriendsSheet(context, kind: 'task', itemId: task.id);
         } else if (v == 'delete') {
           _confirmDelete(context, c, task);
         }
@@ -2575,6 +2602,14 @@ class _TasksTabState extends State<_TasksTab> {
             const Icon(Icons.edit_rounded, size: 20),
             const SizedBox(width: 12),
             Text('common.edit'.tr()),
+          ]),
+        ),
+        PopupMenuItem(
+          value: 'share',
+          child: Row(children: [
+            const Icon(Icons.group_add_rounded, size: 20),
+            const SizedBox(width: 12),
+            Text('share.shareWithFriend'.tr()),
           ]),
         ),
         PopupMenuItem(

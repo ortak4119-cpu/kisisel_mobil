@@ -92,7 +92,9 @@
       "orange": "Turuncu",
       "red": "Kırmızı",
       "gray": "Gri"
-    }
+    },
+    "pageOf": "Sayfa {current}/{total}",
+    "saved": "Kaydedildi"
   },
   "auth": {
     "welcomeBack": "Tekrar Hoş Geldiniz! 👋",
@@ -991,7 +993,8 @@
     "seeAllTxn": "Tümünü gör ({n})",
     "noSubscriptions": "Henüz abonelik yok",
     "nextBilling": "Sonraki: {date}",
-    "deleteSubscriptionConfirm": "Bu aboneliği silmek istediğinizden emin misiniz?"
+    "deleteSubscriptionConfirm": "Bu aboneliği silmek istediğinizden emin misiniz?",
+    "budgetIncomeDesc": "Aylık bütçe"
   },
   "notes": {
     "title": "Notlarım",
@@ -1095,7 +1098,8 @@
       "shareEmpty": "Paylaşmak için önce bir şeyler yaz",
       "fileError": "Dosya seçilemedi",
       "reminderSet": "Hatırlatıcı: {date}",
-      "done": "Bitti"
+      "done": "Bitti",
+      "saving": "Kaydediliyor…"
     },
     "add": {
       "noteTitle": "Not Ekle",
@@ -1326,7 +1330,8 @@
     "habitDeleteFailed": "Alışkanlık silinemedi",
     "timeout": "İstek zaman aşımına uğradı",
     "connectionFailed": "Sunucuya bağlanılamadı",
-    "unexpected": "Beklenmeyen bir hata oluştu"
+    "unexpected": "Beklenmeyen bir hata oluştu",
+    "generic": "Bir hata oluştu"
   },
   "success": {
     "saved": "Kaydedildi",
@@ -1505,5 +1510,32 @@
     "yearAgo": "1y önce",
     "yearsAgo": "{count}y önce",
     "aWhileAgo": "bir süre önce"
+  },
+  "share": {
+    "shareWithFriend": "Arkadaşla paylaş",
+    "selectFriends": "Paylaşılacak arkadaşları seç",
+    "permission": "İzin",
+    "canEdit": "Düzenleyebilir",
+    "viewOnly": "Salt okunur",
+    "shareBtn": "Paylaş",
+    "noFriends": "Henüz arkadaşın yok. Önce profilden arkadaş ekle.",
+    "shared": "Paylaşıldı",
+    "shareFailed": "Paylaşılamadı",
+    "notFriendSkipped": "Bazı kişiler arkadaş olmadığı için atlandı",
+    "invites": "Davetler",
+    "sharedWithMe": "Paylaşılanlar",
+    "accept": "Kabul et",
+    "reject": "Reddet",
+    "leave": "Ayrıl",
+    "sharedBy": "{name} paylaştı",
+    "youShared": "Sen paylaştın",
+    "editing": "{name} düzenliyor",
+    "lockedBusy": "Şu an {name} düzenliyor",
+    "noShared": "Henüz paylaşım yok",
+    "noInvites": "Bekleyen davet yok",
+    "participants": "Katılımcılar",
+    "completed": "Tamamladı",
+    "notCompleted": "Tamamlamadı",
+    "viewerCannotEdit": "Salt okunur — düzenleyemezsin"
   }
 }

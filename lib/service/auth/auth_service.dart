@@ -1,6 +1,48 @@
+import 'dart:io' show Platform;
+
+import 'package:package_info_plus/package_info_plus.dart';
+
 import '../../models/auth/auth_models.dart';
 import '../base/base_api_service.dart';
 import '../response/service_response.dart';
+
+/// Kayıt/giriş isteklerine platform (App Store / Play Store) ve uygulama
+/// sürümü bilgisini ekler. Backend bunu kullanıcının mağazasını bilmek için saklar.
+String _currentPlatform() {
+  if (Platform.isIOS) return 'ios';
+  if (Platform.isAndroid) return 'android';
+  return 'web';
+}
+
+String? _cachedAppVersion;
+
+/// Cihaz locale'inden ülke kodu (ISO2). Örn "tr_TR" -> "TR".
+/// Backend bu değeri IP tabanlı çözüme tercih eder.
+String? _localeCountry() {
+  try {
+    final parts = Platform.localeName.split(RegExp(r'[_-]'));
+    if (parts.length >= 2) {
+      final region = parts[1].split('.').first;
+      if (region.length == 2) return region.toUpperCase();
+    }
+  } catch (_) {}
+  return null;
+}
+
+Future<Map<String, dynamic>> _withDeviceMeta(Map<String, dynamic> body) async {
+  try {
+    _cachedAppVersion ??= (await PackageInfo.fromPlatform()).version;
+  } catch (_) {
+    // Sürüm alınamazsa platform bilgisi yine de gönderilir.
+  }
+  final country = _localeCountry();
+  return {
+    ...body,
+    'platform': _currentPlatform(),
+    if (_cachedAppVersion != null) 'app_version': _cachedAppVersion,
+    if (country != null) 'country': country,
+  };
+}
 
 
 abstract class IAuthService {
@@ -21,7 +63,7 @@ class AuthService implements IAuthService {
   Future<ServiceResponse<AuthResponse>> login(LoginRequest request) async {
     final response = await BaseApiService.post<AuthResponse>(
       '/auth/login',
-      body: request.toJson(),
+      body: await _withDeviceMeta(request.toJson()),
       requiresAuth: false,
       fromJson: (json) => AuthResponse.fromJson(json as Map<String, dynamic>),
     );
@@ -38,7 +80,7 @@ class AuthService implements IAuthService {
   Future<ServiceResponse<AuthResponse>> register(RegisterRequest request) async {
     final response = await BaseApiService.post<AuthResponse>(
       '/auth/register',
-      body: request.toJson(),
+      body: await _withDeviceMeta(request.toJson()),
       requiresAuth: false,
       fromJson: (json) => AuthResponse.fromJson(json as Map<String, dynamic>),
     );
@@ -57,7 +99,7 @@ class AuthService implements IAuthService {
       ) async {
     final response = await BaseApiService.post<AuthResponse>(
       '/auth/login/google',
-      body: request.toJson(),
+      body: await _withDeviceMeta(request.toJson()),
       requiresAuth: false,
       fromJson: (json) => AuthResponse.fromJson(json as Map<String, dynamic>),
     );
@@ -76,7 +118,7 @@ class AuthService implements IAuthService {
       ) async {
     final response = await BaseApiService.post<AuthResponse>(
       '/auth/login/apple',
-      body: request.toJson(),
+      body: await _withDeviceMeta(request.toJson()),
       requiresAuth: false,
       fromJson: (json) => AuthResponse.fromJson(json as Map<String, dynamic>),
     );
@@ -95,7 +137,7 @@ class AuthService implements IAuthService {
       ) async {
     final response = await BaseApiService.post<AuthResponse>(
       '/auth/login/guest',
-      body: request.toJson(),
+      body: await _withDeviceMeta(request.toJson()),
       requiresAuth: false,
       fromJson: (json) => AuthResponse.fromJson(json as Map<String, dynamic>),
     );

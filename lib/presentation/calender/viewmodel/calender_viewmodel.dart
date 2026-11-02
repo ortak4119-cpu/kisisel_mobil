@@ -131,6 +131,8 @@ class CalendarViewModel extends ChangeNotifier {
   List<Subscription> _subscriptions = [];
   List<Installment> _installments = [];
   List<Installment> get installments => _installments;
+  List<Task> get tasks => _tasks;
+  List<Subscription> get subscriptions => _subscriptions;
   List<Expense> _expenses = [];
   List<CalendarEvent> _calendarEvents = [];
 

@@ -6,6 +6,7 @@ import 'package:get_it/get_it.dart';
 import '../../service/auth/auth_service.dart';
 import '../../service/habit/habit_service.dart';
 import '../../service/habit/shared_habit_service.dart';
+import '../../service/share/share_service.dart';
 import '../../service/profile/profile_service.dart';
 import '../../service/settings/settings_service.dart';
 import '../../service/task/task_service.dart';
@@ -37,6 +38,7 @@ void setupLocator() {
   locator.registerLazySingleton<IHabitService>(() => HabitService());
   locator.registerLazySingleton<ISharedHabitService>(
       () => SharedHabitService());
+  locator.registerLazySingleton<IShareService>(() => ShareService());
   locator.registerLazySingleton<ITaskService>(() => TaskService());
   locator.registerLazySingleton<INoteService>(() => NoteService());
   locator.registerLazySingleton<IDiaryService>(() => DiaryService());
