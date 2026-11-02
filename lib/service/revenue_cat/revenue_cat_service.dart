@@ -89,9 +89,11 @@ class RevenueCatService {
   Future<CustomerInfo?> purchasePackage(Package package) async {
     try {
       debugPrint('🛒 Attempting to purchase: ${package.identifier}');
-      final customerInfo = await Purchases.purchasePackage(package);
+      // purchases_flutter 9.x: purchasePackage artık PurchaseResult döndürür
+      // (içinde customerInfo + storeTransaction). CustomerInfo'yu çıkarıyoruz.
+      final result = await Purchases.purchasePackage(package);
       debugPrint('✅ Purchase successful!');
-      return customerInfo;
+      return result.customerInfo;
     } on PlatformException catch (e) {
       final errorCode = PurchasesErrorHelper.getErrorCode(e);
 

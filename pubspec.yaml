@@ -5,7 +5,7 @@ publish_to: 'none'
 
 # Tek kaynak: iOS ve Android aynı sürümden derlenir (3.1.0).
 # Mağaza bazında gerekirse yalnızca build numarası (+N) artırılır.
-version: 3.1.0+6
+version: 3.1.0+7
 
 environment:
   sdk: ^3.5.4
@@ -32,7 +32,7 @@ dependencies:
   flutter_local_notifications: ^18.0.1
   url_launcher: ^6.3.1
   share_plus: ^11.0.0
-  purchases_flutter: ^8.7.5
+  purchases_flutter: ^9.0.0
   firebase_analytics: ^11.4.5
   get_it: ^8.0.3
   http: ^1.3.0
