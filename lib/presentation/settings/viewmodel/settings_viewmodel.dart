@@ -336,7 +336,7 @@ class SettingsViewModel extends ChangeNotifier {
   Future<void> contactUs() async {
     final email = Uri(
       scheme: 'mailto',
-      path: 'doseraliemre@gmail.com',
+      path: 'support@lifesync.app',
       query: 'subject=Destek Talebi',
     );
 
