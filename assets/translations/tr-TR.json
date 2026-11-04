@@ -1,9 +1,13 @@
 {
   "update": {
-    "title": "Yeni Sürüm Mevcut",
-    "message": "LifeSync'in yeni bir sürümü yayınlandı. En iyi deneyim için güncellemeni öneririz.",
+    "title": "Güncelleme var",
+    "forceBody": "Devam etmek için uygulamayı güncellemelisin.",
+    "softBody": "Yeni bir sürüm var 🎉 En iyi deneyim için güncelle.",
+    "later": "Daha sonra",
     "update": "Güncelle",
-    "later": "Daha Sonra"
+    "review": "Yeni güncellemeyi incele",
+    "whatsNew": "Neler yeni?",
+    "noNotes": "Bu sürüm için not eklenmemiş."
   },
   "app": {
     "name": "LifeSync",
@@ -116,6 +120,7 @@
     "passwordMismatch": "Şifreler eşleşmiyor",
     "passwordsDoNotMatch": "Şifreler eşleşmiyor",
     "forgotPassword": "Şifremi Unuttum?",
+    "rememberMe": "Beni hatırla",
     "forgotPasswordDescription": "Email adresinizi girin, size şifre sıfırlama kodu gönderelim",
     "resetPassword": "Şifreyi Sıfırla",
     "resetPasswordDescription": "Email adresinize gönderilen 6 haneli kodu girin ve yeni şifrenizi belirleyin",
@@ -289,6 +294,11 @@
     "newSubtask": "Yeni alt görev",
     "reminderBeforeMinutes": "{n} dakika önce",
     "reminderOff": "Hatırlatıcı kapalı",
+    "upcomingSection": "Yaklaşan",
+    "upcomingEmpty": "İleri tarihli görev yok",
+    "reminderAtTime": "Saat {time}",
+    "reminderPickTime": "Saat seç",
+    "reschedule": "Görevi yeniden planla",
     "reminderTapChange": "Değiştirmek için dokun",
     "attachTitle": "Ekler",
     "attachments": "Dosya veya fotoğraf ekle",
@@ -450,7 +460,8 @@
     "today": "bugün",
     "streakN": "seri {n}",
     "doneShort": "tamam",
-    "skippedShort": "atlandı"
+    "skippedShort": "atlandı",
+    "searchHint": "Alışkanlık ara"
   },
   "profile": {
     "title": "Profil",
@@ -637,7 +648,9 @@
       "planLifetime": "Ömür Boyu Premium",
       "planPremium": "Premium",
       "planFree": "Ücretsiz",
-      "cancelNote": "Aboneliğini cihazındaki mağaza ({store}) abonelik ayarlarından istediğin zaman iptal edebilirsin."
+      "cancelNote": "Aboneliğini cihazındaki mağaza ({store}) abonelik ayarlarından istediğin zaman iptal edebilirsin.",
+      "couponInfo": "Bu üyelik bir indirim kodu ile edinildi. Süresi dolduğunda devam etmek için abonelik gerekir.",
+      "changePlan": "Abonelik Değiştir"
     },
     "replayOnboarding": "Tanıtımı tekrar izle",
     "completion": "Profilin %{percent} tamamlandı",
@@ -976,6 +989,16 @@
     "editIncome": "Geliri Düzenle",
     "mainAccount": "Ana hesap",
     "spendableToday": "Bugün harcanabilir",
+    "thisMonthNet": "Bu ay net",
+    "budgetLockTitle": "{month} için kilitle",
+    "budgetLockOnDesc": "Bu aya özel bütçe. Global bütçe değişse de bu ay sabit kalır.",
+    "budgetLockOffDesc": "Global aylık bütçe tüm kilitsiz aylara uygulanır.",
+    "budgetLockRemove": "Bu ayın kilidini kaldır",
+    "locked": "Kilitli",
+    "openingBalanceTitle": "Açılış/Mevcut Bakiye",
+    "openingBalanceNone": "Belirlenmedi",
+    "openingBalanceDesc": "Şu an hesabındaki mevcut parayı gir. Ana Hesap bu tutardan başlayarak (bu aydan itibaren) birikir.",
+    "openingBalanceClear": "Temizle",
     "subShort": "Abonelik",
     "lockShort": "Kilitle",
     "tabGeneral": "Genel",
@@ -1017,6 +1040,9 @@
     "deleteNote": "Notu Sil",
     "deleteNoteConfirm": "Bu notu silmek istediğinizden emin misiniz?",
     "lockNote": "Notu Kilitle",
+    "resizeNote": "Boyutlandır",
+    "preview": "Önizleme",
+    "copiedText": "Metin kopyalandı",
     "unlockNote": "Notun Kilidini Aç",
     "enterPin": "Bu notu görüntülemek için PIN girin",
     "pinNote": "Sabitle",
@@ -1099,7 +1125,12 @@
       "fileError": "Dosya seçilemedi",
       "reminderSet": "Hatırlatıcı: {date}",
       "done": "Bitti",
-      "saving": "Kaydediliyor…"
+      "saving": "Kaydediliyor…",
+      "shareCollab": "Paylaşımlı not",
+      "shared": "Paylaşımlı",
+      "makeShared": "Paylaşımlı yap",
+      "checklistTitle": "Liste",
+      "people": "kişi"
     },
     "add": {
       "noteTitle": "Not Ekle",
@@ -1179,6 +1210,12 @@
   },
   "settings": {
     "title": "Ayarlar",
+    "theme_title": "Tema",
+    "theme_kraft": "Sıcak Kraft",
+    "theme_blue": "Açık Mavi",
+    "theme_pink": "Açık Pembe",
+    "theme_green": "Açık Yeşil",
+    "theme_orange": "Açık Turuncu",
     "sections": {
       "premium": "Premium",
       "notifications": "Bildirimler",
@@ -1200,7 +1237,8 @@
       "diarySubtitle": "Günlük yazma hatırlatıcıları",
       "subscription": "Abonelikler",
       "note": "Notlar",
-      "social": "Sosyal"
+      "social": "Sosyal",
+      "engagement": "Günlük motivasyon"
     },
     "appearance": {
       "theme": "Tema",
@@ -1266,7 +1304,16 @@
       "showLevel": "Seviyeyi göster",
       "showAchievements": "Başarımları göster",
       "showHabits": "Alışkanlıkları göster"
-    }
+    },
+    "notif_sound_title": "Bildirim sesi",
+    "snd_chime": "Çan",
+    "snd_marimba": "Marimba",
+    "snd_bell": "Zil",
+    "snd_soft": "Yumuşak",
+    "snd_pop": "Pop",
+    "snd_default": "Varsayılan",
+    "snd_silent": "Sessiz",
+    "snd_preview": "Önizle"
   },
   "validation": {
     "required": "Bu alan zorunludur",
@@ -1367,6 +1414,7 @@
     "diaryDeleted": "Günlük silindi",
     "taskAdded": "Görev eklendi",
     "taskUpdated": "Görev güncellendi",
+    "taskRescheduled": "Görev yeniden planlandı",
     "taskDeleted": "Görev silindi",
     "taskCompleted": "Görev tamamlandı! 🎉",
     "taskMarkedIncomplete": "Görev tamamlanmadı olarak işaretlendi",
@@ -1464,7 +1512,18 @@
     "limitInfo": "Ücretsiz sürümde {feature} için {limit} adet limit vardır.",
     "currentUsage": "Şu an {current}/{limit} kullanıyorsunuz.",
     "unlockCta": "Sınırsız kullanım için Premium'a geçin!",
-    "goCta": "Premium'a Geç"
+    "goCta": "Premium'a Geç",
+    "unlocked": "Premium kilidi açıldı",
+    "feat_unlimited": "Sınırsız not, görev ve her şey",
+    "feat_noads": "Reklamsız deneyim",
+    "feat_themes": "Tüm temalar ve sesler",
+    "start": "Hadi başlayalım",
+    "choose_theme": "Temanı seç",
+    "choose_theme_sub": "Dilediğin zaman Ayarlar’dan değiştirebilirsin",
+    "choose_sound": "Bildirim sesini seç",
+    "choose_sound_sub": "Dinlemek için çal’a dokun",
+    "continue": "Devam",
+    "finish": "Uygulamaya geç"
   },
   "messages": {
     "noteCreated": "Not başarıyla eklendi",
@@ -1532,10 +1591,14 @@
     "editing": "{name} düzenliyor",
     "lockedBusy": "Şu an {name} düzenliyor",
     "noShared": "Henüz paylaşım yok",
+    "endShare": "Paylaşımı bitir",
+    "endShareConfirm": "Bu paylaşımı bitirmek istediğine emin misin? Diğer kullanıcılardan kaldırılacak.",
+    "endShareDone": "Paylaşım bitirildi",
     "noInvites": "Bekleyen davet yok",
     "participants": "Katılımcılar",
     "completed": "Tamamladı",
     "notCompleted": "Tamamlamadı",
-    "viewerCannotEdit": "Salt okunur — düzenleyemezsin"
+    "viewerCannotEdit": "Salt okunur — düzenleyemezsin",
+    "saveNoteFirst": "Önce notu kaydet"
   }
 }

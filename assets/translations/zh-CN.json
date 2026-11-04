@@ -1,9 +1,13 @@
 {
   "update": {
-    "title": "有新版本可用",
-    "message": "LifeSync 有新版本可用。建议您更新以获得最佳体验。",
+    "title": "有可用更新",
+    "forceBody": "需要更新应用才能继续。",
+    "softBody": "有新版本 🎉 更新以获得最佳体验。",
+    "later": "稍后",
     "update": "更新",
-    "later": "以后再说"
+    "review": "查看更新",
+    "whatsNew": "新功能",
+    "noNotes": "此版本没有更新说明。"
   },
   "app": {
     "name": "LifeSync",
@@ -115,6 +119,7 @@
     "passwordConfirmRequired": "密码确认为必填项",
     "passwordMismatch": "密码不匹配",
     "forgotPassword": "忘记密码?",
+    "rememberMe": "记住我",
     "login": "登录",
     "register": "注册",
     "continueWithGoogle": "使用 Google 继续",
@@ -289,6 +294,11 @@
     "newSubtask": "新子任务",
     "reminderBeforeMinutes": "提前 {n} 分钟",
     "reminderOff": "提醒已关闭",
+    "upcomingSection": "即将到来",
+    "upcomingEmpty": "没有即将到来的任务",
+    "reminderAtTime": "{time}",
+    "reminderPickTime": "选择时间",
+    "reschedule": "重新安排任务",
     "reminderTapChange": "点按更改",
     "attachTitle": "附件",
     "attachments": "添加文件或照片",
@@ -450,7 +460,8 @@
     "today": "今天",
     "streakN": "连续{n}",
     "doneShort": "完成",
-    "skippedShort": "已跳过"
+    "skippedShort": "已跳过",
+    "searchHint": "搜索习惯"
   },
   "profile": {
     "title": "个人资料",
@@ -637,7 +648,9 @@
       "planLifetime": "终身 Premium",
       "planPremium": "Premium",
       "planFree": "免费",
-      "cancelNote": "你可以随时在设备商店（{store}）的订阅设置中取消订阅。"
+      "cancelNote": "你可以随时在设备商店（{store}）的订阅设置中取消订阅。",
+      "couponInfo": "此会员资格通过优惠码获得。到期后需订阅才能继续。",
+      "changePlan": "更改订阅"
     },
     "replayOnboarding": "重新观看介绍",
     "completion": "你的资料已完成 {percent}%",
@@ -976,6 +989,16 @@
     "editIncome": "编辑收入",
     "mainAccount": "主账户",
     "spendableToday": "今日可用",
+    "thisMonthNet": "本月净额",
+    "budgetLockTitle": "锁定 {month}",
+    "budgetLockOnDesc": "本月专属预算，不受全局预算变动影响。",
+    "budgetLockOffDesc": "全局月度预算适用于所有未锁定的月份。",
+    "budgetLockRemove": "解除本月锁定",
+    "locked": "已锁定",
+    "openingBalanceTitle": "期初/当前余额",
+    "openingBalanceNone": "未设置",
+    "openingBalanceDesc": "输入你当前拥有的金额。主账户将从本月起以此为起点累计。",
+    "openingBalanceClear": "清除",
     "subShort": "订阅",
     "lockShort": "锁定",
     "tabGeneral": "总览",
@@ -1017,6 +1040,9 @@
     "deleteNote": "删除笔记",
     "deleteNoteConfirm": "您确定要删除此笔记吗?",
     "lockNote": "锁定笔记",
+    "resizeNote": "调整大小",
+    "preview": "预览",
+    "copiedText": "已复制文本",
     "unlockNote": "解锁笔记",
     "enterPin": "输入PIN码以查看此笔记",
     "pinNote": "置顶",
@@ -1099,7 +1125,12 @@
       "fileError": "无法选择文件",
       "reminderSet": "提醒：{date}",
       "done": "完成",
-      "saving": "保存中…"
+      "saving": "保存中…",
+      "shareCollab": "共享笔记",
+      "shared": "已共享",
+      "makeShared": "设为共享",
+      "checklistTitle": "清单",
+      "people": "人"
     },
     "add": {
       "noteTitle": "添加笔记",
@@ -1179,6 +1210,12 @@
   },
   "settings": {
     "title": "设置",
+    "theme_title": "主题",
+    "theme_kraft": "暖牛皮纸",
+    "theme_blue": "浅蓝",
+    "theme_pink": "浅粉",
+    "theme_green": "浅绿",
+    "theme_orange": "浅橙",
     "sections": {
       "premium": "高级版",
       "notifications": "通知",
@@ -1200,7 +1237,8 @@
       "diarySubtitle": "日记写作提醒",
       "subscription": "订阅",
       "note": "笔记",
-      "social": "社交"
+      "social": "社交",
+      "engagement": "每日激励"
     },
     "appearance": {
       "theme": "主题",
@@ -1266,7 +1304,16 @@
       "showLevel": "显示等级",
       "showAchievements": "显示成就",
       "showHabits": "显示习惯"
-    }
+    },
+    "notif_sound_title": "通知声音",
+    "snd_chime": "风铃",
+    "snd_marimba": "马林巴",
+    "snd_bell": "铃声",
+    "snd_soft": "柔和",
+    "snd_pop": "波普",
+    "snd_default": "默认",
+    "snd_silent": "静音",
+    "snd_preview": "预览"
   },
   "validation": {
     "required": "此字段为必填项",
@@ -1367,6 +1414,7 @@
     "diaryDeleted": "日记已删除",
     "taskAdded": "任务已添加",
     "taskUpdated": "任务已更新",
+    "taskRescheduled": "任务已重新安排",
     "taskDeleted": "任务已删除",
     "taskCompleted": "任务已完成! 🎉",
     "taskMarkedIncomplete": "任务标记为未完成",
@@ -1464,7 +1512,18 @@
     "limitInfo": "免费版本中 {feature} 的上限为 {limit} 个。",
     "currentUsage": "您当前使用 {current}/{limit}。",
     "unlockCta": "升级到高级版即可无限使用！",
-    "goCta": "升级高级版"
+    "goCta": "升级高级版",
+    "unlocked": "已解锁高级版",
+    "feat_unlimited": "无限笔记、任务和一切",
+    "feat_noads": "无广告体验",
+    "feat_themes": "所有主题和声音",
+    "start": "开始吧",
+    "choose_theme": "选择你的主题",
+    "choose_theme_sub": "随时可在设置中更改",
+    "choose_sound": "选择通知声音",
+    "choose_sound_sub": "点击播放试听",
+    "continue": "继续",
+    "finish": "进入应用"
   },
   "messages": {
     "noteCreated": "笔记添加成功",
@@ -1532,10 +1591,14 @@
     "editing": "{name} 正在编辑",
     "lockedBusy": "{name} 正在编辑",
     "noShared": "暂无共享",
+    "endShare": "结束共享",
+    "endShareConfirm": "结束此共享？它将从其他用户中移除。",
+    "endShareDone": "已结束共享",
     "noInvites": "没有待处理的邀请",
     "participants": "参与者",
     "completed": "已完成",
     "notCompleted": "未完成",
-    "viewerCannotEdit": "仅查看 — 无法编辑"
+    "viewerCannotEdit": "仅查看 — 无法编辑",
+    "saveNoteFirst": "请先保存笔记"
   }
 }

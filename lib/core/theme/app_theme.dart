@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import '../utils/color_constant.dart';
+import 'app_palette.dart';
 
 class AppTheme {
-  static final ThemeData lightTheme = _applyJosefin(ThemeData(
+  static ThemeData get lightTheme => _applyJosefin(ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
     colorScheme: ColorScheme.light(
-      primary: ColorConstant.primaryPurple,
+      primary: AppPalette.accent,
       secondary: ColorConstant.accentBlue,
       tertiary: ColorConstant.accentYellow,
       surface: ColorConstant.cardColorLight,
@@ -31,7 +32,7 @@ class AppTheme {
     cardTheme: CardThemeData(
       color: ColorConstant.cardColorLight,
       elevation: 0,
-      shadowColor: ColorConstant.primaryPurple.withValues(alpha: 0.1),
+      shadowColor: AppPalette.accent.withValues(alpha: 0.1),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
       ),
@@ -103,10 +104,10 @@ class AppTheme {
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: ColorConstant.primaryPurple,
+        backgroundColor: AppPalette.accent,
         foregroundColor: ColorConstant.white,
         elevation: 0,
-        shadowColor: ColorConstant.primaryPurple.withValues(alpha: 0.25),
+        shadowColor: AppPalette.accent.withValues(alpha: 0.25),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
@@ -131,8 +132,8 @@ class AppTheme {
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        foregroundColor: ColorConstant.primaryPurple,
-        side: BorderSide(color: ColorConstant.primaryPurple, width: 2),
+        foregroundColor: AppPalette.accent,
+        side: BorderSide(color: AppPalette.accent, width: 2),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
@@ -141,7 +142,7 @@ class AppTheme {
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        foregroundColor: ColorConstant.primaryPurple,
+        foregroundColor: AppPalette.accent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -163,7 +164,7 @@ class AppTheme {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(20),
-        borderSide: BorderSide(color: ColorConstant.primaryPurple, width: 2.5),
+        borderSide: BorderSide(color: AppPalette.accent, width: 2.5),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(20),
@@ -194,7 +195,7 @@ class AppTheme {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
     ),
     floatingActionButtonTheme: FloatingActionButtonThemeData(
-      backgroundColor: ColorConstant.primaryPurple,
+      backgroundColor: AppPalette.accent,
       foregroundColor: ColorConstant.white,
       elevation: 6,
       shape: RoundedRectangleBorder(
@@ -204,7 +205,7 @@ class AppTheme {
     ),
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor: ColorConstant.cardColorLight,
-      selectedItemColor: ColorConstant.primaryPurple,
+      selectedItemColor: AppPalette.accent,
       unselectedItemColor: ColorConstant.textMutedLight,
       elevation: 12,
       type: BottomNavigationBarType.fixed,
@@ -228,7 +229,7 @@ class AppTheme {
       size: 24,
     ),
     progressIndicatorTheme: ProgressIndicatorThemeData(
-      color: ColorConstant.primaryPurple,
+      color: AppPalette.accent,
       linearTrackColor: ColorConstant.borderColorLight,
     ),
     snackBarTheme: SnackBarThemeData(
@@ -244,11 +245,11 @@ class AppTheme {
     ),
   ));
 
-  static final ThemeData darkTheme = _applyJosefin(ThemeData(
+  static ThemeData get darkTheme => _applyJosefin(ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
     colorScheme: ColorScheme.dark(
-      primary: ColorConstant.primaryDarkModePurple,
+      primary: AppPalette.accent,
       secondary: ColorConstant.primaryDarkModeBlue,
       tertiary: ColorConstant.accentDarkModeYellow,
       surface: ColorConstant.cardColorDark,
@@ -345,11 +346,11 @@ class AppTheme {
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: ColorConstant.primaryDarkModePurple,
+        backgroundColor: AppPalette.accent,
         foregroundColor: ColorConstant.white,
         elevation: 0,
         shadowColor:
-            ColorConstant.primaryDarkModePurple.withValues(alpha: 0.25),
+            AppPalette.accent.withValues(alpha: 0.25),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
@@ -374,8 +375,8 @@ class AppTheme {
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        foregroundColor: ColorConstant.primaryDarkModePurple,
-        side: BorderSide(color: ColorConstant.primaryDarkModePurple, width: 2),
+        foregroundColor: AppPalette.accent,
+        side: BorderSide(color: AppPalette.accent, width: 2),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
@@ -384,7 +385,7 @@ class AppTheme {
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        foregroundColor: ColorConstant.primaryDarkModePurple,
+        foregroundColor: AppPalette.accent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -407,7 +408,7 @@ class AppTheme {
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(20),
         borderSide:
-            BorderSide(color: ColorConstant.primaryDarkModePurple, width: 2.5),
+            BorderSide(color: AppPalette.accent, width: 2.5),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(20),
@@ -438,7 +439,7 @@ class AppTheme {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
     ),
     floatingActionButtonTheme: FloatingActionButtonThemeData(
-      backgroundColor: ColorConstant.primaryDarkModePurple,
+      backgroundColor: AppPalette.accent,
       foregroundColor: ColorConstant.white,
       elevation: 6,
       shape: RoundedRectangleBorder(
@@ -448,7 +449,7 @@ class AppTheme {
     ),
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor: ColorConstant.cardColorDark,
-      selectedItemColor: ColorConstant.primaryDarkModePurple,
+      selectedItemColor: AppPalette.accent,
       unselectedItemColor: ColorConstant.textMutedDark,
       elevation: 12,
       type: BottomNavigationBarType.fixed,
@@ -472,7 +473,7 @@ class AppTheme {
       size: 24,
     ),
     progressIndicatorTheme: ProgressIndicatorThemeData(
-      color: ColorConstant.primaryDarkModePurple,
+      color: AppPalette.accent,
       linearTrackColor: ColorConstant.borderColorDark,
     ),
     snackBarTheme: SnackBarThemeData(

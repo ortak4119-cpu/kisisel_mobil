@@ -3,7 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../core/design/app_design.dart';
+import '../../../core/design/app_loader.dart';
 import '../../../core/utils/color_constant.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/utils/custom_snackbar.dart';
 import '../../../core/utils/animation_prefs.dart';
 import '../../../models/calender/calendar_models.dart';
@@ -68,7 +70,8 @@ _EvKind evKindById(String? id) {
   return kEvKinds.first;
 }
 
-const _cOrange = Color(0xFFF6A821);
+// Takvim modül aksanı — seçili temadan (sabit turuncu yerine).
+Color get _cOrange => ColorConstant.accentOrange;
 
 Color eventColor(CalendarViewModel vm, CalendarEvent e) {
   final m = vm.metaForEvent(e.id);
@@ -141,10 +144,10 @@ class _CalFabState extends State<_CalFab> {
         width: 60,
         height: 60,
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
+          gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFFF6C23E), _cOrange],
+            colors: [ColorConstant.accentYellow, ColorConstant.accentOrange],
           ),
           shape: BoxShape.circle,
           boxShadow: [
@@ -266,15 +269,19 @@ class _CalendarViewState extends State<CalendarView> {
                   Expanded(
                     child: vm.isLoading && vm.calendarEvents.isEmpty
                         ? Center(
-                            child: CircularProgressIndicator(color: _cOrange))
+                            child: AppLoader())
                         : _content(context, vm, c),
                   ),
                 ],
               ),
             ),
-            floatingActionButton: _CalFab(
-              onOpen: () =>
-                  showAddEventSheet(context, vm, isDark, date: vm.selectedDate),
+            floatingActionButton: Padding(
+              // Cam alt menünün (extendBody) üstünde kalsın; altında kaybolmasın.
+              padding: const EdgeInsets.only(bottom: 72),
+              child: _CalFab(
+                onOpen: () => showAddEventSheet(context, vm, isDark,
+                    date: vm.selectedDate),
+              ),
             ),
           );
         },
@@ -439,10 +446,10 @@ class _CalendarViewState extends State<CalendarView> {
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: c.border.withOpacity(0.7))),
                 child: Row(children: [
-                  const Icon(Icons.today_rounded, size: 18, color: _cOrange),
+                  Icon(Icons.today_rounded, size: 18, color: _cOrange),
                   const SizedBox(width: 5),
                   Text('common.today'.tr(),
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                           color: _cOrange)),
@@ -661,13 +668,18 @@ class _CalendarViewState extends State<CalendarView> {
                 child: ch,
               ),
             ),
-            child: GridView.count(
+            child: GridView.builder(
               key: ValueKey('${fm.year}-${fm.month}'),
-              crossAxisCount: 7,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              childAspectRatio: 1.0,
-              children: cells,
+              padding: EdgeInsets.zero,
+              itemCount: cells.length,
+              gridDelegate:
+                  const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 7,
+                mainAxisExtent: 46, // her satır sabit yükseklik → alt boşluk yok
+              ),
+              itemBuilder: (_, i) => cells[i],
             ),
           ),
           const SizedBox(height: 10),
@@ -789,8 +801,8 @@ class _CalendarViewState extends State<CalendarView> {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-            colors: [Color(0xFFF6C23E), _cOrange],
+        gradient: LinearGradient(
+            colors: [ColorConstant.accentYellow, ColorConstant.accentOrange],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight),
         borderRadius: BorderRadius.circular(20),
@@ -852,7 +864,7 @@ class _CalendarViewState extends State<CalendarView> {
         _financeDayCard(
           c,
           Icons.autorenew_rounded,
-          const Color(0xFFB794F6),
+          AppPalette.accentCool,
           s.name,
           '${AppCurrency.symbol}${s.amount.toStringAsFixed(0)} · ${'finance.subscriptions'.tr()}',
         ),
@@ -862,7 +874,7 @@ class _CalendarViewState extends State<CalendarView> {
         _financeDayCard(
           c,
           Icons.credit_card_rounded,
-          const Color(0xFFF6524B),
+          AppPalette.danger,
           it.name,
           '${AppCurrency.symbol}${it.monthlyAmount.toStringAsFixed(0)} · ${'finance.installment.title'.tr()}',
         ),
@@ -1145,7 +1157,7 @@ class _CalendarViewState extends State<CalendarView> {
       builder: (ctx) => SafeArea(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           ListTile(
-            leading: const Icon(Icons.edit_rounded, color: _cOrange),
+            leading: Icon(Icons.edit_rounded, color: _cOrange),
             title:
                 Text('common.edit'.tr(), style: TextStyle(color: c.textPrimary)),
             onTap: () {
@@ -1190,7 +1202,7 @@ class _CalendarViewState extends State<CalendarView> {
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: c.border.withOpacity(0.7))),
           child: Row(children: [
-            const Icon(Icons.event_rounded, size: 20, color: _cOrange),
+            Icon(Icons.event_rounded, size: 20, color: _cOrange),
             const SizedBox(width: 12),
             Text('calendar.tomorrow'.tr(),
                 style: TextStyle(
@@ -1452,7 +1464,8 @@ class _EventFormSheet extends StatelessWidget {
     this.isEditing = false,
   });
 
-  static const _accent = Color(0xFFF6A821);
+  // Takvim ekleme/NL sayfası aksanı — seçili temadan.
+  Color get _accent => ColorConstant.accentOrange;
   static const _palette = [
     '#9F7AEA',
     '#4C9AFF',
@@ -1746,7 +1759,7 @@ class _EventFormSheet extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
       child: Row(
         children: [
-          const Icon(Icons.calendar_month_rounded, size: 22, color: _accent),
+          Icon(Icons.calendar_month_rounded, size: 22, color: _accent),
           const SizedBox(width: 14),
           Expanded(
             child: Text(label,
@@ -1818,7 +1831,7 @@ class _EventFormSheet extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.notifications_none_rounded,
+                Icon(Icons.notifications_none_rounded,
                     size: 22, color: _accent),
                 const SizedBox(width: 14),
                 Expanded(
@@ -1865,11 +1878,11 @@ class _EventFormSheet extends StatelessWidget {
                                   color: _accent.withOpacity(0.12),
                                   borderRadius: BorderRadius.circular(20)),
                               child: Row(mainAxisSize: MainAxisSize.min, children: [
-                                const Icon(Icons.add_rounded,
+                                Icon(Icons.add_rounded,
                                     size: 15, color: _accent),
                                 const SizedBox(width: 3),
                                 Text('calendar.addReminder'.tr(),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                         fontSize: 12.5,
                                         fontWeight: FontWeight.w700,
                                         color: _accent)),
@@ -1908,7 +1921,7 @@ class _EventFormSheet extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
             child: Row(
               children: [
-                const Icon(Icons.folder_rounded, size: 22, color: _accent),
+                Icon(Icons.folder_rounded, size: 22, color: _accent),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Text('calendar.calendarField'.tr(),
@@ -2034,7 +2047,7 @@ class _EventFormSheet extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16)),
             ),
             child: Text('tasks.discard'.tr(),
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: _accent)),
@@ -2134,7 +2147,7 @@ class _EventFormSheet extends StatelessWidget {
               title: Text(_reminderLabel(m),
                   style: TextStyle(color: c.textPrimary)),
               trailing: vm.formReminders.contains(m)
-                  ? const Icon(Icons.check_rounded, color: _accent)
+                  ? Icon(Icons.check_rounded, color: _accent)
                   : null,
               onTap: () {
                 vm.addFormReminder(m);
@@ -2160,7 +2173,7 @@ class _EventFormSheet extends StatelessWidget {
               title: Text('calendar.rec.$r'.tr(),
                   style: TextStyle(color: c.textPrimary)),
               trailing: vm.formRecurrence == r
-                  ? const Icon(Icons.check_rounded, color: _accent)
+                  ? Icon(Icons.check_rounded, color: _accent)
                   : null,
               onTap: () {
                 vm.setFormRecurrence(r);
@@ -2296,7 +2309,7 @@ class _EventFormSheet extends StatelessWidget {
                 Navigator.pop(ctx);
               },
               child: Text('common.save'.tr(),
-                  style: const TextStyle(color: _accent))),
+                  style: TextStyle(color: _accent))),
         ],
       ),
     );

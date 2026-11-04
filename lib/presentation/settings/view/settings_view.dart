@@ -2,8 +2,13 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:audioplayers/audioplayers.dart';
 import '../viewmodel/settings_viewmodel.dart';
+import '../../../service/notification/notification_sound.dart';
+import '../../../service/notification/notification_service.dart';
 import '../../../core/utils/color_constant.dart';
+import '../../../core/utils/theme_provider.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/utils/premium_helper.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/utils/animation_prefs.dart';
@@ -88,8 +93,8 @@ class SettingsView extends StatelessWidget {
                           end: Alignment.bottomRight,
                           colors: [
                             (isDarkMode
-                                    ? ColorConstant.primaryDarkModePurple
-                                    : ColorConstant.primaryPurple)
+                                    ? ColorConstant.accentOrange
+                                    : ColorConstant.accentOrange)
                                 .withValues(alpha: 0.1),
                             (isDarkMode
                                     ? ColorConstant.accentBlue
@@ -129,10 +134,10 @@ class SettingsView extends StatelessWidget {
                           const SizedBox(height: 20),
                         ],
 
-                        // Bildirimler Bölümü
-                        _buildSection(
+                        // Bildirimler Bölümü — açılır/kapanır (varsayılan KAPALI).
+                        _CollapsibleSettingsSection(
+                          key: sectionKeys['notifications'],
                           title: 'settings.sections.notifications'.tr(),
-                          sectionKey: sectionKeys['notifications'],
                           isDarkMode: isDarkMode,
                           children: [
                             _buildSwitchTile(
@@ -148,10 +153,29 @@ class SettingsView extends StatelessWidget {
                                   notificationsEnabled: value,
                                 );
                               },
-                              iconColor: ColorConstant.primaryPurple,
+                              iconColor: ColorConstant.accentOrange,
                               iconBgColor: isDarkMode
                                   ? ColorConstant.cardPurpleDark
                                   : ColorConstant.cardPurpleLight,
+                            ),
+                            _buildDivider(isDarkMode),
+                            // Bildirim sesi — önizlemeli seçici (tek genel ses).
+                            ValueListenableBuilder<String>(
+                              valueListenable: NotifSoundPrefs.idListenable,
+                              builder: (_, sid, __) => _buildListTile(
+                                title: 'settings.notif_sound_title'.tr(),
+                                subtitle:
+                                    'settings.${NotifSound.byId(sid).nameKey}'
+                                        .tr(),
+                                icon: Icons.music_note_rounded,
+                                isDarkMode: isDarkMode,
+                                onTap: () =>
+                                    _showSoundPicker(context, isDarkMode),
+                                iconColor: ColorConstant.accentOrange,
+                                iconBgColor: isDarkMode
+                                    ? ColorConstant.cardPurpleDark
+                                    : ColorConstant.cardPurpleLight,
+                              ),
                             ),
                             _buildDivider(isDarkMode),
                             _buildSwitchTile(
@@ -222,7 +246,7 @@ class SettingsView extends StatelessWidget {
                                   subscriptionNotifications: value,
                                 );
                               },
-                              iconColor: ColorConstant.primaryPurple,
+                              iconColor: ColorConstant.accentOrange,
                               iconBgColor: isDarkMode
                                   ? ColorConstant.cardPurpleDark
                                   : ColorConstant.cardPurpleLight,
@@ -261,6 +285,23 @@ class SettingsView extends StatelessWidget {
                                   ? ColorConstant.cardColorDark
                                   : ColorConstant.cardGreenLight,
                             ),
+                            _buildDivider(isDarkMode),
+                            _buildSwitchTile(
+                              title: 'settings.notifications.engagement'.tr(),
+                              icon: Icons.auto_awesome_rounded,
+                              isDarkMode: isDarkMode,
+                              value: viewModel.settings?.engagementEnabled ??
+                                  true,
+                              onChanged: (value) {
+                                viewModel.updateNotificationSettings(
+                                  engagementEnabled: value,
+                                );
+                              },
+                              iconColor: ColorConstant.accentOrange,
+                              iconBgColor: isDarkMode
+                                  ? ColorConstant.cardPurpleDark
+                                  : ColorConstant.cardPurpleLight,
+                            ),
                           ],
                         ),
 
@@ -272,8 +313,19 @@ class SettingsView extends StatelessWidget {
                           sectionKey: sectionKeys['appearance'],
                           isDarkMode: isDarkMode,
                           children: [
-                            // Tema, Profil › "Görünüm ve tema" içinde olduğundan
-                            // tekrar olmaması için buradan kaldırıldı.
+                            // Tema (5 tam palet, açık/koyu) — uygulama geneli.
+                            _buildListTile(
+                              title: 'settings.theme_title'.tr(),
+                              subtitle:
+                                  'settings.theme_${AppPalette.currentId}'.tr(),
+                              icon: Icons.palette_rounded,
+                              isDarkMode: isDarkMode,
+                              onTap: () => _showThemePicker(context, isDarkMode),
+                              iconColor: AppPalette.accent,
+                              iconBgColor: isDarkMode
+                                  ? ColorConstant.cardColorDark
+                                  : ColorConstant.cardColorLight,
+                            ),
                             _buildLanguageTile(
                               context: context,
                               viewModel: viewModel,
@@ -308,33 +360,6 @@ class SettingsView extends StatelessWidget {
 
                         const SizedBox(height: 20),
 
-                        // Güvenlik Bölümü
-                        _buildSection(
-                          title: 'settings.sections.security'.tr(),
-                          sectionKey: sectionKeys['privacy'],
-                          isDarkMode: isDarkMode,
-                          children: [
-                            _buildSwitchTile(
-                              title: 'settings.security.biometric'.tr(),
-                              subtitle: 'settings.security.biometricSubtitle'.tr(),
-                              icon: Icons.fingerprint_rounded,
-                              isDarkMode: isDarkMode,
-                              value: viewModel.settings?.requireBiometric ?? false,
-                              onChanged: (value) {
-                                viewModel.updateSecuritySettings(
-                                  requireBiometric: value,
-                                );
-                              },
-                              iconColor: ColorConstant.accentBlue,
-                              iconBgColor: isDarkMode
-                                  ? ColorConstant.cardBlueDark
-                                  : ColorConstant.cardBlueLight,
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 20),
-
                         // Gizlilik Bölümü
                         _buildSection(
                           title: 'settings.sections.privacy'.tr(),
@@ -347,7 +372,7 @@ class SettingsView extends StatelessWidget {
                                       'public'),
                               icon: Icons.visibility_rounded,
                               isDarkMode: isDarkMode,
-                              iconColor: ColorConstant.primaryPurple,
+                              iconColor: ColorConstant.accentOrange,
                               iconBgColor: isDarkMode
                                   ? ColorConstant.cardPurpleDark
                                   : ColorConstant.cardPurpleLight,
@@ -488,7 +513,7 @@ class SettingsView extends StatelessWidget {
                               subtitle: 'settings.legal.termsSubtitle'.tr(),
                               icon: Icons.description_rounded,
                               isDarkMode: isDarkMode,
-                              iconColor: ColorConstant.primaryPurple,
+                              iconColor: ColorConstant.accentOrange,
                               iconBgColor: isDarkMode
                                   ? ColorConstant.cardPurpleDark
                                   : ColorConstant.cardPurpleLight,
@@ -560,7 +585,7 @@ class SettingsView extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
                                     colors: [
-                                      ColorConstant.primaryPurple,
+                                      ColorConstant.accentOrange,
                                       ColorConstant.accentBlue,
                                     ],
                                   ),
@@ -650,7 +675,7 @@ class SettingsView extends StatelessWidget {
               BoxShadow(
                 color: isDarkMode
                     ? ColorConstant.black.withValues(alpha: 0.2)
-                    : ColorConstant.primaryPurple.withValues(alpha: 0.08),
+                    : ColorConstant.accentOrange.withValues(alpha: 0.08),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -829,6 +854,293 @@ class SettingsView extends StatelessWidget {
     );
   }
 
+  // Tema seçici (5 tam palet, önizlemeli) — seçince anında uygulanır.
+  void _showThemePicker(BuildContext context, bool isDarkMode) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetCtx) => StatefulBuilder(
+        builder: (ctx, setSheet) {
+          final card = isDarkMode
+              ? ColorConstant.cardColorDark
+              : ColorConstant.cardColorLight;
+          final bg = isDarkMode
+              ? ColorConstant.bgColorDark
+              : ColorConstant.bgColorLight;
+          final txtP = isDarkMode
+              ? ColorConstant.textPrimaryDark
+              : ColorConstant.textPrimaryLight;
+          final txtM = isDarkMode
+              ? ColorConstant.textMutedDark
+              : ColorConstant.textMutedLight;
+          return Container(
+            decoration: BoxDecoration(
+              color: bg,
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(28)),
+            ),
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                        width: 38,
+                        height: 4,
+                        decoration: BoxDecoration(
+                            color: txtM.withValues(alpha: 0.4),
+                            borderRadius: BorderRadius.circular(2))),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text('settings.theme_title'.tr(),
+                              style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                  color: txtP)),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(sheetCtx),
+                          icon: Icon(Icons.close_rounded, color: txtM),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    for (final o in AppPalette.all)
+                      _themeRow(o, isDarkMode, card, txtP, () {
+                        themeProvider.setPalette(o.id);
+                        setSheet(() {});
+                      }),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // Bildirim sesi seçici — her satırda önizleme (çal) + seçim.
+  void _showSoundPicker(BuildContext context, bool isDarkMode) {
+    final player = AudioPlayer();
+    Future<void> preview(NotifSound s) async {
+      if (s.asset == null) return;
+      try {
+        await player.stop();
+        await player.play(AssetSource(s.asset!));
+      } catch (_) {}
+    }
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (sheetCtx) => StatefulBuilder(
+        builder: (ctx, setSheet) {
+          final card = isDarkMode
+              ? ColorConstant.cardColorDark
+              : ColorConstant.cardColorLight;
+          final bg = isDarkMode
+              ? ColorConstant.bgColorDark
+              : ColorConstant.bgColorLight;
+          final txtP = isDarkMode
+              ? ColorConstant.textPrimaryDark
+              : ColorConstant.textPrimaryLight;
+          final txtM = isDarkMode
+              ? ColorConstant.textMutedDark
+              : ColorConstant.textMutedLight;
+          final border = isDarkMode
+              ? ColorConstant.borderColorDark
+              : ColorConstant.borderColorLight;
+          return Container(
+            decoration: BoxDecoration(
+              color: bg,
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(28)),
+            ),
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                        width: 38,
+                        height: 4,
+                        decoration: BoxDecoration(
+                            color: txtM.withValues(alpha: 0.4),
+                            borderRadius: BorderRadius.circular(2))),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text('settings.notif_sound_title'.tr(),
+                              style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                  color: txtP)),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(sheetCtx),
+                          icon: Icon(Icons.close_rounded, color: txtM),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    for (final s in NotifSound.all)
+                      _soundRow(s, card, txtP, border, () {
+                        NotifSoundPrefs.set(s.id);
+                        // Backend'e kaydet (arka plan push'ları için).
+                        NotificationService().updateNotificationSound(s.id);
+                        preview(s);
+                        setSheet(() {});
+                      }, () => preview(s)),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    ).whenComplete(() => player.dispose());
+  }
+
+  Widget _soundRow(NotifSound s, Color card, Color txtP, Color border,
+      VoidCallback onSelect, VoidCallback onPreview) {
+    final selected = NotifSoundPrefs.currentId == s.id;
+    final accent = ColorConstant.accentOrange;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: InkWell(
+        onTap: onSelect,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(12, 6, 10, 6),
+          decoration: BoxDecoration(
+            color: card,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+                color: selected ? accent : border, width: selected ? 2 : 1),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text('settings.${s.nameKey}'.tr(),
+                    style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: txtP)),
+              ),
+              if (s.asset != null)
+                IconButton(
+                  onPressed: onPreview,
+                  icon: Icon(Icons.play_circle_outline_rounded, color: accent),
+                  tooltip: 'settings.snd_preview'.tr(),
+                ),
+              const SizedBox(width: 2),
+              if (selected)
+                Icon(Icons.check_circle_rounded, color: accent)
+              else
+                Container(
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: border, width: 2),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _themeRow(AppThemeOption o, bool isDarkMode, Color card, Color txtP,
+      VoidCallback onTap) {
+    final surf = isDarkMode ? o.dark : o.light;
+    final selected = AppPalette.currentId == o.id;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: card,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+                color: selected ? o.accent : surf.border,
+                width: selected ? 2 : 1),
+          ),
+          child: Row(
+            children: [
+              // Mini önizleme: zemin + kart + aksan.
+              Container(
+                width: 58,
+                height: 44,
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: surf.bg,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: surf.border),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: Container(
+                        height: 18,
+                        decoration: BoxDecoration(
+                          color: surf.card,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration:
+                          BoxDecoration(color: o.accent, shape: BoxShape.circle),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text('settings.theme_${o.nameKey}'.tr(),
+                    style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: txtP)),
+              ),
+              if (selected)
+                Icon(Icons.check_circle_rounded, color: o.accent)
+              else
+                Container(
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: surf.border, width: 2),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildListTile({
     required String title,
     String? subtitle,
@@ -948,7 +1260,7 @@ class SettingsView extends StatelessWidget {
                     ? Icons.radio_button_checked_rounded
                     : Icons.radio_button_unchecked_rounded,
                 color: selected
-                    ? ColorConstant.primaryPurple
+                    ? ColorConstant.accentOrange
                     : (isDarkMode
                         ? ColorConstant.textMutedDark
                         : ColorConstant.textMutedLight),
@@ -1037,9 +1349,9 @@ class SettingsView extends StatelessWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeThumbColor: isDarkMode
-                ? ColorConstant.primaryDarkModePurple
-                : ColorConstant.primaryPurple,
+            // Seçili temanın aksanı (mor sabit yerine).
+            activeThumbColor: ColorConstant.accentOrange,
+            activeTrackColor: ColorConstant.accentOrange.withValues(alpha: 0.4),
           ),
         ],
       ),
@@ -1467,6 +1779,99 @@ class SettingsView extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Açılır/kapanır ayar bölümü (başlığa dokununca aç/kapa). Varsayılan kapalı.
+class _CollapsibleSettingsSection extends StatefulWidget {
+  final String title;
+  final List<Widget> children;
+  final bool isDarkMode;
+  final bool initiallyExpanded;
+  const _CollapsibleSettingsSection({
+    super.key,
+    required this.title,
+    required this.children,
+    required this.isDarkMode,
+    this.initiallyExpanded = false,
+  });
+  @override
+  State<_CollapsibleSettingsSection> createState() =>
+      _CollapsibleSettingsSectionState();
+}
+
+class _CollapsibleSettingsSectionState
+    extends State<_CollapsibleSettingsSection> {
+  late bool _open = widget.initiallyExpanded;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = widget.isDarkMode;
+    final muted =
+        isDark ? ColorConstant.textMutedDark : ColorConstant.textMutedLight;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 12),
+          child: InkWell(
+            onTap: () => setState(() => _open = !_open),
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              child: Row(
+                children: [
+                  Text(
+                    widget.title.toUpperCase(),
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                      color: muted,
+                    ),
+                  ),
+                  const Spacer(),
+                  AnimatedRotation(
+                    turns: _open ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 220),
+                    child: Icon(Icons.keyboard_arrow_down_rounded,
+                        size: 22, color: muted),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        ClipRect(
+          child: AnimatedSize(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeInOut,
+            alignment: Alignment.topCenter,
+            child: _open
+                ? Container(
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? ColorConstant.cardColorDark
+                          : ColorConstant.cardColorLight,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: isDark
+                              ? ColorConstant.black.withValues(alpha: 0.2)
+                              : ColorConstant.accentOrange
+                                  .withValues(alpha: 0.08),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(children: widget.children),
+                  )
+                : const SizedBox(width: double.infinity),
+          ),
+        ),
+      ],
     );
   }
 }

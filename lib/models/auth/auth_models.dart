@@ -12,6 +12,7 @@ class User {
   final bool isVerified;
   final String? subscriptionType;
   final String? subscriptionStatus;
+  final String? subscriptionSource; // store | coupon | admin | null
   final String profileVisibility;
   final bool showLevel;
   final bool showAchievements;
@@ -32,6 +33,7 @@ class User {
     required this.isVerified,
     this.subscriptionType,
     this.subscriptionStatus,
+    this.subscriptionSource,
     required this.profileVisibility,
     required this.showLevel,
     required this.showAchievements,
@@ -54,6 +56,7 @@ class User {
       isVerified: json['is_verified'] as bool? ?? false,
       subscriptionType: json['subscription_type'] as String?,
       subscriptionStatus: json['subscription_status'] as String?,
+      subscriptionSource: json['subscription_source'] as String?,
       profileVisibility: json['profile_visibility'] as String? ?? 'public',
       showLevel: json['show_level'] as bool? ?? true,
       showAchievements: json['show_achievements'] as bool? ?? true,
@@ -77,6 +80,7 @@ class User {
       'is_verified': isVerified,
       'subscription_type': subscriptionType,
       'subscription_status': subscriptionStatus,
+      'subscription_source': subscriptionSource,
       'profile_visibility': profileVisibility,
       'show_level': showLevel,
       'show_achievements': showAchievements,
@@ -99,6 +103,7 @@ class User {
     bool? isVerified,
     String? subscriptionType,
     String? subscriptionStatus,
+    String? subscriptionSource,
     String? profileVisibility,
     bool? showLevel,
     bool? showAchievements,
@@ -119,6 +124,7 @@ class User {
       isVerified: isVerified ?? this.isVerified,
       subscriptionType: subscriptionType ?? this.subscriptionType,
       subscriptionStatus: subscriptionStatus ?? this.subscriptionStatus,
+      subscriptionSource: subscriptionSource ?? this.subscriptionSource,
       profileVisibility: profileVisibility ?? this.profileVisibility,
       showLevel: showLevel ?? this.showLevel,
       showAchievements: showAchievements ?? this.showAchievements,

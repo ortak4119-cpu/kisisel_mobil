@@ -5,7 +5,7 @@ publish_to: 'none'
 
 # Tek kaynak: iOS ve Android aynı sürümden derlenir (3.1.0).
 # Mağaza bazında gerekirse yalnızca build numarası (+N) artırılır.
-version: 3.1.0+7
+version: 4.1.0+9
 
 environment:
   sdk: ^3.5.4
@@ -70,6 +70,7 @@ flutter:
     - assets/images/
     - assets/translations/
     - assets/logos/
+    - assets/sounds/
   fonts:
     - family: JosefinSans
       fonts:

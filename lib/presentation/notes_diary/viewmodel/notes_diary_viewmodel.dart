@@ -29,25 +29,42 @@ class NotesDiaryViewModel extends ChangeNotifier {
   // Paylaşım bilgisi: sahibi olduğum paylaşılmış not id'leri (rozet için) +
   // benimle paylaşılan notlar (ana listede "Paylaşılanlar" bölümü için).
   final Set<int> _sharedOwnedNoteIds = {};
+  // noteId -> paylaşıldığı kişi sayısı (katılımcılar).
+  final Map<int, int> _sharedOwnedNoteParticipants = {};
   List<SharedNoteItem> _sharedWithMeNotes = [];
   Set<int> get sharedOwnedNoteIds => _sharedOwnedNoteIds;
   List<SharedNoteItem> get sharedWithMeNotes => _sharedWithMeNotes;
   bool isNoteShared(int id) => _sharedOwnedNoteIds.contains(id);
+  int sharedParticipantCount(int id) => _sharedOwnedNoteParticipants[id] ?? 0;
+
+  // Bekleyen not davetleri (sağ üstteki paylaşım butonu rozeti için).
+  int _noteInviteCount = 0;
+  int get noteInviteCount => _noteInviteCount;
 
   Future<void> loadSharedNotesInfo() async {
     try {
       final r = await _shareService.getSharedNotes();
-      if (!r.isSuccess || r.data == null) return;
-      _sharedOwnedNoteIds.clear();
-      final withMe = <SharedNoteItem>[];
-      for (final s in r.data!) {
-        if (s.isOwner && s.note != null) {
-          _sharedOwnedNoteIds.add(s.note!.id);
-        } else if (!s.isOwner && s.note != null) {
-          withMe.add(s);
+      if (r.isSuccess && r.data != null) {
+        _sharedOwnedNoteIds.clear();
+        _sharedOwnedNoteParticipants.clear();
+        final withMe = <SharedNoteItem>[];
+        for (final s in r.data!) {
+          if (s.isOwner && s.note != null) {
+            _sharedOwnedNoteIds.add(s.note!.id);
+            _sharedOwnedNoteParticipants[s.note!.id] = s.participants.length;
+          } else if (!s.isOwner && s.note != null) {
+            withMe.add(s);
+          }
         }
+        _sharedWithMeNotes = withMe;
       }
-      _sharedWithMeNotes = withMe;
+      // Bekleyen davet sayısını da tazele (rozet).
+      try {
+        final inv = await _shareService.getNoteInvites();
+        if (inv.isSuccess && inv.data != null) {
+          _noteInviteCount = inv.data!.length;
+        }
+      } catch (_) {}
       notifyListeners();
     } catch (_) {
       // Paylaşım bilgisi alınamazsa sessiz geç (ana akışı bozmaz).
@@ -118,6 +135,119 @@ class NotesDiaryViewModel extends ChangeNotifier {
     notifyListeners();
     await _persistFolderPins();
   }
+
+  // ---- Paylaşımlı notta KİŞİYE ÖZEL kilit (yerel) ----
+  // Paylaşılan bir notu kilitlemek onu DİĞER katılımcılarda kilitlemez;
+  // kilit yalnızca bu cihazda/kullanıcıda geçerlidir. noteId -> PIN.
+  static const String _localNotePinsKey = 'note_local_pins';
+  Map<int, String> _localNotePins = {};
+  bool isNoteLockedLocally(int id) => _localNotePins.containsKey(id);
+  String? localNotePin(int id) => _localNotePins[id];
+
+  /// Bir not BU kullanıcı için kilitli mi? (yerel kişiye-özel kilit VEYA
+  /// backend kilidi — paylaşımsız notlarda backend, paylaşımlıda yerel.)
+  bool isNoteLockedForMe(Note n) =>
+      n.isLocked || _localNotePins.containsKey(n.id);
+
+  Future<void> _loadLocalNotePins() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_localNotePinsKey);
+      if (raw == null || raw.isEmpty) {
+        _localNotePins = {};
+        return;
+      }
+      final decoded = jsonDecode(raw) as Map<String, dynamic>;
+      _localNotePins = decoded
+          .map((k, v) => MapEntry(int.tryParse(k) ?? -1, v.toString()))
+        ..removeWhere((k, v) => k < 0);
+    } catch (_) {
+      _localNotePins = {};
+    }
+  }
+
+  Future<void> _persistLocalNotePins() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final map = _localNotePins.map((k, v) => MapEntry(k.toString(), v));
+      await prefs.setString(_localNotePinsKey, jsonEncode(map));
+    } catch (_) {}
+  }
+
+  Future<void> setLocalNoteLock(int id, String pin) async {
+    _localNotePins[id] = pin;
+    notifyListeners();
+    await _persistLocalNotePins();
+  }
+
+  Future<void> removeLocalNoteLock(int id) async {
+    _localNotePins.remove(id);
+    notifyListeners();
+    await _persistLocalNotePins();
+  }
+
+  // ---- Not boyutlandırma (kişiye özel, yerel) ----
+  // noteId -> [genişlik, yükseklik]. SharedPreferences'ta JSON saklanır.
+  static const String _noteSizesKey = 'note_sizes';
+  Map<int, List<double>> _noteSizes = {};
+  List<double>? noteSize(int id) => _noteSizes[id];
+
+  // Hangi not şu an boyutlandırılıyor (null = hiçbiri).
+  int? _resizingNoteId;
+  int? get resizingNoteId => _resizingNoteId;
+
+  void startResizingNote(int id,
+      {double defaultW = 150, double defaultH = 132}) {
+    _resizingNoteId = id;
+    _noteSizes.putIfAbsent(id, () => [defaultW, defaultH]);
+    notifyListeners();
+  }
+
+  void stopResizingNote() {
+    _resizingNoteId = null;
+    notifyListeners();
+    _persistNoteSizes();
+  }
+
+  // Sürükleme sırasında (anlık, kalıcı yazma yok — bitince persist edilir).
+  void updateNoteSize(int id, double w, double h) {
+    _noteSizes[id] = [w, h];
+    notifyListeners();
+  }
+
+  // Sürükleme bitince boyutu diske yaz (resize modundan çıkmadan).
+  void persistNoteSizes() {
+    _persistNoteSizes();
+  }
+
+  Future<void> _loadNoteSizes() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_noteSizesKey);
+      if (raw == null || raw.isEmpty) {
+        _noteSizes = {};
+        return;
+      }
+      final decoded = jsonDecode(raw) as Map<String, dynamic>;
+      _noteSizes = decoded.map((k, v) {
+        final id = int.tryParse(k) ?? -1;
+        final list =
+            (v as List).map((e) => (e as num).toDouble()).toList();
+        return MapEntry(id, list);
+      })..removeWhere((k, v) => k < 0 || v.length < 2);
+    } catch (_) {
+      _noteSizes = {};
+    }
+  }
+
+  Future<void> _persistNoteSizes() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final map = _noteSizes.map((k, v) => MapEntry(k.toString(), v));
+      await prefs.setString(_noteSizesKey, jsonEncode(map));
+    } catch (_) {}
+  }
+
   NotesViewMode _notesViewMode = NotesViewMode.grid;
   NotesViewMode get notesViewMode => _notesViewMode;
 
@@ -169,6 +299,31 @@ class NotesDiaryViewModel extends ChangeNotifier {
   }
   DateTime? _noteReminder;
   DateTime? get noteReminder => _noteReminder;
+
+  // --- Editör biçimlendirme modu (araç çubuğundaki aç/kapa düğmeleri) ---
+  // Kalın/italik/altı-çizili "aktif" modları: açıkken imleç işaretçi çiftinin
+  // (**..**, *..*, _.._) içinde durur; böylece yazılan metin o biçimde olur.
+  bool _boldMode = false;
+  bool _italicMode = false;
+  bool _underlineMode = false;
+  bool get boldMode => _boldMode;
+  bool get italicMode => _italicMode;
+  bool get underlineMode => _underlineMode;
+
+  void setFormatMode({bool? bold, bool? italic, bool? underline}) {
+    if (bold != null) _boldMode = bold;
+    if (italic != null) _italicMode = italic;
+    if (underline != null) _underlineMode = underline;
+    notifyListeners();
+  }
+
+  void clearFormatModes() {
+    if (!_boldMode && !_italicMode && !_underlineMode) return;
+    _boldMode = false;
+    _italicMode = false;
+    _underlineMode = false;
+    notifyListeners();
+  }
 
   // Editöre eklenen görseller (image_picker ile seçilir, editörde gösterilir)
   final List<File> _pickedImages = [];
@@ -657,6 +812,9 @@ class NotesDiaryViewModel extends ChangeNotifier {
     _voiceDurationSeconds = null;
     _recordStart = null;
     _editTags.clear();
+    _boldMode = false;
+    _italicMode = false;
+    _underlineMode = false;
     if (_isRecording) {
       _recorder.stop();
       _isRecording = false;
@@ -809,7 +967,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
 
       final request = NoteRequest(
         title: noteTitleController.text.trim(),
-        content: noteContentController.text.trim(),
+        content: cleanNoteMarkers(noteContentController.text.trim()),
         categoryId: _selectedCategoryForNote,
         templateType: null,
         color: _selectedNoteColor, // Seçilen rengi gönder
@@ -882,6 +1040,14 @@ class NotesDiaryViewModel extends ChangeNotifier {
     final newContent = lines.join('\n');
     final idx = _notes.indexWhere((n) => n.id == note.id);
 
+    // Anında geri bildirim (alışveriş listesi gibi hızlı işaretleme için):
+    // önce yereli güncelle, sonra backend'e yaz; hata olursa geri al.
+    final Note? previous = idx != -1 ? _notes[idx] : null;
+    if (idx != -1) {
+      _notes[idx] = _notes[idx].copyWith(content: newContent);
+      notifyListeners();
+    }
+
     try {
       final request = NoteRequest(
         title: note.title ?? '',
@@ -901,7 +1067,11 @@ class NotesDiaryViewModel extends ChangeNotifier {
         notifyListeners();
       }
     } catch (_) {
-      // Ağ hatası: sessizce geç, sonraki yenilemede senkron olur.
+      // Ağ hatası: iyimser değişikliği geri al — sonraki yenilemede senkron olur.
+      if (idx != -1 && previous != null) {
+        _notes[idx] = previous;
+        notifyListeners();
+      }
     }
   }
 
@@ -925,12 +1095,14 @@ class NotesDiaryViewModel extends ChangeNotifier {
 
       final request = NoteRequest(
         title: noteTitleController.text.trim(),
-        content: noteContentController.text.trim(),
+        content: cleanNoteMarkers(noteContentController.text.trim()),
         categoryId: _selectedCategoryForNote,
         templateType: null,
         color: _selectedNoteColor, // Seçilen rengi gönder
         reminderDate: _noteReminder,
-        isLocked: _noteLocked,
+        // Paylaşımlı notta kilit KİŞİYE ÖZEL (yerel) → backend'e kilit gönderme,
+        // yoksa diğer katılımcılar da kilitlenir. (lockNote yereli uygular.)
+        isLocked: isNoteShared(_editingNoteId!) ? false : _noteLocked,
         isPinned: _notePinned,
         reminderEnabled: _noteReminder != null,
         tags: _editTags.isEmpty ? null : List<String>.from(_editTags),
@@ -1106,6 +1278,15 @@ class NotesDiaryViewModel extends ChangeNotifier {
 
   Future<void> lockNote(int noteId, String pin, BuildContext context,
       {bool silent = false}) async {
+    // Paylaşımlı not → kilit KİŞİYE ÖZEL (yerel): backend'e dokunma,
+    // böylece diğer katılımcılar kilitlenmez.
+    if (isNoteShared(noteId)) {
+      await setLocalNoteLock(noteId, pin);
+      if (!silent && context.mounted) {
+        CustomSnackBar.showSuccess(context, 'success.noteLocked'.tr());
+      }
+      return;
+    }
     try {
       final response = await _noteService.lockNote(noteId, pin);
 
@@ -1168,6 +1349,17 @@ class NotesDiaryViewModel extends ChangeNotifier {
       VoidCallback? onSuccess, {
       bool silent = false,
       }) async {
+    // Yerel (kişiye özel) kilit → PIN'i cihazda doğrula; doğruysa kilidi kaldır.
+    // (Geçici görüntülemede çağıran taraf çıkışta tekrar kilitler.)
+    if (isNoteLockedLocally(noteId)) {
+      if (localNotePin(noteId) == pin) {
+        await removeLocalNoteLock(noteId);
+        onSuccess?.call();
+      } else if (!silent && context.mounted) {
+        CustomSnackBar.showError(context, 'errors.invalidPin'.tr());
+      }
+      return;
+    }
     try {
       final response = await _noteService.unlockNote(noteId, pin);
 
@@ -1283,6 +1475,8 @@ class NotesDiaryViewModel extends ChangeNotifier {
   Future<void> loadCategories() async {
     try {
       await _loadFolderPins();
+      await _loadLocalNotePins();
+      await _loadNoteSizes();
       debugPrint('📂 Loading categories...');
       final response = await _noteService.getCategories();
 

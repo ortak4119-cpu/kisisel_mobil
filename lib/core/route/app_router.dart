@@ -31,5 +31,8 @@ class AppRouter extends RootStackRouter {
         AutoRoute(
           page: PaywallRoute.page,
         ),
+        AutoRoute(
+          page: PremiumWelcomeRoute.page,
+        ),
       ];
 }

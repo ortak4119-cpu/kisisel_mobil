@@ -10,6 +10,7 @@ import '../../../service/base/base_api_service.dart';
 import '../../../service/auth/auth_service.dart';
 import '../../../core/route/app_router.gr.dart';
 import '../../../core/design/app_design.dart';
+import '../../../core/design/app_loader.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/utils/custom_snackbar.dart';
 import '../../../core/utils/theme_provider.dart';
@@ -35,7 +36,8 @@ class _ProfileViewState extends State<ProfileView> {
   static const _cBlue = Color(0xFF4C9AFF);
   static const _cRed = Color(0xFFF2685B);
   static const _cGreen = Color(0xFF46A46B);
-  static const _cPurple = Color(0xFF9C7BD9);
+  // Profil modül aksanı — seçili temadan (sabit mor yerine).
+  Color get _cPurple => ColorConstant.accentOrange;
   static const _cGray = Color(0xFF8A94A6);
   static const _cTeal = Color(0xFF2BB3A3);
 
@@ -119,6 +121,18 @@ class _ProfileViewState extends State<ProfileView> {
               fontSize: 28,
               fontWeight: FontWeight.w900,
               color: _textPrimary(isDark))),
+      actions: [
+        // Ayarlara artık buradan (sağ üst) ulaşılır.
+        IconButton(
+          icon: Icon(Icons.settings_rounded, color: _textPrimary(isDark)),
+          tooltip: 'profile.settings'.tr(),
+          onPressed: () {
+            SettingsView.focusSection = null;
+            context.router.push(const SettingsRoute());
+          },
+        ),
+        const SizedBox(width: 8),
+      ],
     );
   }
 
@@ -282,15 +296,6 @@ class _ProfileViewState extends State<ProfileView> {
             title: 'profile.appearanceTheme'.tr(),
             value: _themeModeLabel(context.watch<ThemeProvider>().themeMode),
             onTap: () => _showThemeDialog(context)),
-        _divider(isDark),
-        _navRow(context, isDark,
-            color: _cGray,
-            icon: Icons.settings_rounded,
-            title: 'profile.settings'.tr(),
-            onTap: () {
-              SettingsView.focusSection = null;
-              context.router.push(const SettingsRoute());
-            }),
       ]),
       const SizedBox(height: 18),
 
@@ -357,7 +362,7 @@ class _ProfileViewState extends State<ProfileView> {
                   end: Alignment.bottomRight,
                   colors: [
                     _cOrange.withValues(alpha: 0.35),
-                    ColorConstant.primaryPurple.withValues(alpha: 0.35),
+                    ColorConstant.accentOrange.withValues(alpha: 0.35),
                   ],
                 )
               : null,
@@ -439,7 +444,7 @@ class _ProfileViewState extends State<ProfileView> {
                       style: TextStyle(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w800,
-                          color: ColorConstant.primaryPurple)),
+                          color: ColorConstant.accentOrange)),
                 ],
               ),
               const SizedBox(height: 10),
@@ -448,9 +453,9 @@ class _ProfileViewState extends State<ProfileView> {
                 child: LinearProgressIndicator(
                   value: pct,
                   minHeight: 7,
-                  backgroundColor: ColorConstant.primaryPurple.withValues(alpha: 0.15),
+                  backgroundColor: ColorConstant.accentOrange.withValues(alpha: 0.15),
                   valueColor: AlwaysStoppedAnimation<Color>(
-                      ColorConstant.primaryPurple),
+                      ColorConstant.accentOrange),
                 ),
               ),
             ],
@@ -522,7 +527,7 @@ class _ProfileViewState extends State<ProfileView> {
                       style: TextStyle(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w700,
-                          color: ColorConstant.primaryPurple)),
+                          color: ColorConstant.accentOrange)),
                 ],
               ),
             ),
@@ -866,19 +871,19 @@ class _ProfileViewState extends State<ProfileView> {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           decoration: BoxDecoration(
             color: selected
-                ? ColorConstant.primaryPurple.withValues(alpha: 0.12)
+                ? ColorConstant.accentOrange.withValues(alpha: 0.12)
                 : (isDark
                     ? ColorConstant.cardColorDark
                     : ColorConstant.cardColorLight),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
                 color: selected
-                    ? ColorConstant.primaryPurple
+                    ? ColorConstant.accentOrange
                     : _borderColor(isDark)),
           ),
           child: Row(children: [
             _iconSquare(
-                selected ? ColorConstant.primaryPurple : _cGray, icon),
+                selected ? ColorConstant.accentOrange : _cGray, icon),
             const SizedBox(width: 13),
             Expanded(
               child: Column(
@@ -898,7 +903,7 @@ class _ProfileViewState extends State<ProfileView> {
             ),
             if (selected)
               Icon(Icons.check_circle_rounded,
-                  size: 22, color: ColorConstant.primaryPurple),
+                  size: 22, color: ColorConstant.accentOrange),
           ]),
         ),
       );
@@ -939,7 +944,7 @@ class _ProfileViewState extends State<ProfileView> {
           TextButton(
             onPressed: () => Navigator.pop(dialogCtx),
             style:
-                TextButton.styleFrom(foregroundColor: ColorConstant.primaryPurple),
+                TextButton.styleFrom(foregroundColor: ColorConstant.accentOrange),
             child: Text('common.close'.tr(),
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           ),
@@ -1037,7 +1042,7 @@ class _ProfileViewState extends State<ProfileView> {
                   height: 48,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                        colors: [ColorConstant.accentBlue, ColorConstant.primaryPurple]),
+                        colors: [ColorConstant.accentBlue, ColorConstant.accentOrange]),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(Icons.photo_library_rounded, color: ColorConstant.white),
@@ -1145,7 +1150,7 @@ class _FriendsTab extends StatelessWidget {
                 gradient: LinearGradient(
                   colors: [
                     ColorConstant.accentBlue.withValues(alpha: 0.1),
-                    ColorConstant.primaryPurple.withValues(alpha: 0.1),
+                    ColorConstant.accentOrange.withValues(alpha: 0.1),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(18),
@@ -1159,7 +1164,7 @@ class _FriendsTab extends StatelessWidget {
                     height: 44,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                          colors: [ColorConstant.accentBlue, ColorConstant.primaryPurple]),
+                          colors: [ColorConstant.accentBlue, ColorConstant.accentOrange]),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(Icons.search_rounded, color: ColorConstant.white, size: 22),
@@ -1257,7 +1262,7 @@ class _FriendsTab extends StatelessWidget {
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                      colors: [ColorConstant.accentBlue, ColorConstant.primaryPurple]),
+                      colors: [ColorConstant.accentBlue, ColorConstant.accentOrange]),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Text('👥', style: TextStyle(fontSize: 18)),
@@ -1498,7 +1503,7 @@ class _FriendsTab extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              CircularProgressIndicator(color: ColorConstant.accentBlue),
+              const AppLoader(),
               const SizedBox(height: 16),
               Text('profile.loading'.tr(),
                   style: TextStyle(
@@ -2129,7 +2134,7 @@ class _FriendSearchBottomSheetState extends State<_FriendSearchBottomSheet> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircularProgressIndicator(color: ColorConstant.accentBlue),
+                    const AppLoader(),
                     const SizedBox(height: 16),
                     Text('profile.loading'.tr(),
                         style: TextStyle(
@@ -2804,6 +2809,52 @@ class _MembershipSheet extends StatelessWidget {
                     ],
                   ),
                 ),
+                const SizedBox(height: 14),
+                // İndirim kodu ile edinildiyse bilgi notu.
+                if ((u?.subscriptionSource ?? '') == 'coupon') ...[
+                  Container(
+                    padding: const EdgeInsets.all(13),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF48BB78).withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                          color:
+                              const Color(0xFF48BB78).withValues(alpha: 0.4)),
+                    ),
+                    child: Row(children: [
+                      const Icon(Icons.local_offer_rounded,
+                          size: 18, color: Color(0xFF2E9E63)),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text('profile.membership.couponInfo'.tr(),
+                            style: TextStyle(
+                                fontSize: 12.5,
+                                height: 1.4,
+                                color: textSecondary)),
+                      ),
+                    ]),
+                  ),
+                  const SizedBox(height: 14),
+                ],
+                // Abonelik değiştir — herkese; abonelik sayfasına yönlendirir.
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      context.router.push(const PaywallRoute());
+                    },
+                    icon: const Icon(Icons.sync_alt_rounded, size: 18),
+                    label: Text('profile.membership.changePlan'.tr()),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFF6A821),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14)),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -2962,7 +3013,7 @@ class _AccountInfoSheet extends StatelessWidget {
                       Divider(height: 1, color: borderColor),
                       infoRow(
                           Icons.calendar_today_rounded,
-                          const Color(0xFF9C7BD9),
+                          ColorConstant.accentOrange,
                           'profile.account.memberSince'.tr(),
                           memberSince),
                       Divider(height: 1, color: borderColor),
@@ -3245,7 +3296,7 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
         ElevatedButton(
           onPressed: _loading ? null : (_codeSent ? _reset : _sendCode),
           style: ElevatedButton.styleFrom(
-            backgroundColor: ColorConstant.primaryPurple,
+            backgroundColor: ColorConstant.accentOrange,
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),

@@ -3,14 +3,16 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
+import '../../core/constant/constants.dart';
+
 class RevenueCatService {
   static final RevenueCatService _instance = RevenueCatService._internal();
   factory RevenueCatService() => _instance;
   RevenueCatService._internal();
 
-  // RevenueCat API Keys - Bunları kendi anahtarlarınızla değiştirin
-  static const String _apiKeyIOS = 'appl_AqSfLLdHoJylyNSYFEutttWrDgn';
-  static const String _apiKeyAndroid = 'YOUR_ANDROID_API_KEY';
+  // Tek kaynak: anahtarlar Constants'tan gelir (app_initializer ile aynı).
+  static const String _apiKeyIOS = Constants.revenueCatApiKeyIOS;
+  static const String _apiKeyAndroid = Constants.revenueCatApiKeyAndroid;
 
   bool _isInitialized = false;
 
@@ -22,6 +24,15 @@ class RevenueCatService {
     }
 
     try {
+      // app_initializer açılışta zaten configure ediyor. Burada tekrar
+      // configure edersek SDK sıfırlanır; geçerli anahtarı bozma riski doğar.
+      // Zaten yapılandırılmışsa sadece işaretleyip çık.
+      if (await Purchases.isConfigured) {
+        _isInitialized = true;
+        debugPrint('RevenueCat already configured (skipping reconfigure)');
+        return;
+      }
+
       final configuration = PurchasesConfiguration(
         defaultTargetPlatform == TargetPlatform.iOS ? _apiKeyIOS : _apiKeyAndroid,
       );

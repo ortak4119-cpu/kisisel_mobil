@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/utils/color_constant.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../core/init/locator.dart';
 import '../../service/share/share_service.dart';
@@ -35,7 +36,6 @@ class _SharedHubSheetState extends State<_SharedHubSheet> {
   List<SharedTaskItem> _sharedTasks = [];
   List<SharedHabitItem> _sharedHabits = [];
 
-  bool get _isNote => widget.kind == 'note';
   bool get _isTask => widget.kind == 'task';
   bool get _isHabit => widget.kind == 'habit';
 
@@ -105,11 +105,11 @@ class _SharedHubSheetState extends State<_SharedHubSheet> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? const Color(0xFF1E1B16) : const Color(0xFFF6F4EF);
-    final card = isDark ? const Color(0xFF2A251E) : Colors.white;
-    final textPrimary = isDark ? Colors.white : const Color(0xFF3A3326);
-    final textMuted = isDark ? Colors.white60 : const Color(0xFF8A7A5E);
-    const accent = Color(0xFFF6A821);
+    final bg = isDark ? ColorConstant.bgColorDark : ColorConstant.bgColorLight;
+    final card = isDark ? ColorConstant.cardColorDark : ColorConstant.cardColorLight;
+    final textPrimary = isDark ? ColorConstant.textPrimaryDark : ColorConstant.textPrimaryLight;
+    final textMuted = isDark ? ColorConstant.textMutedDark : ColorConstant.textMutedLight;
+    final accent = ColorConstant.accentOrange;
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.82,
@@ -132,7 +132,7 @@ class _SharedHubSheetState extends State<_SharedHubSheet> {
               padding: const EdgeInsets.fromLTRB(20, 14, 20, 8),
               child: Row(
                 children: [
-                  const Icon(Icons.diversity_3_rounded, color: accent),
+                  Icon(Icons.diversity_3_rounded, color: accent),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text('share.sharedWithMe'.tr(),
@@ -150,7 +150,7 @@ class _SharedHubSheetState extends State<_SharedHubSheet> {
             ),
             Expanded(
               child: _loading
-                  ? const Center(child: CircularProgressIndicator(color: accent))
+                  ? Center(child: CircularProgressIndicator(color: accent))
                   : ListView(
                       padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
                       children: [
@@ -277,7 +277,7 @@ class _SharedHubSheetState extends State<_SharedHubSheet> {
             })} · ${s.canEdit ? 'share.canEdit'.tr() : 'share.viewOnly'.tr()}',
           style: TextStyle(fontSize: 12, color: textMuted),
         ),
-        trailing: _participantChips(s.participants, accent, textMuted),
+        trailing: _cardTrailing(s.participants, s.isOwner, s.id, accent, textMuted),
       ),
     );
   }
@@ -304,7 +304,7 @@ class _SharedHubSheetState extends State<_SharedHubSheet> {
             })} · ${s.participants.where((p) => p.isCompleted).length}/${s.participants.length} ${'share.completed'.tr()}',
           style: TextStyle(fontSize: 12, color: textMuted),
         ),
-        trailing: _participantChips(s.participants, accent, textMuted),
+        trailing: _cardTrailing(s.participants, s.isOwner, s.id, accent, textMuted),
       ),
     );
   }
@@ -331,9 +331,78 @@ class _SharedHubSheetState extends State<_SharedHubSheet> {
             })} · ${s.participants.where((p) => p.status == 'accepted').length + 1} ${'share.participants'.tr()}',
           style: TextStyle(fontSize: 12, color: textMuted),
         ),
-        trailing: _participantChips(s.participants, accent, textMuted),
+        trailing: _cardTrailing(s.participants, s.isOwner, s.id, accent, textMuted),
       ),
     );
+  }
+
+  // Paylaşan kişi (owner) için: katılımcı avatarları + "Paylaşımı bitir" menüsü.
+  Widget _cardTrailing(List<SharedParticipant> participants, bool isOwner,
+      int id, Color accent, Color muted) {
+    final chips = _participantChips(participants, accent, muted);
+    if (!isOwner) return chips;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        chips,
+        PopupMenuButton<String>(
+          icon: Icon(Icons.more_vert_rounded, color: muted),
+          onSelected: (v) {
+            if (v == 'end') _confirmEndShare(id);
+          },
+          itemBuilder: (_) => [
+            PopupMenuItem(
+              value: 'end',
+              child: Row(
+                children: [
+                  const Icon(Icons.link_off_rounded,
+                      size: 18, color: Color(0xFFEF5350)),
+                  const SizedBox(width: 10),
+                  Text('share.endShare'.tr(),
+                      style: const TextStyle(color: Color(0xFFEF5350))),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Future<void> _confirmEndShare(int id) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (dctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: Text('share.endShare'.tr()),
+        content: Text('share.endShareConfirm'.tr()),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(dctx, false),
+              child: Text('common.cancel'.tr())),
+          TextButton(
+            onPressed: () => Navigator.pop(dctx, true),
+            child: Text('share.endShare'.tr(),
+                style: const TextStyle(
+                    color: Color(0xFFEF5350), fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    final r = _isHabit
+        ? await _share.deleteSharedHabit(id)
+        : _isTask
+            ? await _share.deleteSharedTask(id)
+            : await _share.deleteSharedNote(id);
+    if (!mounted) return;
+    if (r.isSuccess) {
+      CustomSnackBar.showSuccess(context, 'share.endShareDone'.tr());
+      _load();
+    } else {
+      CustomSnackBar.showError(
+          context, r.errorMessage ?? 'share.shareFailed'.tr());
+    }
   }
 
   Widget _participantChips(
@@ -356,10 +425,10 @@ class _SharedHubSheetState extends State<_SharedHubSheet> {
                   accepted[i].name.isNotEmpty
                       ? accepted[i].name[0].toUpperCase()
                       : '?',
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFFB07B18)),
+                      color: ColorConstant.accentInk),
                 ),
               ),
             ),

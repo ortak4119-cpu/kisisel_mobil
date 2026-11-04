@@ -827,6 +827,10 @@ class TasksHabitsViewModel extends ChangeNotifier {
   bool get habitReminderEnabled => _habitReminderEnabled;
   void setHabitReminderEnabled(bool v) {
     _habitReminderEnabled = v;
+    // Açılınca hiç saat yoksa başlangıç için bir tane koy (düzenlenebilir/silinebilir).
+    if (v && _habitReminderTimes.isEmpty) {
+      _habitReminderTimes = [const TimeOfDay(hour: 9, minute: 0)];
+    }
     notifyListeners();
   }
 
@@ -861,8 +865,23 @@ class TasksHabitsViewModel extends ChangeNotifier {
     final t = sorted[i];
     _habitReminderTimes
         .removeWhere((x) => x.hour == t.hour && x.minute == t.minute);
+    // Hepsi silinince 9:00 geri gelmesin — hatırlatıcı kapanır.
     if (_habitReminderTimes.isEmpty) {
-      _habitReminderTimes = [const TimeOfDay(hour: 9, minute: 0)];
+      _habitReminderEnabled = false;
+    }
+    notifyListeners();
+  }
+
+  // Var olan bir hatırlatıcı saatini düzenle (çipe dokununca).
+  void updateHabitReminderTimeAt(int i, TimeOfDay t) {
+    final sorted = habitReminderTimes;
+    if (i < 0 || i >= sorted.length) return;
+    final old = sorted[i];
+    _habitReminderTimes
+        .removeWhere((x) => x.hour == old.hour && x.minute == old.minute);
+    if (!_habitReminderTimes
+        .any((x) => x.hour == t.hour && x.minute == t.minute)) {
+      _habitReminderTimes.add(t);
     }
     notifyListeners();
   }
@@ -1101,7 +1120,15 @@ class TasksHabitsViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> updateTask(BuildContext context) async {
+  /// Düzenlenmekte olan görev tamamlanmış mı? ("Yeniden planla" için).
+  bool get editingTaskCompleted {
+    final id = _editingTaskId;
+    if (id == null) return false;
+    final i = _tasks.indexWhere((t) => t.id == id);
+    return i != -1 && _tasks[i].isCompleted;
+  }
+
+  Future<void> updateTask(BuildContext context, {bool reschedule = false}) async {
     // Doğal dil çözümlemesini uygula (başlıkta tarih/saat/öncelik/etiket varsa).
     _applyNlParseToState();
     if (_editingTaskId == null) {
@@ -1159,9 +1186,24 @@ class TasksHabitsViewModel extends ChangeNotifier {
         }
         // Yeni seçilen yerel dosyaları backend'e yükle.
         await _uploadTaskAttachments(editingId);
+        // "Yeniden planla": tamamlanan görevi tekrar etkinleştir (görevlere döner).
+        if (reschedule) {
+          final resp = await _taskService.markIncomplete(editingId);
+          if (resp.isSuccess) {
+            final i = _tasks.indexWhere((t) => t.id == editingId);
+            if (i != -1) {
+              _tasks[i] =
+                  _tasks[i].copyWith(isCompleted: false, completedAt: null);
+            }
+          }
+        }
         resetTaskForm();
         if (context.mounted) {
-          CustomSnackBar.showSuccess(context, 'success.taskUpdated'.tr());
+          CustomSnackBar.showSuccess(
+              context,
+              reschedule
+                  ? 'success.taskRescheduled'.tr()
+                  : 'success.taskUpdated'.tr());
           Navigator.pop(context);
         }
       } else {

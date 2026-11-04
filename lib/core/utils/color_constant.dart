@@ -1,4 +1,5 @@
 import 'package:flutter/painting.dart';
+import '../theme/app_palette.dart';
 
 class ColorConstant {
   // Error renkleri
@@ -11,16 +12,17 @@ class ColorConstant {
   static Color primaryPurple = fromHex("#B388FF"); // Kartlardaki parlak mor ton
   static Color primaryPink = fromHex("#FF80AB"); // Parlak pembe varyasyon
   static Color accentBlue = fromHex("#40C4FF"); // Parlak mavi kart tonu
-  static Color accentYellow = fromHex("#FFD740"); // Parlak sarı aksanlar
-  static Color accentOrange = fromHex("#FF9100"); // Parlak turuncu aksanlar
+  static Color get accentYellow => AppPalette.accentSoft; // Parlak sarı aksanlar
+  static Color get accentOrange => AppPalette.accent; // Parlak turuncu aksanlar
+  // Aksan tint'li açık zemin üstünde okunur koyu aksan (metin/ikon için).
+  static Color get accentInk =>
+      Color.alphaBlend(const Color(0x59000000), AppPalette.accent); // ~%35 koyu
   static Color accentRed = fromHex("#FF5252"); // Parlak kırmızı
   static Color accentGreen = fromHex("#69F0AE"); // Parlak yeşil aksanlar
 
   // Arka plan renkleri - açık mod (referans swatch: sıcak tan/bej)
-  static Color bgColorLight =
-      fromHex("#DED0B2"); // Sıcak tan/bej zemin (referans görseldeki ton)
-  static Color cardColorLight =
-      fromHex("#EAE0CD"); // Belirgin sıcak krem kart (tan zeminin açık tonu)
+  static Color get bgColorLight => AppPalette.light.bg; // Sıcak tan/bej zemin (referans görseldeki ton)
+  static Color get cardColorLight => AppPalette.light.card; // Belirgin sıcak krem kart (tan zeminin açık tonu)
   static Color cardPurpleLight = fromHex("#EDE7F6"); // Açık mor kart arkaplanı
   static Color cardBlueLight = fromHex("#B3E5FC"); // Açık mavi kart arkaplanı
   static Color cardYellowLight = fromHex("#FFF9C4"); // Açık sarı kart arkaplanı
@@ -28,14 +30,14 @@ class ColorConstant {
   static Color cardGreenLight = fromHex("#C8E6C9"); // Açık yeşil kart arkaplanı
 
   // Metin renkleri - açık mod (Notlar sıcak kahve mürekkep tonları)
-  static Color textPrimaryLight = fromHex("#2B2620"); // Koyu sıcak kahve
-  static Color textSecondaryLight = fromHex("#6F6456"); // Sıcak gri-kahve
-  static Color textMutedLight = fromHex("#A79A84"); // Soluk sıcak bej-gri
+  static Color get textPrimaryLight => AppPalette.light.textPrimary; // Koyu sıcak kahve
+  static Color get textSecondaryLight => AppPalette.light.textSecondary; // Sıcak gri-kahve
+  static Color get textMutedLight => AppPalette.light.textMuted; // Soluk sıcak bej-gri
   static Color textOnPurple = fromHex("#FFFFFF"); // Mor üstünde beyaz
 
   // Ara renkler - açık mod (bej zeminle uyumlu sıcak kenarlıklar)
-  static Color borderColorLight = fromHex("#DCD0BA"); // Sıcak açık kenarlık
-  static Color dividerLight = fromHex("#E5DBC7"); // Sıcak açık ayırıcı
+  static Color get borderColorLight => AppPalette.light.border; // Sıcak açık kenarlık
+  static Color get dividerLight => AppPalette.light.divider; // Sıcak açık ayırıcı
 
   // Ana renkler - koyu mod (daha canlı versiyonlar)
   static Color primaryDarkModePurple =
@@ -47,20 +49,20 @@ class ColorConstant {
       fromHex("#FF5252"); // Parlak koyu mod kırmızı
 
   // Arka plan renkleri - koyu mod
-  static Color bgColorDark = fromHex("#121212"); // Siyah-gri arka plan
-  static Color cardColorDark = fromHex("#1E1E1E"); // Koyu gri kart
+  static Color get bgColorDark => AppPalette.dark.bg; // Siyah-gri arka plan
+  static Color get cardColorDark => AppPalette.dark.card; // Koyu gri kart
   static Color cardPurpleDark = fromHex("#311B92"); // Koyu mor kart
   static Color cardBlueDark = fromHex("#01579B"); // Koyu mavi kart
   static Color cardYellowDark = fromHex("#F57F17"); // Koyu sarı kart
 
   // Metin renkleri - koyu mod
-  static Color textPrimaryDark = fromHex("#FFFFFF"); // Beyaz yazı
-  static Color textSecondaryDark = fromHex("#B0B8C4"); // Açık gri yazı
-  static Color textMutedDark = fromHex("#6B7280"); // Soluk gri yazı
+  static Color get textPrimaryDark => AppPalette.dark.textPrimary; // Beyaz yazı
+  static Color get textSecondaryDark => AppPalette.dark.textSecondary; // Açık gri yazı
+  static Color get textMutedDark => AppPalette.dark.textMuted; // Soluk gri yazı
 
   // Ara renkler - koyu mod
-  static Color borderColorDark = fromHex("#424242"); // Koyu gri kenarlık
-  static Color dividerDark = fromHex("#303030"); // Koyu ayırıcı
+  static Color get borderColorDark => AppPalette.dark.border; // Koyu gri kenarlık
+  static Color get dividerDark => AppPalette.dark.divider; // Koyu ayırıcı
 
   // Gradient renkleri (görseldeki canlı gradient'ler için)
   static Color gradientPurpleStart = fromHex("#B388FF");

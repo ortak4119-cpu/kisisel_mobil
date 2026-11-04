@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../utils/color_constant.dart';
+import '../theme/app_palette.dart';
 
 /// ============================================================================
 /// UYGULAMA TASARIM SİSTEMİ
@@ -60,6 +61,18 @@ class AppColors {
       isDark ? ColorConstant.textMutedDark : ColorConstant.textMutedLight;
   Color get border =>
       isDark ? ColorConstant.borderColorDark : ColorConstant.borderColorLight;
+
+  // ── Tema aksanı + semantik/modül renkleri (hepsi seçili temaya uyumlu) ──
+  Color get accent => AppPalette.accent;
+  Color get accentSoft => AppPalette.accentSoft;
+  Color get danger => AppPalette.danger; // gecikmiş / hata / sil
+  Color get warning => AppPalette.warning; // uyarı / atlandı
+  Color get success => AppPalette.success; // tamam / biten
+  Color get info => AppPalette.info; // birincil / bugün
+  Color get accentCool => AppPalette.accentCool; // yaklaşan / ikincil
+
+  /// Bir rengin SOFT yüzey tonu (pill/kart zemini). Koyu blok yerine açık tint.
+  Color softTint(Color base) => AppPalette.softTint(base, isDark);
 
   static AppColors of(BuildContext context) =>
       AppColors(Theme.of(context).brightness == Brightness.dark);

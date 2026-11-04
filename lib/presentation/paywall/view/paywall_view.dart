@@ -536,7 +536,9 @@ class _PaywallViewState extends State<PaywallView> {
                               await vm.applyCoupon(_couponController.text);
                           if (ok && mounted) {
                             if (isGate) {
-                              context.router.replaceAll([const HomeRoute()]);
+                              // Kuponla premium: karşılama akışına yönlendir.
+                              context.router
+                                  .replaceAll([const PremiumWelcomeRoute()]);
                             } else {
                               context.router.pop(true);
                             }
@@ -591,7 +593,8 @@ class _PaywallViewState extends State<PaywallView> {
                 final ok = await vm.purchaseSelectedPackage();
                 if (ok && mounted) {
                   if (isGate) {
-                    context.router.replaceAll([const HomeRoute()]);
+                    // Yeni premium üye: tebrikler + tema + ses karşılama akışı.
+                    context.router.replaceAll([const PremiumWelcomeRoute()]);
                   } else {
                     context.router.pop(true);
                   }

@@ -4,7 +4,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/design/app_design.dart';
+import '../../../core/design/app_loader.dart';
 import '../../../core/utils/color_constant.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/utils/subscription_icons.dart';
 import '../../../core/utils/currency.dart';
 import '../../../core/utils/animation_prefs.dart';
@@ -95,10 +97,14 @@ _FinCat finCatById(String? id) {
   return kFinCats.last;
 }
 
-const _fOrange = Color(0xFFF6A821);
-// Mockup'taki koyu teal başlık + hesap kartı tonları.
-const _fTeal = Color(0xFF0F524E);
-const _fTealCard = Color(0xFF0A3F3C);
+// Finans modül aksanı — seçili temadan (sabit turuncu yerine).
+Color get _fOrange => ColorConstant.accentOrange;
+
+/// Hesap kartları için seçili temadan orta→derin gradyan (beyaz yazı okunur).
+List<Color> _accGrad(Color base) => [
+      Color.alphaBlend(const Color(0x14000000), base), // ~%8 koyu
+      Color.alphaBlend(const Color(0x61000000), base), // ~%38 koyu
+    ];
 
 // Tutar biçimlendirme artık seçili para birimine (AppCurrency) göre yapılır.
 String tl(double v) {
@@ -218,7 +224,7 @@ class _FinanceViewState extends State<FinanceView> {
                 ? ColorConstant.bgColorDark
                 : ColorConstant.bgColorLight,
             body: vm.isInitialLoading
-                ? Center(child: CircularProgressIndicator(color: _fOrange))
+                ? const Center(child: AppLoader())
                 : vm.financeLocked
                     ? SafeArea(child: _FinanceLockGate(vm: vm, c: c))
                     : RefreshIndicator(
@@ -282,7 +288,9 @@ class _FinanceViewState extends State<FinanceView> {
     return Container(
       padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
-        color: c.isDark ? ColorConstant.cardColorDark : const Color(0xFFE8DFCD),
+        // Segment track — seçili temaya uyumlu (kremden aksan-tint'e).
+        color: Color.alphaBlend(
+            c.accent.withValues(alpha: c.isDark ? 0.12 : 0.14), c.card),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -297,7 +305,10 @@ class _FinanceViewState extends State<FinanceView> {
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
                   color: sel
-                      ? (c.isDark ? _fTeal : ColorConstant.cardColorLight)
+                      ? (c.isDark
+                          ? Color.alphaBlend(
+                              c.accent.withValues(alpha: 0.22), c.card)
+                          : ColorConstant.cardColorLight)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: sel
@@ -382,11 +393,16 @@ class _FinanceViewState extends State<FinanceView> {
         '${m.month <= months.length ? months[m.month - 1] : ''} ${m.year}';
     final topPad = MediaQuery.of(context).padding.top;
     final user = vm.currentUser;
+    // Başlık zemini — her modda AÇIK/soft banner (koyu renk yok), seçili
+    // temanın aksanıyla hafifçe tonlanır. Üstündeki metin/ikon hep koyu kalır.
+    final headerBg =
+        Color.alphaBlend(AppPalette.accent.withValues(alpha: 0.18),
+            const Color(0xFFF1ECE0));
     return Container(
       padding: EdgeInsets.fromLTRB(20, topPad + 10, 20, 20),
-      decoration: const BoxDecoration(
-        color: Color(0xFFEFE8D6),
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
+      decoration: BoxDecoration(
+        color: headerBg,
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(28)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -415,19 +431,27 @@ class _FinanceViewState extends State<FinanceView> {
                       child: Row(
                         children: [
                           InkWell(
-                            onTap: () => vm.changeMonth(-1),
-                            child: const Icon(Icons.chevron_left_rounded,
-                                size: 18, color: Color(0xFF8A7F66)),
+                            onTap: vm.canGoBack
+                                ? () => vm.changeMonth(-1)
+                                : null,
+                            child: Icon(Icons.chevron_left_rounded,
+                                size: 18,
+                                color: const Color(0xFF6F5B3E)
+                                    .withOpacity(vm.canGoBack ? 1 : 0.3)),
                           ),
                           Text(monthLabel,
                               style: const TextStyle(
                                   fontSize: 12.5,
                                   fontWeight: FontWeight.w600,
-                                  color: Color(0xFF8A7F66))),
+                                  color: Color(0xFF6F5B3E))),
                           InkWell(
-                            onTap: () => vm.changeMonth(1),
-                            child: const Icon(Icons.chevron_right_rounded,
-                                size: 18, color: Color(0xFF8A7F66)),
+                            onTap: vm.canGoForward
+                                ? () => vm.changeMonth(1)
+                                : null,
+                            child: Icon(Icons.chevron_right_rounded,
+                                size: 18,
+                                color: const Color(0xFF6F5B3E)
+                                    .withOpacity(vm.canGoForward ? 1 : 0.3)),
                           ),
                         ],
                       ),
@@ -503,17 +527,17 @@ class _FinanceViewState extends State<FinanceView> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _circleAction(Icons.add_rounded, 'finance.income'.tr(),
-                  const Color(0xFF48BB78),
+                  AppPalette.success,
                   () => showFinanceFormSheet(context, vm, c.isDark,
                       income: true)),
               _circleAction(Icons.remove_rounded, 'finance.expense'.tr(),
-                  const Color(0xFFF6524B),
+                  AppPalette.danger,
                   () => showFinanceFormSheet(context, vm, c.isDark)),
               _circleAction(Icons.sync_rounded, 'finance.subShort'.tr(),
-                  const Color(0xFF9F7AEA),
+                  AppPalette.accentCool,
                   () => _showAddSubscriptionDialog(context, vm, c.isDark)),
               _circleAction(Icons.lock_outline_rounded, 'finance.lockShort'.tr(),
-                  const Color(0xFF3AB7A8), () {
+                  AppPalette.accent, () {
                 if (vm.financeHasPin) {
                   vm.lockNow();
                 } else {
@@ -559,10 +583,16 @@ class _FinanceViewState extends State<FinanceView> {
       );
 
   Widget _mainAccountCard(FinanceViewModel vm) {
+    // Koyu teal yerine seçili temanın aksanından orta tonlu gradyan
+    // (beyaz metin okunur kalır, koyu blok gider).
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: _fTealCard,
+        gradient: LinearGradient(
+          colors: _accGrad(AppPalette.accent),
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(22),
         border: Border.all(color: Colors.white.withOpacity(0.08)),
       ),
@@ -605,6 +635,16 @@ class _FinanceViewState extends State<FinanceView> {
                     fontWeight: FontWeight.w900,
                     color: Colors.white)),
           ),
+          const SizedBox(height: 4),
+          Text(
+            '${'finance.thisMonthNet'.tr()} · ${vm.monthNet >= 0 ? '+' : '−'}${tl0(vm.monthNet.abs())}',
+            style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: vm.monthNet >= 0
+                    ? const Color(0xFF5FE3B3)
+                    : const Color(0xFFFF9E99)),
+          ),
           const Spacer(),
           Text(
             '${'finance.spendableToday'.tr()} · ${tl0(vm.safeToSpendPerDay)}',
@@ -628,8 +668,8 @@ class _FinanceViewState extends State<FinanceView> {
       margin: const EdgeInsets.only(left: 4),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-            colors: [Color(0xFFF6894B), _fOrange],
+        gradient: LinearGradient(
+            colors: _accGrad(AppPalette.accent),
             begin: Alignment.topLeft,
             end: Alignment.bottomRight),
         borderRadius: BorderRadius.circular(22),
@@ -727,7 +767,7 @@ class _FinanceViewState extends State<FinanceView> {
       label: 'finance.subscriptions'.tr(),
       value: tl(_subsMonthly(vm)),
       sub: '$n ${'finance.subShort'.tr()} · ${'finance.monthly'.tr()}',
-      grad: const [Color(0xFF9F7AEA), Color(0xFF6D4FB8)],
+      grad: _accGrad(AppPalette.accentCool),
       icon: Icons.sync_rounded,
     );
   }
@@ -738,7 +778,7 @@ class _FinanceViewState extends State<FinanceView> {
       label: 'finance.installment.title'.tr(),
       value: tl(vm.monthlyInstallmentTotal),
       sub: '$n · ${'finance.monthly'.tr()}',
-      grad: const [Color(0xFF3B82C4), Color(0xFF2C6AA0)],
+      grad: _accGrad(Color.lerp(AppPalette.accent, AppPalette.accentCool, 0.5)!),
       icon: Icons.credit_card_rounded,
     );
   }
@@ -909,7 +949,8 @@ class _FinanceViewState extends State<FinanceView> {
               topSub?.name ?? 'finance.subscriptions'.tr(),
               tl0(topSub?.amount ?? _subsMonthly(vm)),
               subSub,
-              const Color(0xFF7C5BD0)),
+              AppPalette.accentCool,
+              c),
         ),
         const SizedBox(width: 10),
         Expanded(
@@ -917,24 +958,29 @@ class _FinanceViewState extends State<FinanceView> {
               'finance.installment.title'.tr(),
               tl0(vm.monthlyInstallmentTotal),
               'finance.monthly'.tr(),
-              const Color(0xFF13605C)),
+              AppPalette.accent,
+              c),
         ),
         const SizedBox(width: 10),
         Expanded(
           child: _colorStat('finance.debtShort'.tr(), tl0(vm.totalDebt),
-              'finance.totalShort'.tr(), const Color(0xFF9B2C2C)),
+              'finance.totalShort'.tr(), AppPalette.danger, c),
         ),
         ],
       ),
     );
   }
 
-  Widget _colorStat(String label, String value, String sub, Color bg) {
+  // Koyu/doygun kart yerine SOFT tint: açık renkli zemin + renkli değer.
+  Widget _colorStat(
+      String label, String value, String sub, Color tint, AppColors c) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: bg,
+        color: Color.alphaBlend(
+            tint.withValues(alpha: c.isDark ? 0.22 : 0.13), c.card),
         borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: tint.withValues(alpha: 0.30)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -942,22 +988,18 @@ class _FinanceViewState extends State<FinanceView> {
           Text(label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                  fontSize: 12.5, color: Colors.white.withOpacity(0.85))),
+              style: TextStyle(fontSize: 12.5, color: c.textSecondary)),
           const SizedBox(height: 8),
           Text(value,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                  fontSize: 19,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white)),
+              style: TextStyle(
+                  fontSize: 19, fontWeight: FontWeight.w900, color: tint)),
           const SizedBox(height: 3),
           Text(sub,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                  fontSize: 11, color: Colors.white.withOpacity(0.7))),
+              style: TextStyle(fontSize: 11, color: c.textMuted)),
         ],
       ),
     );
@@ -965,7 +1007,7 @@ class _FinanceViewState extends State<FinanceView> {
 
   // ---------- Alt ayar listesi (Genel sekmesi) ----------
   Widget _settingsList(BuildContext context, FinanceViewModel vm, AppColors c) {
-    final budget = vm.budgetStats?.monthlyBudget ?? 0;
+    final budget = vm.viewMonthBudget;
     return Container(
       decoration: BoxDecoration(
         color: c.card,
@@ -1100,7 +1142,7 @@ class _FinanceViewState extends State<FinanceView> {
           _vDiv(c),
           _hStat(c, tl0(vm.dailyAverage), 'finance.avg'.tr()),
           _vDiv(c),
-          _hStat(c, '${vm.expenses.length}', 'finance.transactions'.tr()),
+          _hStat(c, '${vm.monthExpenses.length}', 'finance.transactions'.tr()),
         ],
       ),
     );
@@ -1200,7 +1242,7 @@ class _FinanceViewState extends State<FinanceView> {
   // ---------- PLAN sekmesi ----------
   Widget _planBudgetCard(
       BuildContext context, FinanceViewModel vm, AppColors c) {
-    final budget = vm.budgetStats?.monthlyBudget ?? 0;
+    final budget = vm.viewMonthBudget;
     final spent = vm.monthExpensesTotal;
     final rem = budget - spent;
     final pct = budget > 0 ? (spent / budget).clamp(0.0, 1.0) : 0.0;
@@ -1213,7 +1255,7 @@ class _FinanceViewState extends State<FinanceView> {
               trailing: GestureDetector(
                 onTap: () => _showBudgetSettingsDialog(context, vm, c.isDark),
                 child: Text('finance.editBudget'.tr(),
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w700,
                         color: _fOrange)),
@@ -1230,6 +1272,29 @@ class _FinanceViewState extends State<FinanceView> {
               const SizedBox(width: 6),
               Text('/ ${tl0(budget)}',
                   style: TextStyle(fontSize: 14, color: c.textMuted)),
+              if (vm.isViewMonthBudgetLocked) ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                      color: _fOrange.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(8)),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.lock_rounded,
+                          size: 12, color: _fOrange),
+                      const SizedBox(width: 3),
+                      Text('finance.locked'.tr(),
+                          style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: _fOrange)),
+                    ],
+                  ),
+                ),
+              ],
             ],
           ),
           const SizedBox(height: 10),
@@ -1508,7 +1573,7 @@ class _FinanceViewState extends State<FinanceView> {
         decoration: BoxDecoration(
             color: _fOrange.withOpacity(0.12),
             borderRadius: BorderRadius.circular(10)),
-        child: const Icon(Icons.receipt_long_rounded,
+        child: Icon(Icons.receipt_long_rounded,
             size: 18, color: _fOrange),
       ),
       const SizedBox(width: 10),
@@ -1544,11 +1609,11 @@ class _FinanceViewState extends State<FinanceView> {
   /// Tüm işlemleri (gelir + gider) tarihe göre sıralı döner.
   List<_Txn> _allTxns(FinanceViewModel vm) {
     final items = <_Txn>[];
-    for (final e in vm.expenses) {
+    for (final e in vm.monthExpenses) {
       items.add(_Txn(e.id, e.description ?? finCatById(e.category).labelKey.tr(),
           e.expenseDate, -e.amount, e.category, false));
     }
-    for (final i in vm.income) {
+    for (final i in vm.monthIncome) {
       DateTime d;
       try {
         d = DateTime.parse(i.date);
@@ -1622,13 +1687,13 @@ class _FinanceViewState extends State<FinanceView> {
                     Text(
                       'finance.seeAllTxn'
                           .tr(namedArgs: {'n': '${items.length}'}),
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                           color: _fOrange),
                     ),
                     const SizedBox(width: 4),
-                    const Icon(Icons.chevron_right_rounded,
+                    Icon(Icons.chevron_right_rounded,
                         size: 16, color: _fOrange),
                   ],
                 ),
@@ -1854,6 +1919,7 @@ class _FinanceViewState extends State<FinanceView> {
 
   void _showBudgetSettingsDialog(
       BuildContext context, FinanceViewModel viewModel, bool isDarkMode) {
+    viewModel.prepareBudgetSheet();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1972,11 +2038,11 @@ class _SubscriptionsManagerSheet extends StatelessWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.add_rounded,
+                                Icon(Icons.add_rounded,
                                     size: 18, color: _fOrange),
                                 const SizedBox(width: 4),
                                 Text('finance.addSubscription'.tr(),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                         fontSize: 13,
                                         fontWeight: FontWeight.w700,
                                         color: _fOrange)),
@@ -2135,7 +2201,7 @@ void _txnMenu(
     builder: (ctx) => SafeArea(
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         ListTile(
-          leading: const Icon(Icons.edit_rounded, color: _fOrange),
+          leading: Icon(Icons.edit_rounded, color: _fOrange),
           title: Text('common.edit'.tr(),
               style: TextStyle(color: c.textPrimary)),
           onTap: () {
@@ -2514,9 +2580,10 @@ class _FinanceFormSheet extends StatelessWidget {
     required this.isDarkMode,
   });
 
-  static const _accent = Color(0xFFF6A821);
-  static const _red = Color(0xFFF6524B);
-  static const _green = Color(0xFF48BB78);
+  // Form renkleri — seçili temadan (aksan + gelir=success/gider=danger).
+  Color get _accent => ColorConstant.accentOrange;
+  Color get _red => AppPalette.danger;
+  Color get _green => AppPalette.success;
 
   @override
   Widget build(BuildContext context) {
@@ -2613,7 +2680,7 @@ class _FinanceFormSheet extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
               child: Text('common.save'.tr(),
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
                       color: _accent)),
@@ -2937,7 +3004,7 @@ class _FinanceFormSheet extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                 child: Row(children: [
-                  const Icon(Icons.autorenew_rounded,
+                  Icon(Icons.autorenew_rounded,
                       size: 22, color: _accent),
                   const SizedBox(width: 12),
                   Expanded(
@@ -2971,7 +3038,7 @@ class _FinanceFormSheet extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 14, vertical: 14),
                   child: Row(children: [
-                    const Icon(Icons.event_rounded, size: 22, color: _accent),
+                    Icon(Icons.event_rounded, size: 22, color: _accent),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text('finance.nextPayment'.tr(),
@@ -2997,9 +3064,8 @@ class _FinanceFormSheet extends StatelessWidget {
   }
 
   Widget _budgetImpact(FinanceViewModel vm, AppColors c) {
-    final b = vm.budgetStats;
-    final budget = b?.monthlyBudget ?? 0;
-    final spent = b?.totalSpent ?? vm.monthExpensesTotal;
+    final budget = vm.viewMonthBudget;
+    final spent = vm.monthExpensesTotal;
     final amount =
         double.tryParse(vm.expenseAmountController.text.replaceAll(',', '.')) ??
             0;
@@ -3018,13 +3084,13 @@ class _FinanceFormSheet extends StatelessWidget {
           Row(children: [
             Expanded(
               child: Text('finance.budgetImpact'.tr(),
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
                       color: _accent)),
             ),
             Text('%${(pct * 100).round()}',
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
                     color: _accent)),
@@ -3050,14 +3116,14 @@ class _FinanceFormSheet extends StatelessWidget {
           if (over) ...[
             const SizedBox(height: 8),
             Row(children: [
-              const Icon(Icons.warning_amber_rounded,
+              Icon(Icons.warning_amber_rounded,
                   size: 15, color: _red),
               const SizedBox(width: 4),
               Text(
                   'finance.overLimit'.tr(namedArgs: {
                     'amount': tl0(after - budget)
                   }),
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 12.5,
                       fontWeight: FontWeight.w600,
                       color: _red)),
@@ -3113,7 +3179,7 @@ class _FinanceFormSheet extends StatelessWidget {
                               color: _accent.withOpacity(0.12),
                               borderRadius: BorderRadius.circular(20)),
                           child: Text('#${vm.formTags[i]}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 11.5,
                                   fontWeight: FontWeight.w700,
                                   color: _accent)),
@@ -3124,7 +3190,7 @@ class _FinanceFormSheet extends StatelessWidget {
                   GestureDetector(
                     onTap: () => _textInput(context, vm, 'finance.tags'.tr(),
                         '', (v) => vm.addFormTag(v)),
-                    child: const Icon(Icons.add_rounded,
+                    child: Icon(Icons.add_rounded,
                         size: 20, color: _accent),
                   ),
                 ]),
@@ -3155,7 +3221,7 @@ class _FinanceFormSheet extends StatelessWidget {
                                 color: c.border, width: 1.4),
                           ),
                           child: Column(children: [
-                            const Icon(Icons.camera_alt_rounded,
+                            Icon(Icons.camera_alt_rounded,
                                 size: 26, color: _accent),
                             const SizedBox(height: 6),
                             Text('finance.addReceipt'.tr(),
@@ -3245,7 +3311,7 @@ class _FinanceFormSheet extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16)),
             ),
             child: Text('tasks.discard'.tr(),
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: _accent)),
@@ -3344,7 +3410,7 @@ class _FinanceFormSheet extends StatelessWidget {
               title: Text('$prefix.$o'.tr(),
                   style: TextStyle(color: c.textPrimary)),
               trailing: current == o
-                  ? const Icon(Icons.check_rounded, color: _accent)
+                  ? Icon(Icons.check_rounded, color: _accent)
                   : null,
               onTap: () {
                 onPick(o);
@@ -3366,7 +3432,7 @@ class _FinanceFormSheet extends StatelessWidget {
       builder: (ctx) => SafeArea(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           ListTile(
-            leading: const Icon(Icons.document_scanner_rounded, color: _fOrange),
+            leading: Icon(Icons.document_scanner_rounded, color: _fOrange),
             title: Text('finance.ocr.scanCamera'.tr(),
                 style: TextStyle(
                     color: c.textPrimary, fontWeight: FontWeight.w700)),
@@ -3378,7 +3444,7 @@ class _FinanceFormSheet extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.image_search_rounded, color: _fOrange),
+            leading: Icon(Icons.image_search_rounded, color: _fOrange),
             title: Text('finance.ocr.scanGallery'.tr(),
                 style: TextStyle(
                     color: c.textPrimary, fontWeight: FontWeight.w700)),
@@ -3389,7 +3455,7 @@ class _FinanceFormSheet extends StatelessWidget {
           ),
           Divider(color: c.border.withOpacity(0.5), height: 1),
           ListTile(
-            leading: const Icon(Icons.camera_alt_rounded, color: _accent),
+            leading: Icon(Icons.camera_alt_rounded, color: _accent),
             title: Text('finance.takePhoto'.tr(),
                 style: TextStyle(color: c.textPrimary)),
             onTap: () {
@@ -3446,7 +3512,7 @@ class _FinanceFormSheet extends StatelessWidget {
                 Navigator.pop(ctx);
               },
               child: Text('common.save'.tr(),
-                  style: const TextStyle(color: _accent))),
+                  style: TextStyle(color: _accent))),
         ],
       ),
     );
@@ -3461,6 +3527,12 @@ class _BudgetSettingsBottomSheet extends StatelessWidget {
     required this.viewModel,
     required this.isDarkMode,
   });
+
+  String _monthLabel() {
+    final ms = 'calendar.monthNames'.tr().split(',');
+    final mm = viewModel.viewMonth;
+    return '${mm.month <= ms.length ? ms[mm.month - 1] : ''} ${mm.year}';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -3538,6 +3610,141 @@ class _BudgetSettingsBottomSheet extends StatelessWidget {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
                               borderSide: BorderSide.none,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: isDarkMode
+                                ? ColorConstant.bgColorDark
+                                : ColorConstant.bgColorLight,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    vm.budgetLockThisMonth
+                                        ? Icons.lock_rounded
+                                        : Icons.lock_open_rounded,
+                                    color: _fOrange,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      'finance.budgetLockTitle'.tr(namedArgs: {
+                                        'month': _monthLabel(),
+                                      }),
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        color: isDarkMode
+                                            ? ColorConstant.textPrimaryDark
+                                            : ColorConstant.textPrimaryLight,
+                                      ),
+                                    ),
+                                  ),
+                                  Switch(
+                                    value: vm.budgetLockThisMonth,
+                                    activeColor: _fOrange,
+                                    onChanged: vm.setBudgetLockThisMonth,
+                                  ),
+                                ],
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(left: 32, top: 2),
+                                child: Text(
+                                  vm.budgetLockThisMonth
+                                      ? 'finance.budgetLockOnDesc'.tr()
+                                      : 'finance.budgetLockOffDesc'.tr(),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: isDarkMode
+                                        ? ColorConstant.textMutedDark
+                                        : ColorConstant.textMutedLight,
+                                  ),
+                                ),
+                              ),
+                              if (vm.isViewMonthBudgetLocked) ...[
+                                const SizedBox(height: 8),
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 32),
+                                  child: GestureDetector(
+                                    onTap: () => vm.unlockMonthBudget(),
+                                    child: Text(
+                                      'finance.budgetLockRemove'.tr(),
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFFF6524B),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        InkWell(
+                          onTap: () => _showOpeningBalanceDialog(
+                              context, vm, isDarkMode),
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: isDarkMode
+                                  ? ColorConstant.bgColorDark
+                                  : ColorConstant.bgColorLight,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                    Icons.account_balance_wallet_outlined,
+                                    color: _fOrange),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'finance.openingBalanceTitle'.tr(),
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          color: isDarkMode
+                                              ? ColorConstant.textPrimaryDark
+                                              : ColorConstant.textPrimaryLight,
+                                        ),
+                                      ),
+                                      Text(
+                                        vm.openingBalanceSet
+                                            ? AppCurrency.format(
+                                                vm.openingBalance,
+                                                decimals: 0)
+                                            : 'finance.openingBalanceNone'.tr(),
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: isDarkMode
+                                              ? ColorConstant.textSecondaryDark
+                                              : ColorConstant
+                                                  .textSecondaryLight,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Icon(Icons.chevron_right,
+                                    color: isDarkMode
+                                        ? ColorConstant.textSecondaryDark
+                                        : ColorConstant.textSecondaryLight),
+                              ],
                             ),
                           ),
                         ),
@@ -4524,6 +4731,83 @@ void _showFinanceLockDialog(
   );
 }
 
+/// Açılış / mevcut bakiye giriş diyaloğu. Girilen tutar devirli Ana Hesap'ın
+/// içinde bulunulan aydan itibaren başlangıç noktası olur.
+void _showOpeningBalanceDialog(
+    BuildContext context, FinanceViewModel vm, bool isDark) {
+  final ctrl = TextEditingController(
+      text: vm.openingBalanceSet ? vm.openingBalance.toStringAsFixed(0) : '');
+  final txtP =
+      isDark ? ColorConstant.textPrimaryDark : ColorConstant.textPrimaryLight;
+  final txtS = isDark
+      ? ColorConstant.textSecondaryDark
+      : ColorConstant.textSecondaryLight;
+  showDialog(
+    context: context,
+    builder: (dctx) => AlertDialog(
+      backgroundColor:
+          isDark ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: Text('finance.openingBalanceTitle'.tr(),
+          style: TextStyle(color: txtP, fontWeight: FontWeight.w800)),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('finance.openingBalanceDesc'.tr(),
+              style: TextStyle(fontSize: 12.5, color: txtS)),
+          const SizedBox(height: 14),
+          TextField(
+            controller: ctrl,
+            keyboardType: TextInputType.number,
+            autofocus: true,
+            style: TextStyle(color: txtP),
+            decoration: InputDecoration(
+              prefixText: '${AppCurrency.symbol} ',
+              hintText: 'finance.hints.budgetExample'.tr(),
+              filled: true,
+              fillColor:
+                  isDark ? ColorConstant.bgColorDark : ColorConstant.bgColorLight,
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none),
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        if (vm.openingBalanceSet)
+          TextButton(
+            onPressed: () async {
+              await vm.clearOpeningBalance();
+              if (dctx.mounted) Navigator.pop(dctx);
+            },
+            child: Text('finance.openingBalanceClear'.tr(),
+                style: const TextStyle(
+                    color: Color(0xFFF6524B), fontWeight: FontWeight.w700)),
+          ),
+        TextButton(
+          onPressed: () => Navigator.pop(dctx),
+          child: Text('common.cancel'.tr(), style: TextStyle(color: txtS)),
+        ),
+        ElevatedButton(
+          onPressed: () async {
+            final amount =
+                double.tryParse(ctrl.text.trim().replaceAll(',', '.'));
+            if (amount == null) return;
+            await vm.setOpeningBalance(amount);
+            if (dctx.mounted) Navigator.pop(dctx);
+          },
+          style: ElevatedButton.styleFrom(backgroundColor: _fOrange),
+          child: Text('common.save'.tr(),
+              style: const TextStyle(
+                  color: Colors.white, fontWeight: FontWeight.w700)),
+        ),
+      ],
+    ),
+  );
+}
+
 /// Finans ekranı kilitliyken gösterilen PIN giriş kapısı.
 class _FinanceLockGate extends StatefulWidget {
   final FinanceViewModel vm;
@@ -5296,12 +5580,12 @@ class _DebtPlannerSheetState extends State<_DebtPlannerSheet> {
                 ] else
                   OutlinedButton.icon(
                     onPressed: () => setState(() => _adding = true),
-                    icon: const Icon(Icons.add, color: _fOrange),
+                    icon: Icon(Icons.add, color: _fOrange),
                     label: Text('finance.debt.add'.tr(),
-                        style: const TextStyle(color: _fOrange)),
+                        style: TextStyle(color: _fOrange)),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      side: const BorderSide(color: _fOrange),
+                      side: BorderSide(color: _fOrange),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),
                     ),
@@ -5491,7 +5775,7 @@ class _InstallmentsSheetState extends State<_InstallmentsSheet> {
                               TextButton(
                                 onPressed: () => vm.markInstallmentPaid(it.id),
                                 child: Text('finance.installment.pay'.tr(),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                         color: _fOrange,
                                         fontWeight: FontWeight.w700)),
                               ),
@@ -5566,12 +5850,12 @@ class _InstallmentsSheetState extends State<_InstallmentsSheet> {
                 ] else
                   OutlinedButton.icon(
                     onPressed: () => setState(() => _adding = true),
-                    icon: const Icon(Icons.add, color: _fOrange),
+                    icon: Icon(Icons.add, color: _fOrange),
                     label: Text('finance.installment.add'.tr(),
-                        style: const TextStyle(color: _fOrange)),
+                        style: TextStyle(color: _fOrange)),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      side: const BorderSide(color: _fOrange),
+                      side: BorderSide(color: _fOrange),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),
                     ),
@@ -5676,7 +5960,7 @@ void _showCurrencyDialog(BuildContext context, FinanceViewModel vm, bool isDark,
                                         color: txtPrimary)),
                               ),
                               if (sel)
-                                const Icon(Icons.check_circle,
+                                Icon(Icons.check_circle,
                                     color: _fOrange, size: 20),
                             ],
                           ),

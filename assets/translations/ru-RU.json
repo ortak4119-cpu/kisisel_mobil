@@ -1,9 +1,13 @@
 {
   "update": {
-    "title": "Доступна новая версия",
-    "message": "Доступна новая версия LifeSync. Рекомендуем обновить для наилучшего опыта.",
+    "title": "Доступно обновление",
+    "forceBody": "Чтобы продолжить, обновите приложение.",
+    "softBody": "Доступна новая версия 🎉 Обновите для лучшего опыта.",
+    "later": "Позже",
     "update": "Обновить",
-    "later": "Позже"
+    "review": "Обзор обновления",
+    "whatsNew": "Что нового?",
+    "noNotes": "Нет заметок для этой версии."
   },
   "app": {
     "name": "LifeSync",
@@ -115,6 +119,7 @@
     "passwordConfirmRequired": "Подтверждение пароля обязательно",
     "passwordMismatch": "Пароли не совпадают",
     "forgotPassword": "Забыли Пароль?",
+    "rememberMe": "Запомнить меня",
     "login": "Войти",
     "register": "Зарегистрироваться",
     "continueWithGoogle": "Продолжить с Google",
@@ -289,6 +294,11 @@
     "newSubtask": "Новая подзадача",
     "reminderBeforeMinutes": "за {n} мин",
     "reminderOff": "Напоминание выкл.",
+    "upcomingSection": "Предстоящие",
+    "upcomingEmpty": "Нет предстоящих задач",
+    "reminderAtTime": "В {time}",
+    "reminderPickTime": "Выбрать время",
+    "reschedule": "Перепланировать задачу",
     "reminderTapChange": "Нажмите, чтобы изменить",
     "attachTitle": "Вложения",
     "attachments": "Файл или фото",
@@ -450,7 +460,8 @@
     "today": "сегодня",
     "streakN": "серия {n}",
     "doneShort": "готово",
-    "skippedShort": "пропущено"
+    "skippedShort": "пропущено",
+    "searchHint": "Поиск привычек"
   },
   "profile": {
     "title": "Профиль",
@@ -637,7 +648,9 @@
       "planLifetime": "Premium навсегда",
       "planPremium": "Premium",
       "planFree": "Бесплатно",
-      "cancelNote": "Отменить подписку можно в любой момент в настройках подписок магазина ({store})."
+      "cancelNote": "Отменить подписку можно в любой момент в настройках подписок магазина ({store}).",
+      "couponInfo": "Это членство получено по промокоду. По истечении срока для продолжения нужна подписка.",
+      "changePlan": "Изменить подписку"
     },
     "replayOnboarding": "Посмотреть интро снова",
     "completion": "Профиль заполнен на {percent}%",
@@ -976,6 +989,16 @@
     "editIncome": "Изменить доход",
     "mainAccount": "Основной счёт",
     "spendableToday": "Доступно сегодня",
+    "thisMonthNet": "Чистый за месяц",
+    "budgetLockTitle": "Зафиксировать на {month}",
+    "budgetLockOnDesc": "Отдельный бюджет на этот месяц. Не меняется при смене общего.",
+    "budgetLockOffDesc": "Общий месячный бюджет применяется ко всем незафиксированным месяцам.",
+    "budgetLockRemove": "Снять фиксацию этого месяца",
+    "locked": "Зафиксировано",
+    "openingBalanceTitle": "Начальный/текущий баланс",
+    "openingBalanceNone": "Не задан",
+    "openingBalanceDesc": "Введите текущий остаток. Основной счёт отсчитывается от этой суммы (с этого месяца).",
+    "openingBalanceClear": "Очистить",
     "subShort": "Подписка",
     "lockShort": "Блок",
     "tabGeneral": "Общее",
@@ -1017,6 +1040,9 @@
     "deleteNote": "Удалить Заметку",
     "deleteNoteConfirm": "Вы уверены, что хотите удалить эту заметку?",
     "lockNote": "Заблокировать Заметку",
+    "resizeNote": "Изменить размер",
+    "preview": "Предпросмотр",
+    "copiedText": "Текст скопирован",
     "unlockNote": "Разблокировать Заметку",
     "enterPin": "Введите PIN-код для просмотра этой заметки",
     "pinNote": "Закрепить",
@@ -1099,7 +1125,12 @@
       "fileError": "Не удалось выбрать файл",
       "reminderSet": "Напоминание: {date}",
       "done": "Готово",
-      "saving": "Сохранение…"
+      "saving": "Сохранение…",
+      "shareCollab": "Общая заметка",
+      "shared": "Общая",
+      "makeShared": "Сделать общей",
+      "checklistTitle": "Список",
+      "people": "чел."
     },
     "add": {
       "noteTitle": "Добавить заметку",
@@ -1179,6 +1210,12 @@
   },
   "settings": {
     "title": "Настройки",
+    "theme_title": "Тема",
+    "theme_kraft": "Тёплый крафт",
+    "theme_blue": "Светло-синий",
+    "theme_pink": "Светло-розовый",
+    "theme_green": "Светло-зелёный",
+    "theme_orange": "Светло-оранжевый",
     "sections": {
       "premium": "Премиум",
       "notifications": "Уведомления",
@@ -1200,7 +1237,8 @@
       "diarySubtitle": "Напоминания о написании дневника",
       "subscription": "Подписки",
       "note": "Заметки",
-      "social": "Социальное"
+      "social": "Социальное",
+      "engagement": "Ежедневная мотивация"
     },
     "appearance": {
       "theme": "Тема",
@@ -1266,7 +1304,16 @@
       "showLevel": "Показывать уровень",
       "showAchievements": "Показывать достижения",
       "showHabits": "Показывать привычки"
-    }
+    },
+    "notif_sound_title": "Звук уведомления",
+    "snd_chime": "Перезвон",
+    "snd_marimba": "Маримба",
+    "snd_bell": "Колокол",
+    "snd_soft": "Мягкий",
+    "snd_pop": "Поп",
+    "snd_default": "По умолчанию",
+    "snd_silent": "Без звука",
+    "snd_preview": "Прослушать"
   },
   "validation": {
     "required": "Это поле обязательно",
@@ -1367,6 +1414,7 @@
     "diaryDeleted": "Дневник удален",
     "taskAdded": "Задача добавлена",
     "taskUpdated": "Задача обновлена",
+    "taskRescheduled": "Задача перепланирована",
     "taskDeleted": "Задача удалена",
     "taskCompleted": "Задача выполнена! 🎉",
     "taskMarkedIncomplete": "Задача отмечена как невыполненная",
@@ -1464,7 +1512,18 @@
     "limitInfo": "В бесплатной версии лимит {limit} для {feature}.",
     "currentUsage": "Сейчас вы используете {current}/{limit}.",
     "unlockCta": "Перейдите на Премиум для безлимитного использования!",
-    "goCta": "Перейти на Премиум"
+    "goCta": "Перейти на Премиум",
+    "unlocked": "Premium активирован",
+    "feat_unlimited": "Безлимитные заметки, задачи и всё остальное",
+    "feat_noads": "Без рекламы",
+    "feat_themes": "Все темы и звуки",
+    "start": "Начнём",
+    "choose_theme": "Выберите тему",
+    "choose_theme_sub": "Можно изменить в любой момент в настройках",
+    "choose_sound": "Выберите звук уведомлений",
+    "choose_sound_sub": "Нажмите «play», чтобы прослушать",
+    "continue": "Продолжить",
+    "finish": "Открыть приложение"
   },
   "messages": {
     "noteCreated": "Заметка успешно добавлена",
@@ -1532,10 +1591,14 @@
     "editing": "{name} редактирует",
     "lockedBusy": "{name} сейчас редактирует",
     "noShared": "Пока нет общих",
+    "endShare": "Прекратить доступ",
+    "endShareConfirm": "Прекратить доступ? Элемент будет удалён у других пользователей.",
+    "endShareDone": "Доступ прекращён",
     "noInvites": "Нет ожидающих приглашений",
     "participants": "Участники",
     "completed": "Выполнено",
     "notCompleted": "Не выполнено",
-    "viewerCannotEdit": "Только просмотр — нельзя редактировать"
+    "viewerCannotEdit": "Только просмотр — нельзя редактировать",
+    "saveNoteFirst": "Сначала сохраните заметку"
   }
 }

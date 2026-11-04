@@ -100,6 +100,7 @@ class SettingsViewModel extends ChangeNotifier {
     bool? noteNotifications,
     bool? diaryReminders,
     bool? socialNotifications,
+    bool? engagementEnabled,
   }) async {
     try {
       _isLoading = true;
@@ -113,6 +114,7 @@ class SettingsViewModel extends ChangeNotifier {
         noteNotifications: noteNotifications,
         diaryReminders: diaryReminders,
         socialNotifications: socialNotifications,
+        engagementEnabled: engagementEnabled,
       );
 
       final response = await _settingsService.updateSettings(request);

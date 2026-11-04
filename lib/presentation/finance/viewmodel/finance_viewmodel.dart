@@ -350,6 +350,233 @@ class FinanceViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ---- Ay-bazlı bütçe kilidi (yerel) ----
+  // Global aylık bütçe (backend) her aya varsayılan olarak uygulanır. Bir ay
+  // için özel bütçe "kilitlenirse" o ay global bütçe değişiminden etkilenmez.
+  final Map<String, double> _monthBudgets = {};
+  static const String _kMonthBudgetsKey = 'finance_month_budgets_v1';
+  bool _budgetLockThisMonth = false;
+  bool get budgetLockThisMonth => _budgetLockThisMonth;
+  void setBudgetLockThisMonth(bool v) {
+    _budgetLockThisMonth = v;
+    notifyListeners();
+  }
+
+  String _mKey(DateTime m) =>
+      '${m.year}-${m.month.toString().padLeft(2, '0')}';
+
+  /// Bir ayın efektif bütçesi: kilitliyse özel değer, değilse global bütçe.
+  double budgetForMonth(DateTime m) =>
+      _monthBudgets[_mKey(m)] ?? (_budgetStats?.monthlyBudget ?? 0);
+  bool isMonthBudgetLocked(DateTime m) => _monthBudgets.containsKey(_mKey(m));
+
+  double get viewMonthBudget => budgetForMonth(_viewMonth);
+  bool get isViewMonthBudgetLocked => isMonthBudgetLocked(_viewMonth);
+
+  /// Ay bütçe kilitlerini yükler: önce yerel önbellek (hızlı/offline), sonra
+  /// backend (cihazlar arası tek doğruluk kaynağı). Yerelde olup backend'de
+  /// olmayan eski kayıtları bir kez backend'e taşır.
+  Future<void> loadMonthBudgets() async {
+    await _loadMonthBudgetsLocal();
+    try {
+      final resp = await _budgetService.getMonthBudgets();
+      if (resp.isSuccess && resp.data != null) {
+        final remote = Map<String, double>.from(resp.data!);
+        for (final e in _monthBudgets.entries) {
+          if (!remote.containsKey(e.key)) {
+            await _budgetService.setMonthBudget(e.key, e.value);
+            remote[e.key] = e.value;
+          }
+        }
+        _monthBudgets
+          ..clear()
+          ..addAll(remote);
+        await _persistMonthBudgets();
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('loadMonthBudgets remote error: $e');
+    }
+  }
+
+  Future<void> _loadMonthBudgetsLocal() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_kMonthBudgetsKey);
+      if (raw != null && raw.isNotEmpty) {
+        final m = jsonDecode(raw) as Map<String, dynamic>;
+        _monthBudgets
+          ..clear()
+          ..addEntries(
+              m.entries.map((e) => MapEntry(e.key, (e.value as num).toDouble())));
+      }
+    } catch (e) {
+      debugPrint('loadMonthBudgets local error: $e');
+    }
+  }
+
+  Future<void> _persistMonthBudgets() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_kMonthBudgetsKey, jsonEncode(_monthBudgets));
+    } catch (e) {
+      debugPrint('persistMonthBudgets error: $e');
+    }
+  }
+
+  /// Görüntülenen ayı özel bütçeyle kilitler (yerel + backend).
+  Future<void> lockMonthBudget(double amount) async {
+    final key = _mKey(_viewMonth);
+    _monthBudgets[key] = amount;
+    notifyListeners();
+    await _persistMonthBudgets();
+    try {
+      await _budgetService.setMonthBudget(key, amount);
+    } catch (e) {
+      debugPrint('lockMonthBudget remote error: $e');
+    }
+  }
+
+  /// Görüntülenen ayın kilidini kaldırır (global bütçeye döner; yerel + backend).
+  Future<void> unlockMonthBudget() async {
+    final key = _mKey(_viewMonth);
+    _monthBudgets.remove(key);
+    _budgetLockThisMonth = false;
+    budgetAmountController.text = viewMonthBudget > 0
+        ? viewMonthBudget.toStringAsFixed(0)
+        : '';
+    notifyListeners();
+    await _persistMonthBudgets();
+    try {
+      await _budgetService.deleteMonthBudget(key);
+    } catch (e) {
+      debugPrint('unlockMonthBudget remote error: $e');
+    }
+  }
+
+  /// Bütçe ayarları sayfası açılmadan önce formu hazırlar: kilit anahtarını
+  /// görüntülenen ayın durumuna getirir ve efektif bütçeyi doldurur.
+  void prepareBudgetSheet() {
+    _budgetLockThisMonth = isViewMonthBudgetLocked;
+    final b = viewMonthBudget;
+    budgetAmountController.text = b > 0 ? b.toStringAsFixed(0) : '';
+    notifyListeners();
+  }
+
+  // ---- Açılış / mevcut bakiye (yerel) ----
+  // Uygulama öncesi var olan bakiye: devirli Ana Hesap'ın başlangıç noktası.
+  // Belirlendiği ay (_openingMonth) ve sonrasında kümülatif toplama eklenir.
+  double _openingBalance = 0;
+  bool _openingBalanceSet = false;
+  DateTime _openingMonth =
+      DateTime(DateTime.now().year, DateTime.now().month);
+  static const String _kOpeningBalanceKey = 'finance_opening_balance_v1';
+
+  double get openingBalance => _openingBalance;
+  bool get openingBalanceSet => _openingBalanceSet;
+  DateTime get openingMonth => _openingMonth;
+
+  /// Açılış bakiyesini yükler: önce yerel önbellek, sonra backend (tek doğruluk
+  /// kaynağı). Yerelde olup backend'de olmayan değeri bir kez backend'e taşır.
+  Future<void> loadOpeningBalance() async {
+    await _loadOpeningBalanceLocal();
+    try {
+      final resp = await _budgetService.getBudget();
+      if (resp.isSuccess && resp.data != null) {
+        final b = resp.data!;
+        if (b.openingBalance != null) {
+          _openingBalance = b.openingBalance!;
+          _openingBalanceSet = true;
+          final mk = b.openingMonth;
+          if (mk != null && mk.contains('-')) {
+            final parts = mk.split('-');
+            if (parts.length == 2) {
+              final y = int.tryParse(parts[0]);
+              final mo = int.tryParse(parts[1]);
+              if (y != null && mo != null) _openingMonth = DateTime(y, mo);
+            }
+          }
+          await _persistOpeningBalanceLocal();
+          notifyListeners();
+        } else if (_openingBalanceSet) {
+          // Backend'de yok ama yerelde var → bir kez taşı.
+          await _budgetService.setOpeningBalance(
+              _openingBalance, _mKey(_openingMonth));
+        }
+      }
+    } catch (e) {
+      debugPrint('loadOpeningBalance remote error: $e');
+    }
+  }
+
+  Future<void> _loadOpeningBalanceLocal() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_kOpeningBalanceKey);
+      if (raw != null && raw.isNotEmpty) {
+        final j = jsonDecode(raw) as Map<String, dynamic>;
+        _openingBalance = (j['amount'] as num?)?.toDouble() ?? 0;
+        final mk = j['month'] as String?;
+        if (mk != null) {
+          final parts = mk.split('-');
+          if (parts.length == 2) {
+            _openingMonth =
+                DateTime(int.parse(parts[0]), int.parse(parts[1]));
+          }
+        }
+        _openingBalanceSet = true;
+      }
+    } catch (e) {
+      debugPrint('loadOpeningBalance local error: $e');
+    }
+  }
+
+  Future<void> _persistOpeningBalanceLocal() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+          _kOpeningBalanceKey,
+          jsonEncode({
+            'amount': _openingBalance,
+            'month': _mKey(_openingMonth),
+          }));
+    } catch (e) {
+      debugPrint('persistOpeningBalance error: $e');
+    }
+  }
+
+  /// Mevcut bakiyeyi belirler; içinde bulunulan aydan itibaren geçerli olur
+  /// (yerel + backend).
+  Future<void> setOpeningBalance(double amount) async {
+    _openingBalance = amount;
+    _openingMonth = DateTime(DateTime.now().year, DateTime.now().month);
+    _openingBalanceSet = true;
+    notifyListeners();
+    await _persistOpeningBalanceLocal();
+    try {
+      await _budgetService.setOpeningBalance(amount, _mKey(_openingMonth));
+    } catch (e) {
+      debugPrint('setOpeningBalance remote error: $e');
+    }
+  }
+
+  Future<void> clearOpeningBalance() async {
+    _openingBalance = 0;
+    _openingBalanceSet = false;
+    notifyListeners();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_kOpeningBalanceKey);
+    } catch (e) {
+      debugPrint('clearOpeningBalance local error: $e');
+    }
+    try {
+      await _budgetService.clearOpeningBalance();
+    } catch (e) {
+      debugPrint('clearOpeningBalance remote error: $e');
+    }
+  }
+
   void resetFilter() {
     _filterCategories.clear();
     notifyListeners();
@@ -707,6 +934,19 @@ class FinanceViewModel extends ChangeNotifier {
       return;
     }
 
+    // Kilit açıksa yalnızca görüntülenen ayı özel bütçeyle kilitle (yerel);
+    // global bütçeye dokunma. Diğer (kilitsiz) aylar global bütçeyi kullanır.
+    if (_budgetLockThisMonth) {
+      await lockMonthBudget(amount);
+      _budgetLockThisMonth = false;
+      resetBudgetForm();
+      if (context.mounted) {
+        CustomSnackBar.showSuccess(context, 'success.budgetUpdated'.tr());
+        Navigator.pop(context);
+      }
+      return;
+    }
+
     try {
       _isLoading = true;
       notifyListeners();
@@ -720,8 +960,7 @@ class FinanceViewModel extends ChangeNotifier {
 
       if (response.isSuccess) {
         await loadBudgetStats();
-        // Belirlenen aylık bütçe bu ay için gelir olarak sayılır/eklenir.
-        await _syncBudgetIncome(amount);
+        // Bütçe artık bir HARCAMA LİMİTİdir; gelir olarak sayılmaz.
         resetBudgetForm();
         if (context.mounted) {
           CustomSnackBar.showSuccess(context, 'success.budgetUpdated'.tr());
@@ -748,17 +987,18 @@ class FinanceViewModel extends ChangeNotifier {
 
   Future<void> loadExpenses() async {
     try {
-      // Görüntülenen ayın tamamını çek (grafik için birkaç gün öncesiyle).
-      final monthStart = DateTime(_viewMonth.year, _viewMonth.month, 1);
-      final monthEnd = DateTime(_viewMonth.year, _viewMonth.month + 1, 0);
-      final start = monthStart.subtract(const Duration(days: 7));
+      // Devirli (kümülatif) bakiye ve ±1 yıl ay gezinmesi için geniş aralık
+      // çekilir; aylık toplamlar istemci tarafında _viewMonth'a göre süzülür.
+      final now = DateTime.now();
+      final start = DateTime(now.year - 3, 1, 1);
+      final end = DateTime(now.year + 1, 12, 31);
       String fmt(DateTime d) =>
           '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
       final response = await _expenseService.getAllExpenses(
         startDate: fmt(start),
-        endDate: fmt(monthEnd),
-        perPage: 500,
+        endDate: fmt(end),
+        perPage: 1000,
       );
 
       if (response.isSuccess && response.data != null) {
@@ -1379,10 +1619,13 @@ class FinanceViewModel extends ChangeNotifier {
       await Future.wait([
         loadSubscriptions(),
         loadBudgetStats(),
+        loadExpenses(),
         loadIncome(),
         loadSavingsGoal(),
         loadDebts(),
         loadInstallments(),
+        loadMonthBudgets(),
+        loadOpeningBalance(),
       ]);
       await _updateHomeWidget();
     }
@@ -1418,10 +1661,13 @@ class FinanceViewModel extends ChangeNotifier {
     await Future.wait([
       loadSubscriptions(),
       loadBudgetStats(),
+      loadExpenses(),
       loadIncome(),
       loadSavingsGoal(),
       loadDebts(),
       loadInstallments(),
+      loadMonthBudgets(),
+      loadOpeningBalance(),
     ]);
     notifyListeners();
   }
@@ -1440,13 +1686,14 @@ class FinanceViewModel extends ChangeNotifier {
     try {
       await _migrateLocalIncomeIfNeeded();
       final now = DateTime.now();
-      final start = DateTime(now.year - 1, now.month, 1);
+      final start = DateTime(now.year - 3, 1, 1);
+      final end = DateTime(now.year + 1, 12, 31);
       String fmt(DateTime d) =>
           '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
       final resp = await _incomeService.getAllIncomes(
         startDate: fmt(start),
-        endDate: fmt(now),
-        perPage: 500,
+        endDate: fmt(end),
+        perPage: 1000,
       );
       if (resp.isSuccess && resp.data != null) {
         _income = resp.data!.data
@@ -1460,9 +1707,25 @@ class FinanceViewModel extends ChangeNotifier {
                 ))
             .toList();
       }
+      // Eski "bütçe geliri" kayıtlarını temizle — bütçe artık gelir sayılmıyor.
+      await _cleanupBudgetIncomeRows();
     } catch (e) {
       debugPrint('Error loading income: $e');
     }
+  }
+
+  /// Eski sürümlerde bütçe belirlenince oluşturulan sahte "gelir" kayıtları
+  /// (kategori == budget) çift sayıma yol açıyordu. Bir kez temizlenir.
+  bool _budgetIncomeCleaned = false;
+  Future<void> _cleanupBudgetIncomeRows() async {
+    if (_budgetIncomeCleaned) return;
+    final rows =
+        _income.where((i) => i.category == budgetIncomeCategory).toList();
+    for (final r in rows) {
+      final resp = await _incomeService.deleteIncome(r.id);
+      if (resp.isSuccess) _income.removeWhere((x) => x.id == r.id);
+    }
+    _budgetIncomeCleaned = true;
   }
 
   /// Eski yerel gelir kayıtlarını bir kez backend'e taşır, sonra siler.
@@ -1504,11 +1767,26 @@ class FinanceViewModel extends ChangeNotifier {
     return _viewMonth.isAfter(n);
   }
 
-  /// Görüntülenen ayı değiştirir ve o ayın verilerini yükler.
+  /// En fazla ±1 yıl gezinilebilir (bugünden itibaren).
+  bool canGoToMonth(DateTime target) {
+    final now = DateTime.now();
+    final minM = DateTime(now.year, now.month - 12);
+    final maxM = DateTime(now.year, now.month + 12);
+    final t = DateTime(target.year, target.month);
+    return !t.isBefore(minM) && !t.isAfter(maxM);
+  }
+
+  bool get canGoBack =>
+      canGoToMonth(DateTime(_viewMonth.year, _viewMonth.month - 1));
+  bool get canGoForward =>
+      canGoToMonth(DateTime(_viewMonth.year, _viewMonth.month + 1));
+
+  /// Görüntülenen ayı değiştirir. Veri zaten geniş aralıkta yüklü olduğundan
+  /// yeniden ağ isteği gerekmez; yalnızca süzme ayı değişir. ±1 yıl sınırı.
   Future<void> changeMonth(int delta) async {
-    _viewMonth = DateTime(_viewMonth.year, _viewMonth.month + delta);
-    notifyListeners();
-    await Future.wait([loadExpenses(), loadIncome()]);
+    final target = DateTime(_viewMonth.year, _viewMonth.month + delta);
+    if (!canGoToMonth(target)) return;
+    _viewMonth = target;
     notifyListeners();
   }
 
@@ -1517,25 +1795,26 @@ class FinanceViewModel extends ChangeNotifier {
     if (isCurrentMonth) return;
     _viewMonth = DateTime(n.year, n.month);
     notifyListeners();
-    await Future.wait([loadExpenses(), loadIncome()]);
-    notifyListeners();
   }
 
   bool _sameMonth(DateTime d) {
     return d.year == _viewMonth.year && d.month == _viewMonth.month;
   }
 
-  double get monthIncomeTotal {
-    double t = 0;
-    for (final i in _income) {
-      try {
-        if (_sameMonth(DateTime.parse(i.date))) {
-          t += i.amount;
+  double get monthIncomeTotal => incomeForMonth(_viewMonth);
+
+  /// Görüntülenen aydaki giderler (işlem listesi için).
+  List<Expense> get monthExpenses =>
+      _expenses.where((e) => _sameMonth(e.expenseDate)).toList();
+
+  /// Görüntülenen aydaki gelirler (işlem listesi için).
+  List<IncomeEntry> get monthIncome => _income.where((i) {
+        try {
+          return _sameMonth(DateTime.parse(i.date));
+        } catch (_) {
+          return false;
         }
-      } catch (_) {}
-    }
-    return t;
-  }
+      }).toList();
 
   Future<bool> addIncome(double amount, String? desc, String category,
       String date, int idSeed) async {
@@ -1571,38 +1850,9 @@ class FinanceViewModel extends ChangeNotifier {
     }
   }
 
-  /// Aylık bütçe belirlenince o tutar bu ay için gelir olarak eklenir.
-  /// Çoğalmayı önlemek için bu ayın önceki bütçe-gelir kayıtları silinip
-  /// güncel tutarla tek bir kayıt oluşturulur (tek doğruluk kaynağı).
+  /// Eski sürümlerde bütçe "gelir" kaydı bu kategoriyle oluşturuluyordu;
+  /// artık yalnızca temizlik (_cleanupBudgetIncomeRows) için tutuluyor.
   static const String budgetIncomeCategory = 'budget';
-  Future<void> _syncBudgetIncome(double amount) async {
-    try {
-      final now = DateTime.now();
-      bool sameMonth(String d) {
-        try {
-          final dt = DateTime.parse(d);
-          return dt.year == now.year && dt.month == now.month;
-        } catch (_) {
-          return false;
-        }
-      }
-
-      final existing = _income
-          .where((i) =>
-              i.category == budgetIncomeCategory && sameMonth(i.date))
-          .toList();
-      for (final e in existing) {
-        final resp = await _incomeService.deleteIncome(e.id);
-        if (resp.isSuccess) _income.removeWhere((x) => x.id == e.id);
-      }
-      final dateStr =
-          '${now.year}-${now.month.toString().padLeft(2, '0')}-01';
-      await addIncome(amount, 'finance.budgetIncomeDesc'.tr(),
-          budgetIncomeCategory, dateStr, 0);
-    } catch (e) {
-      debugPrint('Budget income sync exception: $e');
-    }
-  }
 
   // ---- Tasarruf hedefi (yerel) ----
   static const String _kSavingsKey = 'finance_savings_v1';
@@ -1663,18 +1913,111 @@ class FinanceViewModel extends ChangeNotifier {
     _savingsCurrent += amount;
     notifyListeners();
     await _savingsService.updateSavings(current: _savingsCurrent);
+    // Tasarrufa aktarılan para harcanabilir bakiyeden çıkar: tarihli bir gider
+    // kaydı oluşturulur (kategori 'savings') ki devirli bakiyeye yansısın.
+    try {
+      final now = DateTime.now();
+      final dateStr =
+          '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      final resp = await _expenseService.createExpense(ExpenseRequest(
+        category: 'savings',
+        amount: amount,
+        currency: AppCurrency.code,
+        description: 'finance.savingsFund'.tr(),
+        expenseDate: dateStr,
+        isRecurring: false,
+      ));
+      if (resp.isSuccess && resp.data != null) {
+        _expenses.insert(0, resp.data!);
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Savings expense record error: $e');
+    }
   }
 
   // ---- Aylık toplamlar / grafik verileri ----
-  double get monthExpensesTotal {
+
+  /// Belirli bir aydaki elle girilen giderlerin toplamı.
+  double _manualExpensesForMonth(DateTime m) {
     double t = 0;
     for (final e in _expenses) {
-      if (_sameMonth(e.expenseDate)) {
+      if (e.expenseDate.year == m.year && e.expenseDate.month == m.month) {
         t += e.amount;
       }
     }
     return t;
   }
+
+  /// Belirli bir ayda tahsil edilen aboneliklerin toplamı (sanal — ayrı gider
+  /// kaydı tutulmaz, aylık hesaplanır). Abonelik oluşturulduğu aydan itibaren
+  /// ve aktifken sayılır. Yıllık: yıldönümü ayında; haftalık: ~4 hafta/ay.
+  double subscriptionsForMonth(DateTime m) {
+    double t = 0;
+    final mm = DateTime(m.year, m.month);
+    for (final s in _subscriptions) {
+      if (!s.isActive) continue;
+      final start = DateTime(s.createdAt.year, s.createdAt.month);
+      if (mm.isBefore(start)) continue;
+      switch (s.billingCycle) {
+        case 'yearly':
+          if (m.month == s.nextBillingDate.month) t += s.amount;
+          break;
+        case 'weekly':
+          t += s.amount * 4;
+          break;
+        case 'monthly':
+        default:
+          t += s.amount;
+      }
+    }
+    return t;
+  }
+
+  /// Belirli bir ayda ödenmesi gereken taksitlerin toplamı (sanal).
+  /// Taksit [başlangıç, başlangıç + taksit sayısı) ay aralığında aktiftir.
+  double installmentsForMonth(DateTime m) {
+    double t = 0;
+    final mm = DateTime(m.year, m.month);
+    for (final inst in _installments) {
+      DateTime start;
+      try {
+        final d = DateTime.parse(inst.startDate);
+        start = DateTime(d.year, d.month);
+      } catch (_) {
+        continue;
+      }
+      final end = DateTime(start.year, start.month + inst.installmentCount);
+      if (!mm.isBefore(start) && mm.isBefore(end)) {
+        t += inst.monthlyAmount;
+      }
+    }
+    return t;
+  }
+
+  /// Bir ayın TOPLAM gideri: elle girilen + abonelik + taksit.
+  double outflowForMonth(DateTime m) =>
+      _manualExpensesForMonth(m) +
+      subscriptionsForMonth(m) +
+      installmentsForMonth(m);
+
+  /// Bir ayın geliri (yalnızca elle girilen gelirler).
+  double incomeForMonth(DateTime m) {
+    double t = 0;
+    for (final i in _income) {
+      try {
+        final d = DateTime.parse(i.date);
+        if (d.year == m.year && d.month == m.month) t += i.amount;
+      } catch (_) {}
+    }
+    return t;
+  }
+
+  /// Görüntülenen ayın toplam gideri (abonelik + taksit + tasarruf dahil).
+  double get monthExpensesTotal => outflowForMonth(_viewMonth);
+
+  /// Görüntülenen ayın tek-ay net'i (devirden bağımsız): gelir − gider.
+  double get monthNet => incomeForMonth(_viewMonth) - monthExpensesTotal;
 
   double get monthSavingsRate {
     final inc = monthIncomeTotal;
@@ -1682,7 +2025,65 @@ class FinanceViewModel extends ChangeNotifier {
     return ((inc - monthExpensesTotal) / inc * 100).clamp(0, 100);
   }
 
-  double get availableBalance => monthIncomeTotal - monthExpensesTotal;
+  /// Veride en erken ay (devir hesabı çapası).
+  DateTime _earliestDataMonth() {
+    DateTime? earliest;
+    void consider(DateTime d) {
+      final m = DateTime(d.year, d.month);
+      if (earliest == null || m.isBefore(earliest!)) earliest = m;
+    }
+
+    for (final e in _expenses) {
+      consider(e.expenseDate);
+    }
+    for (final i in _income) {
+      try {
+        consider(DateTime.parse(i.date));
+      } catch (_) {}
+    }
+    for (final inst in _installments) {
+      try {
+        consider(DateTime.parse(inst.startDate));
+      } catch (_) {}
+    }
+    for (final s in _subscriptions) {
+      consider(s.createdAt);
+    }
+    return earliest ?? DateTime(_viewMonth.year, _viewMonth.month);
+  }
+
+  /// ANA HESAP — devirli (kümülatif) bakiye: en erken aydan görüntülenen aya
+  /// kadar tüm ayların (gelir − gider) toplamı. Önceki aylardan kalan devreder.
+  /// Açılış bakiyesi tanımlıysa, onun ayından itibaren başlangıç noktası olur.
+  double get availableBalance {
+    final end = DateTime(_viewMonth.year, _viewMonth.month);
+    // Açılış bakiyesi ayından itibaren: açılış + o aydan bu aya kadarki net.
+    if (_openingBalanceSet) {
+      final openM = DateTime(_openingMonth.year, _openingMonth.month);
+      if (!end.isBefore(openM)) {
+        double bal = _openingBalance;
+        var m = openM;
+        int guard = 0;
+        while (!m.isAfter(end) && guard < 600) {
+          bal += incomeForMonth(m) - outflowForMonth(m);
+          m = DateTime(m.year, m.month + 1);
+          guard++;
+        }
+        return bal;
+      }
+      // Açılış ayından ÖNCEKI aylar: aşağıdaki saf geçmiş kümülatifi kullanır.
+    }
+    final start = _earliestDataMonth();
+    double bal = 0;
+    var m = start;
+    int guard = 0;
+    while (!m.isAfter(end) && guard < 600) {
+      bal += incomeForMonth(m) - outflowForMonth(m);
+      m = DateTime(m.year, m.month + 1);
+      guard++;
+    }
+    return bal;
+  }
 
   /// Görüntülenen ayın kalan gün sayısı (bugün dahil).
   int get daysRemainingInMonth {
@@ -1692,16 +2093,13 @@ class FinanceViewModel extends ChangeNotifier {
     return 0; // geçmiş ay
   }
 
-  /// "Günlük harcanabilir": kalan bakiyeyi ayın kalan günlerine böler.
-  /// Aylık bütçe tanımlıysa bütçeden kalan, değilse gelir-gider bakiyesi
-  /// esas alınır. Negatifse 0 döner.
+  /// "Günlük harcanabilir": aylık bütçe tanımlıysa bütçeden kalan, değilse bu
+  /// ayın net'i (devirli toplam bakiye değil) esas alınır. Negatifse 0 döner.
   double get safeToSpendPerDay {
     final days = daysRemainingInMonth;
     if (days <= 0) return 0;
-    final budget = _budgetStats?.monthlyBudget ?? 0;
-    final base = budget > 0
-        ? (budget - monthExpensesTotal)
-        : availableBalance;
+    final budget = viewMonthBudget;
+    final base = budget > 0 ? (budget - monthExpensesTotal) : monthNet;
     final perDay = base / days;
     return perDay < 0 ? 0 : perDay;
   }

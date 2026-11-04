@@ -14,6 +14,13 @@ abstract class IBudgetService {
   Future<ServiceResponse<List<CategoryBudget>>> getCategoryBudgets();
   Future<ServiceResponse<void>> setCategoryBudget(String category, double limit);
   Future<ServiceResponse<void>> deleteCategoryBudget(String category);
+  // Ay bazlı bütçe kilitleri
+  Future<ServiceResponse<Map<String, double>>> getMonthBudgets();
+  Future<ServiceResponse<void>> setMonthBudget(String month, double amount);
+  Future<ServiceResponse<void>> deleteMonthBudget(String month);
+  // Açılış/mevcut bakiye
+  Future<ServiceResponse<void>> setOpeningBalance(double amount, String month);
+  Future<ServiceResponse<void>> clearOpeningBalance();
 }
 
 class BudgetService implements IBudgetService {
@@ -129,6 +136,73 @@ class BudgetService implements IBudgetService {
   Future<ServiceResponse<void>> deleteCategoryBudget(String category) async {
     return await BaseApiService.delete<void>(
       '/budget/categories/$category',
+      requiresAuth: true,
+    );
+  }
+
+  @override
+  Future<ServiceResponse<Map<String, double>>> getMonthBudgets() async {
+    final response = await BaseApiService.get<Map<String, dynamic>>(
+      '/budget/month-budgets',
+      requiresAuth: true,
+    );
+    if (response.isSuccess && response.data != null) {
+      final map = <String, double>{};
+      for (final e in (response.data!['month_budgets'] as List? ?? [])) {
+        final m = e as Map<String, dynamic>;
+        final month = m['month'] as String?;
+        if (month == null) continue;
+        final amt = m['amount'];
+        map[month] = amt is num
+            ? amt.toDouble()
+            : double.tryParse('$amt') ?? 0;
+      }
+      return ServiceResponse.success(
+        statusCode: response.statusCode,
+        data: map,
+        message: response.message,
+      );
+    }
+    return ServiceResponse.error(
+      statusCode: response.statusCode,
+      message: response.message,
+      errors: response.errors,
+    );
+  }
+
+  @override
+  Future<ServiceResponse<void>> setMonthBudget(
+      String month, double amount) async {
+    return await BaseApiService.put<void>(
+      '/budget/month-budgets',
+      body: {'month': month, 'amount': amount},
+      requiresAuth: true,
+    );
+  }
+
+  @override
+  Future<ServiceResponse<void>> deleteMonthBudget(String month) async {
+    return await BaseApiService.delete<void>(
+      '/budget/month-budgets/$month',
+      requiresAuth: true,
+    );
+  }
+
+  @override
+  Future<ServiceResponse<void>> setOpeningBalance(
+      double amount, String month) async {
+    return await BaseApiService.put<void>(
+      '/budget/opening-balance',
+      body: {'opening_balance': amount, 'opening_month': month},
+      requiresAuth: true,
+    );
+  }
+
+  @override
+  Future<ServiceResponse<void>> clearOpeningBalance() async {
+    return await BaseApiService.put<void>(
+      '/budget/opening-balance',
+      body: {'opening_balance': null},
       requiresAuth: true,
     );
   }

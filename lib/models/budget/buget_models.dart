@@ -4,12 +4,16 @@ class Budget {
   final int userId;
   final double monthlyBudget;
   final String currency;
+  final double? openingBalance;
+  final String? openingMonth;
 
   Budget({
     required this.id,
     required this.userId,
     required this.monthlyBudget,
     required this.currency,
+    this.openingBalance,
+    this.openingMonth,
   });
 
   factory Budget.fromJson(Map<String, dynamic> json) {
@@ -19,11 +23,20 @@ class Budget {
       return 0.0;
     }
 
+    double? parseNullableDouble(dynamic value) {
+      if (value == null) return null;
+      if (value is num) return value.toDouble();
+      if (value is String) return double.tryParse(value);
+      return null;
+    }
+
     return Budget(
       id: json['id'] as int,
       userId: json['user_id'] as int,
       monthlyBudget: parseDouble(json['monthly_budget']),
       currency: json['currency'] as String,
+      openingBalance: parseNullableDouble(json['opening_balance']),
+      openingMonth: json['opening_month'] as String?,
     );
   }
 
@@ -33,6 +46,8 @@ class Budget {
       'user_id': userId,
       'monthly_budget': monthlyBudget,
       'currency': currency,
+      'opening_balance': openingBalance,
+      'opening_month': openingMonth,
     };
   }
 }

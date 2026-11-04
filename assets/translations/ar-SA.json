@@ -1,9 +1,13 @@
 {
   "update": {
-    "title": "إصدار جديد متوفر",
-    "message": "يتوفر إصدار جديد من LifeSync. نوصي بالتحديث للحصول على أفضل تجربة.",
+    "title": "يتوفر تحديث",
+    "forceBody": "يجب تحديث التطبيق للمتابعة.",
+    "softBody": "يتوفر إصدار جديد 🎉 حدّث للحصول على أفضل تجربة.",
+    "later": "لاحقًا",
     "update": "تحديث",
-    "later": "لاحقًا"
+    "review": "استعراض التحديث",
+    "whatsNew": "ما الجديد؟",
+    "noNotes": "لا توجد ملاحظات لهذا الإصدار."
   },
   "app": {
     "name": "LifeSync",
@@ -115,6 +119,7 @@
     "passwordConfirmRequired": "تأكيد كلمة المرور مطلوب",
     "passwordMismatch": "كلمتا المرور غير متطابقتين",
     "forgotPassword": "هل نسيت كلمة المرور؟",
+    "rememberMe": "تذكرني",
     "login": "تسجيل الدخول",
     "register": "تسجيل",
     "continueWithGoogle": "المتابعة باستخدام Google",
@@ -289,6 +294,11 @@
     "newSubtask": "مهمة فرعية جديدة",
     "reminderBeforeMinutes": "قبل {n} دقيقة",
     "reminderOff": "التذكير مغلق",
+    "upcomingSection": "القادمة",
+    "upcomingEmpty": "لا مهام قادمة",
+    "reminderAtTime": "في {time}",
+    "reminderPickTime": "اختر الوقت",
+    "reschedule": "إعادة جدولة المهمة",
     "reminderTapChange": "اضغط للتغيير",
     "attachTitle": "المرفقات",
     "attachments": "أضف ملفًا أو صورة",
@@ -450,7 +460,8 @@
     "today": "اليوم",
     "streakN": "سلسلة {n}",
     "doneShort": "تم",
-    "skippedShort": "تم التخطي"
+    "skippedShort": "تم التخطي",
+    "searchHint": "البحث عن العادات"
   },
   "profile": {
     "title": "الملف الشخصي",
@@ -637,7 +648,9 @@
       "planLifetime": "Premium مدى الحياة",
       "planPremium": "Premium",
       "planFree": "مجاني",
-      "cancelNote": "يمكنك إلغاء اشتراكك في أي وقت من إعدادات الاشتراكات في متجر جهازك ({store})."
+      "cancelNote": "يمكنك إلغاء اشتراكك في أي وقت من إعدادات الاشتراكات في متجر جهازك ({store}).",
+      "couponInfo": "تم الحصول على هذه العضوية برمز خصم. يلزم اشتراك للمتابعة عند انتهائها.",
+      "changePlan": "تغيير الاشتراك"
     },
     "replayOnboarding": "إعادة مشاهدة المقدمة",
     "completion": "ملفك مكتمل بنسبة {percent}%",
@@ -976,6 +989,16 @@
     "editIncome": "تعديل الدخل",
     "mainAccount": "الحساب الرئيسي",
     "spendableToday": "المتاح اليوم",
+    "thisMonthNet": "صافي هذا الشهر",
+    "budgetLockTitle": "قفل لشهر {month}",
+    "budgetLockOnDesc": "ميزانية خاصة بهذا الشهر، لا تتأثر بتغيير الميزانية العامة.",
+    "budgetLockOffDesc": "تنطبق الميزانية الشهرية العامة على جميع الأشهر غير المقفلة.",
+    "budgetLockRemove": "إزالة قفل هذا الشهر",
+    "locked": "مقفل",
+    "openingBalanceTitle": "الرصيد الافتتاحي/الحالي",
+    "openingBalanceNone": "غير محدد",
+    "openingBalanceDesc": "أدخل المبلغ المتوفر لديك الآن. يبدأ الحساب الرئيسي من هذا المبلغ (اعتبارًا من هذا الشهر).",
+    "openingBalanceClear": "مسح",
     "subShort": "اشتراك",
     "lockShort": "قفل",
     "tabGeneral": "عام",
@@ -1017,6 +1040,9 @@
     "deleteNote": "حذف ملاحظة",
     "deleteNoteConfirm": "هل أنت متأكد أنك تريد حذف هذه الملاحظة؟",
     "lockNote": "قفل الملاحظة",
+    "resizeNote": "تغيير الحجم",
+    "preview": "معاينة",
+    "copiedText": "تم نسخ النص",
     "unlockNote": "فتح قفل الملاحظة",
     "enterPin": "أدخل رمز PIN لعرض هذه الملاحظة",
     "pinNote": "تثبيت",
@@ -1099,7 +1125,12 @@
       "fileError": "تعذر اختيار الملف",
       "reminderSet": "تذكير: {date}",
       "done": "تم",
-      "saving": "جارٍ الحفظ…"
+      "saving": "جارٍ الحفظ…",
+      "shareCollab": "ملاحظة مشتركة",
+      "shared": "مشتركة",
+      "makeShared": "جعلها مشتركة",
+      "checklistTitle": "قائمة",
+      "people": "أشخاص"
     },
     "add": {
       "noteTitle": "إضافة ملاحظة",
@@ -1179,6 +1210,12 @@
   },
   "settings": {
     "title": "الإعدادات",
+    "theme_title": "السمة",
+    "theme_kraft": "كرافت دافئ",
+    "theme_blue": "أزرق فاتح",
+    "theme_pink": "وردي فاتح",
+    "theme_green": "أخضر فاتح",
+    "theme_orange": "برتقالي فاتح",
     "sections": {
       "premium": "المميزة",
       "notifications": "الإشعارات",
@@ -1200,7 +1237,8 @@
       "diarySubtitle": "تذكيرات كتابة المذكرات",
       "subscription": "الاشتراكات",
       "note": "الملاحظات",
-      "social": "اجتماعي"
+      "social": "اجتماعي",
+      "engagement": "تحفيز يومي"
     },
     "appearance": {
       "theme": "السمة",
@@ -1266,7 +1304,16 @@
       "showLevel": "إظهار المستوى",
       "showAchievements": "إظهار الإنجازات",
       "showHabits": "إظهار العادات"
-    }
+    },
+    "notif_sound_title": "صوت الإشعار",
+    "snd_chime": "جرس",
+    "snd_marimba": "ماريمبا",
+    "snd_bell": "جرس رنين",
+    "snd_soft": "ناعم",
+    "snd_pop": "بوب",
+    "snd_default": "افتراضي",
+    "snd_silent": "صامت",
+    "snd_preview": "معاينة"
   },
   "validation": {
     "required": "هذا الحقل مطلوب",
@@ -1367,6 +1414,7 @@
     "diaryDeleted": "تم حذف المذكرات",
     "taskAdded": "تمت إضافة المهمة",
     "taskUpdated": "تم تحديث المهمة",
+    "taskRescheduled": "تمت إعادة جدولة المهمة",
     "taskDeleted": "تم حذف المهمة",
     "taskCompleted": "تم إكمال المهمة! 🎉",
     "taskMarkedIncomplete": "تم وضع علامة على المهمة بأنها غير مكتملة",
@@ -1464,7 +1512,18 @@
     "limitInfo": "في النسخة المجانية هناك حد أقصى {limit} لـ {feature}.",
     "currentUsage": "تستخدم حاليًا {current}/{limit}.",
     "unlockCta": "ترقَّ إلى بريميوم للاستخدام غير المحدود!",
-    "goCta": "الانتقال إلى بريميوم"
+    "goCta": "الانتقال إلى بريميوم",
+    "unlocked": "تم تفعيل Premium",
+    "feat_unlimited": "ملاحظات ومهام وكل شيء بلا حدود",
+    "feat_noads": "تجربة بدون إعلانات",
+    "feat_themes": "جميع السمات والأصوات",
+    "start": "لنبدأ",
+    "choose_theme": "اختر سمتك",
+    "choose_theme_sub": "يمكنك تغييرها في أي وقت من الإعدادات",
+    "choose_sound": "اختر صوت الإشعارات",
+    "choose_sound_sub": "اضغط تشغيل للاستماع",
+    "continue": "متابعة",
+    "finish": "الدخول إلى التطبيق"
   },
   "messages": {
     "noteCreated": "تمت إضافة الملاحظة بنجاح",
@@ -1532,10 +1591,14 @@
     "editing": "{name} يحرر الآن",
     "lockedBusy": "{name} يحرر الآن",
     "noShared": "لا مشاركات بعد",
+    "endShare": "إنهاء المشاركة",
+    "endShareConfirm": "إنهاء هذه المشاركة؟ ستتم إزالتها من المستخدمين الآخرين.",
+    "endShareDone": "تم إنهاء المشاركة",
     "noInvites": "لا دعوات معلقة",
     "participants": "المشاركون",
     "completed": "مكتمل",
     "notCompleted": "غير مكتمل",
-    "viewerCannotEdit": "عرض فقط — لا يمكن التعديل"
+    "viewerCannotEdit": "عرض فقط — لا يمكن التعديل",
+    "saveNoteFirst": "احفظ الملاحظة أولاً"
   }
 }

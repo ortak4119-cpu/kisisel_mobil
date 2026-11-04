@@ -74,11 +74,17 @@ class PushTokenRequest {
   final String token;
   final String deviceType;
   final String? deviceId;
+  final int? timezoneOffsetMinutes; // otomatik bildirimler: cihaz yerel saati
+  final String? locale;
+  final String? notificationSound; // seçili bildirim sesi (push payload için)
 
   PushTokenRequest({
     required this.token,
     required this.deviceType,
     this.deviceId,
+    this.timezoneOffsetMinutes,
+    this.locale,
+    this.notificationSound,
   });
 
   Map<String, dynamic> toJson() {
@@ -86,6 +92,10 @@ class PushTokenRequest {
       'token': token,
       'device_type': deviceType,
       if (deviceId != null) 'device_id': deviceId,
+      if (timezoneOffsetMinutes != null)
+        'tz_offset_minutes': timezoneOffsetMinutes,
+      if (locale != null) 'locale': locale,
+      if (notificationSound != null) 'notification_sound': notificationSound,
     };
   }
 }

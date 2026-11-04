@@ -1,9 +1,13 @@
 {
   "update": {
-    "title": "新しいバージョンが利用可能です",
-    "message": "LifeSyncの新しいバージョンが利用可能です。より快適にご利用いただくため、アップデートをおすすめします。",
-    "update": "アップデート",
-    "later": "後で"
+    "title": "アップデートがあります",
+    "forceBody": "続けるにはアプリを更新してください。",
+    "softBody": "新しいバージョンがあります 🎉 最高の体験のため更新しましょう。",
+    "later": "後で",
+    "update": "更新",
+    "review": "アップデートを見る",
+    "whatsNew": "新着情報",
+    "noNotes": "このバージョンのリリースノートはありません。"
   },
   "app": {
     "name": "LifeSync",
@@ -115,6 +119,7 @@
     "passwordConfirmRequired": "パスワードの確認は必須です",
     "passwordMismatch": "パスワードが一致しません",
     "forgotPassword": "パスワードをお忘れですか？",
+    "rememberMe": "ログイン状態を保持",
     "login": "ログイン",
     "register": "登録",
     "continueWithGoogle": "Googleで続行",
@@ -289,6 +294,11 @@
     "newSubtask": "新しいサブタスク",
     "reminderBeforeMinutes": "{n}分前",
     "reminderOff": "リマインダーオフ",
+    "upcomingSection": "今後",
+    "upcomingEmpty": "今後のタスクはありません",
+    "reminderAtTime": "{time} に",
+    "reminderPickTime": "時刻を選択",
+    "reschedule": "タスクを再設定",
     "reminderTapChange": "タップして変更",
     "attachTitle": "添付",
     "attachments": "ファイルや写真を追加",
@@ -450,7 +460,8 @@
     "today": "今日",
     "streakN": "連続{n}",
     "doneShort": "完了",
-    "skippedShort": "スキップ"
+    "skippedShort": "スキップ",
+    "searchHint": "習慣を検索"
   },
   "profile": {
     "title": "プロフィール",
@@ -637,7 +648,9 @@
       "planLifetime": "買い切りPremium",
       "planPremium": "Premium",
       "planFree": "無料",
-      "cancelNote": "サブスクリプションは、端末のストア（{store}）のサブスク設定からいつでも解約できます。"
+      "cancelNote": "サブスクリプションは、端末のストア（{store}）のサブスク設定からいつでも解約できます。",
+      "couponInfo": "この会員はクーポンで取得されました。期限が切れると継続には定期購入が必要です。",
+      "changePlan": "プランを変更"
     },
     "replayOnboarding": "イントロをもう一度見る",
     "completion": "プロフィールの完成度は{percent}%です",
@@ -976,6 +989,16 @@
     "editIncome": "収入を編集",
     "mainAccount": "メイン口座",
     "spendableToday": "本日の利用可能額",
+    "thisMonthNet": "今月の収支",
+    "budgetLockTitle": "{month} をロック",
+    "budgetLockOnDesc": "今月だけの予算。全体予算を変えても固定されます。",
+    "budgetLockOffDesc": "全体の月予算はロックされていない全ての月に適用されます。",
+    "budgetLockRemove": "今月のロックを解除",
+    "locked": "ロック中",
+    "openingBalanceTitle": "初期/現在の残高",
+    "openingBalanceNone": "未設定",
+    "openingBalanceDesc": "現在の残高を入力してください。メイン口座は今月からこの金額を起点に増減します。",
+    "openingBalanceClear": "クリア",
     "subShort": "サブスク",
     "lockShort": "ロック",
     "tabGeneral": "概要",
@@ -1017,6 +1040,9 @@
     "deleteNote": "ノートを削除",
     "deleteNoteConfirm": "このノートを削除してもよろしいですか？",
     "lockNote": "ノートをロック",
+    "resizeNote": "サイズ変更",
+    "preview": "プレビュー",
+    "copiedText": "テキストをコピーしました",
     "unlockNote": "ノートのロックを解除",
     "enterPin": "このノートを表示するにはPINを入力してください",
     "pinNote": "ピン留め",
@@ -1099,7 +1125,12 @@
       "fileError": "ファイルを選択できませんでした",
       "reminderSet": "リマインダー: {date}",
       "done": "完了",
-      "saving": "保存中…"
+      "saving": "保存中…",
+      "shareCollab": "共有メモ",
+      "shared": "共有中",
+      "makeShared": "共有にする",
+      "checklistTitle": "リスト",
+      "people": "人"
     },
     "add": {
       "noteTitle": "メモを追加",
@@ -1179,6 +1210,12 @@
   },
   "settings": {
     "title": "設定",
+    "theme_title": "テーマ",
+    "theme_kraft": "ウォームクラフト",
+    "theme_blue": "ライトブルー",
+    "theme_pink": "ライトピンク",
+    "theme_green": "ライトグリーン",
+    "theme_orange": "ライトオレンジ",
     "sections": {
       "premium": "プレミアム",
       "notifications": "通知",
@@ -1200,7 +1237,8 @@
       "diarySubtitle": "日記作成のリマインダー",
       "subscription": "サブスクリプション",
       "note": "メモ",
-      "social": "ソーシャル"
+      "social": "ソーシャル",
+      "engagement": "毎日のモチベーション"
     },
     "appearance": {
       "theme": "テーマ",
@@ -1266,7 +1304,16 @@
       "showLevel": "レベルを表示",
       "showAchievements": "実績を表示",
       "showHabits": "習慣を表示"
-    }
+    },
+    "notif_sound_title": "通知音",
+    "snd_chime": "チャイム",
+    "snd_marimba": "マリンバ",
+    "snd_bell": "ベル",
+    "snd_soft": "ソフト",
+    "snd_pop": "ポップ",
+    "snd_default": "デフォルト",
+    "snd_silent": "サイレント",
+    "snd_preview": "プレビュー"
   },
   "validation": {
     "required": "このフィールドは必須です",
@@ -1367,6 +1414,7 @@
     "diaryDeleted": "ダイアリーを削除しました",
     "taskAdded": "タスクを追加しました",
     "taskUpdated": "タスクを更新しました",
+    "taskRescheduled": "タスクを再設定しました",
     "taskDeleted": "タスクを削除しました",
     "taskCompleted": "タスク完了！ 🎉",
     "taskMarkedIncomplete": "タスクを未完了としてマークしました",
@@ -1464,7 +1512,18 @@
     "limitInfo": "無料版では{feature}の上限は{limit}件です。",
     "currentUsage": "現在 {current}/{limit} を使用中です。",
     "unlockCta": "無制限で使うにはプレミアムにアップグレード！",
-    "goCta": "プレミアムへ"
+    "goCta": "プレミアムへ",
+    "unlocked": "プレミアムが解除されました",
+    "feat_unlimited": "ノート・タスクなどすべて無制限",
+    "feat_noads": "広告なしの体験",
+    "feat_themes": "すべてのテーマとサウンド",
+    "start": "さあ、始めよう",
+    "choose_theme": "テーマを選ぶ",
+    "choose_theme_sub": "設定でいつでも変更できます",
+    "choose_sound": "通知音を選ぶ",
+    "choose_sound_sub": "再生をタップして試聴",
+    "continue": "続ける",
+    "finish": "アプリを開く"
   },
   "messages": {
     "noteCreated": "メモを追加しました",
@@ -1532,10 +1591,14 @@
     "editing": "{name} が編集中",
     "lockedBusy": "{name} が編集中です",
     "noShared": "共有はまだありません",
+    "endShare": "共有を終了",
+    "endShareConfirm": "この共有を終了しますか？他のユーザーから削除されます。",
+    "endShareDone": "共有を終了しました",
     "noInvites": "保留中の招待はありません",
     "participants": "参加者",
     "completed": "完了",
     "notCompleted": "未完了",
-    "viewerCannotEdit": "閲覧のみ — 編集不可"
+    "viewerCannotEdit": "閲覧のみ — 編集不可",
+    "saveNoteFirst": "先にメモを保存してください"
   }
 }

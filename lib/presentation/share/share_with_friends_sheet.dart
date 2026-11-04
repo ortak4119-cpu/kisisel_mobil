@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/utils/color_constant.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../core/init/locator.dart';
 import '../../service/social/social_service.dart';
@@ -77,11 +78,11 @@ class _ShareWithFriendsSheetState extends State<_ShareWithFriendsSheet> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? const Color(0xFF1E1B16) : const Color(0xFFF6F4EF);
-    final card = isDark ? const Color(0xFF2A251E) : Colors.white;
-    final textPrimary = isDark ? Colors.white : const Color(0xFF3A3326);
-    final textMuted = isDark ? Colors.white60 : const Color(0xFF8A7A5E);
-    const accent = Color(0xFFF6A821);
+    final bg = isDark ? ColorConstant.bgColorDark : ColorConstant.bgColorLight;
+    final card = isDark ? ColorConstant.cardColorDark : ColorConstant.cardColorLight;
+    final textPrimary = isDark ? ColorConstant.textPrimaryDark : ColorConstant.textPrimaryLight;
+    final textMuted = isDark ? ColorConstant.textMutedDark : ColorConstant.textMutedLight;
+    final accent = ColorConstant.accentOrange;
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.75,
@@ -105,7 +106,7 @@ class _ShareWithFriendsSheetState extends State<_ShareWithFriendsSheet> {
               padding: const EdgeInsets.fromLTRB(20, 14, 20, 6),
               child: Row(
                 children: [
-                  const Icon(Icons.group_add_rounded, color: accent),
+                  Icon(Icons.group_add_rounded, color: accent),
                   const SizedBox(width: 10),
                   Text('share.shareWithFriend'.tr(),
                       style: TextStyle(
@@ -143,7 +144,7 @@ class _ShareWithFriendsSheetState extends State<_ShareWithFriendsSheet> {
             const SizedBox(height: 6),
             Expanded(
               child: _loading
-                  ? const Center(child: CircularProgressIndicator(color: accent))
+                  ? Center(child: CircularProgressIndicator(color: accent))
                   : _friends.isEmpty
                       ? Center(
                           child: Padding(
@@ -197,7 +198,7 @@ class _ShareWithFriendsSheetState extends State<_ShareWithFriendsSheet> {
                                                   name.isNotEmpty
                                                       ? name[0].toUpperCase()
                                                       : '?',
-                                                  style: const TextStyle(
+                                                  style: TextStyle(
                                                       color: accent,
                                                       fontWeight:
                                                           FontWeight.w800))

@@ -45,6 +45,7 @@ abstract class IShareService {
   Future<ServiceResponse<void>> acceptHabit(int id);
   Future<ServiceResponse<void>> rejectHabit(int id);
   Future<ServiceResponse<void>> leaveHabit(int id);
+  Future<ServiceResponse<void>> deleteSharedHabit(int id);
   Future<ServiceResponse<void>> completeSharedHabit(int id, {String? date, bool completed = true});
   Future<ServiceResponse<HabitHeatmap>> getHabitHeatmap(int id, {int days = 90});
   Future<ServiceResponse<ShareLockState>> lockHabit(int id);
@@ -220,6 +221,10 @@ class ShareService implements IShareService {
   @override
   Future<ServiceResponse<void>> leaveHabit(int id) =>
       BaseApiService.post<void>('/habit-shares/$id/leave', requiresAuth: true);
+
+  @override
+  Future<ServiceResponse<void>> deleteSharedHabit(int id) =>
+      BaseApiService.delete<void>('/habit-shares/$id', requiresAuth: true);
 
   @override
   Future<ServiceResponse<void>> completeSharedHabit(int id, {String? date, bool completed = true}) {

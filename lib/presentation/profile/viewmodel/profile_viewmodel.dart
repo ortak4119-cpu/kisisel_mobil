@@ -14,6 +14,7 @@ import '../../../service/auth/auth_service.dart';
 import '../../../models/auth/auth_models.dart';
 import '../../../models/gamification/gamification_models.dart';
 import '../../../core/utils/custom_snackbar.dart';
+import '../../common/sent_animation.dart';
 
 class ProfileViewModel extends ChangeNotifier {
   final IProfileService _profileService = locator.get<IProfileService>();
@@ -369,7 +370,8 @@ class ProfileViewModel extends ChangeNotifier {
 
       if (response.isSuccess) {
         if (context.mounted) {
-          CustomSnackBar.showSuccess(context, 'profile.friends.requestSent'.tr());
+          // Düz snackbar yerine ortada animasyonlu "Gönderildi" rozeti.
+          showSentAnimation(context, 'profile.friends.requestSent'.tr());
         }
         return true;
       } else {

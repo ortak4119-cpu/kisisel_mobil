@@ -1,9 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../theme/app_palette.dart';
 
 class ThemeProvider with ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.system;
   ThemeMode get themeMode => _themeMode;
+
+  // Seçili tam palet (5 tema). Değer AppPalette'te statik tutulur; burada
+  // yalnızca UI yenilemesi (notify) tetiklenir.
+  String get paletteId => AppPalette.currentId;
+
+  Future<void> setPalette(String id) async {
+    await AppPalette.set(id);
+    notifyListeners();
+  }
 
   static const String _themeKey = 'theme_mode';
   late SharedPreferences _prefs;

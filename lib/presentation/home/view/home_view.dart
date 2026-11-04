@@ -1,3 +1,4 @@
+import 'dart:ui' show ImageFilter;
 import 'package:auto_route/auto_route.dart';
 import 'package:base/presentation/calender/view/calender_view.dart';
 import 'package:base/presentation/finance/view/finance_view.dart';
@@ -22,11 +23,10 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> {
   int _selectedIndex = 0;
 
-  // Alt menü renkleri (referans tasarım: seçili öğede pembe hap).
-  static const _navAccent = Color(0xFFD6336C); // gül-magenta vurgu
-  static const _navPillLight = Color(0xFFFCE3EC); // açık pembe hap zemini
-  static const _navIdleIconLight = Color(0xFF3C4250); // koyu ikon (seçili değil)
-  static const _navIdleLabelLight = Color(0xFF8A8F9A); // gri etiket
+  // Alt menü pasif renkleri. Seçili vurgu artık ColorConstant.accentOrange
+  // (seçili temanın aksanı) ile verilir.
+  static const _navIdleIconLight = Color(0xFF6F6456); // sıcak kahve ikon (pasif)
+  static const _navIdleLabelLight = Color(0xFF8A7F6C); // soluk etiket
 
   @override
   void initState() {
@@ -60,56 +60,73 @@ class _HomeViewState extends State<HomeView> {
       backgroundColor: isDarkMode
           ? ColorConstant.bgColorDark
           : ColorConstant.bgColorLight,
+      // Cam alt menünün arkasındaki içeriği bulanıklaştırabilmesi için gövde
+      // alt menünün altına kadar uzanır.
+      extendBody: true,
       // Geniş ekranda (iPad/tablet) içerik ortalanır ve makul genişliğe
       // sınırlanır; telefonda tam genişlik korunur. Her sekme için tek yerden.
       body: ResponsiveCenter(child: _pages[_selectedIndex]),
-      bottomNavigationBar: BottomAppBar(
-        color: isDarkMode
-            ? ColorConstant.cardColorDark
-            : ColorConstant.cardColorLight,
-        elevation: 8,
-        child: SizedBox(
-          height: 60,
-          // Tüm sekmeler eşit ikon+yazı olarak hizalı dağıtılır.
-          child: Row(
-            children: [
-              _buildNavItem(
-                icon: Icons.home_rounded,
-                label: 'navigation.home'.tr(),
-                index: 0,
-                isDarkMode: isDarkMode,
+      bottomNavigationBar: _buildGlassNav(isDarkMode),
+    );
+  }
+
+  /// Buzlu cam (glassmorphism) alt menü — arkadaki içeriği bulanıklaştırır.
+  Widget _buildGlassNav(bool isDarkMode) {
+    final glassColor = isDarkMode
+        ? ColorConstant.cardColorDark.withValues(alpha: 0.72)
+        : Colors.white.withValues(alpha: 0.60);
+    final borderColor = isDarkMode
+        ? Colors.white.withValues(alpha: 0.10)
+        : Colors.white.withValues(alpha: 0.60);
+
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: Container(
+          decoration: BoxDecoration(
+            color: glassColor,
+            border: Border(top: BorderSide(color: borderColor, width: 1)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: SizedBox(
+              height: 62,
+              child: Row(
+                children: [
+                  _buildNavItem(
+                      icon: Icons.home_rounded,
+                      label: 'navigation.home'.tr(),
+                      index: 0,
+                      isDarkMode: isDarkMode),
+                  _buildNavItem(
+                      icon: Icons.checklist_rounded,
+                      label: 'navigation.tasks'.tr(),
+                      index: 1,
+                      isDarkMode: isDarkMode),
+                  _buildNavItem(
+                      icon: Icons.emoji_events_rounded,
+                      label: 'navigation.habits'.tr(),
+                      index: 2,
+                      isDarkMode: isDarkMode),
+                  _buildNavItem(
+                      icon: Icons.calendar_month_rounded,
+                      label: 'navigation.calendar'.tr(),
+                      index: 3,
+                      isDarkMode: isDarkMode),
+                  _buildNavItem(
+                      icon: Icons.attach_money,
+                      label: 'navigation.finance'.tr(),
+                      index: 4,
+                      isDarkMode: isDarkMode),
+                  _buildNavItem(
+                      icon: Icons.person_rounded,
+                      label: 'navigation.profile'.tr(),
+                      index: 5,
+                      isDarkMode: isDarkMode),
+                ],
               ),
-              _buildNavItem(
-                icon: Icons.checklist_rounded,
-                label: 'navigation.tasks'.tr(),
-                index: 1,
-                isDarkMode: isDarkMode,
-              ),
-              _buildNavItem(
-                icon: Icons.emoji_events_rounded,
-                label: 'navigation.habits'.tr(),
-                index: 2,
-                isDarkMode: isDarkMode,
-              ),
-              _buildNavItem(
-                icon: Icons.calendar_month_rounded,
-                label: 'navigation.calendar'.tr(),
-                index: 3,
-                isDarkMode: isDarkMode,
-              ),
-              _buildNavItem(
-                icon: Icons.attach_money,
-                label: 'navigation.finance'.tr(),
-                index: 4,
-                isDarkMode: isDarkMode,
-              ),
-              _buildNavItem(
-                icon: Icons.person_rounded,
-                label: 'navigation.profile'.tr(),
-                index: 5,
-                isDarkMode: isDarkMode,
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -122,51 +139,85 @@ class _HomeViewState extends State<HomeView> {
     required int index,
     required bool isDarkMode,
   }) {
-    final isSelected = _selectedIndex == index;
     final idleIcon =
         isDarkMode ? ColorConstant.textMutedDark : _navIdleIconLight;
     final idleLabel =
         isDarkMode ? ColorConstant.textMutedDark : _navIdleLabelLight;
-    final pill = isDarkMode
-        ? _navAccent.withValues(alpha: 0.22)
-        : _navPillLight;
+    // Dock büyüteç: aktife uzaklığa göre ikon ölçeği.
+    final dist = (index - _selectedIndex).abs();
+    final scale = dist == 0 ? 1.4 : (dist == 1 ? 1.15 : 1.0);
 
+    return _NavItem(
+      icon: icon,
+      label: label,
+      selected: _selectedIndex == index,
+      iconScale: scale,
+      // Seçili vurgu artık seçili temanın aksanı (FAB/Kaydet ile uyumlu).
+      accent: ColorConstant.accentOrange,
+      idleIcon: idleIcon,
+      idleLabel: idleLabel,
+      onTap: () => setState(() => _selectedIndex = index),
+    );
+  }
+}
+
+/// Alt menü öğesi. Seçilince/tıklanınca ikon yaylanarak zıplar (pop),
+/// pembe hap genişler ve hafifçe yukarı kalkar — modern, canlı his.
+/// Cam Büyüteç (dock) alt menü öğesi. İkon, aktife uzaklığa göre yaylanarak
+/// büyür (AnimatedScale + easeOutBack); seçili olan turuncuya döner.
+class _NavItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final double iconScale;
+  final VoidCallback onTap;
+  final Color accent;
+  final Color idleIcon;
+  final Color idleLabel;
+
+  const _NavItem({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.iconScale,
+    required this.onTap,
+    required this.accent,
+    required this.idleIcon,
+    required this.idleLabel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Expanded(
       child: InkWell(
-        onTap: () => setState(() => _selectedIndex = index),
+        onTap: onTap,
         borderRadius: BorderRadius.circular(16),
+        splashColor: accent.withValues(alpha: 0.12),
+        highlightColor: Colors.transparent,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // İkon + seçili olunca animasyonla beliren pembe hap.
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 260),
-              curve: Curves.easeOut,
-              padding: EdgeInsets.symmetric(
-                  horizontal: isSelected ? 18 : 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: isSelected ? pill : Colors.transparent,
-                borderRadius: BorderRadius.circular(16),
-              ),
+            AnimatedScale(
+              duration: const Duration(milliseconds: 320),
+              curve: Curves.easeOutBack,
+              scale: iconScale,
               child: Icon(
                 icon,
                 size: 22,
-                color: isSelected ? _navAccent : idleIcon,
+                color: selected ? accent : idleIcon,
               ),
             ),
-            const SizedBox(height: 4),
-            // Uzun etiketler (ör. "Alışkanlık") dar yuvada taşmasın diye
-            // tek satıra sığacak şekilde ölçeklenir.
+            const SizedBox(height: 5),
             FittedBox(
               fit: BoxFit.scaleDown,
               child: AnimatedDefaultTextStyle(
                 duration: const Duration(milliseconds: 260),
                 curve: Curves.easeOut,
                 style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected ? _navAccent : idleLabel,
+                  fontSize: 10.5,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                  color: selected ? accent : idleLabel,
                 ),
                 child: Text(label, maxLines: 1, softWrap: false),
               ),
@@ -176,8 +227,6 @@ class _HomeViewState extends State<HomeView> {
       ),
     );
   }
-
-
 }
 
 // Home Page

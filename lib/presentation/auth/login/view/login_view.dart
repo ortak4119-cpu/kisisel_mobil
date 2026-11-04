@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../../core/utils/color_constant.dart';
 import '../../../../service/auth/auth_service.dart';
 import '../viewmodel/login_viewmodel.dart';
@@ -23,6 +25,55 @@ class _LoginViewState extends State<LoginView> {
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _obscurePassword = true;
+  bool _rememberMe = false;
+
+  // "Beni hatırla" anahtarları (cihaz-yerel).
+  static const _kRememberFlag = 'remember_me';
+  static const _kRememberEmail = 'remember_email';
+  static const _kRememberPassword = 'remember_password';
+  // Parola düz metin SharedPreferences yerine şifreli keystore'da tutulur.
+  static const FlutterSecureStorage _secure = FlutterSecureStorage();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRemembered();
+  }
+
+  Future<void> _loadRemembered() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      // Eski sürümlerden kalan düz-metin parolayı temizle (güvenlik).
+      if (prefs.containsKey(_kRememberPassword)) {
+        await prefs.remove(_kRememberPassword);
+      }
+      if (prefs.getBool(_kRememberFlag) ?? false) {
+        final savedPw = await _secure.read(key: _kRememberPassword) ?? '';
+        if (!mounted) return;
+        setState(() {
+          _rememberMe = true;
+          _emailController.text = prefs.getString(_kRememberEmail) ?? '';
+          _passwordController.text = savedPw;
+        });
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _persistRemembered() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (_rememberMe) {
+        await prefs.setBool(_kRememberFlag, true);
+        await prefs.setString(_kRememberEmail, _emailController.text.trim());
+        await _secure.write(
+            key: _kRememberPassword, value: _passwordController.text);
+      } else {
+        await prefs.remove(_kRememberFlag);
+        await prefs.remove(_kRememberEmail);
+        await _secure.delete(key: _kRememberPassword);
+      }
+    } catch (_) {}
+  }
 
   @override
   void dispose() {
@@ -117,27 +168,68 @@ class _LoginViewState extends State<LoginView> {
                           return null;
                         },
                       ),
-                      const SizedBox(height: 8),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: () => _showForgotPasswordDialog(
-                              context, viewModel, isDark),
-                          style: TextButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 4, vertical: 4),
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          child: Text(
-                            'auth.forgotPassword'.tr(),
-                            style: const TextStyle(
-                              color: AuthUi.teal,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 13.5,
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          // Beni hatırla — açıkken e-posta + şifre cihazda saklanır.
+                          InkWell(
+                            onTap: () =>
+                                setState(() => _rememberMe = !_rememberMe),
+                            borderRadius: BorderRadius.circular(8),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 2, vertical: 4),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  SizedBox(
+                                    width: 22,
+                                    height: 22,
+                                    child: Checkbox(
+                                      value: _rememberMe,
+                                      onChanged: (v) => setState(
+                                          () => _rememberMe = v ?? false),
+                                      activeColor: AuthUi.teal,
+                                      materialTapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                      visualDensity: VisualDensity.compact,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'auth.rememberMe'.tr(),
+                                    style: TextStyle(
+                                      fontSize: 13.5,
+                                      fontWeight: FontWeight.w600,
+                                      color: isDark
+                                          ? ColorConstant.textSecondaryDark
+                                          : ColorConstant.textSecondaryLight,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
+                          const Spacer(),
+                          TextButton(
+                            onPressed: () => _showForgotPasswordDialog(
+                                context, viewModel, isDark),
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 4, vertical: 4),
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            child: Text(
+                              'auth.forgotPassword'.tr(),
+                              style: const TextStyle(
+                                color: AuthUi.teal,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 13.5,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 16),
                       AuthPrimaryButton(
@@ -152,6 +244,9 @@ class _LoginViewState extends State<LoginView> {
                                     _emailController.text.trim(),
                                     _passwordController.text,
                                   );
+                                  if (success) {
+                                    await _persistRemembered();
+                                  }
                                   if (success && mounted) {
                                     AuthGate.goAfterAuth(context);
                                   }

@@ -5,17 +5,14 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:share_plus/share_plus.dart';
-import '../../../core/init/locator.dart';
 import '../../../models/task/task_models.dart';
 import '../../../models/habit/habit_models.dart';
-import '../../../models/habit/shared_habit_models.dart';
 import '../../../core/design/app_design.dart';
+import '../../../core/design/app_loader.dart';
 import '../../../core/utils/color_constant.dart';
-import '../../../core/utils/custom_snackbar.dart';
+import '../../../core/theme/app_palette.dart';
 import '../../../core/utils/nl_task_parser.dart';
 import '../../../core/utils/animation_prefs.dart';
-import 'shared_habits_view.dart';
 import '../../share/share_with_friends_sheet.dart';
 import '../../share/shared_hub_sheet.dart';
 import '../../share/shared_item_editor_sheet.dart';
@@ -35,12 +32,21 @@ class TasksHabitsView extends StatefulWidget {
 class _TasksHabitsViewState extends State<TasksHabitsView> {
   late int _tab; // 0 = Görevler, 1 = Alışkanlıklar
 
+  // Görevler sekmesinde FAB'ın alt boşluğu: çekmece açılınca yukarı kayar.
+  final ValueNotifier<double> _taskFabBottom = ValueNotifier<double>(120);
+
   bool get _showToggle => widget.mode == 'both';
 
   @override
   void initState() {
     super.initState();
     _tab = widget.mode == 'habits' ? 1 : 0;
+  }
+
+  @override
+  void dispose() {
+    _taskFabBottom.dispose();
+    super.dispose();
   }
 
   @override
@@ -59,24 +65,8 @@ class _TasksHabitsViewState extends State<TasksHabitsView> {
               bottom: false,
               child: Column(
                 children: [
-                  if (!_showToggle && _tab != 0)
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(22, 10, 22, 2),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          _tab == 0 ? 'tasks.title'.tr() : 'habits.title'.tr(),
-                          style: TextStyle(fontFamily: 'JosefinSans',
-                            fontSize: 38,
-                            fontWeight: FontWeight.w700,
-                            height: 1.0,
-                            color: isDarkMode
-                                ? ColorConstant.textPrimaryDark
-                                : const Color(0xFF3A3326),
-                          ),
-                        ),
-                      ),
-                    ),
+                  // Not: tek-mod başlıkları artık sekmelerin kendi üst menüsünde
+                  // (Görevler _headerBlock, Alışkanlıklar _habitsHeader).
                   if (_showToggle)
                     Padding(
                       padding: const EdgeInsets.fromLTRB(20, 12, 20, 10),
@@ -96,16 +86,35 @@ class _TasksHabitsViewState extends State<TasksHabitsView> {
                     ),
                   Expanded(
                     child: _tab == 0
-                        ? _TasksTab(viewModel: viewModel)
+                        ? _TasksTab(
+                            viewModel: viewModel, fabBottom: _taskFabBottom)
                         : _HabitsTab(viewModel: viewModel),
                   ),
                 ],
               ),
             ),
-            floatingActionButton: _ThFab(
-              onOpen: () => _tab == 0
-                  ? showAddTaskSheet(context, viewModel, isDarkMode)
-                  : showAddHabitSheet(context, viewModel, isDarkMode),
+            floatingActionButton: ValueListenableBuilder<double>(
+              valueListenable: _taskFabBottom,
+              builder: (context, taskBottom, child) {
+                // FAB cam alt menünün üstünde; Görevler'de çekmece açılınca
+                // animasyonla yukarı kayar (hiçbir şeyin üstüne gelmez).
+                return AnimatedPadding(
+                  duration: AnimationPrefs.isOn
+                      ? const Duration(milliseconds: 320)
+                      : Duration.zero,
+                  curve: Curves.easeOutCubic,
+                  // Alışkanlıklar'da da Görevler'deki ferah boşluk (alt menüye
+                  // yapışmasın). Görevler'de çekmece açılınca ayrıca yukarı kayar.
+                  padding:
+                      EdgeInsets.only(bottom: _tab == 0 ? taskBottom : 120),
+                  child: child,
+                );
+              },
+              child: _ThFab(
+                onOpen: () => _tab == 0
+                    ? showAddTaskSheet(context, viewModel, isDarkMode)
+                    : showAddHabitSheet(context, viewModel, isDarkMode),
+              ),
             ),
           );
         },
@@ -366,121 +375,124 @@ class _MenuItemInState extends State<_MenuItemIn>
   }
 }
 
-/// Gecikmiş görev satırı: "Bugüne al"a basınca sağa kayıp solarak çıkar,
-/// sonra görev bugüne taşınır (liste tazelenince satır listeden düşer).
-class _OverdueRow extends StatefulWidget {
-  final TasksHabitsViewModel viewModel;
-  final Task task;
-  final AppColors c;
-  final bool isDark;
-  const _OverdueRow({
-    required this.viewModel,
-    required this.task,
-    required this.c,
-    required this.isDark,
+/// Tamamlanan görevin karttan çekmeceye uçan küçük kopyası (overlay).
+/// Hafif bir yay çizip küçülerek ve solarak çekmecenin içine düşer.
+class _FlyChip extends StatefulWidget {
+  final Offset from;
+  final Offset to;
+  final String label;
+  final Color accent;
+  final VoidCallback onDone;
+  const _FlyChip({
+    required this.from,
+    required this.to,
+    required this.label,
+    required this.accent,
+    required this.onDone,
   });
   @override
-  State<_OverdueRow> createState() => _OverdueRowState();
+  State<_FlyChip> createState() => _FlyChipState();
 }
 
-class _OverdueRowState extends State<_OverdueRow> {
-  bool _leaving = false;
-  static const _red = Color(0xFFF6524B);
-  static const _orange = Color(0xFFF6A821);
+class _FlyChipState extends State<_FlyChip>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _t;
+  bool _done = false;
 
-  void _moveToToday() {
-    if (!AnimationPrefs.isOn) {
-      widget.viewModel.moveTaskToToday(widget.task, context);
-      return;
-    }
-    setState(() => _leaving = true);
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (mounted) widget.viewModel.moveTaskToToday(widget.task, context);
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 620));
+    _t = CurvedAnimation(parent: _ctrl, curve: Curves.easeInCubic);
+    _ctrl.addStatusListener((s) {
+      if (s == AnimationStatus.completed && !_done) {
+        _done = true;
+        widget.onDone();
+      }
     });
+    _ctrl.forward();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final vm = widget.viewModel;
-    final c = widget.c;
-    final t = widget.task;
-    final d = vm.dueDateOf(t);
-    final dateStr = d != null ? '${d.day}.${d.month}' : '';
-    final dur = AnimationPrefs.isOn
-        ? const Duration(milliseconds: 300)
-        : Duration.zero;
-    return AnimatedSlide(
-      offset: _leaving ? const Offset(1.15, 0) : Offset.zero,
-      duration: dur,
-      curve: Curves.easeInCubic,
-      child: AnimatedOpacity(
-        opacity: _leaving ? 0 : 1,
-        duration: dur,
-        child: Padding(
-          padding: const EdgeInsets.only(bottom: 10),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () => vm.toggleTaskComplete(t, context),
-                child: Container(
-                  width: 22,
-                  height: 22,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: _red.withOpacity(0.6), width: 2),
+    return AnimatedBuilder(
+      animation: _t,
+      builder: (context, _) {
+        final v = _t.value;
+        final dx = widget.from.dx + (widget.to.dx - widget.from.dx) * v;
+        final hop = -32 * math.sin(v * math.pi); // ortada yukarı zıpla
+        final dy =
+            widget.from.dy + (widget.to.dy - widget.from.dy) * v + hop;
+        final scale = 1.0 - 0.72 * v;
+        final opacity =
+            v < 0.15 ? 1.0 : (1.0 - (v - 0.15) / 0.85).clamp(0.0, 1.0);
+        return Positioned(
+          left: dx - 70,
+          top: dy - 18,
+          child: IgnorePointer(
+            child: Opacity(
+              opacity: opacity,
+              child: Transform.scale(
+                scale: scale,
+                child: Transform.rotate(
+                  angle: 0.12 * v,
+                  child: Container(
+                    constraints: const BoxConstraints(maxWidth: 140),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 9),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(13),
+                      boxShadow: [
+                        BoxShadow(
+                          color: widget.accent.withOpacity(0.35),
+                          blurRadius: 14,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 18,
+                          height: 18,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Color(0xFF48BB78),
+                          ),
+                          child: const Icon(Icons.check_rounded,
+                              size: 12, color: Colors.white),
+                        ),
+                        const SizedBox(width: 7),
+                        Flexible(
+                          child: Text(
+                            widget.label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF3A3326)),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () =>
-                      showEditTaskSheet(context, vm, widget.isDark, t),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(t.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                              fontSize: 15.5,
-                              fontWeight: FontWeight.w700,
-                              color: c.textPrimary)),
-                      const SizedBox(height: 2),
-                      Text(
-                          '${'tasks.overdue'.tr()}${dateStr.isNotEmpty ? ' · $dateStr' : ''}',
-                          style: const TextStyle(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w600,
-                              color: _red)),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              GestureDetector(
-                onTap: _moveToToday,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: _orange.withOpacity(0.14),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text('tasks.moveToToday'.tr(),
-                      style: const TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w700,
-                          color: _orange)),
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -641,10 +653,12 @@ class _AreaDonutPainter extends CustomPainter {
   final Map<String, double> ratio; // alan -> 0..1 tamamlanma
   final Map<String, bool> hasHabits; // alan -> alışkanlık var mı
   final Color hole;
+  final String? selected; // seçili (filtrelenen) alan
   _AreaDonutPainter({
     required this.ratio,
     required this.hasHabits,
     required this.hole,
+    this.selected,
   });
 
   // Çeyreklerin başlangıç açıları (derece). 0° = doğu, saat yönü +.
@@ -665,10 +679,29 @@ class _AreaDonutPainter extends CustomPainter {
     for (final a in kLifeAreas) {
       final start = (_starts[a.key]! + gapDeg / 2) * d2r;
       final sweep = (90.0 - gapDeg) * d2r;
-      canvas.drawArc(
-          rect, start, sweep, true, Paint()..color = a.soft);
+      final filled = hasHabits[a.key] ?? false;
       final r = (ratio[a.key] ?? 0).clamp(0.0, 1.0);
-      if ((hasHabits[a.key] ?? false) && r > 0) {
+      final isDone = filled && r >= 0.999;
+      // Boş alan: soğuk/açık. Dolu alan: biraz koyu. Tamamlanınca daha koyu.
+      final bg = !filled
+          ? a.soft
+          : (isDone
+              ? Color.lerp(a.soft, a.main, 0.42)!
+              : Color.lerp(a.soft, a.main, 0.16)!);
+      canvas.drawArc(rect, start, sweep, true, Paint()..color = bg);
+      // Seçili alan vurgusu — dilim kenarına ince parlak çizgi.
+      if (selected == a.key) {
+        canvas.drawArc(
+            rect,
+            start,
+            sweep,
+            true,
+            Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 3.5
+              ..color = a.main);
+      }
+      if (filled && r > 0) {
         final arcRect = Rect.fromCircle(center: center, radius: radius - 7);
         canvas.drawArc(
           arcRect,
@@ -682,6 +715,32 @@ class _AreaDonutPainter extends CustomPainter {
             ..color = a.main,
         );
       }
+      // Tamamlanınca animasyonlu ✓ rozeti (son %20 dolarken büyür).
+      final checkT = filled ? ((r - 0.8) / 0.2).clamp(0.0, 1.0) : 0.0;
+      if (checkT > 0) {
+        final midRad = (_starts[a.key]! + 45.0) * d2r;
+        final cr = radius * 0.64;
+        final pos = Offset(center.dx + cr * math.cos(midRad),
+            center.dy + cr * math.sin(midRad));
+        final badgeR = 13.0 * checkT;
+        canvas.drawCircle(pos, badgeR + 2, Paint()..color = const Color(0xFFFFFFFF));
+        canvas.drawCircle(pos, badgeR, Paint()..color = a.main);
+        if (checkT > 0.25) {
+          final s = badgeR;
+          final path = Path()
+            ..moveTo(pos.dx - s * 0.45, pos.dy + s * 0.02)
+            ..lineTo(pos.dx - s * 0.1, pos.dy + s * 0.4)
+            ..lineTo(pos.dx + s * 0.5, pos.dy - s * 0.38);
+          canvas.drawPath(
+              path,
+              Paint()
+                ..style = PaintingStyle.stroke
+                ..strokeWidth = 2.6
+                ..strokeCap = StrokeCap.round
+                ..strokeJoin = StrokeJoin.round
+                ..color = const Color(0xFFFFFFFF));
+        }
+      }
     }
     // Delik küçük tutulur ki renkli halka içe doğru uzasın ve çeyrek
     // etiketleri (aynı konumda) renkli alanın içinde kalsın.
@@ -690,7 +749,10 @@ class _AreaDonutPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _AreaDonutPainter old) =>
-      old.ratio != ratio || old.hasHabits != hasHabits || old.hole != hole;
+      old.ratio != ratio ||
+      old.hasHabits != hasHabits ||
+      old.hole != hole ||
+      old.selected != selected;
 }
 
 /// Çeyrek-donut'u animasyonlu çizer: tamamlanma yayları eski orandan yeni
@@ -700,10 +762,12 @@ class _AnimatedAreaDonut extends StatefulWidget {
   final Map<String, double> ratio;
   final Map<String, bool> hasHabits;
   final Color hole;
+  final String? selected;
   const _AnimatedAreaDonut({
     required this.ratio,
     required this.hasHabits,
     required this.hole,
+    this.selected,
   });
   @override
   State<_AnimatedAreaDonut> createState() => _AnimatedAreaDonutState();
@@ -774,7 +838,10 @@ class _AnimatedAreaDonutState extends State<_AnimatedAreaDonut>
         };
         return CustomPaint(
           painter: _AreaDonutPainter(
-              ratio: cur, hasHabits: widget.hasHabits, hole: widget.hole),
+              ratio: cur,
+              hasHabits: widget.hasHabits,
+              hole: widget.hole,
+              selected: widget.selected),
         );
       },
     );
@@ -799,12 +866,25 @@ void showEditHabitSheet(BuildContext context, TasksHabitsViewModel viewModel,
 
 // ==================== ALIŞKANLIKLAR TAB ====================
 
-class _HabitsTab extends StatelessWidget {
+class _HabitsTab extends StatefulWidget {
   final TasksHabitsViewModel viewModel;
   const _HabitsTab({required this.viewModel});
+  @override
+  State<_HabitsTab> createState() => _HabitsTabState();
+}
 
-  static const _orange = Color(0xFFF6A821);
-  static const _green = Color(0xFF46A46B);
+class _HabitsTabState extends State<_HabitsTab> {
+  TasksHabitsViewModel get viewModel => widget.viewModel;
+
+  // Seçili yaşam alanı (pasta diliminden) — null = tümü (sırayla listele).
+  String? _selectedArea;
+  // Alışkanlık arama metni (üst menüdeki arama ikonu).
+  String _search = '';
+  bool _searchOpen = false;
+
+  // Alışkanlıklar modül aksanı + tamamlanan rengi — seçili temadan türetilir.
+  Color get _orange => AppPalette.accent;
+  Color get _green => AppPalette.success;
 
   /// Alışkanlıkları yaşam alanına göre grupla (alan sırası sabit).
   Map<String, List<Habit>> _grouped() {
@@ -821,68 +901,158 @@ class _HabitsTab extends StatelessWidget {
     final c = AppColors(isDark);
 
     if (viewModel.isLoading && viewModel.habits.isEmpty) {
-      return Center(child: CircularProgressIndicator(color: _orange));
+      return const Center(child: AppLoader());
     }
 
     final grouped = _grouped();
-    final filled = kLifeAreas.where((a) => grouped[a.key]!.isNotEmpty).toList();
+    final q = _search.trim().toLowerCase();
+    bool matchSearch(Habit h) =>
+        q.isEmpty || h.title.toLowerCase().contains(q);
+
+    final filled =
+        kLifeAreas.where((a) => grouped[a.key]!.any(matchSearch)).toList();
     final empty = kLifeAreas.where((a) => grouped[a.key]!.isEmpty).toList();
+    // Seçili alan varsa yalnız onu göster; yoksa tüm dolu alanlar sırayla.
+    final shown = _selectedArea == null
+        ? filled
+        : filled.where((a) => a.key == _selectedArea).toList();
 
     return RefreshIndicator(
       onRefresh: () => viewModel.loadHabits(),
       color: _orange,
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 4, 16, 130),
+        padding: const EdgeInsets.fromLTRB(16, 6, 16, 130),
         children: [
-          Align(
-            alignment: Alignment.centerRight,
-            child: _sharedChip(context, c),
-          ),
-          const SizedBox(height: 6),
+          // Üst menü — notlardaki gibi: başlık + paylaşım + arama
+          _habitsHeader(context, c),
+          if (_searchOpen) ...[
+            const SizedBox(height: 10),
+            _habitSearchField(c),
+          ],
+          const SizedBox(height: 12),
           _areaDonutCard(c, grouped),
-          const SizedBox(height: 18),
-          for (final a in filled)
-            for (final h in grouped[a.key]!)
+          const SizedBox(height: 14),
+          if (_selectedArea != null) _activeFilterChip(c),
+          for (final a in shown)
+            for (final h in grouped[a.key]!.where(matchSearch))
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
                 child: _habitCard(context, c, h, a),
               ),
-          for (final a in empty)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: _emptyAreaRow(context, c, a),
-            ),
+          // Boş alan kısayolları yalnızca filtresiz/aramasız görünümde.
+          if (_selectedArea == null && q.isEmpty)
+            for (final a in empty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: _emptyAreaRow(context, c, a),
+              ),
         ],
       ),
     );
   }
 
-  // ---------- Paylaşılan alışkanlıklar kısayolu ----------
-  Widget _sharedChip(BuildContext context, AppColors c) {
-    return GestureDetector(
-      onTap: () => Navigator.of(context).push(MaterialPageRoute(
-          builder: (_) => SharedHabitsPage(isDark: c.isDark))),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-        decoration: BoxDecoration(
-          color: _orange.withOpacity(0.12),
-          borderRadius: BorderRadius.circular(12),
+  // ---------- Üst menü (başlık + paylaşım + arama) ----------
+  Widget _habitsHeader(BuildContext context, AppColors c) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text('habits.title'.tr(),
+              style: TextStyle(
+                  fontFamily: 'JosefinSans',
+                  fontSize: 30,
+                  fontWeight: FontWeight.w700,
+                  height: 1.0,
+                  color: c.isDark
+                      ? ColorConstant.textPrimaryDark
+                      : const Color(0xFF3A3326))),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.groups_rounded, size: 18, color: _orange),
-            const SizedBox(width: 5),
-            Text('habits.shared.short'.tr(),
-                style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: _orange)),
-          ],
+        _hdrIcon(c, Icons.diversity_3_rounded,
+            () => showSharedHubSheet(context, kind: 'habit')),
+        const SizedBox(width: 8),
+        _hdrIcon(c, _searchOpen ? Icons.close_rounded : Icons.search_rounded,
+            () => setState(() {
+                  _searchOpen = !_searchOpen;
+                  if (!_searchOpen) _search = '';
+                })),
+      ],
+    );
+  }
+
+  Widget _hdrIcon(AppColors c, IconData icon, VoidCallback onTap) {
+    return Material(
+      color: c.card,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: c.border.withOpacity(0.6)),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: SizedBox(
+            width: 42,
+            height: 42,
+            child: Icon(icon, size: 20, color: c.textPrimary)),
+      ),
+    );
+  }
+
+  Widget _habitSearchField(AppColors c) {
+    return Container(
+      decoration: BoxDecoration(
+        color: c.card,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: c.border.withOpacity(0.6)),
+      ),
+      child: TextField(
+        autofocus: true,
+        onChanged: (v) => setState(() => _search = v),
+        style: TextStyle(color: c.textPrimary),
+        decoration: InputDecoration(
+          hintText: 'habits.searchHint'.tr(),
+          hintStyle: TextStyle(color: c.textMuted),
+          prefixIcon: Icon(Icons.search_rounded, color: c.textMuted),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 14),
         ),
       ),
     );
   }
+
+  Widget _activeFilterChip(AppColors c) {
+    final area = kLifeAreas.firstWhere((a) => a.key == _selectedArea,
+        orElse: () => kLifeAreas[0]);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: GestureDetector(
+          onTap: () => setState(() => _selectedArea = null),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+            decoration: BoxDecoration(
+              color: area.main.withOpacity(0.14),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(area.icon, size: 15, color: area.main),
+                const SizedBox(width: 6),
+                Text(area.labelKey.tr(),
+                    style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: area.main)),
+                const SizedBox(width: 6),
+                Icon(Icons.close_rounded, size: 15, color: area.main),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
 
   // ---------- Çeyrek-donut kartı (4 yaşam alanı) ----------
   Widget _areaDonutCard(AppColors c, Map<String, List<Habit>> grouped) {
@@ -913,14 +1083,20 @@ class _HabitsTab extends StatelessWidget {
         border: Border.all(color: c.border.withOpacity(0.6)),
       ),
       child: Center(
-        child: SizedBox(
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapUp: (d) => _onDonutTap(d.localPosition),
+          child: SizedBox(
           width: 236,
           height: 236,
           child: Stack(
             children: [
               Positioned.fill(
                 child: _AnimatedAreaDonut(
-                    ratio: ratio, hasHabits: hasH, hole: c.card),
+                    ratio: ratio,
+                    hasHabits: hasH,
+                    hole: c.card,
+                    selected: _selectedArea),
               ),
               Center(
                 child: Column(
@@ -949,8 +1125,23 @@ class _HabitsTab extends StatelessWidget {
             ],
           ),
         ),
+        ),
       ),
     );
+  }
+
+  // Pasta diliminden alan seç/kaldır (merkezden açıya göre çeyrek).
+  void _onDonutTap(Offset local) {
+    const size = 236.0;
+    final dx = local.dx - size / 2;
+    final dy = local.dy - size / 2;
+    final dist = math.sqrt(dx * dx + dy * dy);
+    // Orta delik veya dış kenar dışında → yok say.
+    if (dist < size / 2 * 0.42 || dist > size / 2) return;
+    final key = dx < 0
+        ? (dy < 0 ? 'relationships' : 'mind')
+        : (dy < 0 ? 'learning' : 'health');
+    setState(() => _selectedArea = _selectedArea == key ? null : key);
   }
 
   Widget _quadLabel(Alignment al, _LifeArea a, String value) {
@@ -1048,7 +1239,7 @@ class _HabitsTab extends StatelessWidget {
                             key: const ValueKey('h-done'),
                             width: 26,
                             height: 26,
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: _green,
                             ),
@@ -1082,15 +1273,37 @@ class _HabitsTab extends StatelessWidget {
                               fontWeight: FontWeight.w700,
                               color: area.main)),
                       const SizedBox(height: 2),
-                      Text(h.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                              fontSize: 15.5,
-                              fontWeight: FontWeight.w700,
-                              color: done ? c.textMuted : c.textPrimary,
-                              decoration:
-                                  done ? TextDecoration.lineThrough : null)),
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(h.title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                    fontSize: 15.5,
+                                    fontWeight: FontWeight.w700,
+                                    color:
+                                        done ? c.textMuted : c.textPrimary,
+                                    decoration: done
+                                        ? TextDecoration.lineThrough
+                                        : null)),
+                          ),
+                          // Paylaşımlı alışkanlık rozeti (notlardaki gibi).
+                          if (h.sharedHabitId != null) ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 5, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: _orange,
+                                borderRadius: BorderRadius.circular(9),
+                              ),
+                              child: const Icon(Icons.group_rounded,
+                                  size: 11, color: Colors.white),
+                            ),
+                          ],
+                        ],
+                      ),
                       const SizedBox(height: 2),
                       Text(sub,
                           style: TextStyle(
@@ -1193,7 +1406,7 @@ class _HabitsTab extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.grid_view_rounded, color: _orange),
+              leading: Icon(Icons.grid_view_rounded, color: _orange),
               title: Text('habits.history'.tr(),
                   style: TextStyle(color: c.textPrimary)),
               onTap: () {
@@ -1202,7 +1415,7 @@ class _HabitsTab extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.edit_rounded, color: _orange),
+              leading: Icon(Icons.edit_rounded, color: _orange),
               title: Text('common.edit'.tr(),
                   style: TextStyle(color: c.textPrimary)),
               onTap: () {
@@ -1211,7 +1424,7 @@ class _HabitsTab extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.group_add_rounded, color: _orange),
+              leading: Icon(Icons.group_add_rounded, color: _orange),
               title: Text('share.shareWithFriend'.tr(),
                   style: TextStyle(color: c.textPrimary)),
               subtitle: Text('share.canEdit'.tr() + ' / ' + 'share.viewOnly'.tr(),
@@ -1223,7 +1436,7 @@ class _HabitsTab extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.diversity_3_rounded, color: _orange),
+              leading: Icon(Icons.diversity_3_rounded, color: _orange),
               title: Text('share.sharedWithMe'.tr(),
                   style: TextStyle(color: c.textPrimary)),
               onTap: () {
@@ -1233,7 +1446,7 @@ class _HabitsTab extends StatelessWidget {
             ),
             if (!viewModel.isHabitDoneToday(h) && !h.skippedToday)
               ListTile(
-                leading: const Icon(Icons.fast_forward_rounded, color: _orange),
+                leading: Icon(Icons.fast_forward_rounded, color: _orange),
                 title: Text('habits.skipToday'.tr(),
                     style: TextStyle(color: c.textPrimary)),
                 subtitle: Text('habits.skipHint'.tr(),
@@ -1260,72 +1473,9 @@ class _HabitsTab extends StatelessWidget {
     );
   }
 
-  // Bu alışkanlığı arkadaşla paylaş: paylaşımlı alışkanlık oluşturup katılım
-  // kodunu gösterir (kopyala / sistem paylaşım menüsü).
-  Future<void> _shareHabitWithFriend(
-      BuildContext context, AppColors c, Habit h) async {
-    final title =
-        h.title.trim().isEmpty ? 'habits.shared.title'.tr() : h.title.trim();
-    final r = await sharedHabitService.create(SharedHabitRequest(title: title));
-    if (!context.mounted) return;
-    if (r.isSuccess && r.data != null) {
-      _showHabitJoinCode(context, c, r.data!);
-    } else {
-      CustomSnackBar.showError(
-          context, r.errorMessage);
-    }
-  }
-
-  void _showHabitJoinCode(BuildContext context, AppColors c, SharedHabit sh) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: c.card,
-        title: Text('habits.shared.created'.tr(),
-            style: TextStyle(color: c.textPrimary, fontSize: 16)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('habits.shareWithFriendHint'.tr(),
-                style: TextStyle(color: c.textSecondary, fontSize: 13)),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SelectableText(sh.joinCode ?? '-',
-                    style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 3,
-                        color: _orange)),
-                const SizedBox(width: 10),
-                IconButton(
-                  icon: Icon(Icons.copy_rounded, color: c.textSecondary),
-                  onPressed: () {
-                    Clipboard.setData(
-                        ClipboardData(text: sh.joinCode ?? ''));
-                    CustomSnackBar.showSuccess(
-                        context, 'habits.shared.codeCopied'.tr());
-                  },
-                ),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Share.share(
-                '${sh.title}\n${'habits.shared.joinCode'.tr()}: ${sh.joinCode}'),
-            child: Text('habits.shared.shareBtn'.tr()),
-          ),
-          TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: Text('habits.shared.ok'.tr())),
-        ],
-      ),
-    );
-  }
+  // Not: Eski kod-tabanlı alışkanlık paylaşımı (katılım kodu) kaldırıldı.
+  // Artık notlar/görevler gibi arkadaş-davet modeli kullanılıyor
+  // (showShareWithFriendsSheet / showSharedHubSheet, kind: 'habit').
 
   void _showHabitHistory(BuildContext context, AppColors c, Habit h) {
     showModalBottomSheet(
@@ -1671,7 +1821,8 @@ void showEditTaskSheet(BuildContext context, TasksHabitsViewModel viewModel,
 
 class _TasksTab extends StatefulWidget {
   final TasksHabitsViewModel viewModel;
-  const _TasksTab({required this.viewModel});
+  final ValueNotifier<double> fabBottom;
+  const _TasksTab({required this.viewModel, required this.fabBottom});
 
   @override
   State<_TasksTab> createState() => _TasksTabState();
@@ -1680,10 +1831,18 @@ class _TasksTab extends StatefulWidget {
 class _TasksTabState extends State<_TasksTab> {
   TasksHabitsViewModel get viewModel => widget.viewModel;
 
-  // Açık bölümler (default: hepsi kapalı).
-  final Set<String> _open = {};
   // Filtre: all | recurring | daily | weekly | monthly | once | high
   String _filter = 'all';
+  bool _taskSearchOpen = false; // üst menü arama ikonu
+
+  // Açık bölümler (varsayılan hepsi KAPALI).
+  final Set<String> _expandedSections = {};
+
+  // === Pano: "Tamamlanan görevler" çekmecesi ===
+  bool _drawerOpen = false;
+  final GlobalKey _cavityKey = GlobalKey(); // uçuş hedefi (çekmece içi)
+  final Set<int> _flyingTaskIds = {}; // uçarken karttaki kopyayı gizle
+  int _drawerCloseToken = 0; // otomatik kapanmayı iptal için
 
   // Aktif filtreye göre görevi gösterelim mi?
   bool _matchesFilter(Task t) {
@@ -1718,10 +1877,13 @@ class _TasksTabState extends State<_TasksTab> {
   String get _filterLabelKey =>
       _filters.firstWhere((f) => f[0] == _filter, orElse: () => _filters[0])[1];
 
-  static const _orange = Color(0xFFF6A821);
-  static const _purple = Color(0xFF9F7AEA);
-  static const _red = Color(0xFFF6524B);
-  static const _green = Color(0xFF48BB78);
+  // Modül + semantik renkleri artık seçili temadan türetilir (soft/uyumlu).
+  // _orange = modül aksanı (bugün), _purple = yaklaşan, _red = gecikmiş,
+  // _green = tamamlanan. Hepsi temaya göre otomatik değişir.
+  Color get _orange => AppPalette.accent;
+  Color get _purple => AppPalette.accentCool;
+  Color get _red => AppPalette.danger;
+  Color get _green => AppPalette.success;
 
   @override
   Widget build(BuildContext context) {
@@ -1729,10 +1891,11 @@ class _TasksTabState extends State<_TasksTab> {
     final c = AppColors(isDark);
 
     if (viewModel.isLoading && viewModel.tasks.isEmpty) {
-      return Center(child: CircularProgressIndicator(color: _orange));
+      return const Center(child: AppLoader());
     }
 
-    final searching = viewModel.taskSearch.trim().isNotEmpty;
+    final searching =
+        _taskSearchOpen || viewModel.taskSearch.trim().isNotEmpty;
     if (searching) {
       return RefreshIndicator(
         onRefresh: () => viewModel.refreshAll(),
@@ -1756,138 +1919,717 @@ class _TasksTabState extends State<_TasksTab> {
     final overdue =
         viewModel.pastOverdueTasks.where(_matchesFilter).toList();
     final todayOpen = viewModel.todayTasks.where(_matchesFilter).toList();
-    final upcoming =
-        viewModel.upcomingTasksList.where(_matchesFilter).toList();
-    final undated = viewModel.undatedTasks.where(_matchesFilter).toList();
+    // Yaklaşan = ileri tarihli + tarihsiz görevler (3 bölüm: Gecikmiş/Bugün/Yaklaşan).
+    final upcoming = [
+      ...viewModel.upcomingTasksList.where(_matchesFilter),
+      ...viewModel.undatedTasks.where(_matchesFilter),
+    ];
     final completed =
         viewModel.completedTasksList.where(_matchesFilter).toList();
 
-    // Başlık "X / Y tamam": bugünkü ilerleme + gecikmiş yük (filtreye göre).
-    final now = DateTime.now();
-    final todayDone = completed.where((t) {
-      final d = viewModel.dueDateOf(t);
-      return d != null && viewModel.isSameDay(d, now);
-    }).length;
-    final total = overdue.length + todayOpen.length + todayDone;
-    final done = todayDone;
+    // Ana ekranın cam alt menüsü (extendBody) içeriğin altını kaplıyor:
+    // çekmece ve liste bu kadar yukarıdan başlasın.
+    final navClear = MediaQuery.of(context).viewPadding.bottom + 70;
 
-    final children = <Widget>[
-      _headerBlock(c, done, total),
-      const SizedBox(height: 14),
-      _filterRow(context, c, isDark),
-      const SizedBox(height: 16),
-      // Benimle paylaşılan görevler — ana listede (Paylaşım Merkezi dışında da).
-      if (viewModel.sharedWithMeTasks.isNotEmpty) ...[
-        _sharedTasksStrip(context, c),
-        const SizedBox(height: 16),
-      ],
-      _sectionCard(
-        c: c,
-        keyId: 'overdue',
-        title: 'tasks.allOverdue'.tr(),
-        icon: Icons.error_outline_rounded,
-        accent: _red,
-        count: overdue.length,
-        child: overdue.isEmpty
-            ? _sectionEmpty(c, 'tasks.allEmpty'.tr())
-            : Column(
-                children: [
-                  for (final t in overdue) _overdueRow(context, c, isDark, t),
-                  if (overdue.length >= 2) ...[
-                    const SizedBox(height: 2),
-                    _bulkMoveBtn(context),
-                  ],
-                ],
-              ),
-      ),
-      _sectionCard(
-        c: c,
-        keyId: 'today',
-        title: 'tasks.allToday'.tr(),
-        icon: Icons.wb_sunny_rounded,
-        accent: _orange,
-        count: todayOpen.length,
-        child: todayOpen.isEmpty
-            ? _sectionEmpty(c, 'tasks.todayEmptyHint'.tr())
-            : Column(
-                children: [
-                  for (final t in todayOpen)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: _taskCard(context, c, t),
-                    ),
-                ],
-              ),
-      ),
-      _sectionCard(
-        c: c,
-        keyId: 'upcoming',
-        title: 'tasks.soon'.tr(),
-        icon: Icons.event_rounded,
-        accent: _purple,
-        count: upcoming.length,
-        child: upcoming.isEmpty
-            ? _sectionEmpty(c, 'tasks.allEmpty'.tr())
-            : Column(
-                children: [
-                  for (final t in upcoming)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: _taskCard(context, c, t),
-                    ),
-                ],
-              ),
-      ),
-      if (undated.isNotEmpty)
-        _sectionCard(
-          c: c,
-          keyId: 'undated',
-          title: 'tasks.allUndated'.tr(),
-          icon: Icons.inbox_rounded,
-          accent: const Color(0xFF4C9AFF),
-          count: undated.length,
-          child: Column(
-            children: [
-              for (final t in undated)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: _taskCard(context, c, t),
-                ),
-            ],
-          ),
-        ),
-      if (completed.isNotEmpty)
-        _sectionCard(
-          c: c,
-          keyId: 'completed',
-          title: 'tasks.allCompleted'.tr(),
-          icon: Icons.check_circle_rounded,
-          accent: _green,
-          count: completed.length,
-          child: Column(
-            children: [
-              for (final t in completed)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: _taskCard(context, c, t),
-                ),
-            ],
-          ),
-        ),
-    ];
-
-    return RefreshIndicator(
+    final list = RefreshIndicator(
       onRefresh: () => viewModel.refreshAll(),
       color: _orange,
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 2, 20, 140),
-        children: children,
+        padding: EdgeInsets.fromLTRB(20, 2, 20, navClear + 80),
+        children: [
+          _headerBlock(c),
+          const SizedBox(height: 14),
+          _filterRow(context, c, isDark),
+          const SizedBox(height: 18),
+          // Benimle paylaşılan görevler.
+          if (viewModel.sharedWithMeTasks.isNotEmpty) ...[
+            _sharedTasksStrip(context, c),
+            const SizedBox(height: 18),
+          ],
+          _sectionRail(
+            context,
+            c,
+            sectionKey: 'overdue',
+            title: 'tasks.allOverdue'.tr(),
+            tasks: overdue,
+            accent: _red,
+            emptyText: 'tasks.allEmpty'.tr(),
+            trailing: overdue.length >= 2 ? _bulkMoveBtn(context) : null,
+          ),
+          _sectionRail(
+            context,
+            c,
+            sectionKey: 'today',
+            title: 'tasks.allToday'.tr(),
+            tasks: todayOpen,
+            accent: _orange,
+            emptyText: 'tasks.todayEmptyHint'.tr(),
+          ),
+          _sectionRail(
+            context,
+            c,
+            sectionKey: 'upcoming',
+            title: 'tasks.upcomingSection'.tr(),
+            tasks: upcoming,
+            accent: _purple,
+            emptyText: 'tasks.upcomingEmpty'.tr(),
+          ),
+          const SizedBox(height: 20),
+        ],
+      ),
+    );
+
+    return Stack(
+      children: [
+        Positioned.fill(child: list),
+        Positioned(
+          left: 12,
+          right: 12,
+          bottom: navClear,
+          child: _completedDrawer(context, c, completed),
+        ),
+      ],
+    );
+  }
+
+  // Bölüm: renkli hap + yatay ray. AÇILIR-KAPANIR (varsayılan KAPALI):
+  // hapa dokununca açılır/kapanır; içinde aynı anda ~3 kart, gerisi için kaydır.
+  Widget _sectionRail(
+    BuildContext context,
+    AppColors c, {
+    required String sectionKey,
+    required String title,
+    required List<Task> tasks,
+    required Color accent,
+    String? emptyText,
+    Widget? trailing,
+  }) {
+    final expanded = _expandedSections.contains(sectionKey);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => setState(() {
+              if (expanded) {
+                _expandedSections.remove(sectionKey);
+              } else {
+                _expandedSections.add(sectionKey);
+              }
+            }),
+            child: Row(
+              children: [
+                _pill(title, tasks.length, accent),
+                const Spacer(),
+                if (expanded && tasks.length > 3)
+                  Icon(Icons.swipe_rounded, size: 17, color: c.textMuted),
+                const SizedBox(width: 6),
+                AnimatedRotation(
+                  turns: expanded ? 0.5 : 0,
+                  duration: AnimationPrefs.isOn
+                      ? const Duration(milliseconds: 240)
+                      : Duration.zero,
+                  child: Icon(Icons.keyboard_arrow_down_rounded,
+                      size: 22, color: c.textMuted),
+                ),
+              ],
+            ),
+          ),
+          ClipRect(
+            child: AnimatedSize(
+              duration: AnimationPrefs.isOn
+                  ? const Duration(milliseconds: 240)
+                  : Duration.zero,
+              curve: Curves.easeOutCubic,
+              alignment: Alignment.topCenter,
+              child: expanded
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 11),
+                        if (tasks.isEmpty)
+                          _sectionEmpty(
+                              c, emptyText ?? 'tasks.allEmpty'.tr())
+                        else
+                          SizedBox(
+                            height: 118,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              padding: EdgeInsets.zero,
+                              physics: const BouncingScrollPhysics(),
+                              itemCount: tasks.length,
+                              itemBuilder: (_, i) =>
+                                  _railCard(context, c, tasks[i], accent),
+                            ),
+                          ),
+                        if (trailing != null) ...[
+                          const SizedBox(height: 10),
+                          trailing,
+                        ],
+                      ],
+                    )
+                  : const SizedBox(width: double.infinity),
+            ),
+          ),
+        ],
       ),
     );
   }
 
+  Widget _pill(String title, int count, Color accent) {
+    // Koyu/doygun hap yerine SOFT tint: açık aksan zemini + aksan metin.
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: isDark ? 0.22 : 0.14),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: accent.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            title.toUpperCase(),
+            style: TextStyle(
+                color: accent,
+                fontSize: 10.5,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1),
+          ),
+          const SizedBox(width: 7),
+          Container(
+            constraints: const BoxConstraints(minWidth: 17),
+            height: 17,
+            padding: const EdgeInsets.symmetric(horizontal: 5),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: accent.withValues(alpha: isDark ? 0.30 : 0.22),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text('$count',
+                style: TextStyle(
+                    color: accent,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  double _railCardWidth(BuildContext context) {
+    // İçerik genişliği = ekran - 2*20 (yatay padding). 3 kart + 4. kenardan göz kırpsın.
+    final w = MediaQuery.of(context).size.width - 40;
+    return ((w - 2 * 9) / 3.25).clamp(92.0, 150.0);
+  }
+
+  String _railSubtitle(Task task) {
+    final od = _overdueLabel(task);
+    if (od != null) return od;
+    final tl = _timeLabel(task);
+    if (tl != null) return tl;
+    final d = viewModel.dueDateOf(task);
+    if (d != null) return '${d.day}.${d.month}';
+    return 'tasks.allUndated'.tr();
+  }
+
+  // Kompakt pano kartı (rayda yan yana).
+  Widget _railCard(
+      BuildContext context, AppColors c, Task task, Color accent) {
+    final flying = _flyingTaskIds.contains(task.id);
+    final width = _railCardWidth(context);
+    final sub = _railSubtitle(task);
+    return Opacity(
+      opacity: flying ? 0 : 1,
+      child: Container(
+        width: width,
+        margin: const EdgeInsets.only(right: 9),
+        decoration: BoxDecoration(
+          color: c.card,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: c.border.withOpacity(0.7)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 11,
+              offset: const Offset(0, 4),
+              spreadRadius: -4,
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => showEditTaskSheet(context, viewModel, c.isDark, task),
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(10, 10, 10, 9),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration:
+                            BoxDecoration(shape: BoxShape.circle, color: accent),
+                      ),
+                      const Spacer(),
+                      if (viewModel.isTaskShared(task.id))
+                        Icon(Icons.group_rounded,
+                            size: 13, color: _orange),
+                    ],
+                  ),
+                  const SizedBox(height: 7),
+                  Expanded(
+                    child: Text(
+                      task.title,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          fontSize: 12,
+                          height: 1.2,
+                          fontWeight: FontWeight.w700,
+                          color: c.textPrimary),
+                    ),
+                  ),
+                  const SizedBox(height: 7),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          sub.toUpperCase(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              fontSize: 8.5,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.3,
+                              color: accent),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Builder(
+                        builder: (ctx) => GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () => _completeWithAnim(ctx, task, accent),
+                          child: Container(
+                            width: 22,
+                            height: 22,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: c.border, width: 2),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ===== Tamamlanan görevler: gerçek (öne açılan) çekmece =====
+  // Çekmece açık yüksekliği (en az 2, en çok 3 satır not + kapak/kulp).
+  static const double _drawerOpenHeight = 256;
+
+  Widget _completedDrawer(
+      BuildContext context, AppColors c, List<Task> completed) {
+    final open = _drawerOpen;
+    final isDark = c.isDark;
+    return SizedBox(
+      height: _drawerOpenHeight,
+      child: Stack(
+        children: [
+          // İç göz — ön kapak öne devrilince görünür.
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 44,
+            child: IgnorePointer(
+              ignoring: !open,
+              child: AnimatedOpacity(
+                opacity: open ? 1 : 0,
+                duration: AnimationPrefs.isOn
+                    ? const Duration(milliseconds: 260)
+                    : Duration.zero,
+                curve: Curves.easeOut,
+                child: AnimatedScale(
+                  scale: open ? 1 : 0.96,
+                  alignment: Alignment.bottomCenter,
+                  duration: AnimationPrefs.isOn
+                      ? const Duration(milliseconds: 300)
+                      : Duration.zero,
+                  curve: Curves.easeOutCubic,
+                  child: _drawerInside(context, c, completed, isDark),
+                ),
+              ),
+            ),
+          ),
+          // Ön kapak — dokununca aç/kapat.
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: _drawerLid(context, c, completed.length, open, isDark),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _drawerInside(
+      BuildContext context, AppColors c, List<Task> completed, bool isDark) {
+    // Çekmece içi — seçili temaya uyumlu soft yüzey (karta aksanlı hafif tint).
+    final woodIn = Color.alphaBlend(
+        c.accent.withValues(alpha: isDark ? 0.10 : 0.12), c.card);
+    final woodBr = c.border;
+    final grip = c.textMuted;
+    return Container(
+      key: _cavityKey,
+      padding: const EdgeInsets.fromLTRB(12, 6, 12, 22),
+      decoration: BoxDecoration(
+        color: woodIn,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: woodBr),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.4 : 0.12),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Kapatma kulpu — çekmeceyi kapatır (dönüşmeyen alanda, her zaman tıklanır).
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: _toggleDrawer,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 46,
+                    height: 5,
+                    decoration: BoxDecoration(
+                        color: grip, borderRadius: BorderRadius.circular(3)),
+                  ),
+                  const SizedBox(height: 2),
+                  Icon(Icons.keyboard_arrow_down_rounded,
+                      size: 18, color: grip),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 2),
+          Flexible(
+            child: completed.isEmpty
+                ? Center(
+                    child: Text('tasks.allEmpty'.tr(),
+                        style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                            color: c.textMuted)),
+                  )
+                : _doneColumns(context, c, completed),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Tamamlananlar: 2 SATIRLI yatay grid — aynı anda ~3 sütun görünür
+  // (1 satırda en çok 3 not), diğerleri için YANA kaydırılır.
+  Widget _doneColumns(BuildContext context, AppColors c, List<Task> completed) {
+    final items =
+        completed.length > 30 ? completed.sublist(0, 30) : completed;
+    return GridView.builder(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2, // 2 satır (yatay kaydırmada çapraz eksen = satır)
+        mainAxisExtent: 126, // her hücrenin genişliği → ~3 sütun görünür
+        crossAxisSpacing: 8, // satırlar arası dikey boşluk
+        mainAxisSpacing: 8, // sütunlar arası yatay boşluk
+      ),
+      itemCount: items.length,
+      itemBuilder: (_, i) => _doneChip(context, c, items[i], i),
+    );
+  }
+
+  // Tamamlanan görev — dağınık not kağıdı (hafif eğik). Dokununca düzenle/
+  // yeniden planla sayfası açılır. Yeşil onay normal görevlerdeki gibi (22px dolu).
+  Widget _doneChip(BuildContext context, AppColors c, Task t, int i) {
+    final angle = (((t.id.hashCode % 7) - 3) / 3.0) * 0.05;
+    // Tamamlanan not kağıdı — seçili temaya uyumlu açık yüzey.
+    final paper = Color.alphaBlend(
+        c.accent.withValues(alpha: c.isDark ? 0.06 : 0.05), c.card);
+    return Transform.rotate(
+      angle: angle,
+      child: InkWell(
+        onTap: () => showEditTaskSheet(context, viewModel, c.isDark, t),
+        borderRadius: BorderRadius.circular(4),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(8, 7, 9, 7),
+          alignment: Alignment.centerLeft,
+          decoration: BoxDecoration(
+            color: paper,
+            borderRadius: BorderRadius.circular(4),
+            boxShadow: [
+              BoxShadow(
+                  color: Colors.black.withOpacity(0.18),
+                  blurRadius: 5,
+                  offset: const Offset(1, 3)),
+            ],
+          ),
+          child: Row(
+            children: [
+              // Normal görevlerdeki onay dairesi gibi (22px), tamamlandı = dolu yeşil.
+              Container(
+                width: 22,
+                height: 22,
+                decoration: BoxDecoration(
+                    shape: BoxShape.circle, color: _green),
+                child: const Icon(Icons.check_rounded,
+                    size: 15, color: Colors.white),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  t.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                    color: c.textMuted,
+                    decoration: TextDecoration.lineThrough,
+                    decorationColor: c.textMuted,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _drawerLid(
+      BuildContext context, AppColors c, int count, bool open, bool isDark) {
+    // Çekmece kapağı — seçili temaya uyumlu soft yüzey (aksanlı hafif tint).
+    final lid1 = Color.alphaBlend(
+        c.accent.withValues(alpha: isDark ? 0.12 : 0.14), c.card);
+    final lid2 = Color.alphaBlend(
+        c.accent.withValues(alpha: isDark ? 0.18 : 0.22), c.card);
+    final woodBr = c.border;
+    final grip = c.textMuted;
+    return GestureDetector(
+      onTap: _toggleDrawer,
+      child: TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0, end: open ? 1.0 : 0.0),
+        duration: AnimationPrefs.isOn
+            ? const Duration(milliseconds: 380)
+            : Duration.zero,
+        curve: Curves.easeOutCubic,
+        builder: (context, v, child) {
+          return Transform(
+            alignment: Alignment.bottomCenter,
+            transform: Matrix4.identity()
+              ..setEntry(3, 2, 0.0013)
+              ..rotateX(-1.2 * v),
+            child: child,
+          );
+        },
+        child: Container(
+          height: 56,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [lid1, lid2],
+            ),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: woodBr),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(isDark ? 0.4 : 0.14),
+                blurRadius: 14,
+                offset: const Offset(0, -3),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Çekmece kulpu — tutup aç/kapa (gerçek çekmece tutamağı gibi).
+              Container(
+                width: 48,
+                height: 7,
+                margin: const EdgeInsets.only(top: 6, bottom: 5),
+                decoration: BoxDecoration(
+                  color: grip,
+                  borderRadius: BorderRadius.circular(4),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(isDark ? 0.35 : 0.18),
+                      blurRadius: 3,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(15, 0, 11, 0),
+                child: Row(
+                  children: [
+                    Icon(Icons.dns_rounded, size: 19, color: _green),
+                    const SizedBox(width: 9),
+                    Expanded(
+                      child: Text(
+                        'tasks.allCompleted'.tr(),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w700,
+                            color: c.textPrimary),
+                      ),
+                    ),
+                    Container(
+                      constraints: const BoxConstraints(minWidth: 22),
+                      height: 22,
+                      padding: const EdgeInsets.symmetric(horizontal: 7),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: _green.withOpacity(0.16),
+                        borderRadius: BorderRadius.circular(11),
+                      ),
+                      child: Text('$count',
+                          style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: _green)),
+                    ),
+                    const SizedBox(width: 6),
+                    // Aç/kapa göstergesi: kapalıyken ▲ (aç), açıkken ▼ (kapat).
+                    AnimatedRotation(
+                      turns: open ? 0.5 : 0,
+                      duration: AnimationPrefs.isOn
+                          ? const Duration(milliseconds: 300)
+                          : Duration.zero,
+                      child: Icon(Icons.keyboard_arrow_up_rounded,
+                          size: 22, color: c.textMuted),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Çekmece açıkken FAB'ı çekmecenin üstüne kaydır (hiçbir şeyin üstüne gelmez).
+  void _syncFabBottom() {
+    if (!mounted) return;
+    final navClear = MediaQuery.of(context).viewPadding.bottom + 70;
+    widget.fabBottom.value =
+        _drawerOpen ? (navClear + _drawerOpenHeight + 10) : 120.0;
+  }
+
+  void _toggleDrawer() {
+    _drawerCloseToken++;
+    setState(() => _drawerOpen = !_drawerOpen);
+    _syncFabBottom();
+  }
+
+  void _scheduleDrawerClose() {
+    final token = ++_drawerCloseToken;
+    Future.delayed(const Duration(milliseconds: 1400), () {
+      if (mounted && _drawerCloseToken == token && _drawerOpen) {
+        setState(() => _drawerOpen = false);
+        _syncFabBottom();
+      }
+    });
+  }
+
+  // Görevi tamamla + karttan çekmeceye uçan animasyon.
+  void _completeWithAnim(BuildContext tapCtx, Task task, Color accent) {
+    if (!AnimationPrefs.isOn) {
+      viewModel.toggleTaskComplete(task, context);
+      return;
+    }
+    final box = tapCtx.findRenderObject() as RenderBox?;
+    final cavity = _cavityKey.currentContext?.findRenderObject() as RenderBox?;
+    final overlay = Overlay.of(context);
+    if (box == null || !box.attached || cavity == null) {
+      viewModel.toggleTaskComplete(task, context);
+      return;
+    }
+    final from = box.localToGlobal(box.size.center(Offset.zero));
+    final to = cavity.localToGlobal(cavity.size.center(Offset.zero));
+    setState(() {
+      _drawerOpen = true;
+      _flyingTaskIds.add(task.id);
+    });
+    _syncFabBottom();
+    _drawerCloseToken++; // açılışı sabit tut
+    late OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (_) => _FlyChip(
+        from: from,
+        to: to,
+        label: task.title,
+        accent: accent,
+        onDone: () {
+          if (entry.mounted) entry.remove();
+          if (!mounted) return;
+          setState(() => _flyingTaskIds.remove(task.id));
+          viewModel.toggleTaskComplete(task, context);
+          _scheduleDrawerClose();
+        },
+      ),
+    );
+    overlay.insert(entry);
+  }
+
   // Tarih + "Görevler" + "X / Y tamam".
-  Widget _headerBlock(AppColors c, int done, int total) {
+  // Notlardaki gibi yuvarlak üst-menü ikon butonu.
+  Widget _headerIcon(AppColors c, IconData icon, VoidCallback onTap) {
+    return Material(
+      color: c.isDark
+          ? Colors.white.withOpacity(0.06)
+          : Colors.black.withOpacity(0.05),
+      shape: const CircleBorder(),
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const CircleBorder(),
+        child: Padding(
+          padding: const EdgeInsets.all(9),
+          child: Icon(icon, size: 21, color: c.textSecondary),
+        ),
+      ),
+    );
+  }
+
+  Widget _headerBlock(AppColors c) {
     final now = DateTime.now();
     final days = 'calendar.dayNames'.tr().split(',');
     final months = 'calendar.monthNames'.tr().split(',');
@@ -1917,23 +2659,15 @@ class _TasksTabState extends State<_TasksTab> {
                     color: c.isDark
                         ? ColorConstant.textPrimaryDark
                         : const Color(0xFF3A3326))),
-            const SizedBox(width: 8),
-            // Paylaşım Merkezi — görev davetleri + paylaşılan görevler.
-            InkWell(
-              onTap: () => showSharedHubSheet(context, kind: 'task'),
-              borderRadius: BorderRadius.circular(20),
-              child: Padding(
-                padding: const EdgeInsets.all(4),
-                child: Icon(Icons.diversity_3_rounded,
-                    size: 22, color: c.textSecondary),
-              ),
-            ),
             const Spacer(),
-            Text('$done / $total ${'tasks.doneWord'.tr()}',
-                style: TextStyle(
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w700,
-                    color: c.textSecondary)),
+            // Paylaşım + Arama — notlardaki gibi en sağda (yuvarlak).
+            _headerIcon(c, Icons.diversity_3_rounded,
+                () => showSharedHubSheet(context, kind: 'task')),
+            const SizedBox(width: 8),
+            _headerIcon(c, Icons.search_rounded, () {
+              widget.fabBottom.value = 120;
+              setState(() => _taskSearchOpen = true);
+            }),
           ],
         ),
       ],
@@ -1968,7 +2702,7 @@ class _TasksTabState extends State<_TasksTab> {
                   SizedBox(
                     width: 18,
                     child: _filters[i][0] == _filter
-                        ? const Icon(Icons.check_rounded,
+                        ? Icon(Icons.check_rounded,
                             size: 18, color: _orange)
                         : null,
                   ),
@@ -2018,121 +2752,19 @@ class _TasksTabState extends State<_TasksTab> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.list_alt_rounded, size: 18, color: _orange),
+            Icon(Icons.list_alt_rounded, size: 18, color: _orange),
             const SizedBox(width: 6),
             Flexible(
               child: Text('tasks.allTitle'.tr(),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: _orange)),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  // Açılır/kapanır bölüm kartı (default kapalı).
-  Widget _sectionCard({
-    required AppColors c,
-    required String keyId,
-    required String title,
-    required IconData icon,
-    required Color accent,
-    required int count,
-    required Widget child,
-  }) {
-    final open = _open.contains(keyId);
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: c.card,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: c.border.withOpacity(0.7)),
-      ),
-      child: Column(
-        children: [
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(18),
-              onTap: () => setState(() {
-                if (open) {
-                  _open.remove(keyId);
-                } else {
-                  _open.add(keyId);
-                }
-              }),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(14, 13, 14, 13),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 34,
-                      height: 34,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: accent.withOpacity(0.14),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(icon, size: 19, color: accent),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(title,
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                              color: c.textPrimary)),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 9, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: accent.withOpacity(0.14),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text('$count',
-                          style: TextStyle(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w800,
-                              color: accent)),
-                    ),
-                    const SizedBox(width: 8),
-                    AnimatedRotation(
-                      turns: open ? 0.5 : 0, // aşağı → yukarı
-                      duration: AnimationPrefs.isOn
-                          ? const Duration(milliseconds: 240)
-                          : Duration.zero,
-                      curve: Curves.easeInOut,
-                      child: Icon(Icons.keyboard_arrow_down_rounded,
-                          size: 22, color: c.textMuted),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          // Yumuşak açılma/kapanma (yükseklik animasyonu).
-          ClipRect(
-            child: AnimatedSize(
-              duration: AnimationPrefs.isOn
-                  ? const Duration(milliseconds: 240)
-                  : Duration.zero,
-              curve: Curves.easeInOut,
-              alignment: Alignment.topCenter,
-              child: open
-                  ? Padding(
-                      padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
-                      child: child,
-                    )
-                  : const SizedBox(width: double.infinity),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -2149,7 +2781,7 @@ class _TasksTabState extends State<_TasksTab> {
             borderRadius: BorderRadius.circular(10),
           ),
           child: Text('tasks.planner.moveOverdue'.tr(),
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: _orange)),
@@ -2162,12 +2794,6 @@ class _TasksTabState extends State<_TasksTab> {
             style: TextStyle(
                 fontSize: 13.5, height: 1.4, color: c.textSecondary)),
       );
-
-  // Gecikmiş görev satırı: "Bugüne al"a basınca kayarak çıkar (bkz _OverdueRow).
-  Widget _overdueRow(BuildContext context, AppColors c, bool isDark, Task t) {
-    return _OverdueRow(
-        viewModel: viewModel, task: t, c: c, isDark: isDark);
-  }
 
   // Liste tonları ("Tüm Görevler" sayfası + görev satırı).
   static const _ink = Color(0xFF4A3F2E);
@@ -2362,6 +2988,13 @@ class _TasksTabState extends State<_TasksTab> {
               ),
             ),
           ),
+          GestureDetector(
+            onTap: () {
+              viewModel.setTaskSearch('');
+              setState(() => _taskSearchOpen = false);
+            },
+            child: Icon(Icons.close_rounded, size: 20, color: c.textMuted),
+          ),
         ],
       ),
     );
@@ -2406,7 +3039,8 @@ class _TasksTabState extends State<_TasksTab> {
           padding: const EdgeInsets.only(left: 4, bottom: 8),
           child: Row(
             children: [
-              const Icon(Icons.group_rounded, size: 16, color: Color(0xFFF6A821)),
+              Icon(Icons.group_rounded,
+                  size: 16, color: ColorConstant.accentOrange),
               const SizedBox(width: 6),
               Text('share.sharedWithMe'.tr(),
                   style: TextStyle(
@@ -2446,7 +3080,8 @@ class _TasksTabState extends State<_TasksTab> {
           decoration: BoxDecoration(
             color: c.card,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFFF6A821).withOpacity(0.4)),
+            border: Border.all(
+                color: ColorConstant.accentOrange.withOpacity(0.4)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -2525,8 +3160,8 @@ class _TasksTabState extends State<_TasksTab> {
                           transitionBuilder: (ch, anim) =>
                               ScaleTransition(scale: anim, child: ch),
                           child: done
-                              ? const Icon(Icons.check_circle_rounded,
-                                  key: ValueKey('t-done'),
+                              ? Icon(Icons.check_circle_rounded,
+                                  key: const ValueKey('t-done'),
                                   size: 26,
                                   color: _green)
                               : Container(
@@ -2573,10 +3208,10 @@ class _TasksTabState extends State<_TasksTab> {
                       ),
                     ),
                     if (viewModel.isTaskShared(task.id))
-                      const Padding(
-                        padding: EdgeInsets.only(right: 2, top: 2),
+                      Padding(
+                        padding: const EdgeInsets.only(right: 2, top: 2),
                         child: Icon(Icons.group_rounded,
-                            size: 16, color: Color(0xFFF6A821)),
+                            size: 16, color: ColorConstant.accentOrange),
                       ),
                     _cardMenu(context, c, task),
                   ],
@@ -2626,7 +3261,7 @@ class _TasksTabState extends State<_TasksTab> {
                             value: subs.isEmpty ? 0 : subDone / subs.length,
                             minHeight: 6,
                             backgroundColor: _orange.withOpacity(0.15),
-                            valueColor: const AlwaysStoppedAnimation<Color>(
+                            valueColor: AlwaysStoppedAnimation<Color>(
                                 _orange),
                           ),
                         ),
@@ -2899,7 +3534,8 @@ class _AddTaskBottomSheet extends StatelessWidget {
     this.isEditing = false,
   });
 
-  static const _accent = Color(0xFFF6A821);
+  // Editör aksanı — seçili temadan (not editörüyle tutarlı).
+  Color get _accent => ColorConstant.accentOrange;
 
   @override
   Widget build(BuildContext context) {
@@ -3196,7 +3832,7 @@ class _AddTaskBottomSheet extends StatelessWidget {
       ),
       child: Column(
         children: [
-          _row(c, Icons.calendar_month_rounded, const Color(0xFFF6A821),
+          _row(c, Icons.calendar_month_rounded, ColorConstant.accentOrange,
               'tasks.rowDateTime'.tr(), _dateLabel(vm),
               onTap: () => _pickDate(context, vm)),
           _divider(c),
@@ -3205,12 +3841,12 @@ class _AddTaskBottomSheet extends StatelessWidget {
               trailing: _priorityPill(vm),
               onTap: () => _showPriority(context, vm, c)),
           _divider(c),
-          _row(c, Icons.folder_rounded, const Color(0xFF9F7AEA),
+          _row(c, Icons.folder_rounded, ColorConstant.accentOrange,
               'tasks.rowCategory'.tr(), null,
               trailing: _categoryPill(vm, c),
               onTap: () => _showCategory(context, vm, c)),
           _divider(c),
-          _row(c, Icons.repeat_rounded, const Color(0xFFF6A821),
+          _row(c, Icons.repeat_rounded, ColorConstant.accentOrange,
               'tasks.rowRecurrence'.tr(), _recLabel(vm.taskRecurrence),
               onTap: () => _showRecurrence(context, vm, c)),
         ],
@@ -3339,10 +3975,10 @@ class _AddTaskBottomSheet extends StatelessWidget {
             InkWell(
               onTap: () => _addSubtask(context, vm),
               child: Row(children: [
-                const Icon(Icons.add_rounded, size: 18, color: _accent),
+                Icon(Icons.add_rounded, size: 18, color: _accent),
                 const SizedBox(width: 2),
                 Text('tasks.addSubtask'.tr(),
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 13.5,
                         fontWeight: FontWeight.w700,
                         color: _accent)),
@@ -3382,10 +4018,10 @@ class _AddTaskBottomSheet extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.add_rounded, size: 18, color: _accent),
+                        Icon(Icons.add_rounded, size: 18, color: _accent),
                         const SizedBox(width: 6),
                         Text('tasks.newSubtask'.tr(),
-                            style: const TextStyle(
+                            style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
                                 color: _accent)),
@@ -3471,49 +4107,116 @@ class _AddTaskBottomSheet extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: c.border.withOpacity(0.7)),
           ),
-          child: Row(
+          child: Column(
             children: [
-              const Icon(Icons.notifications_active_rounded,
-                  size: 22, color: _accent),
-              const SizedBox(width: 14),
-              Expanded(
-                child: GestureDetector(
-                  onTap: vm.reminderEnabled
-                      ? () => _showMinutes(context, vm, c)
-                      : null,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        vm.reminderEnabled
-                            ? 'tasks.reminderBeforeMinutes'.tr(
-                                namedArgs: {'n': '${vm.reminderBeforeMinutes}'})
-                            : 'tasks.reminderOff'.tr(),
-                        style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                            color: c.textPrimary),
-                      ),
-                      if (vm.reminderEnabled) ...[
-                        const SizedBox(height: 2),
-                        Text('tasks.reminderTapChange'.tr(),
-                            style: TextStyle(
-                                fontSize: 12, color: c.textMuted)),
-                      ],
-                    ],
+              Row(
+                children: [
+                  Icon(Icons.notifications_active_rounded,
+                      size: 22, color: _accent),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Text(
+                      vm.reminderEnabled
+                          ? (vm.reminderTime != null
+                              ? 'tasks.reminderAtTime'.tr(namedArgs: {
+                                  'time': _fmtTod(vm.reminderTime!)
+                                })
+                              : 'tasks.reminderBeforeMinutes'.tr(namedArgs: {
+                                  'n': '${vm.reminderBeforeMinutes}'
+                                }))
+                          : 'tasks.reminderOff'.tr(),
+                      style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: c.textPrimary),
+                    ),
                   ),
+                  Switch(
+                    value: vm.reminderEnabled,
+                    activeColor: _accent,
+                    onChanged: vm.setReminderEnabled,
+                  ),
+                ],
+              ),
+              // Mod seçimi: "X dk önce" veya belirli "Saat".
+              if (vm.reminderEnabled) ...[
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const SizedBox(width: 36),
+                    _reminderModeChip(
+                      c,
+                      icon: Icons.timelapse_rounded,
+                      label: 'tasks.reminderBeforeMinutes'
+                          .tr(namedArgs: {'n': '${vm.reminderBeforeMinutes}'}),
+                      active: vm.reminderTime == null,
+                      onTap: () {
+                        vm.setReminderTime(null);
+                        _showMinutes(context, vm, c);
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    _reminderModeChip(
+                      c,
+                      icon: Icons.schedule_rounded,
+                      label: vm.reminderTime != null
+                          ? _fmtTod(vm.reminderTime!)
+                          : 'tasks.reminderPickTime'.tr(),
+                      active: vm.reminderTime != null,
+                      onTap: () => _pickReminderTime(context, vm),
+                    ),
+                  ],
                 ),
-              ),
-              Switch(
-                value: vm.reminderEnabled,
-                activeColor: _accent,
-                onChanged: vm.setReminderEnabled,
-              ),
+              ],
             ],
           ),
         ),
       ],
     );
+  }
+
+  String _fmtTod(TimeOfDay t) =>
+      '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
+
+  Widget _reminderModeChip(AppColors c,
+      {required IconData icon,
+      required String label,
+      required bool active,
+      required VoidCallback onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: active ? _accent.withOpacity(0.14) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+              color: active ? _accent.withOpacity(0.55) : c.border),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: active ? _accent : c.textMuted),
+            const SizedBox(width: 6),
+            Text(label,
+                style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                    color: active ? _accent : c.textSecondary)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickReminderTime(
+      BuildContext context, TasksHabitsViewModel vm) async {
+    final t = await showTimePicker(
+      context: context,
+      initialTime: vm.reminderTime ?? TimeOfDay.now(),
+    );
+    if (t != null) vm.setReminderTime(t);
   }
 
   // ---------- Ekler ----------
@@ -3765,7 +4468,7 @@ class _AddTaskBottomSheet extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16)),
               ),
               child: Text('tasks.discard'.tr(),
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                       color: _accent)),
@@ -3774,33 +4477,40 @@ class _AddTaskBottomSheet extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             flex: 2,
-            child: ElevatedButton(
-              onPressed: vm.isLoading
-                  ? null
-                  : () => isEditing
-                      ? vm.updateTask(context)
-                      : vm.createTask(context),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: _accent,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.check_rounded,
-                      color: Colors.white, size: 20),
-                  const SizedBox(width: 8),
-                  Text('tasks.saveTask'.tr(),
-                      style: const TextStyle(
-                          fontSize: 15.5,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white)),
-                ],
-              ),
-            ),
+            child: Builder(builder: (_) {
+              final reschedule = isEditing && vm.editingTaskCompleted;
+              return ElevatedButton(
+                onPressed: vm.isLoading
+                    ? null
+                    : () => isEditing
+                        ? vm.updateTask(context, reschedule: reschedule)
+                        : vm.createTask(context),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor:
+                      reschedule ? const Color(0xFF48BB78) : _accent,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(reschedule ? Icons.event_repeat_rounded : Icons.check_rounded,
+                        color: Colors.white, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                        reschedule
+                            ? 'tasks.reschedule'.tr()
+                            : 'tasks.saveTask'.tr(),
+                        style: const TextStyle(
+                            fontSize: 15.5,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white)),
+                  ],
+                ),
+              );
+            }),
           ),
         ],
       ),
@@ -3907,7 +4617,7 @@ class _AddTaskBottomSheet extends StatelessWidget {
                     'tasks.reminderBeforeMinutes'.tr(namedArgs: {'n': '$m'}),
                     style: TextStyle(color: c.textPrimary)),
                 trailing: vm.reminderBeforeMinutes == m
-                    ? const Icon(Icons.check_rounded, color: _accent)
+                    ? Icon(Icons.check_rounded, color: _accent)
                     : null,
                 onTap: () {
                   vm.setReminderBeforeMinutes(m);
@@ -4036,7 +4746,7 @@ class _AddTaskBottomSheet extends StatelessWidget {
               Navigator.pop(ctx);
             },
             child: Text('common.save'.tr(),
-                style: const TextStyle(color: _accent)),
+                style: TextStyle(color: _accent)),
           ),
         ],
       ),
@@ -4084,7 +4794,8 @@ class _AddHabitBottomSheet extends StatelessWidget {
     this.isEditing = false,
   });
 
-  static const _accent = Color(0xFFF6A821);
+  // Editör aksanı — seçili temadan (not editörüyle tutarlı).
+  Color get _accent => ColorConstant.accentOrange;
 
   @override
   Widget build(BuildContext context) {
@@ -4503,7 +5214,7 @@ class _AddHabitBottomSheet extends StatelessWidget {
               ListTile(
                 title: Text(o[1].tr(), style: TextStyle(color: c.textPrimary)),
                 trailing: vm.habitFreqType == o[0]
-                    ? const Icon(Icons.check_rounded, color: _accent)
+                    ? Icon(Icons.check_rounded, color: _accent)
                     : null,
                 onTap: () {
                   vm.setHabitFreqType(o[0]);
@@ -4539,8 +5250,17 @@ class _AddHabitBottomSheet extends StatelessWidget {
               runSpacing: 8,
               children: [
                 for (int i = 0; i < vm.habitReminderTimes.length; i++)
-                  _timeChip(c, _fmt(vm.habitReminderTimes[i]),
-                      () => vm.removeHabitReminderTimeAt(i)),
+                  _timeChip(
+                    c,
+                    _fmt(vm.habitReminderTimes[i]),
+                    () async {
+                      final t = await showTimePicker(
+                          context: context,
+                          initialTime: vm.habitReminderTimes[i]);
+                      if (t != null) vm.updateHabitReminderTimeAt(i, t);
+                    },
+                    () => vm.removeHabitReminderTimeAt(i),
+                  ),
                 _addTimeChip(c, () async {
                   final t = await showTimePicker(
                       context: context, initialTime: TimeOfDay.now());
@@ -4553,7 +5273,8 @@ class _AddHabitBottomSheet extends StatelessWidget {
     );
   }
 
-  Widget _timeChip(AppColors c, String label, VoidCallback onRemove) {
+  Widget _timeChip(
+      AppColors c, String label, VoidCallback onEdit, VoidCallback onRemove) {
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 6, 6, 6),
       decoration: BoxDecoration(
@@ -4563,13 +5284,26 @@ class _AddHabitBottomSheet extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(label,
-              style: const TextStyle(
-                  fontSize: 14, fontWeight: FontWeight.w600, color: _accent)),
-          const SizedBox(width: 2),
+          // Etikete dokununca saati düzenle.
+          GestureDetector(
+            onTap: onEdit,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.edit_rounded, size: 13, color: _accent),
+                const SizedBox(width: 5),
+                Text(label,
+                    style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: _accent)),
+              ],
+            ),
+          ),
+          const SizedBox(width: 4),
           GestureDetector(
             onTap: onRemove,
-            child: const Icon(Icons.close_rounded, size: 16, color: _accent),
+            child: Icon(Icons.close_rounded, size: 16, color: _accent),
           ),
         ],
       ),
@@ -4588,10 +5322,10 @@ class _AddHabitBottomSheet extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.add_rounded, size: 16, color: _accent),
+            Icon(Icons.add_rounded, size: 16, color: _accent),
             const SizedBox(width: 4),
             Text('habits.addReminderTime'.tr(),
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 13.5,
                     fontWeight: FontWeight.w600,
                     color: _accent)),
@@ -4719,7 +5453,7 @@ class _AddHabitBottomSheet extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16)),
               ),
               child: Text('tasks.discard'.tr(),
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                       color: _accent)),
@@ -4809,7 +5543,7 @@ class _AddHabitBottomSheet extends StatelessWidget {
                 title: Text('habits.timesN'.tr(namedArgs: {'n': '$g'}),
                     style: TextStyle(color: c.textPrimary)),
                 trailing: vm.habitGoal == g
-                    ? const Icon(Icons.check_rounded, color: _accent)
+                    ? Icon(Icons.check_rounded, color: _accent)
                     : null,
                 onTap: () {
                   vm.setHabitGoal(g);

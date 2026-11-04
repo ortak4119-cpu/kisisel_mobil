@@ -4,8 +4,11 @@ import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'core/constant/constants.dart';
 import 'core/route/app_router.dart';
+import 'presentation/common/app_update_gate.dart';
 import 'core/utils/theme_provider.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/app_palette.dart';
+import 'service/notification/notification_sound.dart';
 import 'core/init/app_initializer.dart';
 import 'core/init/app_providers.dart';
 import 'core/utils/app_locale.dart';
@@ -22,6 +25,12 @@ void main() async {
 
   // Animasyon tercihini (Ayarlar › Görünüm) belleğe yükle.
   await AnimationPrefs.load();
+
+  // Seçili temayı (Ayarlar › Görünüm › Tema) ilk build'den önce yükle.
+  await AppPalette.load();
+
+  // Seçili bildirim sesini (Ayarlar › Bildirimler) belleğe yükle.
+  await NotifSoundPrefs.load();
 
   // Başka uygulamadan "Paylaş" ile gelen metni not olarak içe aktar.
   ShareIntentHandler.init();
@@ -51,10 +60,31 @@ void main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
-  MyApp({super.key});
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
 
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   final _appRouter = AppRouter();
+
+  @override
+  void initState() {
+    super.initState();
+    // Açılıştan kısa süre sonra sürüm kontrolü yap (gerekirse güncelleme uyarısı).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Splash → ana ekran geçişi oturduktan sonra kontrol et (diyalog
+      // geçiş sırasında kaldırılmasın diye yeterli gecikme).
+      Future.delayed(const Duration(milliseconds: 4500), () {
+        final ctx = _appRouter.navigatorKey.currentContext;
+        if (ctx != null) {
+          AppUpdateGate.check(ctx);
+        }
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

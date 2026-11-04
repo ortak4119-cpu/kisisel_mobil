@@ -1,9 +1,13 @@
 {
   "update": {
-    "title": "नया संस्करण उपलब्ध है",
-    "message": "LifeSync का नया संस्करण उपलब्ध है. बेहतर अनुभव के लिए हम अपडेट करने की सलाह देते हैं.",
+    "title": "अपडेट उपलब्ध है",
+    "forceBody": "जारी रखने के लिए ऐप अपडेट करें।",
+    "softBody": "नया वर्शन उपलब्ध है 🎉 बेहतरीन अनुभव के लिए अपडेट करें।",
+    "later": "बाद में",
     "update": "अपडेट करें",
-    "later": "बाद में"
+    "review": "अपडेट देखें",
+    "whatsNew": "क्या नया है?",
+    "noNotes": "इस संस्करण के लिए कोई नोट नहीं।"
   },
   "app": {
     "name": "LifeSync",
@@ -115,6 +119,7 @@
     "passwordConfirmRequired": "पासवर्ड की पुष्टि आवश्यक है",
     "passwordMismatch": "पासवर्ड मेल नहीं खाते",
     "forgotPassword": "पासवर्ड भूल गए?",
+    "rememberMe": "मुझे याद रखें",
     "login": "लॉगिन करें",
     "register": "रजिस्टर करें",
     "continueWithGoogle": "Google के साथ जारी रखें",
@@ -289,6 +294,11 @@
     "newSubtask": "नया उपकार्य",
     "reminderBeforeMinutes": "{n} मिनट पहले",
     "reminderOff": "रिमाइंडर बंद",
+    "upcomingSection": "आगामी",
+    "upcomingEmpty": "कोई आगामी कार्य नहीं",
+    "reminderAtTime": "{time} बजे",
+    "reminderPickTime": "समय चुनें",
+    "reschedule": "कार्य पुनर्निर्धारित करें",
     "reminderTapChange": "बदलने के लिए टैप करें",
     "attachTitle": "अनुलग्नक",
     "attachments": "फ़ाइल या फ़ोटो जोड़ें",
@@ -450,7 +460,8 @@
     "today": "आज",
     "streakN": "श्रृंखला {n}",
     "doneShort": "पूर्ण",
-    "skippedShort": "छोड़ा"
+    "skippedShort": "छोड़ा",
+    "searchHint": "आदतें खोजें"
   },
   "profile": {
     "title": "प्रोफ़ाइल",
@@ -637,7 +648,9 @@
       "planLifetime": "आजीवन Premium",
       "planPremium": "Premium",
       "planFree": "मुफ़्त",
-      "cancelNote": "आप अपनी सदस्यता कभी भी अपने डिवाइस के स्टोर ({store}) की सब्सक्रिप्शन सेटिंग से रद्द कर सकते हैं।"
+      "cancelNote": "आप अपनी सदस्यता कभी भी अपने डिवाइस के स्टोर ({store}) की सब्सक्रिप्शन सेटिंग से रद्द कर सकते हैं।",
+      "couponInfo": "यह सदस्यता छूट कोड से प्राप्त की गई थी। समाप्ति पर जारी रखने के लिए सदस्यता आवश्यक है।",
+      "changePlan": "सदस्यता बदलें"
     },
     "replayOnboarding": "परिचय फिर से देखें",
     "completion": "आपकी प्रोफ़ाइल {percent}% पूर्ण है",
@@ -976,6 +989,16 @@
     "editIncome": "आय संपादित करें",
     "mainAccount": "मुख्य खाता",
     "spendableToday": "आज खर्च योग्य",
+    "thisMonthNet": "इस माह शुद्ध",
+    "budgetLockTitle": "{month} के लिए लॉक करें",
+    "budgetLockOnDesc": "इस माह का अलग बजट. वैश्विक बजट बदलने पर अप्रभावित.",
+    "budgetLockOffDesc": "वैश्विक मासिक बजट सभी अनलॉक माहों पर लागू होता है.",
+    "budgetLockRemove": "इस माह का लॉक हटाएं",
+    "locked": "लॉक",
+    "openingBalanceTitle": "आरंभिक/वर्तमान शेष",
+    "openingBalanceNone": "निर्धारित नहीं",
+    "openingBalanceDesc": "अभी आपके पास मौजूद पैसा दर्ज करें। मुख्य खाता इसी राशि से (इस माह से) बढ़ता है।",
+    "openingBalanceClear": "हटाएं",
     "subShort": "सदस्यता",
     "lockShort": "लॉक",
     "tabGeneral": "सामान्य",
@@ -1017,6 +1040,9 @@
     "deleteNote": "नोट हटाएँ",
     "deleteNoteConfirm": "क्या आप वाकई इस नोट को हटाना चाहते हैं?",
     "lockNote": "नोट लॉक करें",
+    "resizeNote": "आकार बदलें",
+    "preview": "पूर्वावलोकन",
+    "copiedText": "टेक्स्ट कॉपी किया गया",
     "unlockNote": "नोट अनलॉक करें",
     "enterPin": "इस नोट को देखने के लिए PIN दर्ज करें",
     "pinNote": "पिन करें",
@@ -1099,7 +1125,12 @@
       "fileError": "फ़ाइल नहीं चुनी जा सकी",
       "reminderSet": "रिमाइंडर: {date}",
       "done": "हो गया",
-      "saving": "सहेजा जा रहा है…"
+      "saving": "सहेजा जा रहा है…",
+      "shareCollab": "साझा नोट",
+      "shared": "साझा",
+      "makeShared": "साझा करें",
+      "checklistTitle": "सूची",
+      "people": "लोग"
     },
     "add": {
       "noteTitle": "नोट जोड़ें",
@@ -1179,6 +1210,12 @@
   },
   "settings": {
     "title": "सेटिंग्स",
+    "theme_title": "थीम",
+    "theme_kraft": "गर्म क्राफ्ट",
+    "theme_blue": "हल्का नीला",
+    "theme_pink": "हल्का गुलाबी",
+    "theme_green": "हल्का हरा",
+    "theme_orange": "हल्का नारंगी",
     "sections": {
       "premium": "प्रीमियम",
       "notifications": "सूचनाएँ",
@@ -1200,7 +1237,8 @@
       "diarySubtitle": "डायरी लिखने के अनुस्मारक",
       "subscription": "सदस्यताएँ",
       "note": "नोट्स",
-      "social": "सामाजिक"
+      "social": "सामाजिक",
+      "engagement": "दैनिक प्रेरणा"
     },
     "appearance": {
       "theme": "थीम",
@@ -1266,7 +1304,16 @@
       "showLevel": "स्तर दिखाएँ",
       "showAchievements": "उपलब्धियाँ दिखाएँ",
       "showHabits": "आदतें दिखाएँ"
-    }
+    },
+    "notif_sound_title": "सूचना ध्वनि",
+    "snd_chime": "चाइम",
+    "snd_marimba": "मारिम्बा",
+    "snd_bell": "घंटी",
+    "snd_soft": "सॉफ्ट",
+    "snd_pop": "पॉप",
+    "snd_default": "डिफ़ॉल्ट",
+    "snd_silent": "मौन",
+    "snd_preview": "पूर्वावलोकन"
   },
   "validation": {
     "required": "यह फ़ील्ड आवश्यक है",
@@ -1367,6 +1414,7 @@
     "diaryDeleted": "डायरी हटाई गई",
     "taskAdded": "कार्य जोड़ा गया",
     "taskUpdated": "कार्य अपडेट किया गया",
+    "taskRescheduled": "कार्य पुनर्निर्धारित",
     "taskDeleted": "कार्य हटाया गया",
     "taskCompleted": "कार्य पूरा हुआ! 🎉",
     "taskMarkedIncomplete": "कार्य अधूरा चिह्नित किया गया",
@@ -1464,7 +1512,18 @@
     "limitInfo": "मुफ़्त संस्करण में {feature} के लिए {limit} की सीमा है।",
     "currentUsage": "आप वर्तमान में {current}/{limit} उपयोग कर रहे हैं।",
     "unlockCta": "असीमित उपयोग के लिए प्रीमियम लें!",
-    "goCta": "प्रीमियम लें"
+    "goCta": "प्रीमियम लें",
+    "unlocked": "प्रीमियम अनलॉक हो गया",
+    "feat_unlimited": "असीमित नोट्स, कार्य और सब कुछ",
+    "feat_noads": "विज्ञापन-मुक्त अनुभव",
+    "feat_themes": "सभी थीम और ध्वनियाँ",
+    "start": "चलिए शुरू करें",
+    "choose_theme": "अपनी थीम चुनें",
+    "choose_theme_sub": "आप इसे कभी भी सेटिंग्स में बदल सकते हैं",
+    "choose_sound": "अपनी सूचना ध्वनि चुनें",
+    "choose_sound_sub": "सुनने के लिए प्ले दबाएँ",
+    "continue": "जारी रखें",
+    "finish": "ऐप खोलें"
   },
   "messages": {
     "noteCreated": "नोट सफलतापूर्वक जोड़ा गया",
@@ -1532,10 +1591,14 @@
     "editing": "{name} संपादित कर रहा है",
     "lockedBusy": "{name} अभी संपादित कर रहा है",
     "noShared": "अभी कोई साझा नहीं",
+    "endShare": "साझाकरण समाप्त करें",
+    "endShareConfirm": "यह साझाकरण समाप्त करें? यह अन्य उपयोगकर्ताओं से हटा दिया जाएगा।",
+    "endShareDone": "साझाकरण समाप्त",
     "noInvites": "कोई लंबित निमंत्रण नहीं",
     "participants": "प्रतिभागी",
     "completed": "पूर्ण",
     "notCompleted": "अपूर्ण",
-    "viewerCannotEdit": "केवल देखें — संपादन नहीं"
+    "viewerCannotEdit": "केवल देखें — संपादन नहीं",
+    "saveNoteFirst": "पहले नोट सहेजें"
   }
 }

@@ -1,9 +1,13 @@
 {
   "update": {
-    "title": "New Version Available",
-    "message": "A new version of LifeSync is available. We recommend updating for the best experience.",
+    "title": "Update available",
+    "forceBody": "You must update the app to continue.",
+    "softBody": "A new version is available 🎉 Update for the best experience.",
+    "later": "Later",
     "update": "Update",
-    "later": "Later"
+    "review": "Review update",
+    "whatsNew": "What's new?",
+    "noNotes": "No release notes for this version."
   },
   "app": {
     "name": "LifeSync",
@@ -115,6 +119,7 @@
     "passwordConfirmRequired": "Password confirmation is required",
     "passwordMismatch": "Passwords do not match",
     "forgotPassword": "Forgot Password?",
+    "rememberMe": "Remember me",
     "login": "Log In",
     "register": "Register",
     "continueWithGoogle": "Continue with Google",
@@ -289,6 +294,11 @@
     "newSubtask": "New subtask",
     "reminderBeforeMinutes": "{n} minutes before",
     "reminderOff": "Reminder off",
+    "upcomingSection": "Upcoming",
+    "upcomingEmpty": "No upcoming tasks",
+    "reminderAtTime": "At {time}",
+    "reminderPickTime": "Pick time",
+    "reschedule": "Reschedule task",
     "reminderTapChange": "Tap to change",
     "attachTitle": "Attachments",
     "attachments": "Add file or photo",
@@ -450,7 +460,8 @@
     "today": "today",
     "streakN": "streak {n}",
     "doneShort": "done",
-    "skippedShort": "skipped"
+    "skippedShort": "skipped",
+    "searchHint": "Search habits"
   },
   "profile": {
     "title": "Profile",
@@ -637,7 +648,9 @@
       "planLifetime": "Lifetime Premium",
       "planPremium": "Premium",
       "planFree": "Free",
-      "cancelNote": "You can cancel your subscription anytime from your device's store ({store}) subscription settings."
+      "cancelNote": "You can cancel your subscription anytime from your device's store ({store}) subscription settings.",
+      "couponInfo": "This membership was obtained with a discount code. A subscription is required to continue when it expires.",
+      "changePlan": "Change Subscription"
     },
     "replayOnboarding": "Replay the intro",
     "completion": "Your profile is {percent}% complete",
@@ -976,6 +989,16 @@
     "editIncome": "Edit Income",
     "mainAccount": "Main account",
     "spendableToday": "Spendable today",
+    "thisMonthNet": "This month net",
+    "budgetLockTitle": "Lock for {month}",
+    "budgetLockOnDesc": "Custom budget for this month. Unaffected by global budget changes.",
+    "budgetLockOffDesc": "The global monthly budget applies to all unlocked months.",
+    "budgetLockRemove": "Remove this month's lock",
+    "locked": "Locked",
+    "openingBalanceTitle": "Opening/Current Balance",
+    "openingBalanceNone": "Not set",
+    "openingBalanceDesc": "Enter the money you currently have. Your main account builds up from this amount (starting this month).",
+    "openingBalanceClear": "Clear",
     "subShort": "Subscription",
     "lockShort": "Lock",
     "tabGeneral": "General",
@@ -1017,6 +1040,9 @@
     "deleteNote": "Delete Note",
     "deleteNoteConfirm": "Are you sure you want to delete this note?",
     "lockNote": "Lock Note",
+    "resizeNote": "Resize",
+    "preview": "Preview",
+    "copiedText": "Text copied",
     "unlockNote": "Unlock Note",
     "enterPin": "Enter PIN to view this note",
     "pinNote": "Pin",
@@ -1099,7 +1125,12 @@
       "fileError": "Could not pick file",
       "reminderSet": "Reminder: {date}",
       "done": "Done",
-      "saving": "Saving…"
+      "saving": "Saving…",
+      "shareCollab": "Shared note",
+      "shared": "Shared",
+      "makeShared": "Make shared",
+      "checklistTitle": "Checklist",
+      "people": "people"
     },
     "add": {
       "noteTitle": "Add Note",
@@ -1179,6 +1210,12 @@
   },
   "settings": {
     "title": "Settings",
+    "theme_title": "Theme",
+    "theme_kraft": "Warm Kraft",
+    "theme_blue": "Light Blue",
+    "theme_pink": "Light Pink",
+    "theme_green": "Light Green",
+    "theme_orange": "Light Orange",
     "sections": {
       "premium": "Premium",
       "notifications": "Notifications",
@@ -1200,7 +1237,8 @@
       "diarySubtitle": "Diary writing reminders",
       "subscription": "Subscriptions",
       "note": "Notes",
-      "social": "Social"
+      "social": "Social",
+      "engagement": "Daily motivation"
     },
     "appearance": {
       "theme": "Theme",
@@ -1266,7 +1304,16 @@
       "showLevel": "Show level",
       "showAchievements": "Show achievements",
       "showHabits": "Show habits"
-    }
+    },
+    "notif_sound_title": "Notification sound",
+    "snd_chime": "Chime",
+    "snd_marimba": "Marimba",
+    "snd_bell": "Bell",
+    "snd_soft": "Soft",
+    "snd_pop": "Pop",
+    "snd_default": "Default",
+    "snd_silent": "Silent",
+    "snd_preview": "Preview"
   },
   "validation": {
     "required": "This field is required",
@@ -1367,6 +1414,7 @@
     "diaryDeleted": "Diary deleted",
     "taskAdded": "Task added",
     "taskUpdated": "Task updated",
+    "taskRescheduled": "Task rescheduled",
     "taskDeleted": "Task deleted",
     "taskCompleted": "Task completed! 🎉",
     "taskMarkedIncomplete": "Task marked as incomplete",
@@ -1464,7 +1512,18 @@
     "limitInfo": "The free version has a limit of {limit} for {feature}.",
     "currentUsage": "You are currently using {current}/{limit}.",
     "unlockCta": "Upgrade to Premium for unlimited use!",
-    "goCta": "Go Premium"
+    "goCta": "Go Premium",
+    "unlocked": "Premium unlocked",
+    "feat_unlimited": "Unlimited notes, tasks and everything",
+    "feat_noads": "Ad-free experience",
+    "feat_themes": "All themes and sounds",
+    "start": "Let’s get started",
+    "choose_theme": "Choose your theme",
+    "choose_theme_sub": "You can change it anytime in Settings",
+    "choose_sound": "Choose your notification sound",
+    "choose_sound_sub": "Tap play to listen",
+    "continue": "Continue",
+    "finish": "Enter the app"
   },
   "messages": {
     "noteCreated": "Note added successfully",
@@ -1532,10 +1591,14 @@
     "editing": "{name} is editing",
     "lockedBusy": "{name} is editing right now",
     "noShared": "No shares yet",
+    "endShare": "End sharing",
+    "endShareConfirm": "End this share? It will be removed from the other users.",
+    "endShareDone": "Sharing ended",
     "noInvites": "No pending invites",
     "participants": "Participants",
     "completed": "Completed",
     "notCompleted": "Not completed",
-    "viewerCannotEdit": "View only — you cannot edit"
+    "viewerCannotEdit": "View only — you cannot edit",
+    "saveNoteFirst": "Save the note first"
   }
 }

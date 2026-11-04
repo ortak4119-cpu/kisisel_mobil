@@ -16,6 +16,8 @@ abstract class INotificationService {
   Future<ServiceResponse<void>> deleteAllNotifications();
   Future<ServiceResponse<void>> storePushToken(PushTokenRequest request);
   Future<ServiceResponse<void>> deletePushToken(String deviceId);
+  Future<ServiceResponse<void>> markAutoOpened(String type);
+  Future<ServiceResponse<void>> updateNotificationSound(String sound);
 }
 
 class NotificationService implements INotificationService {
@@ -105,6 +107,24 @@ class NotificationService implements INotificationService {
     return await BaseApiService.delete<void>(
       '/push-tokens',
       body: {'device_id': deviceId},
+      requiresAuth: true,
+    );
+  }
+
+  @override
+  Future<ServiceResponse<void>> markAutoOpened(String type) async {
+    return await BaseApiService.post<void>(
+      '/notifications/auto-opened',
+      body: {'type': type},
+      requiresAuth: true,
+    );
+  }
+
+  @override
+  Future<ServiceResponse<void>> updateNotificationSound(String sound) async {
+    return await BaseApiService.post<void>(
+      '/notifications/sound',
+      body: {'sound': sound},
       requiresAuth: true,
     );
   }

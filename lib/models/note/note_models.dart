@@ -156,6 +156,50 @@ class Note {
       'tags': tags,
     };
   }
+
+  Note copyWith({
+    int? id,
+    String? title,
+    String? content,
+    int? categoryId,
+    String? templateType,
+    String? color,
+    DateTime? reminderDate,
+    bool? isLocked,
+    bool? isPinned,
+    bool? isArchived,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    int? wordCount,
+    int? characterCount,
+    int? orderIndex,
+    int? version,
+    bool? reminderEnabled,
+    List<NoteAttachment>? attachments,
+    List<String>? tags,
+  }) {
+    return Note(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      content: content ?? this.content,
+      categoryId: categoryId ?? this.categoryId,
+      templateType: templateType ?? this.templateType,
+      color: color ?? this.color,
+      reminderDate: reminderDate ?? this.reminderDate,
+      isLocked: isLocked ?? this.isLocked,
+      isPinned: isPinned ?? this.isPinned,
+      isArchived: isArchived ?? this.isArchived,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      wordCount: wordCount ?? this.wordCount,
+      characterCount: characterCount ?? this.characterCount,
+      orderIndex: orderIndex ?? this.orderIndex,
+      version: version ?? this.version,
+      reminderEnabled: reminderEnabled ?? this.reminderEnabled,
+      attachments: attachments ?? this.attachments,
+      tags: tags ?? this.tags,
+    );
+  }
 }
 
 // Note Category

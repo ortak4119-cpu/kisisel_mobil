@@ -1,9 +1,13 @@
 {
   "update": {
-    "title": "Nouvelle version disponible",
-    "message": "Une nouvelle version de LifeSync est disponible. Nous vous recommandons de mettre à jour pour une expérience optimale.",
+    "title": "Mise à jour disponible",
+    "forceBody": "Tu dois mettre à jour l'app pour continuer.",
+    "softBody": "Une nouvelle version est disponible 🎉 Mets à jour pour la meilleure expérience.",
+    "later": "Plus tard",
     "update": "Mettre à jour",
-    "later": "Plus tard"
+    "review": "Voir la mise à jour",
+    "whatsNew": "Quoi de neuf ?",
+    "noNotes": "Aucune note pour cette version."
   },
   "app": {
     "name": "LifeSync",
@@ -115,6 +119,7 @@
     "passwordConfirmRequired": "La confirmation du mot de passe est obligatoire",
     "passwordMismatch": "Les mots de passe ne correspondent pas",
     "forgotPassword": "Mot de Passe Oublié?",
+    "rememberMe": "Se souvenir de moi",
     "login": "Se Connecter",
     "register": "S'inscrire",
     "continueWithGoogle": "Continuer avec Google",
@@ -289,6 +294,11 @@
     "newSubtask": "Nouvelle sous-tâche",
     "reminderBeforeMinutes": "{n} minutes avant",
     "reminderOff": "Rappel désactivé",
+    "upcomingSection": "À venir",
+    "upcomingEmpty": "Aucune tâche à venir",
+    "reminderAtTime": "À {time}",
+    "reminderPickTime": "Choisir l'heure",
+    "reschedule": "Replanifier la tâche",
     "reminderTapChange": "Toucher pour modifier",
     "attachTitle": "Pièces jointes",
     "attachments": "Ajouter fichier ou photo",
@@ -450,7 +460,8 @@
     "today": "aujourd'hui",
     "streakN": "série {n}",
     "doneShort": "fait",
-    "skippedShort": "ignoré"
+    "skippedShort": "ignoré",
+    "searchHint": "Rechercher des habitudes"
   },
   "profile": {
     "title": "Profil",
@@ -637,7 +648,9 @@
       "planLifetime": "Premium à vie",
       "planPremium": "Premium",
       "planFree": "Gratuit",
-      "cancelNote": "Tu peux annuler ton abonnement à tout moment dans les réglages d'abonnement de ton store ({store})."
+      "cancelNote": "Tu peux annuler ton abonnement à tout moment dans les réglages d'abonnement de ton store ({store}).",
+      "couponInfo": "Cet abonnement a été obtenu avec un code de réduction. Un abonnement est requis pour continuer à l'expiration.",
+      "changePlan": "Changer d'abonnement"
     },
     "replayOnboarding": "Revoir l'intro",
     "completion": "Ton profil est complété à {percent}%",
@@ -976,6 +989,16 @@
     "editIncome": "Modifier le revenu",
     "mainAccount": "Compte principal",
     "spendableToday": "Disponible aujourd'hui",
+    "thisMonthNet": "Net ce mois-ci",
+    "budgetLockTitle": "Verrouiller pour {month}",
+    "budgetLockOnDesc": "Budget propre à ce mois. Non affecté par le budget global.",
+    "budgetLockOffDesc": "Le budget mensuel global s'applique à tous les mois non verrouillés.",
+    "budgetLockRemove": "Retirer le verrou de ce mois",
+    "locked": "Verrouillé",
+    "openingBalanceTitle": "Solde initial/actuel",
+    "openingBalanceNone": "Non défini",
+    "openingBalanceDesc": "Saisis l'argent dont tu disposes. Le compte principal part de ce montant (à partir de ce mois).",
+    "openingBalanceClear": "Effacer",
     "subShort": "Abonnement",
     "lockShort": "Verrouiller",
     "tabGeneral": "Général",
@@ -1017,6 +1040,9 @@
     "deleteNote": "Supprimer Note",
     "deleteNoteConfirm": "Êtes-vous sûr de vouloir supprimer cette note?",
     "lockNote": "Verrouiller la Note",
+    "resizeNote": "Redimensionner",
+    "preview": "Aperçu",
+    "copiedText": "Texte copié",
     "unlockNote": "Déverrouiller la Note",
     "enterPin": "Entrez le code PIN pour voir cette note",
     "pinNote": "Épingler",
@@ -1099,7 +1125,12 @@
       "fileError": "Impossible de sélectionner le fichier",
       "reminderSet": "Rappel : {date}",
       "done": "Terminé",
-      "saving": "Enregistrement…"
+      "saving": "Enregistrement…",
+      "shareCollab": "Note partagée",
+      "shared": "Partagée",
+      "makeShared": "Rendre partagée",
+      "checklistTitle": "Liste",
+      "people": "personnes"
     },
     "add": {
       "noteTitle": "Ajouter une note",
@@ -1179,6 +1210,12 @@
   },
   "settings": {
     "title": "Paramètres",
+    "theme_title": "Thème",
+    "theme_kraft": "Kraft chaud",
+    "theme_blue": "Bleu clair",
+    "theme_pink": "Rose clair",
+    "theme_green": "Vert clair",
+    "theme_orange": "Orange clair",
     "sections": {
       "premium": "Premium",
       "notifications": "Notifications",
@@ -1200,7 +1237,8 @@
       "diarySubtitle": "Rappels d'écriture de journal",
       "subscription": "Abonnements",
       "note": "Notes",
-      "social": "Social"
+      "social": "Social",
+      "engagement": "Motivation quotidienne"
     },
     "appearance": {
       "theme": "Thème",
@@ -1266,7 +1304,16 @@
       "showLevel": "Afficher le niveau",
       "showAchievements": "Afficher les succès",
       "showHabits": "Afficher les habitudes"
-    }
+    },
+    "notif_sound_title": "Son de notification",
+    "snd_chime": "Carillon",
+    "snd_marimba": "Marimba",
+    "snd_bell": "Cloche",
+    "snd_soft": "Doux",
+    "snd_pop": "Pop",
+    "snd_default": "Par défaut",
+    "snd_silent": "Silencieux",
+    "snd_preview": "Aperçu"
   },
   "validation": {
     "required": "Ce champ est obligatoire",
@@ -1367,6 +1414,7 @@
     "diaryDeleted": "Journal supprimé",
     "taskAdded": "Tâche ajoutée",
     "taskUpdated": "Tâche mise à jour",
+    "taskRescheduled": "Tâche replanifiée",
     "taskDeleted": "Tâche supprimée",
     "taskCompleted": "Tâche terminée! 🎉",
     "taskMarkedIncomplete": "Tâche marquée comme incomplète",
@@ -1464,7 +1512,18 @@
     "limitInfo": "La version gratuite a une limite de {limit} pour {feature}.",
     "currentUsage": "Vous utilisez actuellement {current}/{limit}.",
     "unlockCta": "Passez à Premium pour un usage illimité !",
-    "goCta": "Passer à Premium"
+    "goCta": "Passer à Premium",
+    "unlocked": "Premium débloqué",
+    "feat_unlimited": "Notes, tâches et tout en illimité",
+    "feat_noads": "Expérience sans publicité",
+    "feat_themes": "Tous les thèmes et sons",
+    "start": "C’est parti",
+    "choose_theme": "Choisis ton thème",
+    "choose_theme_sub": "Tu peux le changer à tout moment dans les Réglages",
+    "choose_sound": "Choisis ton son de notification",
+    "choose_sound_sub": "Appuie sur lecture pour écouter",
+    "continue": "Continuer",
+    "finish": "Ouvrir l’application"
   },
   "messages": {
     "noteCreated": "Note ajoutée avec succès",
@@ -1532,10 +1591,14 @@
     "editing": "{name} modifie",
     "lockedBusy": "{name} modifie en ce moment",
     "noShared": "Aucun partage",
+    "endShare": "Arrêter le partage",
+    "endShareConfirm": "Arrêter ce partage ? Il sera retiré des autres utilisateurs.",
+    "endShareDone": "Partage arrêté",
     "noInvites": "Aucune invitation en attente",
     "participants": "Participants",
     "completed": "Terminé",
     "notCompleted": "Non terminé",
-    "viewerCannotEdit": "Lecture seule — non modifiable"
+    "viewerCannotEdit": "Lecture seule — non modifiable",
+    "saveNoteFirst": "Enregistrez d'abord la note"
   }
 }

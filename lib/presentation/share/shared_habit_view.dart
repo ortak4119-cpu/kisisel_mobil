@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import '../../core/utils/color_constant.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../core/init/locator.dart';
 import '../../service/share/share_service.dart';
 import '../../models/share/shared_item_models.dart';
 import '../../core/utils/custom_snackbar.dart';
 
-const Color _accent = Color(0xFFF6A821);
+Color get _accent => ColorConstant.accentOrange;
 
 /// Paylaşımlı alışkanlık detayı: ortak ısı haritası (her katılımcı görünür) +
 /// bugünü tamamla. Tam sayfa açılır.
@@ -74,10 +75,10 @@ class _SharedHabitViewState extends State<_SharedHabitView> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? const Color(0xFF1E1B16) : const Color(0xFFF6F4EF);
-    final card = isDark ? const Color(0xFF2A251E) : Colors.white;
-    final textPrimary = isDark ? Colors.white : const Color(0xFF3A3326);
-    final textMuted = isDark ? Colors.white60 : const Color(0xFF8A7A5E);
+    final bg = isDark ? ColorConstant.bgColorDark : ColorConstant.bgColorLight;
+    final card = isDark ? ColorConstant.cardColorDark : ColorConstant.cardColorLight;
+    final textPrimary = isDark ? ColorConstant.textPrimaryDark : ColorConstant.textPrimaryLight;
+    final textMuted = isDark ? ColorConstant.textMutedDark : ColorConstant.textMutedLight;
 
     return Scaffold(
       backgroundColor: bg,
@@ -89,7 +90,7 @@ class _SharedHabitViewState extends State<_SharedHabitView> {
             style: TextStyle(fontWeight: FontWeight.w800, color: textPrimary)),
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: _accent))
+          ? Center(child: CircularProgressIndicator(color: _accent))
           : ListView(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
               children: [
@@ -149,10 +150,10 @@ class _SharedHabitViewState extends State<_SharedHabitView> {
                 backgroundColor: _accent.withOpacity(0.18),
                 child: Text(
                     u.name.isNotEmpty ? u.name[0].toUpperCase() : '?',
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xFFB07B18))),
+                        color: ColorConstant.accentInk)),
               ),
               const SizedBox(width: 10),
               Expanded(

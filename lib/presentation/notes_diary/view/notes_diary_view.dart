@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -15,6 +16,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 import '../../../service/stt/stt_service.dart';
 import '../../../core/design/app_design.dart';
+import '../../../core/design/app_loader.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/utils/animation_prefs.dart';
 import '../../../models/diary/diary_models.dart';
@@ -40,27 +42,6 @@ class _StringPainter extends CustomPainter {
       ..moveTo(0, 2)
       ..quadraticBezierTo(size.width / 2, 10, size.width, 2);
     canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-/// Mantar (tıpa) yüzey dokusu — sabit konumlu küçük benekler.
-class _CorkSpecklePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rnd = math.Random(42);
-    final dark = Paint()..color = const Color(0xFF7A582D).withOpacity(0.18);
-    final light = Paint()..color = const Color(0xFFE0C089).withOpacity(0.22);
-    final count =
-        (size.width * size.height / 850).clamp(40, 600).toInt();
-    for (var i = 0; i < count; i++) {
-      final dx = rnd.nextDouble() * size.width;
-      final dy = rnd.nextDouble() * size.height;
-      final r = 0.7 + rnd.nextDouble() * 1.6;
-      canvas.drawCircle(Offset(dx, dy), r, rnd.nextBool() ? dark : light);
-    }
   }
 
   @override
@@ -146,12 +127,10 @@ class _BreezeScopeState extends State<_BreezeScope>
 /// Tek bir askıdaki kartı mandal/raptiye noktasından (üst-orta) sallar.
 class _Sway extends StatelessWidget {
   final int index;
-  final double idleAmp; // boştaki salınım genliği (rad)
   final Widget child;
   const _Sway({
     required this.index,
     required this.child,
-    this.idleAmp = 0.028,
   });
 
   @override
@@ -168,7 +147,7 @@ class _Sway extends StatelessWidget {
           child: child,
           builder: (context, inner) {
             final phase = breeze.clock.value * 2 * math.pi + index * 1.15;
-            final amp = idleAmp + breeze.energy * 0.11; // kaydırınca güçlenir
+            final amp = 0.028 + breeze.energy * 0.11; // kaydırınca güçlenir
             return Transform.rotate(
               angle: math.sin(phase) * amp,
               alignment: Alignment.topCenter,
@@ -597,12 +576,47 @@ class _NotesDiaryViewState extends State<NotesDiaryView> {
                           ),
                         ),
                         // Paylaşım Merkezi — davetler + benimle paylaşılan notlar.
-                        _headerCircleBtn(
-                          icon: Icons.diversity_3_rounded,
-                          bg: ColorConstant.cardColorLight,
-                          fg: const Color(0xFF3A3326),
-                          onTap: () =>
-                              showSharedHubSheet(context, kind: 'note'),
+                        // Bekleyen davet varsa buton üzerinde kırmızı rozet.
+                        Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            _headerCircleBtn(
+                              icon: Icons.diversity_3_rounded,
+                              bg: ColorConstant.cardColorLight,
+                              fg: const Color(0xFF3A3326),
+                              onTap: () async {
+                                await showSharedHubSheet(context, kind: 'note');
+                                // Hub'dan dönünce rozeti/paylaşım bilgisini tazele.
+                                viewModel.loadSharedNotesInfo();
+                              },
+                            ),
+                            if (viewModel.noteInviteCount > 0)
+                              Positioned(
+                                right: -3,
+                                top: -3,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 5, vertical: 1),
+                                  constraints:
+                                      const BoxConstraints(minWidth: 19),
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE24B4A),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                        color: ColorConstant.bgColorLight,
+                                        width: 1.5),
+                                  ),
+                                  child: Text(
+                                    '${viewModel.noteInviteCount}',
+                                    style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w800),
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                         const SizedBox(width: 8),
                         // Not ekleme tek yerden (FAB). Başlıkta arama + paylaşım.
@@ -624,8 +638,13 @@ class _NotesDiaryViewState extends State<NotesDiaryView> {
                 ],
               ),
             ),
-            floatingActionButton: _AddFab(
-              onOpen: () => _showAddChooser(context, viewModel, isDarkMode),
+            floatingActionButton: Padding(
+              // Cam alt menünün (extendBody) üstünde, alt menüye yapışmadan
+              // ferah dursun (Görevler'deki boşlukla aynı).
+              padding: const EdgeInsets.only(bottom: 120),
+              child: _AddFab(
+                onOpen: () => _showAddChooser(context, viewModel, isDarkMode),
+              ),
             ),
           );
         },
@@ -722,7 +741,7 @@ class _NotesDiaryViewState extends State<NotesDiaryView> {
                   _chooserCard(
                     c,
                     icon: Icons.note_add_rounded,
-                    accent: const Color(0xFFB794F6),
+                    accent: c.accent,
                     title: 'notes.add.noteTitle'.tr(),
                     desc: 'notes.add.noteDesc'.tr(),
                     onTap: () {
@@ -733,7 +752,7 @@ class _NotesDiaryViewState extends State<NotesDiaryView> {
                   _chooserCard(
                     c,
                     icon: Icons.create_new_folder_rounded,
-                    accent: const Color(0xFF9F7AEA),
+                    accent: c.accentCool,
                     title: 'notes.add.folderTitle'.tr(),
                     desc: 'notes.add.folderDesc'.tr(),
                     onTap: () {
@@ -886,12 +905,12 @@ void showFolderDialog(BuildContext context,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
                           color: selectedIcon == ic
-                              ? const Color(0xFF9F7AEA).withOpacity(0.2)
+                              ? c.accent.withOpacity(0.2)
                               : c.bg,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                               color: selectedIcon == ic
-                                  ? const Color(0xFF9F7AEA)
+                                  ? c.accent
                                   : c.border),
                         ),
                         child: Text(ic,
@@ -922,7 +941,7 @@ void showFolderDialog(BuildContext context,
                   ? 'common.save'.tr()
                   : 'common.create'.tr(),
               icon: editing != null ? Icons.check_rounded : Icons.add_rounded,
-              accent: const Color(0xFF9F7AEA),
+              accent: c.accent,
               onPressed: () {
                 if (nameController.text.trim().isEmpty) return;
                 if (editing != null) {
@@ -1669,19 +1688,28 @@ class _DiaryDetailSheet extends StatelessWidget {
 // ==================== TAM _NotesContent CLASS'I ====================
 // Bu kodu mevcut _NotesContent class'ınızın yerine koyun
 
-class _NotesContent extends StatelessWidget {
+class _NotesContent extends StatefulWidget {
   final NotesDiaryViewModel viewModel;
 
   const _NotesContent({required this.viewModel});
+
+  @override
+  State<_NotesContent> createState() => _NotesContentState();
+}
+
+class _NotesContentState extends State<_NotesContent> {
+  // Sürükle-bırak reorder animasyonu: her notun başlangıç ötelemesi (kart
+  // genişliği birimiyle). Bırakınca kartlar eski yerlerinde belirip yeni
+  // yerlerine kayar; bir kare sonra sıfırlanıp AnimatedSlide ile yumuşar.
+  final Map<int, Offset> _recentSlide = {};
+  NotesDiaryViewModel get viewModel => widget.viewModel;
 
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     if (viewModel.isLoading) {
-      return Center(
-        child: CircularProgressIndicator(color: const Color(0xFFB794F6)),
-      );
+      return const Center(child: AppLoader());
     }
     // Varsayılan görünüm = mantar panosu. Arşiv kendi mantar panosunu kullanır.
     // Diğer filtreler (sabitlenen/klasör) veya arama klasik ızgaraya düşer.
@@ -1741,7 +1769,7 @@ class _NotesContent extends StatelessWidget {
               cat: cat,
               child: RefreshIndicator(
                 onRefresh: () => viewModel.loadNotes(),
-                color: const Color(0xFFB794F6),
+                color: ColorConstant.accentOrange,
                 child: LayoutBuilder(
                   builder: (context, cons) => SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
@@ -1904,7 +1932,7 @@ class _NotesContent extends StatelessWidget {
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                if (note.isLocked)
+                                if (viewModel.isNoteLockedForMe(note))
                                   const Padding(
                                     padding: EdgeInsets.only(right: 6, top: 1),
                                     child: Icon(Icons.lock_rounded,
@@ -1928,7 +1956,7 @@ class _NotesContent extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            if (!note.isLocked && preview.isNotEmpty) ...[
+                            if (!viewModel.isNoteLockedForMe(note) && preview.isNotEmpty) ...[
                               const SizedBox(height: 4),
                               Text(preview,
                                   maxLines: 2,
@@ -1938,7 +1966,7 @@ class _NotesContent extends StatelessWidget {
                                       height: 1.35,
                                       color: Color(0xFF6B5E4A))),
                             ],
-                            if (note.isLocked) ...[
+                            if (viewModel.isNoteLockedForMe(note)) ...[
                               const SizedBox(height: 4),
                               const Text('••••••••••',
                                   style: TextStyle(
@@ -1999,162 +2027,21 @@ class _NotesContent extends StatelessWidget {
     );
   }
 
-  // ==================== ARŞİV MANTAR PANOSU ====================
-  // Çerçeveli gerçek bir mantar pano: arşivlenen notlar raptiye (iğne) ile
-  // sabitlenir. Kart genişliği notlardaki _paperCard ile aynı (150).
-  static const _corkFill = Color(0xFFC9A369);
-  static const _corkFrame = Color(0xFF6E5C42);
-  static const _corkFrameInner = Color(0xFF5A4A33);
-  // Raptiye renkleri — not paletine uygun (sırayla döner):
-  // [parlak, orta, koyu]
-  static const List<List<Color>> _pinColors = [
-    [Color(0xFFFF9A9A), Color(0xFFE24B4A), Color(0xFFA32D2D)], // kırmızı
-    [Color(0xFFFFD27A), Color(0xFFF6A821), Color(0xFFB06A00)], // turuncu
-    [Color(0xFF7FD6C0), Color(0xFF15788C), Color(0xFF0C4A58)], // teal
-    [Color(0xFFC3B9F5), Color(0xFF9F7AEA), Color(0xFF5B46A8)], // mor
-  ];
-
+  // Arşiv görünümü — artık ipe asılı kartlar (mantar pano değil).
   Widget _archiveBoard(BuildContext context, bool isDark) {
     final archived = viewModel.applyTagFilter(viewModel
         .applyNoteSearch(viewModel.notes.where((n) => n.isArchived).toList()));
-    // Pano tüm sayfayı kaplar; notlar üstte iğnelenir, boş mantar alan altta
-    // görünür. İçerik taşarsa pano içinde kaydırılır.
-    return Column(
-      children: [
-        const SizedBox(height: 6),
-        _archiveTopBar(context, archived.length),
-        const SizedBox(height: 12),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-            child: _corkBoardFrame(
-              child: RefreshIndicator(
-                onRefresh: () => viewModel.loadNotes(),
-                color: const Color(0xFFB794F6),
-                child: LayoutBuilder(
-                  builder: (context, cons) => SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(minHeight: cons.maxHeight),
-                      child: archived.isEmpty
-                          ? Center(child: _emptyCork(context))
-                          : Align(
-                              alignment: Alignment.topCenter,
-                              child: Wrap(
-                                spacing: 14,
-                                runSpacing: 22,
-                                alignment: WrapAlignment.center,
-                                children: [
-                                  for (var i = 0; i < archived.length; i++)
-                                    _pinnedCard(
-                                        context, archived[i], i, isDark),
-                                ],
-                              ),
-                            ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // Ahşap çerçeve + mantar (tıpa) yüzey.
-  Widget _corkBoardFrame({required Widget child}) {
-    return Container(
-      decoration: BoxDecoration(
-        color: _corkFrame,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-              color: const Color(0xFF3C2A14).withOpacity(0.30),
-              blurRadius: 16,
-              offset: const Offset(0, 6)),
-        ],
-      ),
-      padding: const EdgeInsets.all(10),
-      child: Container(
-        decoration: BoxDecoration(
-          color: _corkFill,
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: _corkFrameInner, width: 2),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(5),
-          child: CustomPaint(
-            painter: _CorkSpecklePainter(),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 22, 16, 22),
-              child: child,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Raptiyeyle sabitlenmiş not — _paperCard (150px) + üstte iğne başı.
-  Widget _pinnedCard(BuildContext context, Note note, int i, bool isDark) {
-    final pin = _pinColors[i % _pinColors.length];
-    return _Sway(
-      index: i,
-      idleAmp: 0.022,
-      child: SizedBox(
-        width: 150,
-        child: Stack(
-          clipBehavior: Clip.none,
-          alignment: Alignment.topCenter,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 9),
-              child: _paperCard(context, note, isDark),
-            ),
-            Positioned(top: 0, child: _pushpin(pin)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _pushpin(List<Color> c) {
-    return Container(
-      width: 18,
-      height: 18,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: RadialGradient(
-          center: const Alignment(-0.3, -0.4),
-          radius: 0.95,
-          colors: [c[0], c[1], c[2]],
-          stops: const [0.0, 0.55, 1.0],
-        ),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withOpacity(0.35),
-              blurRadius: 3,
-              offset: const Offset(0, 2)),
-        ],
-      ),
-    );
-  }
-
-  Widget _emptyCork(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 44),
-      child: Column(
+    return RefreshIndicator(
+      onRefresh: () => viewModel.loadNotes(),
+      color: ColorConstant.accentOrange,
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(0, 6, 0, 120),
         children: [
-          Icon(Icons.push_pin_outlined,
-              size: 42, color: const Color(0xFF5A4A33).withOpacity(0.65)),
+          _archiveTopBar(context, archived.length),
           const SizedBox(height: 12),
-          Text('notes.board.archiveEmpty'.tr(),
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF5A4A33))),
+          archived.isEmpty
+              ? _boardEmptyLine('notes.board.archiveEmpty'.tr())
+              : _clothesline(context, archived, isDark),
         ],
       ),
     );
@@ -2304,7 +2191,8 @@ class _NotesContent extends StatelessWidget {
     final recent = live
         .where((n) => !n.isPinned && n.categoryId == null)
         .toList();
-    final archivedCount = viewModel.notes.where((n) => n.isArchived).length;
+    final archived = viewModel.applyTagFilter(viewModel
+        .applyNoteSearch(viewModel.notes.where((n) => n.isArchived).toList()));
 
     return RefreshIndicator(
       onRefresh: () => viewModel.loadNotes(),
@@ -2312,26 +2200,37 @@ class _NotesContent extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(0, 6, 0, 120),
         children: [
-          _boardHeader(_recentDayLabel(recent),
+          // 1) Notlar (klasöre atanmamış, sabitlenmemiş son notlar)
+          _boardHeader('notes.recentSection'.tr().toUpperCase(),
               '${recent.length} ${'notes.noteUnit'.tr()}',
               trailing: recent.length > 2 ? 'notes.scroll'.tr() : null),
           const SizedBox(height: 2),
           recent.isEmpty
-              ? _boardEmptyLine('notes.board.noNotes'.tr())
-              : _clothesline(context, recent, isDark),
+              ? _recentDropZone(context, _boardEmptyLine('notes.board.noNotes'.tr()))
+              : _clothesline(context, recent, isDark, zone: 'recent'),
           const SizedBox(height: 24),
+          // 2) Sabitlenen
           _boardHeader('notes.pinnedSection'.tr().toUpperCase(),
               '${pinned.length}'),
           const SizedBox(height: 2),
           pinned.isEmpty
-              ? _emptyPins()
-              : _clothesline(context, pinned, isDark),
+              ? _pinnedDropZone(context, _emptyPins())
+              : _clothesline(context, pinned, isDark, zone: 'pinned'),
           const SizedBox(height: 24),
-          _foldersHeader(context, archivedCount),
+          // 3) Klasörler
+          _foldersHeader(context),
           const SizedBox(height: 2),
           viewModel.categories.isEmpty
               ? _emptyFoldersRope(context)
               : _foldersClothesline(context, isDark),
+          const SizedBox(height: 24),
+          // 4) Arşiv — artık ipe asılı (pano değil)
+          _boardHeader('notes.stats.archive'.tr().toUpperCase(),
+              '${archived.length}'),
+          const SizedBox(height: 2),
+          archived.isEmpty
+              ? _boardEmptyLine('notes.board.archiveEmpty'.tr())
+              : _clothesline(context, archived, isDark),
         ],
       ),
     );
@@ -2370,9 +2269,19 @@ class _NotesContent extends StatelessWidget {
             style: const TextStyle(fontSize: 13, color: Color(0xFF9B8A6E))),
       );
 
-  Widget _clothesline(BuildContext context, List<Note> notes, bool isDark) {
-    return SizedBox(
-      height: 220,
+  Widget _clothesline(BuildContext context, List<Note> notes, bool isDark,
+      {String? zone}) {
+    // İçindeki en uzun (boyutlandırılmış) karta göre ipin yüksekliği.
+    double maxH = 162; // otomatik kartlar için taban
+    for (final n in notes) {
+      final s = viewModel.noteSize(n.id);
+      if (s != null && s.length >= 2 && s[1] > maxH) maxH = s[1];
+    }
+    final lineH = maxH + 58; // mandal + boşluk payı
+    // Bir not boyutlandırılırken ipi kaydırma (tutamak sürüklemesi rahat olsun).
+    final resizing = viewModel.resizingNoteId != null;
+    final line = SizedBox(
+      height: lineH,
       child: Stack(
         children: [
           Positioned(
@@ -2385,31 +2294,205 @@ class _NotesContent extends StatelessWidget {
           ),
           ListView.separated(
             scrollDirection: Axis.horizontal,
+            physics: resizing ? const NeverScrollableScrollPhysics() : null,
             padding: const EdgeInsets.fromLTRB(20, 2, 20, 8),
             itemCount: notes.length,
             separatorBuilder: (_, __) => const SizedBox(width: 8),
-            itemBuilder: (_, i) => _hungCard(context, notes[i], i, isDark),
+            itemBuilder: (_, i) =>
+                _hungCard(context, notes[i], i, isDark, zone: zone, zoneList: notes),
           ),
         ],
+      ),
+    );
+    // Bölüm geneli bırakma hedefi: boş alana bırakınca pin/unpin.
+    if (zone == 'recent' || zone == 'pinned') {
+      return DragTarget<Note>(
+        onWillAcceptWithDetails: (d) =>
+            d.data.isPinned != (zone == 'pinned'),
+        onAcceptWithDetails: (d) => _handleNoteDrop(context, d.data, zone!),
+        builder: (ctx, cand, rej) => AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            color: cand.isNotEmpty
+                ? const Color(0xFFB794F6).withOpacity(0.10)
+                : Colors.transparent,
+            border: cand.isNotEmpty
+                ? Border.all(
+                    color: const Color(0xFFB794F6).withOpacity(0.6), width: 1.5)
+                : null,
+          ),
+          child: line,
+        ),
+      );
+    }
+    return line;
+  }
+
+  Widget _hungCard(BuildContext context, Note note, int i, bool isDark,
+      {String? zone, List<Note>? zoneList}) {
+    final column = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _clothespin(),
+        Transform.translate(
+          offset: const Offset(0, -3),
+          child: _paperCard(context, note, isDark),
+        ),
+      ],
+    );
+    // Boyutlandırılan kart sallanmasın (sürükleme hedefi sabit kalsın).
+    if (viewModel.resizingNoteId == note.id) return column;
+    final swayed = _Sway(index: i, child: column);
+
+    // Boyutlandırma modunda veya sürüklenmeyen bölümlerde: düz salınan kart.
+    if (viewModel.resizingNoteId != null ||
+        (zone != 'recent' && zone != 'pinned')) {
+      return swayed;
+    }
+
+    // Sürükle-bırak: uzun bas → sürükle. Karta bırakınca aynı bölümde sırala,
+    // farklı bölüme bırakınca pin/unpin.
+    final dragTarget = DragTarget<Note>(
+      onWillAcceptWithDetails: (d) => d.data.id != note.id,
+      onAcceptWithDetails: (d) =>
+          _handleNoteDrop(context, d.data, zone!, targetIndex: i, zoneList: zoneList),
+      builder: (ctx, cand, rej) => Container(
+        decoration: cand.isNotEmpty
+            ? const BoxDecoration(
+                border: Border(
+                    left: BorderSide(color: Color(0xFFB794F6), width: 3)))
+            : null,
+        child: LongPressDraggable<Note>(
+          data: note,
+          dragAnchorStrategy: pointerDragAnchorStrategy,
+          feedback: _dragFeedback(context, note, isDark),
+          childWhenDragging: Opacity(opacity: 0.3, child: swayed),
+          child: swayed,
+        ),
+      ),
+    );
+    // Reorder olunca kart yeni yerine yumuşak kayar; komşular da kayar.
+    // (Bırakınca _handleNoteDrop her kart için başlangıç ötelemesini verir,
+    //  sonraki karede sıfıra animasyonlanır.)
+    return AnimatedSlide(
+      offset: _recentSlide[note.id] ?? Offset.zero,
+      duration: AnimationPrefs.isOn
+          ? const Duration(milliseconds: 300)
+          : Duration.zero,
+      curve: Curves.easeOutCubic,
+      child: dragTarget,
+    );
+  }
+
+  // Sürükleme sırasında parmağın altında yüzen küçük not kağıdı.
+  Widget _dragFeedback(BuildContext context, Note note, bool isDark) {
+    return Transform.rotate(
+      angle: -0.04,
+      child: Material(
+        color: Colors.transparent,
+        child: Container(
+          width: 120,
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF2A251D) : const Color(0xFFFBF7EF),
+            borderRadius: BorderRadius.circular(6),
+            boxShadow: [
+              BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 12,
+                  offset: const Offset(2, 6)),
+            ],
+          ),
+          child: Text(
+            (note.title ?? '').trim().isEmpty ? '•••' : note.title!,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w700,
+                color: isDark ? Colors.white : const Color(0xFF3A3326)),
+          ),
+        ),
       ),
     );
   }
 
-  Widget _hungCard(BuildContext context, Note note, int i, bool isDark) {
-    return _Sway(
-      index: i,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _clothespin(),
-          Transform.translate(
-            offset: const Offset(0, -3),
-            child: _paperCard(context, note, isDark),
-          ),
-        ],
-      ),
-    );
+  // Sürüklenen notun bırakıldığı yere göre pin/unpin veya sıralama.
+  void _handleNoteDrop(BuildContext context, Note dragged, String targetZone,
+      {int? targetIndex, List<Note>? zoneList}) {
+    final draggedPinned = dragged.isPinned;
+    final sameZone =
+        (targetZone == 'pinned') == draggedPinned; // aynı bölüm mü
+    if (!sameZone) {
+      // Farklı bölüme bırakıldı → pin (son→sabit) veya unpin (sabit→son).
+      viewModel.togglePin(dragged.id, context);
+      return;
+    }
+    // Aynı bölüm + bir kartın üzerine bırakıldı → sadece "son notlar"da sırala.
+    if (targetZone == 'recent' && targetIndex != null && zoneList != null) {
+      final from = zoneList.indexWhere((n) => n.id == dragged.id);
+      if (from != -1 && from != targetIndex) {
+        // Yeni sırayı simüle edip her kart için başlangıç ötelemesini hesapla
+        // (eski index − yeni index = kaç slot kaydığı). Önce listeyi güncelle,
+        // sonra kartları eski yerlerinde gösterip bir kare sonra sıfırla →
+        // hepsi yeni yerlerine yumuşak kayar.
+        final oldOrder = zoneList.map((n) => n.id).toList();
+        final to = targetIndex.clamp(0, oldOrder.length - 1);
+        final newOrder = List<int>.from(oldOrder);
+        newOrder.insert(to, newOrder.removeAt(from));
+        final slides = <int, Offset>{};
+        for (var ni = 0; ni < newOrder.length; ni++) {
+          final oi = oldOrder.indexOf(newOrder[ni]);
+          if (oi != ni) slides[newOrder[ni]] = Offset((oi - ni).toDouble(), 0);
+        }
+        viewModel.reorderRecentNotes(from, targetIndex);
+        setState(() {
+          _recentSlide
+            ..clear()
+            ..addAll(slides);
+        });
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && _recentSlide.isNotEmpty) {
+            setState(() => _recentSlide.clear());
+          }
+        });
+      }
+    }
   }
+
+  // Boş "Son notlar" alanı: sabitli bir not sürüklenip bırakılınca sabitlemeyi
+  // kaldırır (son notlara döner).
+  Widget _recentDropZone(BuildContext context, Widget child) =>
+      DragTarget<Note>(
+        onWillAcceptWithDetails: (d) => d.data.isPinned,
+        onAcceptWithDetails: (d) => _handleNoteDrop(context, d.data, 'recent'),
+        builder: (ctx, cand, rej) => _dropWrap(cand.isNotEmpty, child),
+      );
+
+  // Boş "Sabitlenenler" alanı: sabitsiz bir not bırakılınca sabitler.
+  Widget _pinnedDropZone(BuildContext context, Widget child) =>
+      DragTarget<Note>(
+        onWillAcceptWithDetails: (d) => !d.data.isPinned,
+        onAcceptWithDetails: (d) => _handleNoteDrop(context, d.data, 'pinned'),
+        builder: (ctx, cand, rej) => _dropWrap(cand.isNotEmpty, child),
+      );
+
+  Widget _dropWrap(bool hover, Widget child) => AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: hover
+              ? const Color(0xFFB794F6).withOpacity(0.12)
+              : Colors.transparent,
+          border: hover
+              ? Border.all(
+                  color: const Color(0xFFB794F6).withOpacity(0.6), width: 1.5)
+              : null,
+        ),
+        child: child,
+      );
 
   Widget _clothespin() {
     return Container(
@@ -2454,15 +2537,16 @@ class _NotesContent extends StatelessWidget {
           decoration: BoxDecoration(
             color: c.card,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFFF6A821).withOpacity(0.4)),
+            border:
+                Border.all(color: ColorConstant.accentOrange.withOpacity(0.4)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  const Icon(Icons.group_rounded,
-                      size: 14, color: Color(0xFFF6A821)),
+                  Icon(Icons.group_rounded,
+                      size: 14, color: ColorConstant.accentOrange),
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
@@ -2471,10 +2555,10 @@ class _NotesContent extends StatelessWidget {
                           : 'share.viewOnly'.tr(),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 10.5,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFFB07B18)),
+                          color: ColorConstant.accentInk),
                     ),
                   ),
                 ],
@@ -2512,6 +2596,42 @@ class _NotesContent extends StatelessWidget {
     );
   }
 
+  // Sabit yükseklikli (boyutlandırılmış) kartta içeriği taşmadan kırpar;
+  // otomatik yükseklikte (null) içeriği olduğu gibi bırakır.
+  Widget _cardScrollWrap(double? fixedHeight, Widget child) {
+    if (fixedHeight == null) return child;
+    return SingleChildScrollView(
+      physics: const NeverScrollableScrollPhysics(),
+      child: child,
+    );
+  }
+
+  // Paylaşımlı not rozeti — belirgin turuncu (grup ikonu + kişi sayısı).
+  Widget _sharedBadge(int count) {
+    return Container(
+      margin: const EdgeInsets.only(left: 3, top: 1),
+      padding: EdgeInsets.symmetric(horizontal: count > 0 ? 5 : 4, vertical: 2),
+      decoration: BoxDecoration(
+        color: ColorConstant.accentOrange,
+        borderRadius: BorderRadius.circular(9),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.group_rounded, size: 11, color: Colors.white),
+          if (count > 0) ...[
+            const SizedBox(width: 2),
+            Text('$count',
+                style: const TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white)),
+          ],
+        ],
+      ),
+    );
+  }
+
   Widget _paperCard(BuildContext context, Note note, bool isDark) {
     const w = 150.0;
     final lines = (note.content ?? '').split('\n');
@@ -2529,7 +2649,7 @@ class _NotesContent extends StatelessWidget {
         (note.title ?? '').trim().isNotEmpty ? note.title!.trim() : 'notes.untitledNote'.tr();
 
     Widget preview;
-    if (note.isLocked) {
+    if (viewModel.isNoteLockedForMe(note)) {
       // Kilitli not: içerik/görsel gizli — yalnızca başlık + kilit göstergesi.
       preview = Row(
         children: [
@@ -2598,23 +2718,37 @@ class _NotesContent extends StatelessWidget {
       );
     }
 
-    return GestureDetector(
-      onTap: () => _openNote(context, note, isDark),
-      onLongPress: () => viewModel.togglePin(note.id, context),
-      child: Container(
-        width: w,
-        padding: const EdgeInsets.fromLTRB(12, 10, 12, 11),
-        decoration: BoxDecoration(
-          color: ColorConstant.cardColorLight,
-          borderRadius: BorderRadius.circular(3),
-          boxShadow: [
-            BoxShadow(
-                color: Colors.black.withOpacity(0.18),
-                blurRadius: 9,
-                offset: const Offset(2, 7)),
-          ],
-        ),
-        child: Column(
+    // Boyutlandırma: kaydedilmiş boyut (yoksa varsayılan 150 genişlik, oto yükseklik).
+    final sizes = viewModel.noteSize(note.id);
+    final cardW = (sizes != null && sizes.isNotEmpty) ? sizes[0] : w;
+    final double? cardH =
+        (sizes != null && sizes.length >= 2) ? sizes[1] : null;
+    final resizing = viewModel.resizingNoteId == note.id;
+    final mq = MediaQuery.of(context).size;
+    final minW = mq.width * 0.20, maxW = mq.width * 0.50;
+    const minH = 60.0; // başlık + ~1 satır
+    final maxH = mq.height * 0.25;
+
+    final body = Container(
+      width: cardW,
+      height: cardH,
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 11),
+      decoration: BoxDecoration(
+        color: ColorConstant.cardColorLight,
+        borderRadius: BorderRadius.circular(3),
+        border: resizing
+            ? Border.all(color: ColorConstant.accentOrange, width: 1.6)
+            : null,
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.18),
+              blurRadius: 9,
+              offset: const Offset(2, 7)),
+        ],
+      ),
+      child: _cardScrollWrap(
+        cardH,
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -2632,12 +2766,8 @@ class _NotesContent extends StatelessWidget {
                           color: const Color(0xFF3A3326))),
                 ),
                 if (viewModel.isNoteShared(note.id))
-                  const Padding(
-                    padding: EdgeInsets.only(left: 2, top: 2),
-                    child: Icon(Icons.group_rounded,
-                        size: 13, color: Color(0xFFF6A821)),
-                  ),
-                if (note.isLocked)
+                  _sharedBadge(viewModel.sharedParticipantCount(note.id)),
+                if (viewModel.isNoteLockedForMe(note))
                   Padding(
                     padding: const EdgeInsets.only(left: 2, top: 2),
                     child: Icon(Icons.lock_rounded,
@@ -2652,8 +2782,9 @@ class _NotesContent extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 7),
-            Flexible(child: preview),
-            if (!note.isLocked && note.tags.isNotEmpty) ...[
+            // Sabit yükseklikte Flexible yerine doğal boyut (scroll-wrap kırpar).
+            if (cardH == null) Flexible(child: preview) else preview,
+            if (!viewModel.isNoteLockedForMe(note) && note.tags.isNotEmpty) ...[
               const SizedBox(height: 7),
               Text('#${note.tags.first}',
                   maxLines: 1,
@@ -2666,6 +2797,78 @@ class _NotesContent extends StatelessWidget {
           ],
         ),
       ),
+    );
+
+    // NOT: Basılı tutma artık sabitlemez; sürüklemeyi başlatır (LongPressDraggable
+    // _hungCard'ta). Uzun basıp sabitlenenlere/son notlara sürükleyerek pin/unpin.
+    final card = GestureDetector(
+      onTap: resizing
+          ? () => viewModel.stopResizingNote()
+          : () => _openNote(context, note, isDark),
+      child: body,
+    );
+
+    if (!resizing) return card;
+
+    // Boyutlandırma modu: sağ-alt köşe tutamağı (Windows gibi) + "bitti" rozeti.
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        card,
+        Positioned(
+          right: 1,
+          bottom: 1,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onPanUpdate: (d) {
+              final cur =
+                  viewModel.noteSize(note.id) ?? [cardW, cardH ?? 132.0];
+              final nw = (cur[0] + d.delta.dx).clamp(minW, maxW).toDouble();
+              final nh = (cur[1] + d.delta.dy).clamp(minH, maxH).toDouble();
+              viewModel.updateNoteSize(note.id, nw, nh);
+            },
+            onPanEnd: (_) => viewModel.persistNoteSizes(),
+            child: Container(
+              width: 27,
+              height: 27,
+              decoration: BoxDecoration(
+                color: ColorConstant.accentOrange,
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                      color: const Color(0xFFC96E00).withOpacity(0.5),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2)),
+                ],
+              ),
+              child: const Icon(Icons.open_in_full_rounded,
+                  size: 14, color: Colors.white),
+            ),
+          ),
+        ),
+        Positioned(
+          right: 1,
+          top: 1,
+          child: GestureDetector(
+            onTap: () => viewModel.stopResizingNote(),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFF48BB78),
+                borderRadius: BorderRadius.circular(999),
+                boxShadow: [
+                  BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1)),
+                ],
+              ),
+              child: const Icon(Icons.check_rounded,
+                  size: 14, color: Colors.white),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -2706,43 +2909,9 @@ class _NotesContent extends StatelessWidget {
 
   // KLASÖRLER satırı başlığı. Büyük "Arşiv kutusu" kartı kaldırıldı; arşive
   // sağdaki küçük bağlantıdan ulaşılıyor.
-  Widget _foldersHeader(BuildContext context, int archivedCount) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(22, 0, 22, 0),
-      child: Row(
-        children: [
-          Flexible(
-            child: Text(
-                '${'notes.stats.folders'.tr().toUpperCase()} · ${viewModel.categories.length}',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1.0,
-                    color: _boardBrown)),
-          ),
-          const Spacer(),
-          GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () => viewModel.setNotesFilter('archive'),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.inventory_2_rounded,
-                    size: 15, color: Color(0xFF9B7B4F)),
-                const SizedBox(width: 5),
-                Text('${'notes.board.archiveBox'.tr()} · $archivedCount',
-                    style: const TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF9B7B4F))),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+  Widget _foldersHeader(BuildContext context) {
+    return _boardHeader('notes.stats.folders'.tr().toUpperCase(),
+        '${viewModel.categories.length}');
   }
 
   // Klasörler — sabitlenenler gibi ipe mandalla asılı kartlar.
@@ -2976,12 +3145,41 @@ class _NotesContent extends StatelessWidget {
   }
 
   void _openNote(BuildContext context, Note note, bool isDark) {
-    if (note.isLocked) {
+    if (viewModel.isNoteLockedForMe(note)) {
       // Dokunarak açmak geçicidir: çıkınca not kilitli kalır.
+      _showUnlockDialog(context, note, viewModel, isDark, reLockAfter: true);
+    } else {
+      // Nota dokununca (checklist olsa da) doğrudan editör açılır.
+      // Checklist hızlı işaretleme artık ⋯ → "Önizleme" ile açılır.
+      _showEditNoteDialog(context, note, viewModel, isDark);
+    }
+  }
+
+  /// Her zaman editörü açar (⋯ menüsündeki "Düzenle" için — popup'ı atlar).
+  void _openNoteEditor(BuildContext context, Note note, bool isDark) {
+    if (viewModel.isNoteLockedForMe(note)) {
       _showUnlockDialog(context, note, viewModel, isDark, reLockAfter: true);
     } else {
       _showEditNoteDialog(context, note, viewModel, isDark);
     }
+  }
+
+  void _showChecklistPopup(BuildContext context, Note note, bool isDark) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.45),
+      builder: (_) => ChangeNotifierProvider<NotesDiaryViewModel>.value(
+        value: viewModel,
+        child: _ChecklistPopup(
+          noteId: note.id,
+          isDark: isDark,
+          onEdit: () {
+            Navigator.pop(context);
+            _openNoteEditor(context, note, isDark);
+          },
+        ),
+      ),
+    );
   }
 
   // Klasörü aç — kilitliyse önce PIN sorar.
@@ -3142,17 +3340,6 @@ class _NotesContent extends StatelessWidget {
         }
       },
     );
-  }
-
-  String _recentDayLabel(List<Note> recent) {
-    if (recent.isEmpty) return 'notes.recentSection'.tr().toUpperCase();
-    final d = recent.first.createdAt;
-    final now = DateTime.now();
-    final diff =
-        DateTime(now.year, now.month, now.day).difference(DateTime(d.year, d.month, d.day)).inDays;
-    if (diff <= 0) return 'notes.today'.tr().toUpperCase();
-    if (diff == 1) return 'notes.yesterday'.tr().toUpperCase();
-    return '${d.day}.${d.month}.${d.year}';
   }
 
   /// Seçili istatistik sekmesine göre gövde.
@@ -3497,7 +3684,7 @@ class _NotesContent extends StatelessWidget {
                 leading: Icon(it[1] as IconData, color: c.textSecondary),
                 title: Text(it[2] as String),
                 trailing: viewModel.notesFilter == it[0]
-                    ? const Icon(Icons.check_rounded, color: Color(0xFFF6A821))
+                    ? Icon(Icons.check_rounded, color: ColorConstant.accentOrange)
                     : null,
                 onTap: () {
                   viewModel.setNotesFilter(it[0] as String);
@@ -3571,13 +3758,13 @@ class _NotesContent extends StatelessWidget {
             child: Row(
               children: [
                 Text(trailing,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFFF6A821),
+                      color: ColorConstant.accentOrange,
                     )),
-                const Icon(Icons.chevron_right_rounded,
-                    size: 18, color: Color(0xFFF6A821)),
+                Icon(Icons.chevron_right_rounded,
+                    size: 18, color: ColorConstant.accentOrange),
               ],
             ),
           ),
@@ -3681,14 +3868,7 @@ class _NotesContent extends StatelessWidget {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: () {
-              if (note.isLocked) {
-                _showUnlockDialog(context, note, viewModel, isDarkMode,
-                    reLockAfter: true);
-              } else {
-                _showEditNoteDialog(context, note, viewModel, isDarkMode);
-              }
-            },
+            onTap: () => _openNote(context, note, isDarkMode),
             borderRadius: BorderRadius.circular(16),
             child: Padding(
               padding: const EdgeInsets.all(9),
@@ -3734,7 +3914,7 @@ class _NotesContent extends StatelessWidget {
                   const SizedBox(height: 4),
                   // Küçük görsel önizleme — backend eki öncelikli, yoksa yerel.
                   // Kilitli notta görsel/ek de gizlenir (sadece başlık görünür).
-                  if (!note.isLocked && note.attachments.any((a) => a.isImage)) ...[
+                  if (!viewModel.isNoteLockedForMe(note) && note.attachments.any((a) => a.isImage)) ...[
                     Builder(builder: (_) {
                       final img =
                           note.attachments.firstWhere((a) => a.isImage);
@@ -3755,7 +3935,7 @@ class _NotesContent extends StatelessWidget {
                       );
                     }),
                     const SizedBox(height: 4),
-                  ] else if (!note.isLocked && imgs.isNotEmpty) ...[
+                  ] else if (!viewModel.isNoteLockedForMe(note) && imgs.isNotEmpty) ...[
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Image.file(
@@ -3769,7 +3949,7 @@ class _NotesContent extends StatelessWidget {
                     const SizedBox(height: 4),
                   ],
                   // Ek göstergeleri (ses / dosya).
-                  if (!note.isLocked &&
+                  if (!viewModel.isNoteLockedForMe(note) &&
                       note.attachments.any((a) => a.isAudio || a.isFile)) ...[
                     Row(
                       children: [
@@ -3792,7 +3972,7 @@ class _NotesContent extends StatelessWidget {
                     child: ClipRect(
                       child: Align(
                         alignment: Alignment.topLeft,
-                        child: note.isLocked
+                        child: viewModel.isNoteLockedForMe(note)
                             ? Row(children: [
                                 Icon(Icons.lock_rounded,
                                     size: 12, color: c.textMuted),
@@ -3942,9 +4122,19 @@ class _NotesContent extends StatelessWidget {
       shape:
           RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       itemBuilder: (context) => [
+        // Önizleme — en üstte; popup'ta içerik + checkbox işaretleme.
         PopupMenuItem(
           onTap: () => Future.delayed(const Duration(milliseconds: 100),
-              () => _openNote(context, note, isDarkMode)),
+              () => _showChecklistPopup(context, note, isDarkMode)),
+          child: Row(children: [
+            const Icon(Icons.visibility_rounded, size: 20),
+            const SizedBox(width: 12),
+            Text('notes.preview'.tr()),
+          ]),
+        ),
+        PopupMenuItem(
+          onTap: () => Future.delayed(const Duration(milliseconds: 100),
+              () => _openNoteEditor(context, note, isDarkMode)),
           child: Row(children: [
             const Icon(Icons.edit_rounded, size: 20),
             const SizedBox(width: 12),
@@ -3964,13 +4154,14 @@ class _NotesContent extends StatelessWidget {
                 : 'notes.pinNote'.tr()),
           ]),
         ),
+        // Boyutlandır — kartı ipte sağ-alt köşeden sürükleyerek yeniden boyutla.
         PopupMenuItem(
           onTap: () => Future.delayed(const Duration(milliseconds: 100),
-              () => viewModel.copyNoteToClipboard(note, context)),
+              () => viewModel.startResizingNote(note.id)),
           child: Row(children: [
-            const Icon(Icons.content_copy_rounded, size: 20),
+            const Icon(Icons.open_in_full_rounded, size: 20),
             const SizedBox(width: 12),
-            Text('common.copy'.tr()),
+            Text('notes.resizeNote'.tr()),
           ]),
         ),
         // Arkadaşla ortak paylaşım (davet gönderir).
@@ -3986,18 +4177,18 @@ class _NotesContent extends StatelessWidget {
         ),
         PopupMenuItem(
           onTap: () => Future.delayed(const Duration(milliseconds: 100), () {
-            if (note.isLocked) {
+            if (viewModel.isNoteLockedForMe(note)) {
               _showUnlockDialog(context, note, viewModel, isDarkMode);
             } else {
               _showLockDialog(context, note, viewModel, isDarkMode);
             }
           }),
           child: Row(children: [
-            Icon(note.isLocked
+            Icon(viewModel.isNoteLockedForMe(note)
                 ? Icons.lock_open_rounded
                 : Icons.lock_rounded, size: 20),
             const SizedBox(width: 12),
-            Text(note.isLocked
+            Text(viewModel.isNoteLockedForMe(note)
                 ? 'notes.unlockNote'.tr()
                 : 'notes.lockNote'.tr()),
           ]),
@@ -4403,6 +4594,365 @@ void insertNotePrefix(TextEditingController c, String prefix) {
   );
 }
 
+/// Çok satırlı not içeriğinde liste sürekliliği: bir madde (•), onay-kutusu
+/// (☐/☑) veya numaralı satırdayken Enter'a basınca aynı işaret otomatik
+/// devam eder; boş bir madde satırında Enter'a basınca işaret silinip
+/// listeden çıkılır (maddelerdeki gibi).
+class NoteListContinuationFormatter extends TextInputFormatter {
+  static final RegExp _checkPrefix = RegExp(r'^(☐ |☑ )');
+  static final RegExp _bulletPrefix = RegExp(r'^• ');
+  static final RegExp _numberPrefix = RegExp(r'^(\d+)\. ');
+
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    // Yalnızca tek bir '\n' eklendiğinde (Enter'a basıldığında) devreye gir.
+    if (newValue.text.length != oldValue.text.length + 1) return newValue;
+    final caret = newValue.selection.baseOffset;
+    if (caret <= 0 || caret > newValue.text.length) return newValue;
+    if (newValue.text[caret - 1] != '\n') return newValue;
+
+    // Enter'ın basıldığı (yeni satırdan önceki) satırı bul.
+    final before = newValue.text.substring(0, caret - 1);
+    final lineStart = before.lastIndexOf('\n') + 1;
+    final line = before.substring(lineStart);
+
+    String? prefix;
+    String contentAfterPrefix = line;
+    final mNumber = _numberPrefix.firstMatch(line);
+    if (_checkPrefix.hasMatch(line)) {
+      prefix = '☐ '; // devam ederken daima işaretsiz kutu
+      contentAfterPrefix = line.substring(2);
+    } else if (_bulletPrefix.hasMatch(line)) {
+      prefix = '• ';
+      contentAfterPrefix = line.substring(2);
+    } else if (mNumber != null) {
+      final n = int.tryParse(mNumber.group(1)!) ?? 0;
+      prefix = '${n + 1}. ';
+      contentAfterPrefix = line.substring(mNumber.group(0)!.length);
+    }
+    if (prefix == null) return newValue;
+
+    // Boş madde satırında Enter: işareti kaldır, listeden çık.
+    if (contentAfterPrefix.trim().isEmpty) {
+      final newText = newValue.text.replaceRange(lineStart, caret, '');
+      return TextEditingValue(
+        text: newText,
+        selection: TextSelection.collapsed(offset: lineStart),
+      );
+    }
+
+    // İşareti yeni satıra ekle.
+    final newText = newValue.text.replaceRange(caret, caret, prefix);
+    return TextEditingValue(
+      text: newText,
+      selection: TextSelection.collapsed(offset: caret + prefix.length),
+    );
+  }
+}
+
+/// Hex renk ('#RRGGBB') → Color. Hatalıysa varsayılan mor.
+Color noteColorFromHex(String colorHex) {
+  try {
+    return Color(int.parse(colorHex.replaceAll('#', 'FF'), radix: 16));
+  } catch (_) {
+    return const Color(0xFFB794F6);
+  }
+}
+
+/// Not içeriğinde checklist (☐/☑) satırı var mı?
+bool noteHasChecklist(Note note) {
+  final c = note.content ?? '';
+  return c.contains('☐ ') || c.contains('☑ ');
+}
+
+/// Checklist'li notu dokununca açılan hızlı işaretleme popup'ı. Düzenleme
+/// YOK — yalnızca kutular tıklanır (alışveriş listesi gibi pratik). İşaretli
+/// olanlar solar ve en alta iner; işaretsizler üstte kalır.
+class _ChecklistPopup extends StatelessWidget {
+  final int noteId;
+  final bool isDark;
+  final VoidCallback onEdit;
+  const _ChecklistPopup({
+    required this.noteId,
+    required this.isDark,
+    required this.onEdit,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = AppColors(isDark);
+    return Consumer<NotesDiaryViewModel>(
+      builder: (context, vm, _) {
+        final idx = vm.notes.indexWhere((n) => n.id == noteId);
+        if (idx == -1) return const SizedBox.shrink();
+        final note = vm.notes[idx];
+        final accent = noteColorFromHex(note.color ?? '#B794F6');
+        final lines = (note.content ?? '').split('\n');
+
+        // [lineIndex, type('check'|'text'), checked, text] — TÜM satırlar.
+        // N1: önizlemede tüm not gösterilir (checkbox + düz metin).
+        final items = <List<dynamic>>[];
+        for (var i = 0; i < lines.length; i++) {
+          final l = lines[i];
+          if (l.startsWith('☐ ')) {
+            items.add([i, 'check', false, l.substring(2)]);
+          } else if (l.startsWith('☑ ')) {
+            items.add([i, 'check', true, l.substring(2)]);
+          } else if (l.trim().isNotEmpty) {
+            items.add(
+                [i, 'text', false, l.startsWith('• ') ? l.substring(2) : l]);
+          }
+        }
+        // N3: checkbox işaretlenince yeniden SIRALAMA YOK — not düzeni sabit.
+        final ordered = items;
+        final checkItems = items.where((e) => e[1] == 'check').toList();
+        final total = checkItems.length;
+        final done = checkItems.where((e) => e[2] as bool).length;
+
+        return Dialog(
+          backgroundColor:
+              isDark ? ColorConstant.cardColorDark : const Color(0xFFF6F4EF),
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 22, vertical: 48),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.8,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Üst tutma çubuğu (daha düzgün görünüm)
+                Container(
+                  margin: const EdgeInsets.only(top: 10, bottom: 2),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: c.textMuted.withValues(alpha: 0.4),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                // Başlık + ilerleme
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 10, 10, 6),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          (note.title ?? '').isNotEmpty
+                              ? note.title!
+                              : 'notes.editor.checklistTitle'.tr(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.3,
+                            color: c.textPrimary,
+                          ),
+                        ),
+                      ),
+                      // Metni kopyala (önizlemede de kopyalanabilir).
+                      SizedBox(
+                        width: 36,
+                        height: 36,
+                        child: IconButton(
+                          padding: EdgeInsets.zero,
+                          iconSize: 20,
+                          icon: Icon(Icons.content_copy_rounded,
+                              color: c.textSecondary),
+                          onPressed: () {
+                            final t =
+                                cleanNoteMarkers(note.content ?? '').trim();
+                            if (t.isEmpty) return;
+                            Clipboard.setData(ClipboardData(text: t));
+                            CustomSnackBar.showSuccess(
+                                context, 'notes.copiedText'.tr());
+                          },
+                        ),
+                      ),
+                      SizedBox(
+                        width: 36,
+                        height: 36,
+                        child: IconButton(
+                          padding: EdgeInsets.zero,
+                          iconSize: 22,
+                          icon: Icon(Icons.close_rounded,
+                              color: c.textSecondary),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (total > 0)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: LinearProgressIndicator(
+                              value: total == 0 ? 0 : done / total,
+                              minHeight: 7,
+                              backgroundColor: c.border.withOpacity(0.5),
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(accent),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Text('$done/$total',
+                            style: TextStyle(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w800,
+                                color: c.textPrimary)),
+                      ],
+                    ),
+                  ),
+                Divider(height: 1, thickness: 1, color: c.border.withValues(alpha: 0.6)),
+                // N1: tüm not (checkbox + düz metin), N3: yeniden sıralama yok.
+                Flexible(
+                  child: ordered.isEmpty
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Text('notes.board.noNotes'.tr(),
+                                style: TextStyle(
+                                    fontSize: 14, color: c.textMuted)),
+                          ),
+                        )
+                      : ListView.builder(
+                          shrinkWrap: true,
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          itemCount: ordered.length,
+                          itemBuilder: (ctx, k) {
+                            final lineIndex = ordered[k][0] as int;
+                            final type = ordered[k][1] as String;
+                            final rawText = (ordered[k][3] as String).trim();
+                            // Düz metin satırı — seçilebilir (kopyalanabilir).
+                            if (type == 'text') {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 18, vertical: 7),
+                                child: SelectableText(
+                                  rawText,
+                                  style: TextStyle(
+                                      fontSize: 15.5,
+                                      height: 1.4,
+                                      color: c.textPrimary),
+                                ),
+                              );
+                            }
+                            final isChecked = ordered[k][2] as bool;
+                            final isEmpty = rawText.isEmpty;
+                            final Color textColor = isEmpty
+                                ? c.textMuted
+                                : (isChecked
+                                    ? c.textSecondary
+                                    : c.textPrimary);
+                            return Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () =>
+                                    vm.toggleChecklistLine(note, lineIndex),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 18, vertical: 11),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      AnimatedContainer(
+                                        duration: const Duration(
+                                            milliseconds: 180),
+                                        width: 28,
+                                        height: 28,
+                                        decoration: BoxDecoration(
+                                          color: isChecked
+                                              ? accent
+                                              : Colors.transparent,
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          border: Border.all(
+                                            color: isChecked
+                                                ? accent
+                                                : c.textSecondary.withValues(
+                                                    alpha: 0.7),
+                                            width: 2,
+                                          ),
+                                        ),
+                                        child: isChecked
+                                            ? const Icon(Icons.check_rounded,
+                                                size: 19,
+                                                color: Colors.white)
+                                            : null,
+                                      ),
+                                      const SizedBox(width: 14),
+                                      Expanded(
+                                        child: Text(
+                                          isEmpty ? '—' : rawText,
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            height: 1.35,
+                                            fontWeight: FontWeight.w500,
+                                            fontStyle: isEmpty
+                                                ? FontStyle.italic
+                                                : FontStyle.normal,
+                                            color: textColor,
+                                            decoration: isChecked
+                                                ? TextDecoration.lineThrough
+                                                : null,
+                                            decorationColor: c.textSecondary
+                                                .withValues(alpha: 0.7),
+                                            decorationThickness: 2,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+                Divider(height: 1, thickness: 1, color: c.border.withValues(alpha: 0.6)),
+                // Düzenle butonu (tam editör)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: onEdit,
+                          icon: const Icon(Icons.edit_rounded, size: 18),
+                          label: Text('common.edit'.tr()),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: accent,
+                            side: BorderSide(color: accent.withOpacity(0.6)),
+                            padding:
+                                const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
 /// Sesli dikte alt sayfası: cihaz-içi konuşma tanıma ile konuşulanı metne çevirir.
 class _DictationSheet extends StatefulWidget {
   final String localeId;
@@ -4420,7 +4970,8 @@ class _DictationSheetState extends State<_DictationSheet> {
   bool _listening = false;
   bool _initFailed = false;
 
-  static const _accent = Color(0xFF9F7AEA);
+  // Dikte sayfası aksanı — seçili temadan.
+  Color get _accent => ColorConstant.accentOrange;
 
   String get _display => [
         if (_committed.isNotEmpty) _committed,
@@ -4925,8 +5476,10 @@ class _AddNoteBottomSheet extends StatelessWidget {
     this.isEditing = false,
   });
 
-  static const Color _accent = Color(0xFFF6A821);
-  static const Color _accentDark = Color(0xFFEE8B00);
+  // Not editörü aksanı — seçili temadan (sabit turuncu yerine).
+  Color get _accent => ColorConstant.accentOrange;
+  Color get _accentDark => Color.alphaBlend(
+      Colors.black.withValues(alpha: 0.28), ColorConstant.accentOrange);
   static const Color _green = Color(0xFF34C759);
 
   @override
@@ -4967,14 +5520,18 @@ class _AddNoteBottomSheet extends StatelessWidget {
                       c: c,
                       accent: _accent,
                       accentDark: _accentDark,
+                      controller: vm.noteContentController,
+                      boldActive: vm.boldMode,
+                      italicActive: vm.italicMode,
                       reminderLabel: vm.noteReminder != null
                           ? '${vm.noteReminder!.day}.${vm.noteReminder!.month} ${vm.noteReminder!.hour.toString().padLeft(2, '0')}:${vm.noteReminder!.minute.toString().padLeft(2, '0')}'
                           : null,
-                      onBold: () => _wrapSelection(vm, '**'),
-                      onItalic: () => _wrapSelection(vm, '*'),
-                      onBullet: () => _insert(vm, '• '),
-                      onNumbered: () => _insertNumbered(vm),
-                      onCheckbox: () => _insert(vm, '☐ '),
+                      onBold: () => _toggleFormat(vm, '**', 'bold'),
+                      onItalic: () => _toggleFormat(vm, '*', 'italic'),
+                      onBullet: () => _toggleListPrefix(vm, 'bullet'),
+                      onNumbered: () => _toggleListPrefix(vm, 'numbered'),
+                      onCheckbox: () => _toggleListPrefix(vm, 'checkbox'),
+                      onCopyText: () => _copySelectedText(context, vm),
                       onMic: () => _showDictationSheet(context, vm),
                       onCamera: () => vm.pickNoteImage(ImageSource.camera),
                       onPhoto: () => vm.pickNoteImage(ImageSource.gallery),
@@ -4983,6 +5540,7 @@ class _AddNoteBottomSheet extends StatelessWidget {
                       onScan: () => vm.pickNoteImage(ImageSource.camera),
                       onReminder: () => _pickReminder(context, vm),
                       onShare: () => _shareNote(context, vm),
+                      onShareCollab: () => _shareNoteCollab(context, vm),
                     ),
                   ),
                 ],
@@ -5073,45 +5631,136 @@ class _AddNoteBottomSheet extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(14, 2, 14, 8),
       child: Row(
         children: [
-          _metaChip(Icons.folder_rounded, folderLabel, c,
-              trailing: true, onTap: () => _pickCategory(context, vm)),
-          const SizedBox(width: 8),
-          _metaChip(
-            vm.noteLocked ? Icons.lock_rounded : Icons.lock_open_rounded,
-            vm.noteLocked
-                ? 'notes.editor.locked'.tr()
-                : 'notes.editor.unlocked'.tr(),
-            c,
-            trailing: true,
-            active: vm.noteLocked,
-            onTap: () {
-              if (vm.noteLocked) {
-                vm.setNoteLockPin(null);
-                _toast(context, 'notes.editor.lockRemoved'.tr());
-              } else {
-                _showEditorLockDialog(context, vm, isDarkMode);
-              }
-            },
-          ),
-          const Spacer(),
-          Container(
-            width: 8,
-            height: 8,
-            decoration: const BoxDecoration(
-              color: _green,
-              shape: BoxShape.circle,
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _metaChip(Icons.folder_rounded, folderLabel, c,
+                      trailing: true, onTap: () => _pickCategory(context, vm)),
+                  const SizedBox(width: 8),
+                  _metaChip(
+                    vm.noteLocked
+                        ? Icons.lock_rounded
+                        : Icons.lock_open_rounded,
+                    vm.noteLocked
+                        ? 'notes.editor.locked'.tr()
+                        : 'notes.editor.unlocked'.tr(),
+                    c,
+                    trailing: true,
+                    active: vm.noteLocked,
+                    onTap: () {
+                      if (vm.noteLocked) {
+                        vm.setNoteLockPin(null);
+                        _toast(context, 'notes.editor.lockRemoved'.tr());
+                      } else {
+                        _showEditorLockDialog(context, vm, isDarkMode);
+                      }
+                    },
+                  ),
+                  // Paylaşımlı not ise: kaç kişiyle paylaşıldığı + son düzenleme.
+                  // (Paylaşım başlatma artık + menüsündeki "Paylaşımlı not"tan.)
+                  if (vm.editingNoteId != null &&
+                      vm.isNoteShared(vm.editingNoteId!))
+                    ...[
+                    const SizedBox(width: 8),
+                    _sharedInfoChip(context, vm, c),
+                  ],
+                ],
+              ),
             ),
           ),
-          const SizedBox(width: 6),
-          Text(
-            'notes.editor.editingNow'.tr(),
-            style: TextStyle(
-              fontSize: 12.5,
-              fontWeight: FontWeight.w600,
-              color: c.textSecondary,
+          // "Şimdi düzenleniyor" — YALNIZCA paylaşımlı notta göster.
+          if (vm.editingNoteId != null &&
+              vm.isNoteShared(vm.editingNoteId!)) ...[
+            const SizedBox(width: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+              decoration: BoxDecoration(
+                color: _green.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 7,
+                    height: 7,
+                    decoration: const BoxDecoration(
+                      color: _green,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'notes.editor.editingNow'.tr(),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: _green,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
         ],
+      ),
+    );
+  }
+
+  /// Paylaşımlı not bilgi çipi: kaç kişiyle paylaşıldığı + son düzenleme zamanı.
+  /// Dokununca paylaşım yönetimini (arkadaş listesi) açar.
+  Widget _sharedInfoChip(
+      BuildContext context, NotesDiaryViewModel vm, AppColors c) {
+    final nid = vm.editingNoteId!;
+    final count = vm.sharedParticipantCount(nid);
+    final matches = vm.notes.where((n) => n.id == nid);
+    final updated = matches.isNotEmpty ? matches.first.updatedAt : null;
+    String fmt(DateTime d) =>
+        '${d.day.toString().padLeft(2, '0')}.${d.month.toString().padLeft(2, '0')} ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _shareNoteCollab(context, vm),
+        borderRadius: BorderRadius.circular(30),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: _accent.withValues(alpha: 0.13),
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(color: _accent.withValues(alpha: 0.45)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.group_rounded, size: 15, color: _accentDark),
+              const SizedBox(width: 5),
+              Text(
+                '$count ${'notes.editor.people'.tr()}',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: _accentDark,
+                ),
+              ),
+              if (updated != null) ...[
+                const SizedBox(width: 8),
+                Icon(Icons.schedule_rounded, size: 13, color: c.textMuted),
+                const SizedBox(width: 4),
+                Text(
+                  fmt(updated),
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: c.textSecondary,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -5184,7 +5833,7 @@ class _AddNoteBottomSheet extends StatelessWidget {
               leading: Icon(Icons.folder_open_rounded, color: c.textSecondary),
               title: Text('notes.editor.noCategory'.tr()),
               trailing: vm.selectedCategoryForNote == null
-                  ? const Icon(Icons.check_rounded, color: _accentDark)
+                  ? Icon(Icons.check_rounded, color: _accentDark)
                   : null,
               onTap: () {
                 vm.setSelectedCategoryForNote(null);
@@ -5197,7 +5846,7 @@ class _AddNoteBottomSheet extends StatelessWidget {
                     style: const TextStyle(fontSize: 20)),
                 title: Text(cat.name),
                 trailing: vm.selectedCategoryForNote == cat.id
-                    ? const Icon(Icons.check_rounded, color: _accentDark)
+                    ? Icon(Icons.check_rounded, color: _accentDark)
                     : null,
                 onTap: () {
                   vm.setSelectedCategoryForNote(cat.id);
@@ -5288,13 +5937,8 @@ class _AddNoteBottomSheet extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 10),
-          Container(height: 1, color: c.border.withOpacity(0.7)),
-          const SizedBox(height: 8),
-          Text(
-            _todayLabel(),
-            style: TextStyle(fontSize: 13, color: c.textMuted),
-          ),
+          const SizedBox(height: 12),
+          Container(height: 1, color: c.border.withOpacity(0.6)),
           const SizedBox(height: 16),
 
           // Etiketler (serbest biçimli) — chip listesi + ekle
@@ -5691,6 +6335,7 @@ class _AddNoteBottomSheet extends StatelessWidget {
           TextField(
             controller: vm.noteContentController,
             focusNode: vm.noteContentFocus,
+            inputFormatters: [NoteListContinuationFormatter()],
             maxLines: null,
             minLines: 10,
             cursorColor: _accent,
@@ -5721,19 +6366,107 @@ class _AddNoteBottomSheet extends StatelessWidget {
 
 
 
-  /// İçerik alanına odaklanıp satır başına işaret ekler.
-  void _insert(NotesDiaryViewModel vm, String prefix) {
-    vm.noteContentFocus.requestFocus();
-    insertNotePrefix(vm.noteContentController, prefix);
+  /// Seçili metni (yoksa tüm içeriği) panoya kopyalar — araç çubuğundaki
+  /// "metni kopyala" ikonu için. Markdown işaretleri temizlenir.
+  void _copySelectedText(BuildContext context, NotesDiaryViewModel vm) {
+    final ctrl = vm.noteContentController;
+    final sel = ctrl.selection;
+    String text;
+    if (sel.isValid && !sel.isCollapsed) {
+      text = ctrl.text.substring(sel.start, sel.end);
+    } else {
+      text = ctrl.text; // seçim yoksa tümünü kopyala
+    }
+    text = cleanNoteMarkers(text).trim();
+    if (text.isEmpty) return;
+    Clipboard.setData(ClipboardData(text: text));
+    _toast(context, 'notes.copiedText'.tr());
   }
 
-  /// Seçili metni [marker] ile sarar (kalın=** , italik=*). Seçim yoksa
-  /// imleç konumuna işaret çifti ekleyip imleci ortaya alır.
-  void _wrapSelection(NotesDiaryViewModel vm, String marker) {
+  /// Madde (•) / numara (1.) / onay-kutusu (☐) aç-kapa. İmlecin bulunduğu
+  /// SATIRA uygulanır: satırda o işaret varsa kaldırır (kapat), yoksa ekler
+  /// (farklı liste işareti varsa onunla değiştirir).
+  void _toggleListPrefix(NotesDiaryViewModel vm, String kind) {
     vm.noteContentFocus.requestFocus();
     final ctrl = vm.noteContentController;
     final text = ctrl.text;
     final sel = ctrl.selection;
+    final caret =
+        (sel.isValid && sel.baseOffset >= 0) ? sel.baseOffset : text.length;
+
+    final lineStart = caret <= 0 ? 0 : text.lastIndexOf('\n', caret - 1) + 1;
+    var lineEnd = text.indexOf('\n', lineStart);
+    if (lineEnd < 0) lineEnd = text.length;
+    final line = text.substring(lineStart, lineEnd);
+
+    // Mevcut liste işareti.
+    String? currentKind;
+    int currentLen = 0;
+    if (line.startsWith('☐ ') || line.startsWith('☑ ')) {
+      currentKind = 'checkbox';
+      currentLen = 2;
+    } else if (line.startsWith('• ')) {
+      currentKind = 'bullet';
+      currentLen = 2;
+    } else {
+      final m = RegExp(r'^(\d+)\. ').firstMatch(line);
+      if (m != null) {
+        currentKind = 'numbered';
+        currentLen = m.group(0)!.length;
+      }
+    }
+
+    String newLine;
+    int caretDelta;
+    if (currentKind == kind) {
+      // Kapat: işareti kaldır.
+      newLine = line.substring(currentLen);
+      caretDelta = -currentLen;
+    } else {
+      // Aç/değiştir: varsa eski işareti at, yeni işareti ekle.
+      final bare = currentKind != null ? line.substring(currentLen) : line;
+      String newPrefix;
+      if (kind == 'checkbox') {
+        newPrefix = '☐ ';
+      } else if (kind == 'bullet') {
+        newPrefix = '• ';
+      } else {
+        // Numara: önceki satırlardaki en büyük numaranın bir fazlası.
+        var maxN = 0;
+        for (final l in text.substring(0, lineStart).split('\n')) {
+          final mm = RegExp(r'^(\d+)\.\s').firstMatch(l.trimLeft());
+          if (mm != null) {
+            final n = int.tryParse(mm.group(1)!) ?? 0;
+            if (n > maxN) maxN = n;
+          }
+        }
+        newPrefix = '${maxN + 1}. ';
+      }
+      newLine = '$newPrefix$bare';
+      caretDelta = newPrefix.length - currentLen;
+    }
+
+    final newText = text.replaceRange(lineStart, lineEnd, newLine);
+    final newCaret =
+        (caret + caretDelta).clamp(lineStart, lineStart + newLine.length);
+    ctrl.value = TextEditingValue(
+      text: newText,
+      selection: TextSelection.collapsed(offset: newCaret),
+    );
+  }
+
+  /// Biçimlendirme aç/kapa (kalın=** , italik=*).
+  /// - Seçim varsa: seçili metni tek seferlik sarar.
+  /// - Seçim yoksa: "aktif" moda geçer; işaretçi çiftini ekleyip imleci
+  ///   ortaya alır, böylece yazılan metin o biçimde olur. Tekrar basınca
+  ///   mod kapanır (boş işaretçi çifti kaldırılır veya imleç dışarı alınır).
+  void _toggleFormat(NotesDiaryViewModel vm, String marker, String kind) {
+    vm.noteContentFocus.requestFocus();
+    final ctrl = vm.noteContentController;
+    final text = ctrl.text;
+    final sel = ctrl.selection;
+
+    // Seçim varsa: tek seferlik sar.
     if (sel.isValid && !sel.isCollapsed) {
       final selected = text.substring(sel.start, sel.end);
       final newText =
@@ -5743,14 +6476,64 @@ class _AddNoteBottomSheet extends StatelessWidget {
         selection:
             TextSelection.collapsed(offset: sel.end + marker.length * 2),
       );
-    } else {
-      final pos = sel.isValid ? sel.start : text.length;
+      return;
+    }
+
+    final bool active = kind == 'bold' ? vm.boldMode : vm.italicMode;
+    final int pos = sel.isValid ? sel.start : text.length;
+    final int mlen = marker.length;
+
+    if (!active) {
+      // AÇ: işaretçi çiftini ekle, imleci ortaya al → yazılan metin biçimli olur.
       final newText = text.replaceRange(pos, pos, '$marker$marker');
       ctrl.value = TextEditingValue(
         text: newText,
-        selection: TextSelection.collapsed(offset: pos + marker.length),
+        selection: TextSelection.collapsed(offset: pos + mlen),
       );
+      vm.setFormatMode(
+        bold: kind == 'bold' ? true : null,
+        italic: kind == 'italic' ? true : null,
+      );
+    } else {
+      // KAPAT → düz yazıya dön. İmleci, O AN AKTİF olan TÜM biçimlerin kapanış
+      // işaretçilerinin dışına al; böylece yazılmış içerik biçimli KALIR, yeni
+      // yazılacaklar düz olur. (Kalın+italik birlikteyken kapanış: *** gibi.)
+      final String closeAll =
+          (vm.boldMode ? '**' : '') + (vm.italicMode ? '*' : '');
+      if (closeAll.isNotEmpty &&
+          pos + closeAll.length <= text.length &&
+          text.substring(pos, pos + closeAll.length) == closeAll) {
+        final bool emptyPair = pos >= closeAll.length &&
+            text.substring(pos - closeAll.length, pos) == closeAll;
+        if (emptyPair) {
+          // İçi boş çift (hiç yazılmadı) → tamamen kaldır.
+          final newText = text.replaceRange(
+              pos - closeAll.length, pos + closeAll.length, '');
+          ctrl.value = TextEditingValue(
+            text: newText,
+            selection: TextSelection.collapsed(offset: pos - closeAll.length),
+          );
+        } else {
+          // İmleci tüm kapanışın dışına al (içerik biçimli kalır).
+          ctrl.selection =
+              TextSelection.collapsed(offset: pos + closeAll.length);
+        }
+      }
+      // Kapatınca düz yazıya dönülür (her iki mod da kapanır).
+      vm.clearFormatModes();
     }
+  }
+
+  /// Ortak (arkadaşla) paylaşım: notun kaydedilmiş olması gerekir (id lazım).
+  /// Yeni not ise önce kaydetmesi için uyarır; düzenlenen notta arkadaş
+  /// listesini açar.
+  void _shareNoteCollab(BuildContext context, NotesDiaryViewModel vm) {
+    final id = vm.editingNoteId;
+    if (id == null) {
+      _toast(context, 'share.saveNoteFirst'.tr());
+      return;
+    }
+    showShareWithFriendsSheet(context, kind: 'note', itemId: id);
   }
 
   /// Sesli dikte alt sayfasını açar; tanınan metni not içeriğine ekler.
@@ -5785,20 +6568,6 @@ class _AddNoteBottomSheet extends StatelessWidget {
       text: newText,
       selection: TextSelection.collapsed(offset: pos + insert.length),
     );
-  }
-
-  /// Numaralı liste: mevcut en büyük numarayı bulur, bir sonrakini ekler (1, 2, 3…).
-  void _insertNumbered(NotesDiaryViewModel vm) {
-    final text = vm.noteContentController.text;
-    var maxN = 0;
-    for (final line in text.split('\n')) {
-      final m = RegExp(r'^(\d+)\.\s').firstMatch(line.trimLeft());
-      if (m != null) {
-        final n = int.tryParse(m.group(1)!) ?? 0;
-        if (n > maxN) maxN = n;
-      }
-    }
-    _insert(vm, '${maxN + 1}. ');
   }
 
   /// İmleçteki seçili metni verilen işaretle sarar (**kalın**, *italik*).
@@ -5960,7 +6729,7 @@ class _AddNoteBottomSheet extends StatelessWidget {
               }
             },
             child: Text('common.lock'.tr(),
-                style: const TextStyle(
+                style: TextStyle(
                     color: _accent, fontWeight: FontWeight.w700)),
           ),
         ],
@@ -5968,15 +6737,6 @@ class _AddNoteBottomSheet extends StatelessWidget {
     );
   }
 
-  String _todayLabel() {
-    // Dil-nötr sayısal tarih (her dilde doğru görünür).
-    final now = DateTime.now();
-    final dd = now.day.toString().padLeft(2, '0');
-    final mo = now.month.toString().padLeft(2, '0');
-    final hh = now.hour.toString().padLeft(2, '0');
-    final mm = now.minute.toString().padLeft(2, '0');
-    return '$dd.$mo.${now.year} · $hh:$mm';
-  }
 }
 
 // ==================== GÜNLÜK EKLEME BOTTOM SHEET ====================
@@ -6614,8 +7374,8 @@ class _DrawingPadPageState extends State<_DrawingPadPage> {
           TextButton(
             onPressed: _saving ? null : _save,
             child: Text('common.save'.tr(),
-                style: const TextStyle(
-                    color: Color(0xFFEE8B00),
+                style: TextStyle(
+                    color: ColorConstant.accentOrange,
                     fontWeight: FontWeight.w800,
                     fontSize: 15)),
           ),
@@ -6676,7 +7436,7 @@ class _DrawingPadPageState extends State<_DrawingPadPage> {
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: _color == col
-                                ? const Color(0xFFEE8B00)
+                                ? ColorConstant.accentOrange
                                 : Colors.transparent,
                             width: 3,
                           ),
@@ -6691,7 +7451,7 @@ class _DrawingPadPageState extends State<_DrawingPadPage> {
                       value: _width,
                       min: 2,
                       max: 16,
-                      activeColor: const Color(0xFFF6A821),
+                      activeColor: ColorConstant.accentOrange,
                       onChanged: (v) => setState(() => _width = v),
                     ),
                   ),
@@ -6801,7 +7561,7 @@ class _VoiceNoteChipState extends State<_VoiceNoteChip> {
 
   @override
   Widget build(BuildContext context) {
-    const accent = Color(0xFFF6A821);
+    final accent = ColorConstant.accentOrange;
     final c = AppColors.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -6849,7 +7609,7 @@ class _VoiceNoteChipState extends State<_VoiceNoteChip> {
           ),
           const SizedBox(width: 8),
           Text(_durationLabel(),
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 12, fontWeight: FontWeight.w600, color: accent)),
           const SizedBox(width: 8),
           GestureDetector(
@@ -6863,6 +7623,34 @@ class _VoiceNoteChipState extends State<_VoiceNoteChip> {
 }
 
 // ==================== EDİTÖR ALT ARAÇ ÇUBUĞU ====================
+/// Seçili araç düğmesinin etrafına çizilen kesikli çember (RotationTransition
+/// ile döndürülür). Düğme çevresinde eşit aralıklı kısa yaylar çizer.
+class _DashedRingPainter extends CustomPainter {
+  final Color color;
+  const _DashedRingPainter(this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+    final center = size.center(Offset.zero);
+    final radius = size.width / 2 - 1.5;
+    const dashCount = 11;
+    final sweep = 2 * math.pi / dashCount;
+    final dash = sweep * 0.55; // yay/boşluk oranı
+    final rect = Rect.fromCircle(center: center, radius: radius);
+    for (var i = 0; i < dashCount; i++) {
+      canvas.drawArc(rect, i * sweep, dash, false, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DashedRingPainter old) => old.color != color;
+}
+
 /// Kompakt biçimlendirme çubuğu [+ B i • ≡ ☑ 🎤]; + ekleme menüsünü
 /// (Kamera/Fotoğraf/Dosya/Çizim/Tarama/Hatırlatıcı/Paylaş) açıp kapatır.
 class _EditorToolbar extends StatefulWidget {
@@ -6870,11 +7658,15 @@ class _EditorToolbar extends StatefulWidget {
   final Color accent;
   final Color accentDark;
   final String? reminderLabel;
+  final TextEditingController controller;
+  final bool boldActive;
+  final bool italicActive;
   final VoidCallback onBold;
   final VoidCallback onItalic;
   final VoidCallback onBullet;
   final VoidCallback onNumbered;
   final VoidCallback onCheckbox;
+  final VoidCallback onCopyText;
   final VoidCallback onMic;
   final VoidCallback onCamera;
   final VoidCallback onPhoto;
@@ -6883,17 +7675,22 @@ class _EditorToolbar extends StatefulWidget {
   final VoidCallback onScan;
   final VoidCallback onReminder;
   final VoidCallback onShare;
+  final VoidCallback onShareCollab;
 
   const _EditorToolbar({
     required this.c,
     required this.accent,
     required this.accentDark,
     required this.reminderLabel,
+    required this.controller,
+    required this.boldActive,
+    required this.italicActive,
     required this.onBold,
     required this.onItalic,
     required this.onBullet,
     required this.onNumbered,
     required this.onCheckbox,
+    required this.onCopyText,
     required this.onMic,
     required this.onCamera,
     required this.onPhoto,
@@ -6902,23 +7699,60 @@ class _EditorToolbar extends StatefulWidget {
     required this.onScan,
     required this.onReminder,
     required this.onShare,
+    required this.onShareCollab,
   });
 
   @override
   State<_EditorToolbar> createState() => _EditorToolbarState();
 }
 
-class _EditorToolbarState extends State<_EditorToolbar> {
+class _EditorToolbarState extends State<_EditorToolbar>
+    with SingleTickerProviderStateMixin {
   // Menü, layout akışına eklenmek yerine (sayfayı ittirip kaydırıyordu)
   // + butonuna sabitlenmiş bir Overlay olarak açılır. Böylece hizalı kalır,
   // içerik kaymaz ve metin alanının seçim tutamacının üstünde görünür.
   final LayerLink _link = LayerLink();
   OverlayEntry? _entry;
 
+  // Seçili (aktif) düğmenin etrafında dönen kesikli çember için.
+  late final AnimationController _ringController;
+
   bool get _open => _entry != null;
 
   @override
+  void initState() {
+    super.initState();
+    // İmleç/metin değişince madde-işareti aktiflik göstergesi güncellensin.
+    widget.controller.addListener(_onCtrlChanged);
+    _ringController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 3200),
+    )..repeat();
+  }
+
+  void _onCtrlChanged() {
+    if (mounted) setState(() {});
+  }
+
+  /// İmlecin bulunduğu satırın başındaki liste işaretini döndürür
+  /// ('check' / 'bullet' / 'number' / null).
+  String? get _currentLinePrefix {
+    final t = widget.controller.text;
+    final sel = widget.controller.selection;
+    final caret = (sel.isValid && sel.baseOffset >= 0) ? sel.baseOffset : t.length;
+    final start = t.lastIndexOf('\n', caret > 0 ? caret - 1 : 0);
+    final lineStart = start < 0 ? 0 : start + 1;
+    final line = t.substring(lineStart.clamp(0, t.length));
+    if (line.startsWith('☐ ') || line.startsWith('☑ ')) return 'check';
+    if (line.startsWith('• ')) return 'bullet';
+    if (RegExp(r'^\d+\. ').hasMatch(line)) return 'number';
+    return null;
+  }
+
+  @override
   void dispose() {
+    widget.controller.removeListener(_onCtrlChanged);
+    _ringController.dispose();
     _entry?.remove();
     _entry = null;
     super.dispose();
@@ -7014,11 +7848,18 @@ class _EditorToolbarState extends State<_EditorToolbar> {
               padding: const EdgeInsets.symmetric(horizontal: 4),
               child: Row(
                 children: [
-                  _fmt(Icons.format_bold_rounded, widget.onBold, c),
-                  _fmt(Icons.format_italic_rounded, widget.onItalic, c),
-                  _fmt(Icons.format_list_bulleted_rounded, widget.onBullet, c),
-                  _fmt(Icons.format_list_numbered_rounded, widget.onNumbered, c),
-                  _fmt(Icons.check_box_outlined, widget.onCheckbox, c),
+                  _fmt(Icons.format_bold_rounded, widget.onBold, c,
+                      active: widget.boldActive),
+                  _fmt(Icons.format_italic_rounded, widget.onItalic, c,
+                      active: widget.italicActive),
+                  _fmt(Icons.format_list_bulleted_rounded, widget.onBullet, c,
+                      active: _currentLinePrefix == 'bullet'),
+                  _fmt(Icons.format_list_numbered_rounded, widget.onNumbered, c,
+                      active: _currentLinePrefix == 'number'),
+                  _fmt(Icons.check_box_rounded, widget.onCheckbox, c,
+                      active: _currentLinePrefix == 'check', big: true),
+                  // Seçili metni kopyala.
+                  _fmt(Icons.content_copy_rounded, widget.onCopyText, c),
                   _fmt(Icons.mic_none_rounded, widget.onMic, c),
                 ],
               ),
@@ -7029,13 +7870,50 @@ class _EditorToolbarState extends State<_EditorToolbar> {
     );
   }
 
-  Widget _fmt(IconData icon, VoidCallback onTap, AppColors c) {
+  /// Biçimlendirme düğmesi. [active] olduğunda animasyonlu vurgu (dolgu + hafif
+  /// büyüme) ile seçili olduğu belli olur. [big] onay-kutusu gibi sık dokunulan
+  /// düğmeyi büyütüp dokunması kolaylaştırır.
+  /// Biçimlendirme düğmesi. Normalde sade durur; SEÇİLİ (aktif) olduğunda
+  /// etrafında dönen kesikli bir çember + hafif mor dolgu belirir.
+  Widget _fmt(IconData icon, VoidCallback onTap, AppColors c,
+      {bool active = false, bool big = false}) {
+    final double box = big ? 42 : 40;
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(box / 2),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 8),
-        child: Icon(icon, size: 22, color: c.textSecondary),
+        padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 2),
+        child: SizedBox(
+          width: box,
+          height: box,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Seçili dolgu (yumuşak)
+              if (active)
+                Container(
+                  width: box - 8,
+                  height: box - 8,
+                  decoration: BoxDecoration(
+                    color: widget.accent.withValues(alpha: 0.16),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              Icon(icon,
+                  size: big ? 26 : 22,
+                  color: active ? widget.accentDark : c.textSecondary),
+              // Dönen kesikli çember
+              if (active)
+                RotationTransition(
+                  turns: _ringController,
+                  child: CustomPaint(
+                    size: Size(box, box),
+                    painter: _DashedRingPainter(widget.accent),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -7058,7 +7936,14 @@ class _EditorToolbarState extends State<_EditorToolbar> {
         widget.reminderLabel ?? 'notes.editor.reminder'.tr(),
         widget.onReminder
       ],
-      [Icons.people_alt_outlined, 'notes.editor.share'.tr(), widget.onShare],
+      // Sıradan paylaşım (metni dışa aktar) — kalsın.
+      [Icons.ios_share_rounded, 'notes.editor.share'.tr(), widget.onShare],
+      // Ortak (arkadaşla) paylaşımlı not — ayrı seçenek.
+      [
+        Icons.group_add_rounded,
+        'notes.editor.shareCollab'.tr(),
+        widget.onShareCollab
+      ],
     ];
     return Container(
       width: 244,

@@ -9,6 +9,7 @@ class Settings {
   final bool noteNotifications;
   final bool diaryReminders;
   final bool socialNotifications;
+  final bool engagementEnabled;
   final bool darkMode;
   final String themeColor;
   final bool requireBiometric;
@@ -27,6 +28,7 @@ class Settings {
     required this.noteNotifications,
     required this.diaryReminders,
     required this.socialNotifications,
+    this.engagementEnabled = true,
     required this.darkMode,
     required this.themeColor,
     required this.requireBiometric,
@@ -47,6 +49,7 @@ class Settings {
       noteNotifications: json['note_notifications'] as bool? ?? true,
       diaryReminders: json['diary_reminders'] as bool? ?? true,
       socialNotifications: json['social_notifications'] as bool? ?? true,
+      engagementEnabled: json['engagement_enabled'] as bool? ?? true,
       darkMode: json['dark_mode'] as bool? ?? false,
       themeColor: json['theme_color']?.toString() ?? 'purple',
       requireBiometric: json['require_biometric'] as bool? ?? false,
@@ -68,6 +71,7 @@ class Settings {
       'note_notifications': noteNotifications,
       'diary_reminders': diaryReminders,
       'social_notifications': socialNotifications,
+      'engagement_enabled': engagementEnabled,
       'dark_mode': darkMode,
       'theme_color': themeColor,
       'require_biometric': requireBiometric,
@@ -88,6 +92,7 @@ class SettingsUpdateRequest {
   final bool? noteNotifications;
   final bool? diaryReminders;
   final bool? socialNotifications;
+  final bool? engagementEnabled;
   final bool? darkMode;
   final String? themeColor;
   final bool? requireBiometric;
@@ -104,6 +109,7 @@ class SettingsUpdateRequest {
     this.noteNotifications,
     this.diaryReminders,
     this.socialNotifications,
+    this.engagementEnabled,
     this.darkMode,
     this.themeColor,
     this.requireBiometric,
@@ -122,6 +128,7 @@ class SettingsUpdateRequest {
     if (noteNotifications != null) map['note_notifications'] = noteNotifications;
     if (diaryReminders != null) map['diary_reminders'] = diaryReminders;
     if (socialNotifications != null) map['social_notifications'] = socialNotifications;
+    if (engagementEnabled != null) map['engagement_enabled'] = engagementEnabled;
     if (darkMode != null) map['dark_mode'] = darkMode;
     if (themeColor != null) map['theme_color'] = themeColor;
     if (requireBiometric != null) map['require_biometric'] = requireBiometric;

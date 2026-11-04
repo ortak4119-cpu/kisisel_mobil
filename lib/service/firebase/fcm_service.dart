@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../../models/notification/notification_models.dart';
 import '../notification/notification_service.dart';
+import '../notification/notification_sound.dart';
 import '../../core/init/locator.dart';
 
 // Background message handler - Top level function olmalı
@@ -102,22 +103,26 @@ class FCMService {
       },
     );
 
-    // Android için notification channel oluştur
+    // Android: her bildirim sesi için AYRI kanal oluştur (kanal sesi sonradan
+    // değiştirilemez; kullanıcı ses değiştirince ilgili kanal kullanılır).
     if (Platform.isAndroid) {
-      final AndroidNotificationChannel channel = AndroidNotificationChannel(
-        'high_importance_channel',
-        'notifications.channelName'.tr(),
-        description: 'notifications.channelDescription'.tr(),
-        importance: Importance.high,
-        playSound: true,
-        enableVibration: true,
-        sound: const RawResourceAndroidNotificationSound('notification'),
-      );
-
-      await flutterLocalNotificationsPlugin
+      final android = flutterLocalNotificationsPlugin
           .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>()
-          ?.createNotificationChannel(channel);
+              AndroidFlutterLocalNotificationsPlugin>();
+      for (final s in NotifSound.all) {
+        final channel = AndroidNotificationChannel(
+          s.channelId,
+          'notifications.channelName'.tr(),
+          description: 'notifications.channelDescription'.tr(),
+          importance: Importance.high,
+          playSound: s.playSound,
+          enableVibration: true,
+          sound: s.raw != null
+              ? RawResourceAndroidNotificationSound(s.raw!)
+              : null,
+        );
+        await android?.createNotificationChannel(channel);
+      }
     }
 
     debugPrint('✅ Local notifications initialized');
@@ -185,6 +190,11 @@ class FCMService {
         token: _fcmToken!,
         deviceType: deviceType,
         deviceId: deviceId,
+        // Otomatik bildirimlerin kullanıcının YEREL saatine göre (gece değil)
+        // gönderilmesi için cihazın UTC offset'i (dakika).
+        timezoneOffsetMinutes: DateTime.now().timeZoneOffset.inMinutes,
+        // Arka plandaki push'ların doğru ses/kanalla gelmesi için seçili ses.
+        notificationSound: NotifSoundPrefs.currentId,
       );
 
       final response = await _notificationService.storePushToken(request);
@@ -220,24 +230,30 @@ class FCMService {
     final notification = message.notification;
     if (notification == null) return;
 
+    // Seçili bildirim sesine göre kanal/ses (foreground gösterim).
+    final snd = NotifSoundPrefs.current;
+
     // Android notification detayları
     final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      'high_importance_channel',
+      snd.channelId,
       'notifications.channelName'.tr(),
       channelDescription: 'notifications.channelDescription'.tr(),
       importance: Importance.high,
       priority: Priority.high,
-      playSound: true,
+      playSound: snd.playSound,
+      sound: snd.raw != null
+          ? RawResourceAndroidNotificationSound(snd.raw!)
+          : null,
       enableVibration: true,
       icon: '@mipmap/ic_launcher',
     );
 
     // iOS notification detayları
-    const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
+    final DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
       presentAlert: true,
       presentBadge: true,
-      presentSound: true,
-      sound: 'default',
+      presentSound: snd.playSound,
+      sound: snd.iosFile ?? 'default',
     );
 
     final NotificationDetails notificationDetails = NotificationDetails(
@@ -258,6 +274,19 @@ class FCMService {
   void _handleMessageOpened(RemoteMessage message) {
     debugPrint('🔔 Notification opened');
     debugPrint('Data: ${message.data}');
+
+    // Otomatik bildirim türüyse açılma metriği için backend'e bildir.
+    final type = message.data['type']?.toString();
+    const autoTypes = {'engagement', 'winback', 'streak', 'milestone'};
+    if (type != null && autoTypes.contains(type)) {
+      () async {
+        try {
+          await _notificationService.markAutoOpened(type);
+        } catch (_) {
+          // Metrik bildirimi başarısız olsa da sessizce geç.
+        }
+      }();
+    }
 
     // Notification data'sına göre routing yapabilirsiniz
     // Örneğin:

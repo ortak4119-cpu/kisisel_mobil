@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../core/utils/color_constant.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../core/init/locator.dart';
@@ -6,7 +7,7 @@ import '../../service/share/share_service.dart';
 import '../../models/share/shared_item_models.dart';
 import '../../core/utils/custom_snackbar.dart';
 
-const Color _accent = Color(0xFFF6A821);
+Color get _accent => ColorConstant.accentOrange;
 
 Future<void> showSharedNoteEditor(BuildContext context,
     {required SharedNoteItem item}) {
@@ -35,7 +36,7 @@ class _Shell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? const Color(0xFF1E1B16) : const Color(0xFFF6F4EF);
+    final bg = isDark ? ColorConstant.bgColorDark : ColorConstant.bgColorLight;
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: BoxDecoration(
@@ -94,11 +95,11 @@ Widget _sharedBadge(bool canEdit, Color muted) => Container(
           color: _accent.withOpacity(0.15),
           borderRadius: BorderRadius.circular(20)),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
-        const Icon(Icons.diversity_3_rounded, size: 14, color: _accent),
+        Icon(Icons.diversity_3_rounded, size: 14, color: _accent),
         const SizedBox(width: 5),
         Text(canEdit ? 'share.canEdit'.tr() : 'share.viewOnly'.tr(),
-            style: const TextStyle(
-                fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFFB07B18))),
+            style: TextStyle(
+                fontSize: 11, fontWeight: FontWeight.w700, color: ColorConstant.accentInk)),
       ]),
     );
 
@@ -193,9 +194,9 @@ class _SharedNoteEditorState extends State<_SharedNoteEditor> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textPrimary = isDark ? Colors.white : const Color(0xFF3A3326);
-    final muted = isDark ? Colors.white60 : const Color(0xFF8A7A5E);
-    final card = isDark ? const Color(0xFF2A251E) : Colors.white;
+    final textPrimary = isDark ? ColorConstant.textPrimaryDark : ColorConstant.textPrimaryLight;
+    final muted = isDark ? ColorConstant.textMutedDark : ColorConstant.textMutedLight;
+    final card = isDark ? ColorConstant.cardColorDark : ColorConstant.cardColorLight;
 
     return _Shell(
       child: Column(
@@ -216,9 +217,9 @@ class _SharedNoteEditorState extends State<_SharedNoteEditor> {
                             width: 16,
                             height: 16,
                             child: CircularProgressIndicator(strokeWidth: 2))
-                        : const Icon(Icons.check_rounded, color: _accent),
+                        : Icon(Icons.check_rounded, color: _accent),
                     label: Text('common.save'.tr(),
-                        style: const TextStyle(
+                        style: TextStyle(
                             color: _accent, fontWeight: FontWeight.w800)),
                   ),
                 IconButton(
@@ -363,9 +364,9 @@ class _SharedTaskEditorState extends State<_SharedTaskEditor> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textPrimary = isDark ? Colors.white : const Color(0xFF3A3326);
-    final muted = isDark ? Colors.white60 : const Color(0xFF8A7A5E);
-    final card = isDark ? const Color(0xFF2A251E) : Colors.white;
+    final textPrimary = isDark ? ColorConstant.textPrimaryDark : ColorConstant.textPrimaryLight;
+    final muted = isDark ? ColorConstant.textMutedDark : ColorConstant.textMutedLight;
+    final card = isDark ? ColorConstant.cardColorDark : ColorConstant.cardColorLight;
 
     return _Shell(
       child: Column(
@@ -386,9 +387,9 @@ class _SharedTaskEditorState extends State<_SharedTaskEditor> {
                             width: 16,
                             height: 16,
                             child: CircularProgressIndicator(strokeWidth: 2))
-                        : const Icon(Icons.check_rounded, color: _accent),
+                        : Icon(Icons.check_rounded, color: _accent),
                     label: Text('common.save'.tr(),
-                        style: const TextStyle(
+                        style: TextStyle(
                             color: _accent, fontWeight: FontWeight.w800)),
                   ),
                 IconButton(
@@ -465,10 +466,10 @@ class _SharedTaskEditorState extends State<_SharedTaskEditor> {
                                     p.name.isNotEmpty
                                         ? p.name[0].toUpperCase()
                                         : '?',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w800,
-                                        color: Color(0xFFB07B18))),
+                                        color: ColorConstant.accentInk)),
                               ),
                               const SizedBox(width: 10),
                               Expanded(
@@ -526,13 +527,13 @@ Widget _participantsRow(List<SharedParticipant> participants, Color muted) {
               color: _accent.withOpacity(0.12),
               borderRadius: BorderRadius.circular(20)),
           child: Row(mainAxisSize: MainAxisSize.min, children: [
-            const Icon(Icons.person_rounded, size: 13, color: _accent),
+            Icon(Icons.person_rounded, size: 13, color: _accent),
             const SizedBox(width: 5),
             Text(p.name,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFFB07B18))),
+                    color: ColorConstant.accentInk)),
           ]),
         ),
     ],
