@@ -25,6 +25,10 @@ workflows:
     integrations:
       app_store_connect: AppStoreConnectApiKey   # <-- Codemagic'teki API key entegrasyon adı
     environment:
+      # ios_signing grubu: CERTIFICATE_PRIVATE_KEY (secure). Aynı özel anahtar her
+      # build'de kullanılır → tek dağıtım sertifikası, Apple'ın 3 sertifika limiti dolmaz.
+      groups:
+        - ios_signing
       vars:
         APP_STORE_APPLE_ID: 6754823140            # LifeSync uygulamanın App Store ID'si
         BUNDLE_ID: "com.aedev.kisisel"
