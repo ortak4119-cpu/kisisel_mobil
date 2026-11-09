@@ -12,6 +12,8 @@ abstract class ISocialService {
   Future<ServiceResponse<void>> acceptFriendRequest(int requestId);
   Future<ServiceResponse<void>> rejectFriendRequest(int requestId);
   Future<ServiceResponse<void>> unfriend(int userId);
+  /// Bu arkadaşla paylaşımlı öğe sayıları: {notes, tasks, habits, total}.
+  Future<ServiceResponse<Map<String, int>>> sharedWithFriend(int userId);
   Future<ServiceResponse<void>> follow(int userId);
   Future<ServiceResponse<void>> unfollow(int userId);
   Future<ServiceResponse<List<Follower>>> getFollowers();
@@ -113,6 +115,32 @@ class SocialService implements ISocialService {
     return await BaseApiService.delete<void>(
       '/social/friend/$userId',
       requiresAuth: true,
+    );
+  }
+
+  @override
+  Future<ServiceResponse<Map<String, int>>> sharedWithFriend(int userId) async {
+    final response = await BaseApiService.get<Map<String, dynamic>>(
+      '/social/friend/$userId/shares',
+      requiresAuth: true,
+    );
+    if (response.isSuccess && response.data != null) {
+      int n(String k) => (response.data![k] as num?)?.toInt() ?? 0;
+      return ServiceResponse.success(
+        statusCode: response.statusCode,
+        data: {
+          'notes': n('notes'),
+          'tasks': n('tasks'),
+          'habits': n('habits'),
+          'total': n('total'),
+        },
+        message: response.message,
+      );
+    }
+    return ServiceResponse.error(
+      statusCode: response.statusCode,
+      message: response.message,
+      errors: response.errors,
     );
   }
 

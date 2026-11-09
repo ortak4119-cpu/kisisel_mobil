@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../../core/design/app_design.dart';
 import '../../../core/design/app_loader.dart';
 import '../../../core/utils/color_constant.dart';
+import '../../../core/widgets/animated_save_button.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/utils/custom_snackbar.dart';
 import '../../../core/utils/animation_prefs.dart';
@@ -276,8 +277,9 @@ class _CalendarViewState extends State<CalendarView> {
               ),
             ),
             floatingActionButton: Padding(
-              // Cam alt menünün (extendBody) üstünde kalsın; altında kaybolmasın.
-              padding: const EdgeInsets.only(bottom: 72),
+              // Cam alt menünün (extendBody) üstünde kalsın; Bugün ekranıyla
+              // aynı boşluk (alt menünün içine girmesin).
+              padding: const EdgeInsets.only(bottom: 92),
               child: _CalFab(
                 onOpen: () => showAddEventSheet(context, vm, isDark,
                     date: vm.selectedDate),
@@ -2056,27 +2058,13 @@ class _EventFormSheet extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           flex: 2,
-          child: ElevatedButton(
+          child: AnimatedSaveButton(
+            color: _accent,
+            height: 54,
+            label: isEditing
+                ? 'calendar.update'.tr()
+                : 'calendar.createEvent'.tr(),
             onPressed: () => vm.saveEventFromForm(context),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              backgroundColor: _accent,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
-            ),
-            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              const Icon(Icons.check_rounded, color: Colors.white, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                  isEditing
-                      ? 'calendar.update'.tr()
-                      : 'calendar.createEvent'.tr(),
-                  style: const TextStyle(
-                      fontSize: 15.5,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white)),
-            ]),
           ),
         ),
       ]),

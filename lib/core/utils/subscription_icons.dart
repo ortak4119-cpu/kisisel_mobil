@@ -233,18 +233,6 @@ class SubscriptionIcons {
     );
   }
 
-  // Tüm platformların listesi (autocomplete için)
-  static List<String> getAllPlatformNames() {
-    return _platforms.keys.map((key) => _capitalize(key)).toList()..sort();
-  }
-
-  static String _capitalize(String text) {
-    if (text.isEmpty) return text;
-    return text.split(' ').map((word) {
-      if (word.isEmpty) return word;
-      return word[0].toUpperCase() + word.substring(1);
-    }).join(' ');
-  }
 }
 
 class SubscriptionIconData {

@@ -13,14 +13,6 @@ const double kTabletBreakpoint = 600;
 /// Geniş ekranda içeriğin ulaşabileceği en büyük genişlik.
 const double kContentMaxWidth = 640;
 
-extension ResponsiveContext on BuildContext {
-  double get screenWidth => MediaQuery.sizeOf(this).width;
-  double get screenHeight => MediaQuery.sizeOf(this).height;
-
-  /// Genişlik tablet eşiğini aşıyorsa true (iPad, büyük tablet, yatay mod).
-  bool get isTablet => screenWidth >= kTabletBreakpoint;
-}
-
 /// Geniş ekranlarda (tablet/iPad) çocuğu yatayda ortalar ve en fazla
 /// [maxWidth] genişliğe sınırlar. Telefonda ([maxWidth]'ten dar ekranlarda)
 /// çocuğu hiç dokunmadan olduğu gibi döndürür; böylece telefon düzeni birebir

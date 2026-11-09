@@ -361,28 +361,6 @@ class CalendarViewModel extends ChangeNotifier {
     return events;
   }
 
-  // Belirli bir gün için kilit durumunu kontrol et
-  bool hasLockedNotesOnDate(DateTime date) {
-    return _notes.any((note) {
-      final noteDate = note.createdAt;
-      return note.isLocked &&
-          noteDate.year == date.year &&
-          noteDate.month == date.month &&
-          noteDate.day == date.day;
-    });
-  }
-
-  // Belirli bir gün için kilitsiz not durumunu kontrol et
-  bool hasUnlockedNotesOnDate(DateTime date) {
-    return _notes.any((note) {
-      final noteDate = note.createdAt;
-      return !note.isLocked &&
-          noteDate.year == date.year &&
-          noteDate.month == date.month &&
-          noteDate.day == date.day;
-    });
-  }
-
   void setSelectedDate(DateTime date) {
     // Tarih UTC olarak gelirse yerel zamana çevir ve saat bilgisini sıfırla
     final normalizedDate = DateTime(date.year, date.month, date.day);
@@ -397,15 +375,6 @@ class CalendarViewModel extends ChangeNotifier {
     _focusedMonth = normalizedMonth;
     debugPrint('📅 Calendar: Focused month: ${normalizedMonth.month}/${normalizedMonth.year}');
     loadDataForMonth(normalizedMonth.year, normalizedMonth.month);
-  }
-
-  void toggleCalendarViewType() {
-    _calendarViewType = _calendarViewType == CalendarViewType.month
-        ? CalendarViewType.week
-        : CalendarViewType.month;
-    debugPrint('🔄 Calendar: Toggled view type to: ${_calendarViewType.name}');
-    _saveCalendarViewType();
-    notifyListeners();
   }
 
   void setCalendarViewType(CalendarViewType t) {
@@ -769,36 +738,6 @@ class CalendarViewModel extends ChangeNotifier {
         date.day == _selectedDate.day;
   }
 
-  bool hasEvents(DateTime date) {
-    final events = getEventsForMonth();
-    return events.containsKey(date) && events[date]!.isNotEmpty;
-  }
-
-  int getTotalEventsForSelectedDate() {
-    int count = 0;
-    if (diaryForSelectedDate != null) count++;
-    count += notesForSelectedDate.length;
-    count += tasksForSelectedDate.length;
-    count += expensesForSelectedDate.length;
-    count += subscriptionsForSelectedDate.length;
-    count += calendarEventsForSelectedDate.length;
-
-    debugPrint('📊 Calendar: Total events for selected date: $count');
-    return count;
-  }
-
-  // Seçili gün için kilitli ve kilitsiz not sayısını ayrı ayrı getir
-  Map<String, int> getNotesCountForSelectedDate() {
-    final locked = lockedNotesForSelectedDate.length;
-    final unlocked = unlockedNotesForSelectedDate.length;
-
-    return {
-      'locked': locked,
-      'unlocked': unlocked,
-      'total': locked + unlocked,
-    };
-  }
-
   // Kilitli notu aç
   Future<bool> unlockNote(int noteId, String pin) async {
     try {
@@ -827,16 +766,6 @@ class CalendarViewModel extends ChangeNotifier {
     } catch (e) {
       debugPrint('❌ Calendar: Error unlocking note: $e');
       return false;
-    }
-  }
-
-  // Belirli bir notu ID'ye göre bul
-  Note? getNoteById(int noteId) {
-    try {
-      return _notes.firstWhere((note) => note.id == noteId);
-    } catch (e) {
-      debugPrint('⚠️ Calendar: Note with id $noteId not found');
-      return null;
     }
   }
 

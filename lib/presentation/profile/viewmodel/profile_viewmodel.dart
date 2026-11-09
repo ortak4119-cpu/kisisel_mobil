@@ -54,6 +54,11 @@ class ProfileViewModel extends ChangeNotifier {
   List<FriendRequest> _friendRequests = [];
   List<FriendRequest> get friendRequests => _friendRequests;
 
+  // Arkadaşlıktan çıkarılmakta olanlar: kart animasyonla kapanırken listede
+  // kalır, işlem bitince silinir.
+  final Set<int> _removingFriendIds = {};
+  bool isRemovingFriend(int userId) => _removingFriendIds.contains(userId);
+
   List<UserSearchResult> _searchResults = [];
   List<UserSearchResult> get searchResults => _searchResults;
 
@@ -361,7 +366,10 @@ class ProfileViewModel extends ChangeNotifier {
     }
   }
 
-  Future<bool> sendFriendRequest(int userId, BuildContext context) async {
+  /// [showBadge]: ortada "Gönderildi" rozeti göster (buton kendi animasyonunu
+  /// yapıyorsa false verilir).
+  Future<bool> sendFriendRequest(int userId, BuildContext context,
+      {bool showBadge = true}) async {
     try {
       debugPrint('🤝 Sending friend request to user $userId');
       final response = await _socialService.sendFriendRequest(userId);
@@ -369,7 +377,7 @@ class ProfileViewModel extends ChangeNotifier {
       debugPrint('🤝 Response: ${response.isSuccess}');
 
       if (response.isSuccess) {
-        if (context.mounted) {
+        if (showBadge && context.mounted) {
           // Düz snackbar yerine ortada animasyonlu "Gönderildi" rozeti.
           showSentAnimation(context, 'profile.friends.requestSent'.tr());
         }
@@ -400,7 +408,8 @@ class ProfileViewModel extends ChangeNotifier {
         _friendRequests.removeWhere((r) => r.id == requestId);
         await loadFriends();
         if (context.mounted) {
-          CustomSnackBar.showSuccess(context, 'profile.friends.requestAccepted'.tr());
+          // Düz snackbar yerine ortada animasyonlu "Artık arkadaşsınız" rozeti.
+          showSentAnimation(context, 'profile.friends.nowFriends'.tr());
         }
       } else {
         if (context.mounted) {
@@ -444,29 +453,48 @@ class ProfileViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> unfriend(int userId, BuildContext context) async {
+  /// Bu arkadaşla paylaşımlı öğe sayıları ({notes,tasks,habits,total});
+  /// alınamazsa null.
+  Future<Map<String, int>?> sharedWithFriend(int userId) async {
+    try {
+      final r = await _socialService.sharedWithFriend(userId);
+      return r.isSuccess ? r.data : null;
+    } catch (e) {
+      debugPrint('Error loading shared summary: $e');
+      return null;
+    }
+  }
+
+  /// Arkadaşlıktan çıkar. Backend bu arkadaşla tüm paylaşımları da durdurur.
+  /// Kart listeden animasyonla düşer; başarıda true döner.
+  Future<bool> unfriend(int userId, BuildContext context) async {
+    _removingFriendIds.add(userId);
+    notifyListeners();
     try {
       final response = await _socialService.unfriend(userId);
 
       if (response.isSuccess) {
+        // Kartın kapanma animasyonu bitsin, sonra listeden kaldır.
+        await Future.delayed(const Duration(milliseconds: 450));
         _friends.removeWhere((f) => f.id == userId);
+        _removingFriendIds.remove(userId);
         notifyListeners();
-        if (context.mounted) {
-          CustomSnackBar.showInfo(context, 'profile.friends.unfriended'.tr());
-        }
-      } else {
-        if (context.mounted) {
-          CustomSnackBar.showError(
-            context,
-            response.errorMessage,
-          );
-        }
+        return true;
       }
+      _removingFriendIds.remove(userId);
+      notifyListeners();
+      if (context.mounted) {
+        CustomSnackBar.showError(context, response.errorMessage);
+      }
+      return false;
     } catch (e) {
+      _removingFriendIds.remove(userId);
+      notifyListeners();
       if (context.mounted) {
         CustomSnackBar.showError(context, 'errors.general'.tr());
       }
       debugPrint('Error unfriending: $e');
+      return false;
     }
   }
 

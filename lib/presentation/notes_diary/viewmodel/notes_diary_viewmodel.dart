@@ -585,12 +585,6 @@ class NotesDiaryViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-
-  void toggleNoteLocked() {
-    _noteLocked = !_noteLocked;
-    notifyListeners();
-  }
-
   void toggleNotePinned() {
     _notePinned = !_notePinned;
     notifyListeners();
@@ -661,21 +655,6 @@ class NotesDiaryViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setFilterPinned(bool? value) {
-    _filterPinned = value;
-    notifyListeners();
-  }
-
-  void setFilterLocked(bool? value) {
-    _filterLocked = value;
-    notifyListeners();
-  }
-
-  void setFilterArchived(bool? value) {
-    _filterArchived = value;
-    notifyListeners();
-  }
-
   // Etikete göre filtre (liste)
   String? _selectedTag;
   String? get selectedTag => _selectedTag;
@@ -740,46 +719,6 @@ class NotesDiaryViewModel extends ChangeNotifier {
     } catch (_) {}
   }
 
-  List<Note> getFilteredNotes() {
-    var filtered = _notes;
-
-    // ÖNEMLI: Arşivlenmiş notları default olarak gizle
-    // Sadece arşiv filtresi aktif olduğunda göster
-    if (_filterArchived == null) {
-      filtered = filtered.where((n) => !n.isArchived).toList();
-    } else {
-      filtered = filtered.where((n) => n.isArchived == _filterArchived).toList();
-    }
-
-    if (_selectedCategoryId != null) {
-      filtered = filtered.where((n) => n.categoryId == _selectedCategoryId).toList();
-    }
-
-    if (_filterPinned != null) {
-      filtered = filtered.where((n) => n.isPinned == _filterPinned).toList();
-    }
-
-    if (_filterLocked != null) {
-      filtered = filtered.where((n) => n.isLocked == _filterLocked).toList();
-    }
-
-    if (_selectedTag != null) {
-      filtered = filtered
-          .where((n) => n.tags
-              .any((t) => t.toLowerCase() == _selectedTag!.toLowerCase()))
-          .toList();
-    }
-
-    // Sort: pinned first, then by date
-    filtered.sort((a, b) {
-      if (a.isPinned && !b.isPinned) return -1;
-      if (!a.isPinned && b.isPinned) return 1;
-      return b.createdAt.compareTo(a.createdAt);
-    });
-
-    return filtered;
-  }
-
   void setSelectedMood(String mood) {
     _selectedMood = mood;
     notifyListeners();
@@ -787,11 +726,6 @@ class NotesDiaryViewModel extends ChangeNotifier {
 
   void setSelectedCategoryForNote(int? categoryId) {
     _selectedCategoryForNote = categoryId;
-    notifyListeners();
-  }
-
-  void setSelectedNoteColor(String color) {
-    _selectedNoteColor = color;
     notifyListeners();
   }
 
@@ -1092,7 +1026,6 @@ class NotesDiaryViewModel extends ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
-
       final request = NoteRequest(
         title: noteTitleController.text.trim(),
         content: cleanNoteMarkers(noteContentController.text.trim()),
@@ -1256,25 +1189,6 @@ class NotesDiaryViewModel extends ChangeNotifier {
       debugPrint('Error loading view mode: $e');
     }
   }
-
-  Future<void> toggleViewMode() async {
-    try {
-      _notesViewMode = _notesViewMode == NotesViewMode.grid
-          ? NotesViewMode.list
-          : NotesViewMode.grid;
-
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(
-        'notes_view_mode',
-        _notesViewMode == NotesViewMode.list ? 'list' : 'grid',
-      );
-
-      notifyListeners();
-    } catch (e) {
-      debugPrint('Error toggling view mode: $e');
-    }
-  }
-
 
   Future<void> lockNote(int noteId, String pin, BuildContext context,
       {bool silent = false}) async {
@@ -1640,38 +1554,35 @@ class NotesDiaryViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  // ---- "Geçen yıl bugün" (On This Day) ----
+  // _diaryEntries takvim gezinmesiyle tek aya indirgenebildiği için, bugünün
+  // (ay/gün) geçmiş yıl girişleri AYRI ve stabil bir listede tutulur.
+  List<Diary> _onThisDay = [];
+  List<Diary> get onThisDay => _onThisDay;
+
+  Future<void> loadOnThisDay() async {
+    try {
+      final now = DateTime.now();
+      final resp = await _diaryService.getAllDiaries(perPage: 1000);
+      if (resp.isSuccess && resp.data != null) {
+        _onThisDay = resp.data!.data
+            .where((d) =>
+                d.diaryDate.month == now.month &&
+                d.diaryDate.day == now.day &&
+                d.diaryDate.year < now.year)
+            .toList()
+          ..sort((a, b) => b.diaryDate.year.compareTo(a.diaryDate.year));
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('loadOnThisDay error: $e');
+    }
+  }
   // ==================== COPY TO CLIPBOARD ====================
 
 // ==================== COPY TO CLIPBOARD ====================
 
-  Future<void> copyNoteToClipboard(Note note, BuildContext context) async {
-    try {
-      // Sadece içeriği kopyala
-      String textToCopy = note.content ?? '';
-
-      if (textToCopy.isEmpty) {
-        if (context.mounted) {
-          CustomSnackBar.showError(context, 'errors.noteContentEmpty'.tr());
-        }
-        return;
-      }
-
-      // Clipboard'a kopyala
-      await Clipboard.setData(ClipboardData(text: textToCopy));
-
-      if (context.mounted) {
-        CustomSnackBar.showSuccess(
-          context,
-          'success.noteCopied'.tr(),
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        CustomSnackBar.showError(context, 'errors.copyFailed'.tr());
-      }
-      debugPrint('Copy to clipboard exception: $e');
-    }
-  }
   Future<void> loadDiaryEntriesByMonth(int month, int year) async {
     try {
       _isLoading = true;
@@ -1877,6 +1788,7 @@ class NotesDiaryViewModel extends ChangeNotifier {
     await Future.wait([
       loadNotes(),
       loadDiaryEntries(),
+      loadOnThisDay(),
       loadCategories(),
       loadViewMode(), // Bu satırı ekleyin
       loadSharedNotesInfo(),

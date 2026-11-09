@@ -114,8 +114,8 @@ class _PremiumWelcomeViewState extends State<PremiumWelcomeView>
           const Spacer(flex: 2),
           _rayStar(),
           const SizedBox(height: 28),
-          const Text('Tebrikler!',
-              style: TextStyle(
+          Text('premium.congrats'.tr(),
+              style: const TextStyle(
                   color: _tx,
                   fontSize: 32,
                   fontWeight: FontWeight.w900,

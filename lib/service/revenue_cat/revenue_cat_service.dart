@@ -236,22 +236,4 @@ class RevenueCatService {
     }
   }
 
-  /// Paket bilgilerini formatla
-  Map<String, dynamic> formatPackageInfo(Package package) {
-    final product = package.storeProduct;
-
-    return {
-      'identifier': package.identifier,
-      'packageType': package.packageType,
-      'title': product.title,
-      'description': product.description,
-      'price': product.priceString,
-      'priceAmount': product.price,
-      'currencyCode': product.currencyCode,
-      'introPrice': product.introductoryPrice?.priceString,
-      'hasTrial': product.introductoryPrice != null,
-      'trialDuration': product.introductoryPrice?.period,
-      'duration': getPackageDuration(package.packageType),
-    };
-  }
 }

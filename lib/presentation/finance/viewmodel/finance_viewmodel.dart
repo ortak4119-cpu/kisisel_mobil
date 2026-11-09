@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:home_widget/home_widget.dart';
@@ -99,6 +98,18 @@ class ExpenseMeta {
         receipt: j['receipt'] as String?,
         reminder: j['reminder'] as bool? ?? false,
       );
+}
+
+/// Aylık trend grafiği için tek bir ayın gelir/gider toplamı.
+class MonthlyTrendPoint {
+  final DateTime month;
+  final double income;
+  final double expense;
+  const MonthlyTrendPoint({
+    required this.month,
+    required this.income,
+    required this.expense,
+  });
 }
 
 class FinanceViewModel extends ChangeNotifier {
@@ -248,11 +259,6 @@ class FinanceViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setSubscriptionBillingCycle(String cycle) {
-    _subscriptionBillingCycle = cycle;
-    notifyListeners();
-  }
-
   int? _editingSubscriptionId;
   bool get isEditingSubscription => _editingSubscriptionId != null;
   int? get editingSubscriptionId => _editingSubscriptionId;
@@ -305,27 +311,12 @@ class FinanceViewModel extends ChangeNotifier {
   bool _showAllSubscriptions = false;
   bool get showAllSubscriptions => _showAllSubscriptions;
 
-  void toggleShowAllSubscriptions() {
-    _showAllSubscriptions = !_showAllSubscriptions;
-    notifyListeners();
-  }
-
-  void setExpenseCategory(String category) {
-    _expenseCategory = category;
-    notifyListeners();
-  }
-
   void toggleFilterCategory(String category) {
     if (_filterCategories.contains(category)) {
       _filterCategories.remove(category);
     } else {
       _filterCategories.add(category);
     }
-    notifyListeners();
-  }
-
-  void setFilterCategories(List<String> categories) {
-    _filterCategories = categories;
     notifyListeners();
   }
 
@@ -1516,85 +1507,6 @@ class FinanceViewModel extends ChangeNotifier {
 
   // ==================== DIŞA AKTARMA (CSV) ====================
 
-  /// Tüm harcamaları (+ yerel gelirleri) CSV olarak paylaşır.
-  Future<void> exportCsv(BuildContext context) async {
-    try {
-      _isLoading = true;
-      notifyListeners();
-
-      String esc(String? s) {
-        final v = s ?? '';
-        if (v.contains(',') || v.contains('"') || v.contains('\n')) {
-          return '"${v.replaceAll('"', '""')}"';
-        }
-        return v;
-      }
-
-      String two(int n) => n.toString().padLeft(2, '0');
-
-      final rows = <String>[];
-      // Başlık (lokalize)
-      rows.add([
-        'finance.export.date'.tr(),
-        'finance.export.type'.tr(),
-        'finance.export.category'.tr(),
-        'finance.export.amount'.tr(),
-        'finance.export.currency'.tr(),
-        'finance.export.description'.tr(),
-      ].map(esc).join(','));
-
-      // Harcamalar — tüm kayıtları çek
-      final resp = await _expenseService.getAllExpenses(perPage: 1000);
-      final exps = (resp.isSuccess && resp.data != null)
-          ? resp.data!.data
-          : _expenses;
-      for (final e in exps) {
-        final d =
-            '${e.expenseDate.year}-${two(e.expenseDate.month)}-${two(e.expenseDate.day)}';
-        rows.add([
-          d,
-          'finance.expense'.tr(),
-          getCategoryLabel(e.category),
-          e.amount.toStringAsFixed(2),
-          e.currency,
-          e.description ?? '',
-        ].map(esc).join(','));
-      }
-
-      // Gelirler (yerel)
-      for (final i in _income) {
-        rows.add([
-          i.date,
-          'finance.income'.tr(),
-          getCategoryLabel(i.category),
-          i.amount.toStringAsFixed(2),
-          AppCurrency.code,
-          i.description ?? '',
-        ].map(esc).join(','));
-      }
-
-      // Excel'in Türkçe/UTF-8 karakterleri doğru açması için BOM ekle
-      final csv = '﻿${rows.join('\r\n')}';
-      final dir = await getTemporaryDirectory();
-      final file = File(
-          '${dir.path}/lifesync_finance_${DateTime.now().millisecondsSinceEpoch}.csv');
-      await file.writeAsString(csv, encoding: utf8);
-
-      await Share.shareXFiles(
-        [XFile(file.path, mimeType: 'text/csv')],
-        subject: 'LifeSync Finance Export',
-      );
-    } catch (e) {
-      if (context.mounted) {
-        CustomSnackBar.showError(context, 'errors.general'.tr());
-      }
-      debugPrint('CSV export error: $e');
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
   // ==================== COMMON ====================
 
   Future<void> loadCurrentUser() async {
@@ -1902,13 +1814,6 @@ class FinanceViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> setSavingsGoal(String title, double target) async {
-    _savingsTitle = title;
-    _savingsTarget = target;
-    notifyListeners();
-    await _savingsService.updateSavings(title: title, target: target);
-  }
-
   Future<void> addToSavings(double amount) async {
     _savingsCurrent += amount;
     notifyListeners();
@@ -2112,6 +2017,21 @@ class FinanceViewModel extends ChangeNotifier {
       m[e.category] = (m[e.category] ?? 0) + e.amount;
     }
     return m;
+  }
+
+  /// Son 6 ayın (görüntülenen ay dahil, soldan sağa eskiden yeniye) gelir ve
+  /// gider toplamları — aylık trend çubuk grafiği için.
+  List<MonthlyTrendPoint> get monthlyTrendSeries {
+    final out = <MonthlyTrendPoint>[];
+    for (int i = 5; i >= 0; i--) {
+      final m = DateTime(_viewMonth.year, _viewMonth.month - i);
+      out.add(MonthlyTrendPoint(
+        month: m,
+        income: incomeForMonth(m),
+        expense: outflowForMonth(m),
+      ));
+    }
+    return out;
   }
 
   /// Görüntülenen ayda son 7 günün günlük harcama toplamları (çubuk grafik).

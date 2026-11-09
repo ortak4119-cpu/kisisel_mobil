@@ -5,11 +5,11 @@ import 'package:base/presentation/finance/view/finance_view.dart';
 import 'package:base/presentation/notes_diary/view/notes_diary_view.dart';
 import 'package:base/presentation/profile/view/profile_view.dart';
 import 'package:base/presentation/tasks_habits/view/tasks_habits_view.dart';
+import 'package:base/presentation/today/view/today_view.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/utils/responsive.dart';
-import '../../../core/route/app_router.gr.dart';
 import '../../../service/update/update_service.dart';
 
 @RoutePage()
@@ -41,16 +41,26 @@ class _HomeViewState extends State<HomeView> {
     });
   }
 
-  // Sayfalar — Görevler ve Alışkanlıklar artık ayrı sekmeler.
-  final List<Widget> _pages = [
-    const NotesDiaryView(), // 0 Notlar
-    const TasksHabitsView(key: ValueKey('tasks'), mode: 'tasks'), // 1 Görevler
-    const TasksHabitsView(
-        key: ValueKey('habits'), mode: 'habits'), // 2 Alışkanlıklar
-    const CalendarView(), // 3 Takvim (ortadaki FAB)
-    const FinanceView(), // 4 Finans
-    const ProfileView(), // 5 Profil
-  ];
+  // Sayfalar — Bugün ilk sekme; Görevler ve Alışkanlıklar ayrı sekmeler.
+  Widget _pageAt(int i) {
+    switch (i) {
+      case 0: // Bugün
+        return TodayView(
+            onNavigate: (x) => setState(() => _selectedIndex = x));
+      case 1: // Notlar
+        return const NotesDiaryView();
+      case 2: // Görevler
+        return const TasksHabitsView(key: ValueKey('tasks'), mode: 'tasks');
+      case 3: // Alışkanlıklar
+        return const TasksHabitsView(key: ValueKey('habits'), mode: 'habits');
+      case 4: // Takvim
+        return const CalendarView();
+      case 5: // Finans
+        return const FinanceView();
+      default: // Profil
+        return const ProfileView();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +75,7 @@ class _HomeViewState extends State<HomeView> {
       extendBody: true,
       // Geniş ekranda (iPad/tablet) içerik ortalanır ve makul genişliğe
       // sınırlanır; telefonda tam genişlik korunur. Her sekme için tek yerden.
-      body: ResponsiveCenter(child: _pages[_selectedIndex]),
+      body: ResponsiveCenter(child: _pageAt(_selectedIndex)),
       bottomNavigationBar: _buildGlassNav(isDarkMode),
     );
   }
@@ -91,40 +101,80 @@ class _HomeViewState extends State<HomeView> {
           child: SafeArea(
             top: false,
             child: SizedBox(
-              height: 62,
-              child: Row(
-                children: [
-                  _buildNavItem(
-                      icon: Icons.home_rounded,
-                      label: 'navigation.home'.tr(),
-                      index: 0,
-                      isDarkMode: isDarkMode),
-                  _buildNavItem(
-                      icon: Icons.checklist_rounded,
-                      label: 'navigation.tasks'.tr(),
-                      index: 1,
-                      isDarkMode: isDarkMode),
-                  _buildNavItem(
-                      icon: Icons.emoji_events_rounded,
-                      label: 'navigation.habits'.tr(),
-                      index: 2,
-                      isDarkMode: isDarkMode),
-                  _buildNavItem(
-                      icon: Icons.calendar_month_rounded,
-                      label: 'navigation.calendar'.tr(),
-                      index: 3,
-                      isDarkMode: isDarkMode),
-                  _buildNavItem(
-                      icon: Icons.attach_money,
-                      label: 'navigation.finance'.tr(),
-                      index: 4,
-                      isDarkMode: isDarkMode),
-                  _buildNavItem(
-                      icon: Icons.person_rounded,
-                      label: 'navigation.profile'.tr(),
-                      index: 5,
-                      isDarkMode: isDarkMode),
-                ],
+              height: 68,
+              child: LayoutBuilder(
+                builder: (context, cons) {
+                  const count = 7;
+                  final itemW = cons.maxWidth / count;
+                  return Stack(
+                    children: [
+                      // Spotlight: her sekmenin kendi ışık hüzmesi var; seçili
+                      // olanınki yanar, eskisi söner (çapraz geçiş animasyonu).
+                      IgnorePointer(
+                        child: SizedBox(
+                          width: cons.maxWidth,
+                          height: 68,
+                          child: Row(
+                            children: List.generate(count, (i) {
+                              return SizedBox(
+                                width: itemW,
+                                height: 68,
+                                child: AnimatedOpacity(
+                                  opacity: _selectedIndex == i ? 1 : 0,
+                                  duration: const Duration(milliseconds: 320),
+                                  curve: Curves.easeOut,
+                                  child: CustomPaint(
+                                    painter: _SpotlightPainter(ColorConstant.accentOrange),
+                                    size: Size.infinite,
+                                  ),
+                                ),
+                              );
+                            }),
+                          ),
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          _buildNavItem(
+                              icon: Icons.wb_sunny_rounded,
+                              label: 'today.title'.tr(),
+                              index: 0,
+                              isDarkMode: isDarkMode),
+                          _buildNavItem(
+                              icon: Icons.sticky_note_2_rounded,
+                              label: 'navigation.home'.tr(),
+                              index: 1,
+                              isDarkMode: isDarkMode),
+                          _buildNavItem(
+                              icon: Icons.checklist_rounded,
+                              label: 'navigation.tasks'.tr(),
+                              index: 2,
+                              isDarkMode: isDarkMode),
+                          _buildNavItem(
+                              icon: Icons.emoji_events_rounded,
+                              label: 'navigation.habits'.tr(),
+                              index: 3,
+                              isDarkMode: isDarkMode),
+                          _buildNavItem(
+                              icon: Icons.calendar_month_rounded,
+                              label: 'navigation.calendar'.tr(),
+                              index: 4,
+                              isDarkMode: isDarkMode),
+                          _buildNavItem(
+                              icon: Icons.attach_money,
+                              label: 'navigation.finance'.tr(),
+                              index: 5,
+                              isDarkMode: isDarkMode),
+                          _buildNavItem(
+                              icon: Icons.person_rounded,
+                              label: 'navigation.profile'.tr(),
+                              index: 6,
+                              isDarkMode: isDarkMode),
+                        ],
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
           ),
@@ -143,9 +193,9 @@ class _HomeViewState extends State<HomeView> {
         isDarkMode ? ColorConstant.textMutedDark : _navIdleIconLight;
     final idleLabel =
         isDarkMode ? ColorConstant.textMutedDark : _navIdleLabelLight;
-    // Dock büyüteç: aktife uzaklığa göre ikon ölçeği.
+    // Dock büyüteç: aktife uzaklığa göre ikon ölçeği (hafif).
     final dist = (index - _selectedIndex).abs();
-    final scale = dist == 0 ? 1.4 : (dist == 1 ? 1.15 : 1.0);
+    final scale = dist == 0 ? 1.12 : (dist == 1 ? 1.04 : 1.0);
 
     return _NavItem(
       icon: icon,
@@ -194,7 +244,11 @@ class _NavItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         splashColor: accent.withValues(alpha: 0.12),
         highlightColor: Colors.transparent,
-        child: Column(
+        child: Padding(
+          // İkonları biraz aşağı indir: üstteki ışık hüzmesi/çubuğu ile
+          // çakışmasınlar.
+          padding: const EdgeInsets.only(top: 12),
+          child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -204,7 +258,7 @@ class _NavItem extends StatelessWidget {
               scale: iconScale,
               child: Icon(
                 icon,
-                size: 22,
+                size: 19,
                 color: selected ? accent : idleIcon,
               ),
             ),
@@ -223,297 +277,63 @@ class _NavItem extends StatelessWidget {
               ),
             ),
           ],
+          ),
         ),
       ),
     );
   }
 }
 
-// Home Page
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+/// Spotlight ışık hüzmesi — üstte parlak bir kaynak çubuğu ve aşağı doğru
+/// genişleyen yumuşak bir ışık konisi çizer (seçili sekmenin arkasında).
+class _SpotlightPainter extends CustomPainter {
+  final Color color;
+  _SpotlightPainter(this.color);
 
   @override
-  Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    return Scaffold(
-      backgroundColor: isDarkMode
-          ? ColorConstant.bgColorDark
-          : ColorConstant.bgColorLight,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text(
-          'home.title'.tr(),
-          style: TextStyle(
-            color: isDarkMode
-                ? ColorConstant.textPrimaryDark
-                : ColorConstant.textPrimaryLight,
-            fontSize: 28,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: ColorConstant.primaryPurple.withValues(alpha: 0.15),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.home_rounded,
-                size: 60,
-                color: ColorConstant.primaryPurple,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'home.title'.tr(),
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w700,
-                color: isDarkMode
-                    ? ColorConstant.textPrimaryDark
-                    : ColorConstant.textPrimaryLight,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'home.welcome'.tr(),
-              style: TextStyle(
-                fontSize: 16,
-                color: isDarkMode
-                    ? ColorConstant.textSecondaryDark
-                    : ColorConstant.textSecondaryLight,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final cx = w / 2;
+    const topY = 1.5;
+    const topHalf = 3.5; // üstten çok dar başlasın (ince ışık kaynağı)
+    final botHalf = w * 0.40;
 
-// Tasks Page
-class TasksPage extends StatelessWidget {
-  const TasksPage({super.key});
+    // Aşağı genişleyen koni (yukarıdan aşağıya soluklaşan degrade; daha parlak).
+    final cone = Path()
+      ..moveTo(cx - topHalf, topY)
+      ..lineTo(cx + topHalf, topY)
+      ..lineTo(cx + botHalf, h)
+      ..lineTo(cx - botHalf, h)
+      ..close();
+    final shader = LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [
+        color.withValues(alpha: 0.38),
+        color.withValues(alpha: 0.12),
+        color.withValues(alpha: 0.0),
+      ],
+      // Alt bölgede (ikon/etiketin olduğu yer) tamamen sönsün ki çakışmasın.
+      stops: const [0.0, 0.42, 0.72],
+    ).createShader(Rect.fromLTWH(0, 0, w, h));
+    canvas.drawPath(cone, Paint()..shader = shader);
+
+    // Üstteki parlak ışık kaynağı + yumuşak parıltı (ince + parlak).
+    final barRect = RRect.fromRectAndRadius(
+      Rect.fromCenter(center: Offset(cx, topY + 1.5), width: 11, height: 3.5),
+      const Radius.circular(2),
+    );
+    canvas.drawRRect(
+      barRect,
+      Paint()
+        ..color = color.withValues(alpha: 0.75)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 7),
+    );
+    canvas.drawRRect(barRect, Paint()..color = color);
+  }
 
   @override
-  Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    return Scaffold(
-      backgroundColor: isDarkMode
-          ? ColorConstant.bgColorDark
-          : ColorConstant.bgColorLight,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text(
-          'tasks.title'.tr(),
-          style: TextStyle(
-            color: isDarkMode
-                ? ColorConstant.textPrimaryDark
-                : ColorConstant.textPrimaryLight,
-            fontSize: 28,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: ColorConstant.accentBlue.withValues(alpha: 0.15),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.task_rounded,
-                size: 60,
-                color: ColorConstant.accentBlue,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'tasks.title'.tr(),
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w700,
-                color: isDarkMode
-                    ? ColorConstant.textPrimaryDark
-                    : ColorConstant.textPrimaryLight,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'home.emptyTasks'.tr(),
-              style: TextStyle(
-                fontSize: 16,
-                color: isDarkMode
-                    ? ColorConstant.textSecondaryDark
-                    : ColorConstant.textSecondaryLight,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  bool shouldRepaint(covariant _SpotlightPainter old) => old.color != color;
 }
 
-// Habits Page
-class HabitsPage extends StatelessWidget {
-  const HabitsPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    return Scaffold(
-      backgroundColor: isDarkMode
-          ? ColorConstant.bgColorDark
-          : ColorConstant.bgColorLight,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text(
-          'habits.title'.tr(),
-          style: TextStyle(
-            color: isDarkMode
-                ? ColorConstant.textPrimaryDark
-                : ColorConstant.textPrimaryLight,
-            fontSize: 28,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: ColorConstant.accentYellow.withValues(alpha: 0.15),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.emoji_events_rounded,
-                size: 60,
-                color: ColorConstant.accentYellow,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'habits.title'.tr(),
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w700,
-                color: isDarkMode
-                    ? ColorConstant.textPrimaryDark
-                    : ColorConstant.textPrimaryLight,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'home.emptyHabits'.tr(),
-              style: TextStyle(
-                fontSize: 16,
-                color: isDarkMode
-                    ? ColorConstant.textSecondaryDark
-                    : ColorConstant.textSecondaryLight,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// Profile Page
-class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    return Scaffold(
-      backgroundColor: isDarkMode
-          ? ColorConstant.bgColorDark
-          : ColorConstant.bgColorLight,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text(
-          'profile.title'.tr(),
-          style: TextStyle(
-            color: isDarkMode
-                ? ColorConstant.textPrimaryDark
-                : ColorConstant.textPrimaryLight,
-            fontSize: 28,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(
-              Icons.settings_rounded,
-              color: isDarkMode
-                  ? ColorConstant.textPrimaryDark
-                  : ColorConstant.textPrimaryLight,
-            ),
-            onPressed: () {
-              context.router.push(const SettingsRoute());
-            },
-          ),
-        ],
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: ColorConstant.accentOrange.withValues(alpha: 0.15),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.person_rounded,
-                size: 60,
-                color: ColorConstant.accentOrange,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'profile.title'.tr(),
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w700,
-                color: isDarkMode
-                    ? ColorConstant.textPrimaryDark
-                    : ColorConstant.textPrimaryLight,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'home.emptyProfile'.tr(),
-              style: TextStyle(
-                fontSize: 16,
-                color: isDarkMode
-                    ? ColorConstant.textSecondaryDark
-                    : ColorConstant.textSecondaryLight,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}

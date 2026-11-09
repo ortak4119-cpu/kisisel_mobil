@@ -19,6 +19,7 @@ import '../../../core/design/app_design.dart';
 import '../../../core/design/app_loader.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/utils/animation_prefs.dart';
+import '../../../core/widgets/speed_dial_fab.dart';
 import '../../../models/diary/diary_models.dart';
 import '../../../models/note/note_models.dart';
 import '../../../models/share/shared_item_models.dart';
@@ -476,60 +477,6 @@ class _StaggerInState extends State<_StaggerIn>
   }
 }
 
-/// FAB: dokununca + simgesi × olacak şekilde döner; sayfa açıkken döndürür.
-class _AddFab extends StatefulWidget {
-  final Future<void> Function() onOpen;
-  const _AddFab({required this.onOpen});
-  @override
-  State<_AddFab> createState() => _AddFabState();
-}
-
-class _AddFabState extends State<_AddFab> {
-  bool _open = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return FloatingActionButton(
-      heroTag: 'notes_diary_fab',
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      onPressed: () async {
-        setState(() => _open = true);
-        await widget.onOpen();
-        if (mounted) setState(() => _open = false);
-      },
-      child: Container(
-        width: 60,
-        height: 60,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              ColorConstant.accentYellow,
-              ColorConstant.accentOrange,
-            ],
-          ),
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: ColorConstant.accentOrange.withValues(alpha: 0.45),
-              blurRadius: 14,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: AnimatedRotation(
-          turns: (_open && AnimationPrefs.isOn) ? 0.125 : 0, // 45° → + yerine ×
-          duration: const Duration(milliseconds: 260),
-          curve: Curves.easeOut,
-          child: const Icon(Icons.add_rounded, color: Colors.white, size: 30),
-        ),
-      ),
-    );
-  }
-}
-
 @RoutePage()
 class NotesDiaryView extends StatefulWidget {
   const NotesDiaryView({super.key});
@@ -639,21 +586,29 @@ class _NotesDiaryViewState extends State<NotesDiaryView> {
               ),
             ),
             floatingActionButton: Padding(
-              // Cam alt menünün (extendBody) üstünde, alt menüye yapışmadan
-              // ferah dursun (Görevler'deki boşlukla aynı).
-              padding: const EdgeInsets.only(bottom: 120),
-              child: _AddFab(
-                onOpen: () => _showAddChooser(context, viewModel, isDarkMode),
-              ),
+              // Tüm menülerde + aynı konumda (Bugün ile aynı).
+              padding: const EdgeInsets.only(bottom: 92),
+              child: SpeedDialFab(actions: [
+                DialAction(
+                  icon: Icons.note_add_rounded,
+                  label: 'notes.add.noteTitle'.tr(),
+                  color: AppColors(isDarkMode).accent,
+                  onTap: () => showAddNoteSheet(context, viewModel, isDarkMode),
+                ),
+                DialAction(
+                  icon: Icons.create_new_folder_rounded,
+                  label: 'notes.add.folderTitle'.tr(),
+                  color: AppColors(isDarkMode).accentCool,
+                  onTap: () =>
+                      _showAddFolderDialog(context, viewModel, isDarkMode),
+                ),
+              ]),
             ),
           );
         },
       ),
     );
   }
-
-
-
 
   Widget _headerCircleBtn(
       {required IconData icon,
@@ -709,112 +664,6 @@ class _NotesDiaryViewState extends State<NotesDiaryView> {
               },
               child: Text('notes.searchBtn'.tr())),
         ],
-      ),
-    );
-  }
-
-  /// FAB seçici: Klasör Ekle / Not Ekle (açıklamalı).
-  Future<void> _showAddChooser(BuildContext context,
-      NotesDiaryViewModel viewModel, bool isDarkMode) {
-    final c = AppColors(isDarkMode);
-    return showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: c.card,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                    color: c.border, borderRadius: BorderRadius.circular(2)),
-              ),
-              const SizedBox(height: 18),
-              _StaggerIn(
-                children: [
-                  _chooserCard(
-                    c,
-                    icon: Icons.note_add_rounded,
-                    accent: c.accent,
-                    title: 'notes.add.noteTitle'.tr(),
-                    desc: 'notes.add.noteDesc'.tr(),
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      showAddNoteSheet(context, viewModel, isDarkMode);
-                    },
-                  ),
-                  _chooserCard(
-                    c,
-                    icon: Icons.create_new_folder_rounded,
-                    accent: c.accentCool,
-                    title: 'notes.add.folderTitle'.tr(),
-                    desc: 'notes.add.folderDesc'.tr(),
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      _showAddFolderDialog(context, viewModel, isDarkMode);
-                    },
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _chooserCard(AppColors c,
-      {required IconData icon,
-      required Color accent,
-      required String title,
-      required String desc,
-      required VoidCallback onTap}) {
-    return Material(
-      color: accent.withOpacity(c.isDark ? 0.14 : 0.08),
-      borderRadius: BorderRadius.circular(18),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                    color: accent,
-                    borderRadius: BorderRadius.circular(14)),
-                child: Icon(icon, color: Colors.white, size: 24),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title,
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                            color: c.textPrimary)),
-                    const SizedBox(height: 3),
-                    Text(desc,
-                        style: TextStyle(
-                            fontSize: 12.5,
-                            height: 1.35,
-                            color: c.textSecondary)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -961,25 +810,9 @@ void showFolderDialog(BuildContext context,
   );
 }
 
-/// Günlük girişi ekleme sayfasını açar.
-void showAddDiarySheet(
-    BuildContext context, NotesDiaryViewModel viewModel, bool isDarkMode) {
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    builder: (context) => _AddDiaryBottomSheet(
-      viewModel: viewModel,
-      isDarkMode: isDarkMode,
-    ),
-  );
-}
-
 // ==================== NOTLAR FİLTRE SHEET ====================
 
-
 // ==================== KATEGORİ YÖNETİMİ SHEET ====================
-
 
 // ==================== GÜNLÜK TAKVİM SHEET ====================
 
@@ -1570,7 +1403,6 @@ class _DiaryDetailSheet extends StatelessWidget {
         return '';
     }
   }
-
 
   IconData _getWeatherIcon(String weather) {
     switch (weather.toLowerCase()) {
@@ -3814,10 +3646,6 @@ class _NotesContentState extends State<_NotesContent> {
     );
   }
 
-
-
-
-
   /// Sabitlenenler satırındaki kompakt kart — sabit yükseklik, taşma yok.
   /// Gövde Expanded + ClipRect ile kırpılır; içerik ne kadar uzun olursa olsun
   /// kart sabit yüksekliği aşmaz (hata göstergesi çıkmaz).
@@ -4575,25 +4403,6 @@ class _NotesContentState extends State<_NotesContent> {
 
 // ==================== GÜNLÜK İÇERİĞİ ====================
 
-
-/// İçerik alanına imleç konumundan yeni bir satır olarak işaret ekler
-/// (☐ checklist, • madde işareti). Backend değişikliği gerektirmez —
-/// checklist metnin içinde unicode işaretlerle saklanır.
-void insertNotePrefix(TextEditingController c, String prefix) {
-  final text = c.text;
-  final sel = c.selection;
-  final pos = (sel.isValid && sel.baseOffset >= 0)
-      ? sel.baseOffset
-      : text.length;
-  final needsNewline = pos > 0 && text[pos - 1] != '\n';
-  final insert = '${needsNewline ? '\n' : ''}$prefix';
-  final newText = text.replaceRange(pos, pos, insert);
-  c.value = TextEditingValue(
-    text: newText,
-    selection: TextSelection.collapsed(offset: pos + insert.length),
-  );
-}
-
 /// Çok satırlı not içeriğinde liste sürekliliği: bir madde (•), onay-kutusu
 /// (☐/☑) veya numaralı satırdayken Enter'a basınca aynı işaret otomatik
 /// devam eder; boş bir madde satırında Enter'a basınca işaret silinip
@@ -4658,12 +4467,6 @@ Color noteColorFromHex(String colorHex) {
   } catch (_) {
     return const Color(0xFFB794F6);
   }
-}
-
-/// Not içeriğinde checklist (☐/☑) satırı var mı?
-bool noteHasChecklist(Note note) {
-  final c = note.content ?? '';
-  return c.contains('☐ ') || c.contains('☑ ');
 }
 
 /// Checklist'li notu dokununca açılan hızlı işaretleme popup'ı. Düzenleme
@@ -6362,10 +6165,6 @@ class _AddNoteBottomSheet extends StatelessWidget {
     );
   }
 
-
-
-
-
   /// Seçili metni (yoksa tüm içeriği) panoya kopyalar — araç çubuğundaki
   /// "metni kopyala" ikonu için. Markdown işaretleri temizlenir.
   void _copySelectedText(BuildContext context, NotesDiaryViewModel vm) {
@@ -6737,279 +6536,6 @@ class _AddNoteBottomSheet extends StatelessWidget {
     );
   }
 
-}
-
-// ==================== GÜNLÜK EKLEME BOTTOM SHEET ====================
-
-class _AddDiaryBottomSheet extends StatelessWidget {
-  final NotesDiaryViewModel viewModel;
-  final bool isDarkMode;
-
-  const _AddDiaryBottomSheet({
-    required this.viewModel,
-    required this.isDarkMode,
-  });
-
-  List<Map<String, String>> get _moods => [
-    {'emoji': '😊', 'label': 'common.moods.happy'.tr()},
-    {'emoji': '😔', 'label': 'common.moods.sad'.tr()},
-    {'emoji': '😌', 'label': 'common.moods.calm'.tr()},
-    {'emoji': '😍', 'label': 'common.moods.inLove'.tr()},
-    {'emoji': '😡', 'label': 'common.moods.angry'.tr()},
-    {'emoji': '😴', 'label': 'common.moods.tired'.tr()},
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider.value(
-      value: viewModel,
-      child: Consumer<NotesDiaryViewModel>(
-        builder: (context, vm, _) {
-          return Container(
-            height: MediaQuery.of(context).size.height * 0.85,
-            decoration: BoxDecoration(
-              color: isDarkMode
-                  ? ColorConstant.cardColorDark
-                  : ColorConstant.cardColorLight,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(28),
-                topRight: Radius.circular(28),
-              ),
-            ),
-            child: SafeArea(
-              child: Padding(
-                padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom,
-                ),
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Handle
-                        Center(
-                          child: Container(
-                            width: 40,
-                            height: 4,
-                            decoration: BoxDecoration(
-                              color: isDarkMode
-                                  ? ColorConstant.borderColorDark
-                                  : ColorConstant.borderColorLight,
-                              borderRadius: BorderRadius.circular(2),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-
-                        // Title
-                        Text(
-                          'diary.todayDiary'.tr(),
-                          style: TextStyle(
-                            color: isDarkMode
-                                ? ColorConstant.textPrimaryDark
-                                : ColorConstant.textPrimaryLight,
-                            fontSize: 24,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-
-                        // Mood Selection
-                        Text(
-                          'diary.howDoYouFeel'.tr(),
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: isDarkMode
-                                ? ColorConstant.textSecondaryDark
-                                : ColorConstant.textSecondaryLight,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          height: 70,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: _moods.length,
-                            itemBuilder: (context, index) {
-                              final mood = _moods[index];
-                              final isSelected =
-                                  vm.selectedMood == mood['emoji'];
-                              return GestureDetector(
-                                onTap: () => vm.setSelectedMood(mood['emoji']!),
-                                child: Container(
-                                  width: 70,
-                                  margin: const EdgeInsets.only(right: 12),
-                                  decoration: BoxDecoration(
-                                    color: isSelected
-                                        ? const Color(0xFFFFA07A)
-                                        .withOpacity(0.2)
-                                        : (isDarkMode
-                                        ? ColorConstant.bgColorDark
-                                        : ColorConstant.bgColorLight),
-                                    border: Border.all(
-                                      color: isSelected
-                                          ? const Color(0xFFFFA07A)
-                                          : (isDarkMode
-                                          ? ColorConstant.borderColorDark
-                                          : ColorConstant.borderColorLight),
-                                      width: isSelected ? 2 : 1,
-                                    ),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        mood['emoji']!,
-                                        style: const TextStyle(fontSize: 28),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        mood['label']!,
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w600,
-                                          color: isSelected
-                                              ? const Color(0xFFFFA07A)
-                                              : (isDarkMode
-                                              ? ColorConstant.textMutedDark
-                                              : ColorConstant
-                                              .textMutedLight),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-
-                        // Diary Title
-                        TextField(
-                          controller: vm.diaryTitleController,
-                          style: TextStyle(
-                            color: isDarkMode
-                                ? ColorConstant.textPrimaryDark
-                                : ColorConstant.textPrimaryLight,
-                          ),
-                          decoration: InputDecoration(
-                            hintText: 'diary.titleOptional'.tr(),
-                            hintStyle: TextStyle(
-                              color: isDarkMode
-                                  ? ColorConstant.textMutedDark
-                                  : ColorConstant.textMutedLight,
-                            ),
-                            filled: true,
-                            fillColor: isDarkMode
-                                ? ColorConstant.bgColorDark
-                                : ColorConstant.bgColorLight,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Diary Content
-                        TextField(
-                          controller: vm.diaryContentController,
-                          maxLines: 10,
-                          style: TextStyle(
-                            color: isDarkMode
-                                ? ColorConstant.textPrimaryDark
-                                : ColorConstant.textPrimaryLight,
-                          ),
-                          decoration: InputDecoration(
-                            hintText: 'diary.hints.todayContent'.tr(),
-                            hintStyle: TextStyle(
-                              color: isDarkMode
-                                  ? ColorConstant.textMutedDark
-                                  : ColorConstant.textMutedLight,
-                            ),
-                            filled: true,
-                            fillColor: isDarkMode
-                                ? ColorConstant.bgColorDark
-                                : ColorConstant.bgColorLight,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-
-                        // Buttons
-                        Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: () {
-                                  vm.resetDiaryForm();
-                                  Navigator.pop(context);
-                                },
-                                style: OutlinedButton.styleFrom(
-                                  padding:
-                                  const EdgeInsets.symmetric(vertical: 16),
-                                  side: BorderSide(
-                                    color: isDarkMode
-                                        ? ColorConstant.borderColorDark
-                                        : ColorConstant.borderColorLight,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                ),
-                                child: Text(
-                                  'common.cancel'.tr(),
-                                  style: TextStyle(
-                                    color: isDarkMode
-                                        ? ColorConstant.textSecondaryDark
-                                        : ColorConstant.textSecondaryLight,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed: () => vm.createDiary(context),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFFFA07A),
-                                  padding:
-                                  const EdgeInsets.symmetric(vertical: 16),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                ),
-                                child: Text(
-                                  'common.save'.tr(),
-                                  style: TextStyle(
-                                    color: ColorConstant.white,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
 }
 
 // ==================== GÜNLÜK DÜZENLEME BOTTOM SHEET ====================

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import '../note/note_models.dart';
 import '../task/task_models.dart';
 import '../habit/habit_models.dart';
@@ -29,7 +30,7 @@ class SharedParticipant {
   String get name =>
       (displayName != null && displayName!.trim().isNotEmpty)
           ? displayName!
-          : (username ?? 'Kullanıcı');
+          : (username ?? 'common.user'.tr());
 
   factory SharedParticipant.fromJson(Map<String, dynamic> j) {
     final user = j['user'] as Map<String, dynamic>?;
@@ -64,7 +65,7 @@ class ShareUser {
   });
   String get name => (displayName != null && displayName!.trim().isNotEmpty)
       ? displayName!
-      : (username ?? 'Kullanıcı');
+      : (username ?? 'common.user'.tr());
   factory ShareUser.fromJson(Map<String, dynamic> j) => ShareUser(
         id: j['id'] as int? ?? 0,
         username: j['username'] as String?,
@@ -189,7 +190,7 @@ class HabitHeatmapUser {
   HabitHeatmapUser({required this.userId, required this.name, required this.dates});
   factory HabitHeatmapUser.fromJson(Map<String, dynamic> j) => HabitHeatmapUser(
         userId: j['user_id'] as int? ?? 0,
-        name: j['name'] as String? ?? 'Kullanıcı',
+        name: j['name'] as String? ?? 'common.user'.tr(),
         dates: ((j['dates'] as List?) ?? []).map((e) => e.toString()).toSet(),
       );
 }
@@ -255,8 +256,8 @@ class ShareInvite {
     final ownerName = owner != null
         ? ((owner['display_name'] as String?)?.trim().isNotEmpty == true
             ? owner['display_name'] as String
-            : (owner['username'] as String? ?? 'Kullanıcı'))
-        : 'Kullanıcı';
+            : (owner['username'] as String? ?? 'common.user'.tr()))
+        : 'common.user'.tr();
     return ShareInvite(
       id: (shared?['id'] as int?) ??
           (j['shared_note_id'] as int?) ??

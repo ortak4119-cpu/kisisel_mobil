@@ -1,10 +1,67 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../../core/route/app_router.gr.dart';
 import '../viewmodel/onboarding_viewmodel.dart';
+
+/// Onboarding demo tutarları için dile uygun para birimi sembolü/kodu.
+/// (Örnek değerler — gerçek kur dönüşümü değil.)
+String _curSymbol(String lc) {
+  switch (lc) {
+    case 'tr':
+      return '₺';
+    case 'en':
+      return '\$';
+    case 'ru':
+      return '₽';
+    case 'ja':
+    case 'zh':
+      return '¥';
+    case 'ar':
+      return 'ر.س';
+    case 'hi':
+      return '₹';
+    default:
+      return '€';
+  }
+}
+
+String _curCode(String lc) {
+  switch (lc) {
+    case 'tr':
+      return 'TRY';
+    case 'en':
+      return 'USD';
+    case 'ru':
+      return 'RUB';
+    case 'ja':
+      return 'JPY';
+    case 'zh':
+      return 'CNY';
+    case 'ar':
+      return 'SAR';
+    case 'hi':
+      return 'INR';
+    default:
+      return 'EUR';
+  }
+}
+
+String _money(String lc, num v, {int dec = 0}) {
+  try {
+    return NumberFormat.currency(
+      locale: lc,
+      symbol: _curSymbol(lc),
+      decimalDigits: dec,
+    ).format(v);
+  } catch (_) {
+    return '${_curSymbol(lc)}$v';
+  }
+}
 
 /// Onboarding renk paleti (uygulamanın not/kraft ekranına uygun sıcak tonlar).
 class _C {
@@ -224,17 +281,17 @@ class _OnboardingViewState extends State<OnboardingView>
                   GestureDetector(
                     onTap: () => context.router.push(const LoginRoute()),
                     child: RichText(
-                      text: const TextSpan(
-                        style: TextStyle(
+                      text: TextSpan(
+                        style: const TextStyle(
                           color: _C.muted2,
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),
                         children: [
-                          TextSpan(text: 'Hesabın var mı? '),
+                          TextSpan(text: '${'onboarding.haveAccount'.tr()} '),
                           TextSpan(
-                            text: 'Giriş yap',
-                            style: TextStyle(
+                            text: 'onboarding.login'.tr(),
+                            style: const TextStyle(
                               color: _C.amber,
                               fontWeight: FontWeight.w600,
                             ),
@@ -343,6 +400,7 @@ class _OnboardAnimation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final lc = context.locale.languageCode;
     return AnimatedBuilder(
       animation: Listenable.merge([entry, loop]),
       builder: (context, _) {
@@ -366,7 +424,7 @@ class _OnboardAnimation extends StatelessWidget {
             child = _calendar(t);
             break;
           case 5:
-            child = _finance(t);
+            child = _finance(t, lc);
             break;
           default:
             child = _notifications(t);
@@ -406,16 +464,16 @@ class _OnboardAnimation extends StatelessWidget {
     const stage = 300.0;
     const center = Offset(150, 150);
     final nodes = <_NodeData>[
-      _NodeData(const Offset(150, 48), 'Notlar', _C.nAmberBg, _C.nAmberIc,
-          Icons.sticky_note_2_outlined, 0.08),
-      _NodeData(const Offset(245, 116), 'Görevler', _C.nGreenBg, _C.nGreenIc,
-          Icons.check_box_outlined, 0.14),
-      _NodeData(const Offset(210, 232), 'Takvim', _C.nBlueBg, _C.nBlueIc,
-          Icons.calendar_today_outlined, 0.20),
-      _NodeData(const Offset(90, 232), 'Finans', _C.nTealBg, _C.nTealIc,
-          Icons.account_balance_wallet_outlined, 0.26),
-      _NodeData(const Offset(55, 116), 'Alışkanlık', _C.nRedBg, _C.nRedIc,
-          Icons.local_fire_department_outlined, 0.32),
+      _NodeData(const Offset(150, 48), 'onboarding.anim.notes'.tr(), _C.nAmberBg,
+          _C.nAmberIc, Icons.sticky_note_2_outlined, 0.08),
+      _NodeData(const Offset(245, 116), 'onboarding.anim.tasks'.tr(),
+          _C.nGreenBg, _C.nGreenIc, Icons.check_box_outlined, 0.14),
+      _NodeData(const Offset(210, 232), 'onboarding.anim.calendar'.tr(),
+          _C.nBlueBg, _C.nBlueIc, Icons.calendar_today_outlined, 0.20),
+      _NodeData(const Offset(90, 232), 'onboarding.anim.finance'.tr(),
+          _C.nTealBg, _C.nTealIc, Icons.account_balance_wallet_outlined, 0.26),
+      _NodeData(const Offset(55, 116), 'onboarding.anim.habit'.tr(), _C.nRedBg,
+          _C.nRedIc, Icons.local_fire_department_outlined, 0.32),
     ];
 
     final halo1 = (l) % 1.0;
@@ -497,7 +555,7 @@ class _OnboardAnimation extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         _reveal(t, 0.7, 1.0,
-            _chip(Icons.cloud_queue_rounded, 'Hepsi LifeSync\'e bağlı · senkron', _C.green)),
+            _chip(Icons.cloud_queue_rounded, 'onboarding.anim.hubChip'.tr(), _C.green)),
       ],
     );
   }
@@ -594,14 +652,14 @@ class _OnboardAnimation extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             _reveal(t, 0.0, 0.3,
-                const Text('Notlarım',
-                    style: TextStyle(
+                Text('onboarding.anim.myNotes'.tr(),
+                    style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w800,
                         color: _C.ink))),
             _reveal(t, 0.0, 0.3,
-                const Text('kaydır',
-                    style: TextStyle(
+                Text('onboarding.anim.swipe'.tr(),
+                    style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                         fontStyle: FontStyle.italic,
@@ -615,24 +673,24 @@ class _OnboardAnimation extends StatelessWidget {
             clipBehavior: Clip.none,
             alignment: Alignment.topCenter,
             children: [
-              Positioned(
-                left: 0,
+              PositionedDirectional(
+                start: 0,
                 top: 20,
                 child: note(
                   angleBase: -0.10,
                   delay: 0.25,
                   swaySpeed: 1.6,
-                  card: _polaroidSimple('Fikirler', star: true),
+                  card: _polaroidSimple('onboarding.anim.ideas'.tr(), star: true),
                 ),
               ),
-              Positioned(
-                right: 0,
+              PositionedDirectional(
+                end: 0,
                 top: 24,
                 child: note(
                   angleBase: -0.08,
                   delay: 0.55,
                   swaySpeed: 1.3,
-                  card: _polaroidLocked('Banka'),
+                  card: _polaroidLocked('onboarding.anim.bank'.tr()),
                 ),
               ),
               Positioned(
@@ -649,7 +707,7 @@ class _OnboardAnimation extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         _reveal(t, 0.9, 1.0,
-            _chip(Icons.lock_outline_rounded, 'Notlar · klasörler · şifreli kasa',
+            _chip(Icons.lock_outline_rounded, 'onboarding.anim.notesChip'.tr(),
                 const Color(0xFF8A6A33))),
       ],
     );
@@ -713,8 +771,8 @@ class _OnboardAnimation extends StatelessWidget {
               const SizedBox(height: 5),
               _line(0.7),
               const SizedBox(height: 9),
-              const Text('27 Eki',
-                  style: TextStyle(
+              Text('onboarding.anim.dateShort'.tr(),
+                  style: const TextStyle(
                       fontSize: 9,
                       fontWeight: FontWeight.w600,
                       color: Color(0xFFABA088))),
@@ -755,8 +813,8 @@ class _OnboardAnimation extends StatelessWidget {
                       letterSpacing: 2,
                       color: Color(0xFFB3A98F))),
               const SizedBox(height: 9),
-              const Text('27 Eki',
-                  style: TextStyle(
+              Text('onboarding.anim.dateShort'.tr(),
+                  style: const TextStyle(
                       fontSize: 9,
                       fontWeight: FontWeight.w600,
                       color: Color(0xFFABA088))),
@@ -778,19 +836,19 @@ class _OnboardAnimation extends StatelessWidget {
             child: Row(
               children: [
                 Container(width: 4, color: bar),
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(8, 6, 8, 6),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text('Not',
-                          style: TextStyle(
+                      Text('onboarding.anim.note'.tr(),
+                          style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
                               color: _C.ink)),
-                      SizedBox(height: 2),
-                      Text('✱✱✱✱',
+                      const SizedBox(height: 2),
+                      const Text('✱✱✱✱',
                           style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
@@ -833,13 +891,14 @@ class _OnboardAnimation extends StatelessWidget {
                   borderRadius:
                       BorderRadius.vertical(bottom: Radius.circular(8)),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.lock_outline, size: 11, color: Color(0xFFF4EAD2)),
-                    SizedBox(width: 4),
-                    Text('Gizli',
-                        style: TextStyle(
+                    const Icon(Icons.lock_outline,
+                        size: 11, color: Color(0xFFF4EAD2)),
+                    const SizedBox(width: 4),
+                    Text('onboarding.anim.secret'.tr(),
+                        style: const TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFFF4EAD2))),
@@ -908,8 +967,8 @@ class _OnboardAnimation extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           _reveal(t, 0.1, 0.3,
-              const Text('Yeni Görev',
-                  style: TextStyle(
+              Text('onboarding.anim.newTask'.tr(),
+                  style: const TextStyle(
                       fontSize: 14, fontWeight: FontWeight.w800, color: _C.ink))),
           const SizedBox(height: 12),
           _reveal(
@@ -933,8 +992,8 @@ class _OnboardAnimation extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 9),
-                  const Text('Sunum hazırla',
-                      style: TextStyle(
+                  Text('onboarding.anim.prepPresentation'.tr(),
+                      style: const TextStyle(
                           fontSize: 13.5,
                           fontWeight: FontWeight.w700,
                           color: _C.ink)),
@@ -949,9 +1008,11 @@ class _OnboardAnimation extends StatelessWidget {
             0.6,
             Row(
               children: [
-                _taskChip(Icons.calendar_today_outlined, 'Bugün', true),
+                _taskChip(Icons.calendar_today_outlined,
+                    'onboarding.anim.today'.tr(), true),
                 const SizedBox(width: 7),
-                _taskChip(Icons.notifications_none_rounded, 'Hatırlat', false),
+                _taskChip(Icons.notifications_none_rounded,
+                    'onboarding.anim.remind'.tr(), false),
               ],
             ),
           ),
@@ -960,9 +1021,10 @@ class _OnboardAnimation extends StatelessWidget {
               t,
               0.6,
               0.72,
-              row(Icons.calendar_today_outlined, _C.amberBtn1, 'Tarih ve saat',
-                  const Text('29.10.2026',
-                      style: TextStyle(
+              row(Icons.calendar_today_outlined, _C.amberBtn1,
+                  'onboarding.anim.dateTime'.tr(),
+                  Text('onboarding.anim.taskDate'.tr(),
+                      style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: _C.muted2)))),
@@ -970,15 +1032,17 @@ class _OnboardAnimation extends StatelessWidget {
               t,
               0.72,
               0.84,
-              row(Icons.flag_outlined, _C.red, 'Öncelik', _pill('Orta =', _C.amberText,
-                  const Color(0xFFFBEFD6)))),
+              row(Icons.flag_outlined, _C.red, 'onboarding.anim.priority'.tr(),
+                  _pill('onboarding.anim.medium'.tr(), _C.amberText,
+                      const Color(0xFFFBEFD6)))),
           _reveal(
               t,
               0.84,
               0.96,
-              row(Icons.folder_outlined, _C.purple, 'Kategori',
-                  const Text('İş',
-                      style: TextStyle(
+              row(Icons.folder_outlined, _C.purple,
+                  'onboarding.anim.category'.tr(),
+                  Text('onboarding.anim.work'.tr(),
+                      style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
                           color: Color(0xFF6B5B35))))),
@@ -1003,7 +1067,9 @@ class _OnboardAnimation extends StatelessWidget {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      toggleOn > 0.5 ? 'Hatırlatıcı açık' : 'Hatırlatıcı kapalı',
+                      toggleOn > 0.5
+                          ? 'onboarding.anim.reminderOn'.tr()
+                          : 'onboarding.anim.reminderOff'.tr(),
                       style: TextStyle(
                           fontSize: 13,
                           fontWeight:
@@ -1093,13 +1159,14 @@ class _OnboardAnimation extends StatelessWidget {
           0.3,
           Row(
             children: [
-              const Expanded(
-                  child: Text('Alışkanlıklar',
-                      style: TextStyle(
+              Expanded(
+                  child: Text('onboarding.anim.habits'.tr(),
+                      style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w800,
                           color: _C.ink))),
-              _chip(Icons.group_outlined, 'Paylaşımlı', _C.amberText),
+              _chip(Icons.group_outlined, 'onboarding.anim.shared'.tr(),
+                  _C.amberText),
             ],
           ),
         ),
@@ -1121,17 +1188,17 @@ class _OnboardAnimation extends StatelessWidget {
                         t,
                         0.8,
                         1.0,
-                        const Column(
+                        Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text('2/2',
+                            const Text('2/2',
                                 style: TextStyle(
                                     fontSize: 22,
                                     fontWeight: FontWeight.w800,
                                     color: _C.ink,
                                     height: 1)),
-                            Text('bugün',
-                                style: TextStyle(
+                            Text('onboarding.anim.todayLower'.tr(),
+                                style: const TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w600,
                                     color: _C.muted2)),
@@ -1142,17 +1209,21 @@ class _OnboardAnimation extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _Legend(Color(0xFFB9A0E8), 'İlişkiler'),
-                      SizedBox(height: 8),
-                      _Legend(Color(0xFF85B4E6), 'Öğrenme'),
-                      SizedBox(height: 8),
-                      _Legend(Color(0xFF7FD2A0), 'Sağlık'),
-                      SizedBox(height: 8),
-                      _Legend(Color(0xFFE8C585), 'Zihin'),
+                      _Legend(const Color(0xFFB9A0E8),
+                          'onboarding.anim.relationships'.tr()),
+                      const SizedBox(height: 8),
+                      _Legend(const Color(0xFF85B4E6),
+                          'onboarding.anim.learning'.tr()),
+                      const SizedBox(height: 8),
+                      _Legend(
+                          const Color(0xFF7FD2A0), 'onboarding.anim.health'.tr()),
+                      const SizedBox(height: 8),
+                      _Legend(
+                          const Color(0xFFE8C585), 'onboarding.anim.mind'.tr()),
                     ],
                   ),
                 ),
@@ -1218,14 +1289,14 @@ class _OnboardAnimation extends StatelessWidget {
                 child: const Icon(Icons.star, color: Colors.white, size: 14),
               ),
               const SizedBox(width: 8),
-              const Expanded(
-                  child: Text('Sud',
-                      style: TextStyle(
+              Expanded(
+                  child: Text('onboarding.anim.water'.tr(),
+                      style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w800,
                           color: _C.ink))),
-              const Text('Geçmiş · ısı haritası',
-                  style: TextStyle(
+              Text('onboarding.anim.historyHeatmap'.tr(),
+                  style: const TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
                       color: Color(0xFF8A7F66))),
@@ -1239,12 +1310,15 @@ class _OnboardAnimation extends StatelessWidget {
           rowCells(2),
           const SizedBox(height: 10),
           Row(
-            children: const [
-              _HeatLegend(Color(0xFF2E9E6B), 'Yapıldı'),
-              SizedBox(width: 14),
-              _HeatLegend(Color(0xFFE0912F), 'Atlandı'),
-              SizedBox(width: 14),
-              _HeatLegend(Color(0xFFE4D9C1), 'Kaçırıldı'),
+            children: [
+              _HeatLegend(
+                  const Color(0xFF2E9E6B), 'onboarding.anim.done'.tr()),
+              const SizedBox(width: 14),
+              _HeatLegend(
+                  const Color(0xFFE0912F), 'onboarding.anim.skipped'.tr()),
+              const SizedBox(width: 14),
+              _HeatLegend(
+                  const Color(0xFFE4D9C1), 'onboarding.anim.missed'.tr()),
             ],
           ),
         ],
@@ -1270,23 +1344,25 @@ class _OnboardAnimation extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
                 Expanded(
-                    child: Text('Ekim 2025',
-                        style: TextStyle(
+                    child: Text('onboarding.anim.calMonth'.tr(),
+                        style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w800,
                             color: _C.ink))),
-                Icon(Icons.chevron_left, size: 16, color: Color(0xFFC5B88F)),
-                SizedBox(width: 8),
-                Icon(Icons.chevron_right, size: 16, color: Color(0xFFC5B88F)),
+                const Icon(Icons.chevron_left,
+                    size: 16, color: Color(0xFFC5B88F)),
+                const SizedBox(width: 8),
+                const Icon(Icons.chevron_right,
+                    size: 16, color: Color(0xFFC5B88F)),
               ],
             ),
             const SizedBox(height: 6),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: ['P', 'S', 'Ç', 'P', 'C', 'C', 'P']
+              children: 'onboarding.anim.weekdays'.tr().split(',')
                   .map((d) => SizedBox(
                         width: 26,
                         child: Text(d,
@@ -1354,17 +1430,17 @@ class _OnboardAnimation extends StatelessWidget {
             const SizedBox(height: 10),
             Container(height: 1, color: const Color(0xFFE7DCC4)),
             const SizedBox(height: 10),
-            const Text('15 EKİM · ÇARŞAMBA',
-                style: TextStyle(
+            Text('onboarding.anim.calToday'.tr(),
+                style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF8A7F66))),
             const SizedBox(height: 9),
-            _agendaRow('09:00', _C.green, 'Diş hekimi',
+            _agendaRow('09:00', _C.green, 'onboarding.anim.dentist'.tr(),
                 const Icon(Icons.notifications_none_rounded,
                     size: 14, color: _C.amber)),
             const SizedBox(height: 9),
-            _agendaRow('11:30', _C.amberBtn1, 'Takım toplantısı',
+            _agendaRow('11:30', _C.amberBtn1, 'onboarding.anim.teamMeeting'.tr(),
                 const Icon(Icons.autorenew_rounded,
                     size: 14, color: _C.amberText)),
             const SizedBox(height: 9),
@@ -1393,12 +1469,13 @@ class _OnboardAnimation extends StatelessWidget {
                         height: 26,
                         color: _C.amberBtn1,
                         margin: const EdgeInsets.symmetric(horizontal: 9)),
-                    const Text('Sunum ',
-                        style: TextStyle(
+                    Text('${'onboarding.anim.presentation'.tr()} ',
+                        style: const TextStyle(
                             fontSize: 12.5,
                             fontWeight: FontWeight.w700,
                             color: _C.ink)),
-                    _pill('görev', _C.amberText, const Color(0xFFFBEFD6)),
+                    _pill('onboarding.anim.taskTag'.tr(), _C.amberText,
+                        const Color(0xFFFBEFD6)),
                   ],
                 ),
               ),
@@ -1432,7 +1509,7 @@ class _OnboardAnimation extends StatelessWidget {
   }
 
   // ---------- 6) FİNANS ----------
-  Widget _finance(double t) {
+  Widget _finance(double t, String lc) {
     Widget qa(double delay, IconData ic, Color icC, String label) => _pop(
           t,
           delay,
@@ -1451,11 +1528,19 @@ class _OnboardAnimation extends StatelessWidget {
                 child: Icon(ic, color: icC, size: 22),
               ),
               const SizedBox(height: 5),
-              Text(label,
-                  style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF5B4E33))),
+              // Uzun çeviriler (ör. Almanca "Abonnement") taşmasın diye sığdır.
+              SizedBox(
+                width: 70,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(label,
+                      maxLines: 1,
+                      style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF5B4E33))),
+                ),
+              ),
             ],
           ),
         );
@@ -1473,17 +1558,28 @@ class _OnboardAnimation extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                         color: Colors.white.withValues(alpha: 0.85))),
                 const SizedBox(height: 2),
-                Text(amt,
-                    style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white)),
+                // Para birimi metni uzadığında (ör. Arapça "ر.س") kartı taşırmasın
+                // diye tek satırda küçülterek sığdır.
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(amt,
+                      maxLines: 1,
+                      style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white)),
+                ),
                 Text(sub,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
@@ -1502,13 +1598,13 @@ class _OnboardAnimation extends StatelessWidget {
           0.1,
           0.3,
           Row(
-            children: const [
-              Text('Finans',
-                  style: TextStyle(
+            children: [
+              Text('onboarding.anim.finance'.tr(),
+                  style: const TextStyle(
                       fontSize: 22, fontWeight: FontWeight.w800, color: _C.ink)),
-              SizedBox(width: 8),
-              Text('· Ekim 2026',
-                  style: TextStyle(
+              const SizedBox(width: 8),
+              Text('· ${'onboarding.anim.financeMonth'.tr()}',
+                  style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: _C.muted2)),
@@ -1536,9 +1632,9 @@ class _OnboardAnimation extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const Expanded(
-                        child: Text('Ana hesap',
-                            style: TextStyle(
+                    Expanded(
+                        child: Text('onboarding.anim.mainAccount'.tr(),
+                            style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
                                 color: Color(0xFFBDE3D5)))),
@@ -1548,8 +1644,8 @@ class _OnboardAnimation extends StatelessWidget {
                       decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.18),
                           borderRadius: BorderRadius.circular(7)),
-                      child: const Text('TRY',
-                          style: TextStyle(
+                      child: Text(_curCode(lc),
+                          style: const TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w700,
                               color: Colors.white)),
@@ -1557,15 +1653,16 @@ class _OnboardAnimation extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 2),
-                const Text('₺1.240,00',
-                    style: TextStyle(
+                Text(_money(lc, 1240, dec: lc == 'ja' ? 0 : 2),
+                    style: const TextStyle(
                         fontSize: 27,
                         fontWeight: FontWeight.w800,
                         color: Colors.white,
                         letterSpacing: -0.5)),
                 const SizedBox(height: 3),
-                const Text('Bugün harcanabilir · ₺320',
-                    style: TextStyle(
+                Text(
+                    '${'onboarding.anim.spendableToday'.tr()} · ${_money(lc, 320)}',
+                    style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF8FD6BD))),
@@ -1579,10 +1676,12 @@ class _OnboardAnimation extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              qa(0.42, Icons.add, _C.green, 'Gelir'),
-              qa(0.49, Icons.remove, _C.red, 'Gider'),
-              qa(0.56, Icons.autorenew_rounded, _C.purple, 'Abonelik'),
-              qa(0.63, Icons.lock_outline, const Color(0xFF8A6A33), 'Kilitle'),
+              qa(0.42, Icons.add, _C.green, 'onboarding.anim.income'.tr()),
+              qa(0.49, Icons.remove, _C.red, 'onboarding.anim.expense'.tr()),
+              qa(0.56, Icons.autorenew_rounded, _C.purple,
+                  'onboarding.anim.subscription'.tr()),
+              qa(0.63, Icons.lock_outline, const Color(0xFF8A6A33),
+                  'onboarding.anim.lock'.tr()),
             ],
           ),
         ),
@@ -1597,13 +1696,14 @@ class _OnboardAnimation extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const Expanded(
-                        child: Text('Bu Ay',
-                            style: TextStyle(
+                    Expanded(
+                        child: Text('onboarding.anim.thisMonth'.tr(),
+                            style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
                                 color: Color(0xFF8A7F66)))),
-                    _pill('%12 Tasarruf', _C.green, const Color(0xFFE1F2E8)),
+                    _pill('onboarding.anim.savingsLabel'.tr(), _C.green,
+                        const Color(0xFFE1F2E8)),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -1621,10 +1721,14 @@ class _OnboardAnimation extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Row(
-                  children: const [
-                    _HeatLegend(Color(0xFFD94B3A), 'Gider ₺2.450', dot: true),
-                    SizedBox(width: 14),
-                    _HeatLegend(Color(0xFF2E9E6B), 'Gelir ₺3.100', dot: true),
+                  children: [
+                    _HeatLegend(const Color(0xFFD94B3A),
+                        '${'onboarding.anim.expense'.tr()} ${_money(lc, 2450)}',
+                        dot: true),
+                    const SizedBox(width: 14),
+                    _HeatLegend(const Color(0xFF2E9E6B),
+                        '${'onboarding.anim.income'.tr()} ${_money(lc, 3100)}',
+                        dot: true),
                   ],
                 ),
               ],
@@ -1637,16 +1741,19 @@ class _OnboardAnimation extends StatelessWidget {
           child: Row(
             children: [
               Expanded(
-                  child: summary(
-                      0.76, _C.purple, 'Abonelikler', '₺220', '2 abonelik')),
+                  child: summary(0.76, _C.purple,
+                      'onboarding.anim.subscriptions'.tr(), _money(lc, 220),
+                      'onboarding.anim.subsCount'.tr())),
               const SizedBox(width: 10),
               Expanded(
-                  child:
-                      summary(0.83, _C.teal, 'Taksitler', '₺850', 'aylık')),
+                  child: summary(0.83, _C.teal,
+                      'onboarding.anim.installments'.tr(), _money(lc, 850),
+                      'onboarding.anim.monthly'.tr())),
               const SizedBox(width: 10),
               Expanded(
-                  child: summary(
-                      0.9, const Color(0xFFB23B32), 'Borç', '₺1.200', 'toplam')),
+                  child: summary(0.9, const Color(0xFFB23B32),
+                      'onboarding.anim.debt'.tr(), _money(lc, 1200),
+                      'onboarding.anim.total'.tr())),
             ],
           ),
         ),
@@ -1657,11 +1764,36 @@ class _OnboardAnimation extends StatelessWidget {
   // ---------- 7) BİLDİRİM YAĞMURU ----------
   Widget _notifications(double t) {
     final items = [
-      ['Notlar', 'Market listesi', 'Sabitlenmiş not', 0.1],
-      ['Görevler', 'Sunum 14:00\'te', '2 görev bugün bitiyor', 0.25],
-      ['Takvim', 'Diş hekimi yarın 09:00', 'Sağlık · hatırlatma', 0.4],
-      ['Alışkanlık', 'Su içme zamanı', 'Bugünkü seri: 5 gün', 0.55],
-      ['Finans', 'Fatura yarın son gün', 'Aylık bütçede %62 kullanıldı', 0.7],
+      [
+        'onboarding.anim.notes'.tr(),
+        'onboarding.anim.shoppingList'.tr(),
+        'onboarding.anim.pinnedNote'.tr(),
+        0.1
+      ],
+      [
+        'onboarding.anim.tasks'.tr(),
+        'onboarding.anim.presentationAt'.tr(),
+        'onboarding.anim.tasksDueToday'.tr(),
+        0.25
+      ],
+      [
+        'onboarding.anim.calendar'.tr(),
+        'onboarding.anim.dentistTomorrow'.tr(),
+        'onboarding.anim.healthReminder'.tr(),
+        0.4
+      ],
+      [
+        'onboarding.anim.habit'.tr(),
+        'onboarding.anim.drinkWater'.tr(),
+        'onboarding.anim.streak'.tr(),
+        0.55
+      ],
+      [
+        'onboarding.anim.finance'.tr(),
+        'onboarding.anim.billLastDay'.tr(),
+        'onboarding.anim.budgetUsed'.tr(),
+        0.7
+      ],
     ];
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -1744,8 +1876,8 @@ class _OnboardAnimation extends StatelessWidget {
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
                                 color: _C.muted2))),
-                    const Text('şimdi',
-                        style: TextStyle(
+                    Text('onboarding.anim.now'.tr(),
+                        style: const TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
                             color: _C.muted2)),

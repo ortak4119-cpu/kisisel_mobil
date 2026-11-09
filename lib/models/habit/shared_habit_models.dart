@@ -1,4 +1,5 @@
 // Paylaşımlı alışkanlık modelleri (SharedHabit + katılımcı + lider tablosu).
+import 'package:easy_localization/easy_localization.dart';
 
 class SharedHabit {
   final int id;
@@ -77,7 +78,7 @@ class SharedHabitParticipant {
   String get name =>
       (displayName != null && displayName!.trim().isNotEmpty)
           ? displayName!
-          : (username ?? 'Kullanıcı');
+          : (username ?? 'common.user'.tr());
 
   factory SharedHabitParticipant.fromJson(Map<String, dynamic> j) {
     final user = j['user'] as Map<String, dynamic>?;

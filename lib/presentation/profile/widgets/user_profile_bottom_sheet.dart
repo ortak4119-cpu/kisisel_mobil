@@ -5,8 +5,10 @@ import '../../../models/social/social_model.dart';
 
 class UserProfileBottomSheet extends StatefulWidget {
   final UserProfile userProfile;
-  final VoidCallback? onSendFriendRequest;
-  final VoidCallback? onUnfriend;
+  /// true dönerse buton "Davet gönderildi ✓" / "Çıkarıldı ✓" animasyonuyla
+  /// kapanır; false (iptal/hata) → buton eski hâline döner.
+  final Future<bool> Function()? onSendFriendRequest;
+  final Future<bool> Function()? onUnfriend;
   final VoidCallback? onFollow;
   final VoidCallback? onUnfollow;
   final bool isFriend;
@@ -30,7 +32,30 @@ class UserProfileBottomSheet extends StatefulWidget {
 }
 
 class _UserProfileBottomSheetState extends State<UserProfileBottomSheet> {
-  bool _isProcessing = false;
+  // 0 = hazır, 1 = işleniyor (Gönderiliyor…/Çıkarılıyor…), 2 = bitti (✓)
+  int _phase = 0;
+  bool get _isProcessing => _phase != 0;
+
+  Future<void> _runAction(BuildContext context) async {
+    if (_phase != 0) return;
+    setState(() => _phase = 1);
+    bool ok = false;
+    try {
+      ok = widget.isFriend
+          ? (await widget.onUnfriend?.call()) ?? false
+          : (await widget.onSendFriendRequest?.call()) ?? false;
+    } catch (_) {
+      ok = false;
+    }
+    if (!mounted) return;
+    if (!ok) {
+      setState(() => _phase = 0);
+      return;
+    }
+    setState(() => _phase = 2);
+    await Future.delayed(const Duration(milliseconds: 900));
+    if (mounted && Navigator.canPop(context)) Navigator.pop(context);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -221,7 +246,8 @@ class _UserProfileBottomSheetState extends State<UserProfileBottomSheet> {
                   const Text('🏆', style: TextStyle(fontSize: 20)),
                   const SizedBox(width: 8),
                   Text(
-                    'Level ${widget.userProfile.level}',
+                    'profile.levelLabel'.tr(
+                        namedArgs: {'count': '${widget.userProfile.level}'}),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
@@ -301,26 +327,7 @@ class _UserProfileBottomSheetState extends State<UserProfileBottomSheet> {
       child: SizedBox(
         width: double.infinity,
         child: ElevatedButton(
-          onPressed: _isProcessing
-              ? null
-              : () async {
-                  setState(() => _isProcessing = true);
-
-                  Navigator.pop(context);
-
-                  if (widget.isFriend) {
-                    widget.onUnfriend?.call();
-                  } else {
-                    widget.onSendFriendRequest?.call();
-                  }
-
-                  // Kısa bir delay ekle (isteğe bağlı)
-                  await Future.delayed(const Duration(milliseconds: 300));
-
-                  if (mounted) {
-                    setState(() => _isProcessing = false);
-                  }
-                },
+          onPressed: _isProcessing ? null : () => _runAction(context),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.transparent,
             foregroundColor: ColorConstant.white,
@@ -330,60 +337,103 @@ class _UserProfileBottomSheetState extends State<UserProfileBottomSheet> {
               borderRadius: BorderRadius.circular(14),
             ),
           ),
-          child: Ink(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 320),
+            curve: Curves.easeOutCubic,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: _isProcessing
-                    ? [
-                        ColorConstant.textMutedDark,
-                        ColorConstant.textMutedDark.withValues(alpha: 0.8),
-                      ]
-                    : widget.isFriend
+                colors: _phase == 2
+                    ? const [Color(0xFF2E9E6B), Color(0xFF46A46B)]
+                    : _phase == 1
                         ? [
-                            ColorConstant.errorRed,
-                            ColorConstant.errorRed.withValues(alpha: 0.8),
+                            ColorConstant.textMutedDark,
+                            ColorConstant.textMutedDark.withValues(alpha: 0.8),
                           ]
-                        : [
-                            ColorConstant.accentBlue,
-                            ColorConstant.primaryPurple,
-                          ],
+                        : widget.isFriend
+                            ? [
+                                ColorConstant.errorRed,
+                                ColorConstant.errorRed.withValues(alpha: 0.8),
+                              ]
+                            : [
+                                ColorConstant.accentBlue,
+                                ColorConstant.primaryPurple,
+                              ],
               ),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 14),
               alignment: Alignment.center,
-              child: _isProcessing
-                  ? SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(ColorConstant.white),
-                      ),
-                    )
-                  : Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          widget.isFriend
-                              ? Icons.person_remove
-                              : Icons.person_add,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          widget.isFriend
-                              ? 'profile.friends.unfriend'.tr()
-                              : 'profile.friends.addFriend'.tr(),
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 260),
+                switchInCurve: Curves.easeOutBack,
+                transitionBuilder: (child, anim) => FadeTransition(
+                  opacity: anim,
+                  child: ScaleTransition(scale: anim, child: child),
+                ),
+                child: _phase == 1
+                    ? Row(
+                        key: const ValueKey('busy'),
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                  ColorConstant.white),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
+                          const SizedBox(width: 10),
+                          Text(
+                            widget.isFriend
+                                ? 'profile.friends.removing'.tr()
+                                : 'profile.friends.sending'.tr(),
+                            style: const TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w700),
+                          ),
+                        ],
+                      )
+                    : _phase == 2
+                        ? Row(
+                            key: const ValueKey('done'),
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.check_circle_rounded, size: 20),
+                              const SizedBox(width: 8),
+                              Text(
+                                widget.isFriend
+                                    ? 'profile.friends.removed'.tr()
+                                    : 'profile.friends.inviteSent'.tr(),
+                                style: const TextStyle(
+                                    fontSize: 14, fontWeight: FontWeight.w700),
+                              ),
+                            ],
+                          )
+                        : Row(
+                            key: const ValueKey('idle'),
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                widget.isFriend
+                                    ? Icons.person_remove
+                                    : Icons.person_add,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                widget.isFriend
+                                    ? 'profile.friends.unfriend'.tr()
+                                    : 'profile.friends.addFriend'.tr(),
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+              ),
             ),
           ),
         ),

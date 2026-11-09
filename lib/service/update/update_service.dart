@@ -87,7 +87,7 @@ class UpdateService {
             ),
           ),
           content: Text(
-            'update.message'.tr(),
+            'update.softBody'.tr(),
             style: TextStyle(
               fontSize: 15,
               height: 1.5,

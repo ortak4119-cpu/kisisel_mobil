@@ -13,9 +13,7 @@ import '../../../core/design/app_design.dart';
 import '../../../core/design/app_loader.dart';
 import '../../../core/utils/color_constant.dart';
 import '../../../core/utils/custom_snackbar.dart';
-import '../../../core/utils/theme_provider.dart';
-import '../../../core/init/locator.dart';
-import '../../../models/settings/settings_models.dart';
+import '../../../core/utils/goal_prefs.dart';
 import '../../../models/social/social_model.dart';
 import '../../settings/view/settings_view.dart';
 import '../viewmodel/profile_viewmodel.dart';
@@ -30,6 +28,15 @@ class ProfileView extends StatefulWidget {
 }
 
 class _ProfileViewState extends State<ProfileView> {
+  @override
+  void initState() {
+    super.initState();
+    // Kişisel hedefler cihazdan yüklenince satırlar tazelensin.
+    GoalPrefs.ensureLoaded().then((_) {
+      if (mounted) setState(() {});
+    });
+  }
+
   // Mockup paleti — satır ikonları için yumuşak aksan renkleri.
   static const _cOrange = Color(0xFFF6A821);
   static const _cGold = Color(0xFFF2B32C);
@@ -38,8 +45,6 @@ class _ProfileViewState extends State<ProfileView> {
   static const _cGreen = Color(0xFF46A46B);
   // Profil modül aksanı — seçili temadan (sabit mor yerine).
   Color get _cPurple => ColorConstant.accentOrange;
-  static const _cGray = Color(0xFF8A94A6);
-  static const _cTeal = Color(0xFF2BB3A3);
 
   Color _textPrimary(bool d) =>
       d ? ColorConstant.textPrimaryDark : ColorConstant.textPrimaryLight;
@@ -64,8 +69,7 @@ class _ProfileViewState extends State<ProfileView> {
           if (vm.isLoading && !vm.isUserLoaded) {
             return Scaffold(
               backgroundColor: bg,
-              body: const Center(
-                  child: CircularProgressIndicator(color: _cOrange)),
+              body: const Center(child: AppLoader()),
             );
           }
 
@@ -98,7 +102,9 @@ class _ProfileViewState extends State<ProfileView> {
               onRefresh: () => vm.refreshAll(),
               color: _cOrange,
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 36),
+                // Alt boşluk: cam alt menü (extendBody) içeriğin üstüne biner;
+                // son kart (Üyelik) menünün altında kalmasın diye 36 → 130.
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 130),
                 children: _buildSections(context, vm, user, isDark),
               ),
             ),
@@ -162,8 +168,9 @@ class _ProfileViewState extends State<ProfileView> {
     final notesTotal = stats?.notes.total ?? 0;
     final notesLocked = stats?.notes.locked ?? 0;
 
-    // ---- Kişisel hedefler ----
-    const taskGoal = 10;
+    // ---- Kişisel hedefler (kullanıcı belirler; cihazda saklanır) ----
+    final taskGoal = GoalPrefs.dailyTasks.value;
+    final savingsGoal = GoalPrefs.savingsPct.value;
     final taskProgress = (completedTasks / taskGoal).clamp(0.0, 1.0);
     final budgetProgress = (stats != null && stats.budget.monthlyBudget > 0)
         ? (stats.budget.thisMonthExpenses / stats.budget.monthlyBudget)
@@ -174,7 +181,6 @@ class _ProfileViewState extends State<ProfileView> {
         : 0;
 
     return [
-      _coverBanner(context, vm, user, isDark),
       _header(context, vm, user, isDark),
       _completionCard(context, vm, user, isDark),
       const SizedBox(height: 22),
@@ -265,70 +271,30 @@ class _ProfileViewState extends State<ProfileView> {
             color: _cGreen,
             icon: Icons.savings_rounded,
             title: 'profile.monthlySavings'.tr(),
-            progress: (savingsRate / 30).clamp(0.0, 1.0).toDouble(),
-            right: '%$savingsRate / %30',
+            progress: (savingsRate / savingsGoal).clamp(0.0, 1.0).toDouble(),
+            right: '%$savingsRate / %$savingsGoal',
             rightColor: _cGreen),
+        _divider(isDark),
+        _navRow(context, isDark,
+            color: _cPurple,
+            icon: Icons.tune_rounded,
+            title: 'profile.editGoals'.tr(),
+            onTap: () => _editGoals(context, isDark)),
       ]),
       const SizedBox(height: 18),
 
-      // ─── HESAP ───
-      _sectionHeader('profile.secAccount'.tr(), isDark),
+      // ─── ÜYELİK ─── (hesap/güvenlik işlemleri ve tema Ayarlar'da)
+      _sectionHeader('profile.secMembership'.tr(), isDark),
       _card(isDark, [
-        _navRow(context, isDark,
-            color: _cGray,
-            icon: Icons.badge_rounded,
-            title: 'profile.accountInfo'.tr(),
-            value: (vm.currentUser?.email?.isNotEmpty ?? false)
-                ? vm.currentUser!.email
-                : null,
-            onTap: () => showAccountInfoSheet(context, vm)),
-        _divider(isDark),
         _navRow(context, isDark,
             color: _cOrange,
             icon: Icons.workspace_premium_rounded,
             title: 'profile.membership.title'.tr(),
             value: membershipPlanLabel(vm.currentUser),
             onTap: () => showMembershipSheet(context, vm)),
-        _divider(isDark),
-        _navRow(context, isDark,
-            color: _cPurple,
-            icon: Icons.palette_rounded,
-            title: 'profile.appearanceTheme'.tr(),
-            value: _themeModeLabel(context.watch<ThemeProvider>().themeMode),
-            onTap: () => _showThemeDialog(context)),
       ]),
       const SizedBox(height: 18),
 
-      // ─── DESTEK ───
-      _sectionHeader('profile.secSupport'.tr(), isDark),
-      _card(isDark, [
-        _navRow(context, isDark,
-            color: _cBlue,
-            icon: Icons.feedback_rounded,
-            title: 'profile.feedback'.tr(),
-            onTap: () => _openFeedback(context, vm, isDark)),
-        _divider(isDark),
-        _navRow(context, isDark,
-            color: _cTeal,
-            icon: Icons.help_rounded,
-            title: 'profile.helpSupport'.tr(),
-            onTap: () => _openSettings(context, 'support')),
-        _divider(isDark),
-        _navRow(context, isDark,
-            color: _cGray,
-            icon: Icons.info_rounded,
-            title: 'profile.aboutApp'.tr(),
-            onTap: () => _showAbout(context)),
-        _divider(isDark),
-        _navRow(context, isDark,
-            color: _cPurple,
-            icon: Icons.slideshow_rounded,
-            title: 'profile.replayOnboarding'.tr(),
-            onTap: () => context.router.push(const OnboardingRoute())),
-      ]),
-      const SizedBox(height: 18),
-
-      _logoutCard(context, vm, isDark),
       if (vm.lastSyncedAt != null) ...[
         const SizedBox(height: 14),
         Center(
@@ -344,69 +310,11 @@ class _ProfileViewState extends State<ProfileView> {
     ];
   }
 
-  // ---------- Kapak fotoğrafı banner'ı ----------
-  Widget _coverBanner(
-      BuildContext context, ProfileViewModel vm, dynamic user, bool isDark) {
-    final String? url = user.coverImageUrl;
-    return GestureDetector(
-      onTap: () => _showImageSourceDialog(context, vm, isCover: true),
-      child: Container(
-        height: 128,
-        margin: const EdgeInsets.only(bottom: 12),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: _borderColor(isDark)),
-          gradient: url == null
-              ? LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    _cOrange.withValues(alpha: 0.35),
-                    ColorConstant.accentOrange.withValues(alpha: 0.35),
-                  ],
-                )
-              : null,
-          image: url != null
-              ? DecorationImage(image: NetworkImage(url), fit: BoxFit.cover)
-              : null,
-        ),
-        child: Stack(
-          children: [
-            if (url == null)
-              Center(
-                child: Text('profile.photoSelect.coverTitle'.tr(),
-                    style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: _textMuted(isDark))),
-              ),
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Padding(
-                padding: const EdgeInsets.all(10),
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.38),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.photo_camera_rounded,
-                      color: Colors.white, size: 18),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   // ---------- Profil tamamlama göstergesi ----------
   Widget _completionCard(
       BuildContext context, ProfileViewModel vm, dynamic user, bool isDark) {
     final checks = <bool>[
       user.profilePictureUrl != null,
-      user.coverImageUrl != null,
       ((user.bio as String?)?.trim().isNotEmpty ?? false),
       ((user.email as String?)?.isNotEmpty ?? false),
       (user.isVerified as bool? ?? false),
@@ -444,7 +352,7 @@ class _ProfileViewState extends State<ProfileView> {
                       style: TextStyle(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w800,
-                          color: ColorConstant.accentOrange)),
+                          color: ColorConstant.primaryPurple)),
                 ],
               ),
               const SizedBox(height: 10),
@@ -453,9 +361,9 @@ class _ProfileViewState extends State<ProfileView> {
                 child: LinearProgressIndicator(
                   value: pct,
                   minHeight: 7,
-                  backgroundColor: ColorConstant.accentOrange.withValues(alpha: 0.15),
+                  backgroundColor: ColorConstant.primaryPurple.withValues(alpha: 0.15),
                   valueColor: AlwaysStoppedAnimation<Color>(
-                      ColorConstant.accentOrange),
+                      ColorConstant.primaryPurple),
                 ),
               ),
             ],
@@ -743,29 +651,6 @@ class _ProfileViewState extends State<ProfileView> {
     );
   }
 
-  // ---------- Çıkış kartı ----------
-  Widget _logoutCard(BuildContext context, ProfileViewModel vm, bool isDark) {
-    return InkWell(
-      onTap: () => _confirmLogout(context, vm),
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: _cardColor(isDark),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: _borderColor(isDark)),
-        ),
-        child: Text('settings.account.logout'.tr(),
-            style: TextStyle(
-                fontSize: 15.5,
-                fontWeight: FontWeight.w700,
-                color: ColorConstant.errorRed)),
-      ),
-    );
-  }
-
   // ---------- Başarılar / Arkadaşlar sayfaları ----------
   void _openAchievements(
       BuildContext context, ProfileViewModel vm, bool isDark) {
@@ -818,167 +703,81 @@ class _ProfileViewState extends State<ProfileView> {
     ));
   }
 
-  // Ayarlar sayfasını doğru bölüme kaydırarak açar.
-  void _openSettings(BuildContext context, String section) {
-    SettingsView.focusSection = section;
-    context.router.push(const SettingsRoute());
-  }
-
-  // Tema modunun satırda gösterilecek etiketi (Sistem/Açık/Koyu).
-  String _themeModeLabel(ThemeMode mode) {
-    switch (mode) {
-      case ThemeMode.light:
-        return 'settings.appearance.themeLight'.tr();
-      case ThemeMode.dark:
-        return 'settings.appearance.themeDark'.tr();
-      case ThemeMode.system:
-        return 'settings.appearance.themeSystem'.tr();
-    }
-  }
-
-  // Tema seçiciyi doğrudan açar (ayarlara gitmeden). Yerel ThemeProvider
-  // birincil; seçim ayrıca backend'e senkronlanır (sistem modu hariç).
-  void _showThemeDialog(BuildContext context) {
-    final themeProvider = context.read<ThemeProvider>();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    Future<void> apply(ThemeMode mode) async {
-      await themeProvider.setThemeMode(mode);
-      if (mode != ThemeMode.system) {
-        try {
-          await settingsService.updateSettings(
-            SettingsUpdateRequest(darkMode: mode == ThemeMode.dark),
-          );
-        } catch (_) {/* yerel tercih birincil; sessizce geç */}
-      }
-    }
-
-    Widget option({
-      required String title,
-      required String subtitle,
-      required IconData icon,
-      required ThemeMode mode,
-    }) {
-      final selected = themeProvider.themeMode == mode;
-      return InkWell(
-        onTap: () {
-          apply(mode);
-          Navigator.pop(context);
-        },
-        borderRadius: BorderRadius.circular(14),
-        child: Container(
-          margin: const EdgeInsets.only(bottom: 8),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-          decoration: BoxDecoration(
-            color: selected
-                ? ColorConstant.accentOrange.withValues(alpha: 0.12)
-                : (isDark
-                    ? ColorConstant.cardColorDark
-                    : ColorConstant.cardColorLight),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-                color: selected
-                    ? ColorConstant.accentOrange
-                    : _borderColor(isDark)),
-          ),
-          child: Row(children: [
-            _iconSquare(
-                selected ? ColorConstant.accentOrange : _cGray, icon),
-            const SizedBox(width: 13),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title,
-                      style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: _textPrimary(isDark))),
-                  const SizedBox(height: 1),
-                  Text(subtitle,
-                      style:
-                          TextStyle(fontSize: 12.5, color: _textMuted(isDark))),
-                ],
-              ),
-            ),
-            if (selected)
-              Icon(Icons.check_circle_rounded,
-                  size: 22, color: ColorConstant.accentOrange),
-          ]),
-        ),
-      );
-    }
-
-    showDialog(
+  // Kişisel hedefleri düzenle (günlük görev sayısı + aylık tasarruf yüzdesi).
+  Future<void> _editGoals(BuildContext context, bool isDark) async {
+    final tasksCtl =
+        TextEditingController(text: '${GoalPrefs.dailyTasks.value}');
+    final savingsCtl =
+        TextEditingController(text: '${GoalPrefs.savingsPct.value}');
+    final saved = await showDialog<bool>(
       context: context,
-      builder: (dialogCtx) => AlertDialog(
-        backgroundColor:
-            isDark ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Text('settings.appearance.themeSelect'.tr(),
+      builder: (dctx) => AlertDialog(
+        backgroundColor: _cardColor(isDark),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+        title: Text('profile.editGoals'.tr(),
             style: TextStyle(
-                color: _textPrimary(isDark),
-                fontSize: 20,
-                fontWeight: FontWeight.w700)),
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
+                color: _textPrimary(isDark))),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            option(
-                title: 'settings.appearance.themeSystem'.tr(),
-                subtitle: 'settings.appearance.themeSystemSubtitle'.tr(),
-                icon: Icons.brightness_auto_rounded,
-                mode: ThemeMode.system),
-            option(
-                title: 'settings.appearance.themeLight'.tr(),
-                subtitle: 'settings.appearance.themeLightSubtitle'.tr(),
-                icon: Icons.light_mode_rounded,
-                mode: ThemeMode.light),
-            option(
-                title: 'settings.appearance.themeDark'.tr(),
-                subtitle: 'settings.appearance.themeDarkSubtitle'.tr(),
-                icon: Icons.dark_mode_rounded,
-                mode: ThemeMode.dark),
+            TextField(
+              controller: tasksCtl,
+              keyboardType: TextInputType.number,
+              style: TextStyle(color: _textPrimary(isDark)),
+              decoration: InputDecoration(
+                labelText: 'profile.goalTasks'.tr(),
+                prefixIcon: const Icon(Icons.track_changes_rounded, color: _cOrange),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14)),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: savingsCtl,
+              keyboardType: TextInputType.number,
+              style: TextStyle(color: _textPrimary(isDark)),
+              decoration: InputDecoration(
+                labelText: 'profile.goalSavings'.tr(),
+                prefixIcon: const Icon(Icons.savings_rounded, color: _cGreen),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14)),
+              ),
+            ),
           ],
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(dialogCtx),
-            style:
-                TextButton.styleFrom(foregroundColor: ColorConstant.accentOrange),
-            child: Text('common.close'.tr(),
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            onPressed: () => Navigator.pop(dctx, false),
+            child: Text('common.cancel'.tr(),
+                style: TextStyle(
+                    fontWeight: FontWeight.w700, color: _textSecondary(isDark))),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dctx, true),
+            style: FilledButton.styleFrom(
+                backgroundColor: _cPurple,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12))),
+            child: Text('common.save'.tr(),
+                style: const TextStyle(fontWeight: FontWeight.w800)),
           ),
         ],
       ),
     );
-  }
-
-  // Uygulama hakkında (ad + sürüm) bilgisini gösterir.
-  Future<void> _showAbout(BuildContext context) async {
-    final info = await PackageInfo.fromPlatform();
-    if (!context.mounted) return;
-    showAboutDialog(
-      context: context,
-      applicationName: 'LifeSync',
-      applicationVersion: '${info.version} (${info.buildNumber})',
-      applicationIcon: const Padding(
-        padding: EdgeInsets.all(4),
-        child: Icon(Icons.auto_awesome_rounded, color: Color(0xFFF6A821)),
-      ),
-      children: [
-        Text('profile.aboutText'.tr()),
-      ],
-    );
-  }
-
-  // Görüş / şikayet formunu açar.
-  void _openFeedback(BuildContext context, ProfileViewModel vm, bool isDark) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _FeedbackSheet(isDark: isDark),
-    );
+    if (saved == true) {
+      await GoalPrefs.set(
+        tasks: int.tryParse(tasksCtl.text.trim()),
+        savings: int.tryParse(savingsCtl.text.trim()),
+      );
+      if (mounted) setState(() {});
+      if (context.mounted) {
+        CustomSnackBar.showSuccess(context, 'profile.goalsSaved'.tr());
+      }
+    }
+    tasksCtl.dispose();
+    savingsCtl.dispose();
   }
 
   String _fmtXp(int n) {
@@ -1379,11 +1178,12 @@ class _FriendsTab extends StatelessWidget {
           ),
           Row(
             children: [
-              IconButton(
-                onPressed: () => viewModel.acceptFriendRequest(request.id, context),
-                style: IconButton.styleFrom(
-                    backgroundColor: ColorConstant.accentGreen.withValues(alpha: 0.15)),
-                icon: Icon(Icons.check_rounded, color: ColorConstant.accentGreen),
+              _AsyncIconButton(
+                icon: Icons.check_rounded,
+                color: ColorConstant.accentGreen,
+                bg: ColorConstant.accentGreen.withValues(alpha: 0.15),
+                onPressed: () =>
+                    viewModel.acceptFriendRequest(request.id, context),
               ),
               const SizedBox(width: 6),
               IconButton(
@@ -1400,6 +1200,20 @@ class _FriendsTab extends StatelessWidget {
   }
 
   Widget _buildFriendCard(
+      BuildContext context, friend, ProfileViewModel viewModel, bool isDarkMode) {
+    // Arkadaşlıktan çıkarılırken kart yukarı doğru kapanarak listeden düşer.
+    final removing = viewModel.isRemovingFriend(friend.id as int);
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 380),
+      curve: Curves.easeInOutCubic,
+      alignment: Alignment.topCenter,
+      child: removing
+          ? const SizedBox(width: double.infinity, height: 0)
+          : _friendCardBody(context, friend, viewModel, isDarkMode),
+    );
+  }
+
+  Widget _friendCardBody(
       BuildContext context, friend, ProfileViewModel viewModel, bool isDarkMode) {
     return GestureDetector(
       onTap: () => _showUserProfileDialog(context, friend.id, viewModel, isDarkMode),
@@ -1467,7 +1281,9 @@ class _FriendsTab extends StatelessWidget {
                           children: [
                             const Text('⚡', style: TextStyle(fontSize: 10)),
                             const SizedBox(width: 3),
-                            Text('Lv.${friend.level}',
+                            Text(
+                                'profile.levelLabel'.tr(
+                                    namedArgs: {'count': '${friend.level}'}),
                                 style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w700,
@@ -1536,10 +1352,10 @@ class _FriendsTab extends StatelessWidget {
         isFriend: viewModel.isFriend(userId),
         isFollowing: viewModel.isFollowingUser(userId),
         isDarkMode: isDarkMode,
-        onSendFriendRequest: () async {
-          await viewModel.sendFriendRequest(userId, context);
-        },
-        onUnfriend: () => viewModel.unfriend(userId, context),
+        onSendFriendRequest: () =>
+            viewModel.sendFriendRequest(userId, context, showBadge: false),
+        onUnfriend: () =>
+            unfriendWithShareCheck(context, viewModel, userId, isDarkMode),
         onFollow: () => viewModel.follow(userId, context),
         onUnfollow: () => viewModel.unfollow(userId, context),
       ),
@@ -2086,13 +1902,10 @@ class _FriendSearchBottomSheetState extends State<_FriendSearchBottomSheet> {
                                   ],
                                 ),
                               ),
-                              IconButton(
-                                onPressed: () {
-                                  widget.viewModel.sendFriendRequest(user.id, context);
-                                },
-                                icon: Icon(Icons.person_add_rounded,
-                                    color: ColorConstant.accentBlue),
-                                tooltip: 'profile.friends.addFriend'.tr(),
+                              _InviteButton(
+                                onSend: () => widget.viewModel.sendFriendRequest(
+                                    user.id, context,
+                                    showBadge: false),
                               ),
                             ],
                           ),
@@ -2164,10 +1977,10 @@ class _FriendSearchBottomSheetState extends State<_FriendSearchBottomSheet> {
             isFriend: viewModel.isFriend(userId),
             isFollowing: viewModel.isFollowingUser(userId),
             isDarkMode: isDarkMode,
-            onSendFriendRequest: () async {
-              await viewModel.sendFriendRequest(userId, context);
-            },
-            onUnfriend: () => viewModel.unfriend(userId, context),
+            onSendFriendRequest: () =>
+                viewModel.sendFriendRequest(userId, context, showBadge: false),
+            onUnfriend: () =>
+                unfriendWithShareCheck(context, viewModel, userId, isDarkMode),
             onFollow: () => viewModel.follow(userId, context),
             onUnfollow: () => viewModel.unfollow(userId, context),
           );
@@ -2178,6 +1991,159 @@ class _FriendSearchBottomSheetState extends State<_FriendSearchBottomSheet> {
 }
 
 // ==================== HELPER WIDGETS ====================
+
+/// Arkadaşlıktan çıkarma akışı: önce bu arkadaşla paylaşımlı not/görev/
+/// alışkanlık var mı bakılır; varsa uyarı verilir (paylaşımlar durdurulacak).
+/// Onaylanırsa (veya paylaşım yoksa) çıkarılır. İptalde false döner.
+Future<bool> unfriendWithShareCheck(BuildContext context,
+    ProfileViewModel viewModel, int userId, bool isDarkMode) async {
+  final summary = await viewModel.sharedWithFriend(userId);
+  if (!context.mounted) return false;
+  final total = summary?['total'] ?? 0;
+  if (total > 0) {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (dctx) {
+        final textPrimary = isDarkMode
+            ? ColorConstant.textPrimaryDark
+            : ColorConstant.textPrimaryLight;
+        final textSecondary = isDarkMode
+            ? ColorConstant.textSecondaryDark
+            : ColorConstant.textSecondaryLight;
+        return AlertDialog(
+          backgroundColor:
+              isDarkMode ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+          title: Row(children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                  color: ColorConstant.accentYellow.withValues(alpha: .18),
+                  borderRadius: BorderRadius.circular(12)),
+              child: Icon(Icons.group_off_rounded,
+                  color: ColorConstant.accentYellow, size: 22),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text('profile.friends.sharedWarnTitle'.tr(),
+                  style: TextStyle(
+                      fontSize: 17, fontWeight: FontWeight.w800, color: textPrimary)),
+            ),
+          ]),
+          content: Text(
+            'profile.friends.sharedWarnBody'.tr(namedArgs: {
+              'notes': '${summary?['notes'] ?? 0}',
+              'tasks': '${summary?['tasks'] ?? 0}',
+              'habits': '${summary?['habits'] ?? 0}',
+            }),
+            style: TextStyle(fontSize: 14, height: 1.45, color: textSecondary),
+          ),
+          actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dctx, false),
+              child: Text('common.cancel'.tr(),
+                  style: TextStyle(fontWeight: FontWeight.w700, color: textSecondary)),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dctx, true),
+              style: FilledButton.styleFrom(
+                  backgroundColor: ColorConstant.errorRed,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12))),
+              child: Text('profile.friends.sharedWarnConfirm'.tr(),
+                  style: const TextStyle(fontWeight: FontWeight.w800)),
+            ),
+          ],
+        );
+      },
+    );
+    if (ok != true) return false;
+    if (!context.mounted) return false;
+  }
+  return viewModel.unfriend(userId, context);
+}
+
+/// Arama sonuçlarındaki "arkadaş ekle" butonu: ikon → dönen → yeşil
+/// "Davet gönderildi ✓" pilline dönüşür.
+class _InviteButton extends StatefulWidget {
+  final Future<bool> Function() onSend;
+  const _InviteButton({required this.onSend});
+
+  @override
+  State<_InviteButton> createState() => _InviteButtonState();
+}
+
+class _InviteButtonState extends State<_InviteButton> {
+  int _phase = 0; // 0 hazır, 1 gönderiliyor, 2 gönderildi
+
+  Future<void> _tap() async {
+    if (_phase != 0) return;
+    setState(() => _phase = 1);
+    bool ok = false;
+    try {
+      ok = await widget.onSend();
+    } catch (_) {}
+    if (!mounted) return;
+    setState(() => _phase = ok ? 2 : 0);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const green = Color(0xFF2E9E6B);
+    final color = _phase == 2 ? green : ColorConstant.accentBlue;
+    return GestureDetector(
+      onTap: _tap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutCubic,
+        height: 38,
+        padding: EdgeInsets.symmetric(horizontal: _phase == 2 ? 12 : 9),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: .15),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 240),
+          switchInCurve: Curves.easeOutBack,
+          transitionBuilder: (child, anim) =>
+              FadeTransition(opacity: anim, child: ScaleTransition(scale: anim, child: child)),
+          child: _phase == 1
+              ? SizedBox(
+                  key: const ValueKey('busy'),
+                  width: 18,
+                  height: 18,
+                  child: Center(
+                    child: SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2.2,
+                          valueColor: AlwaysStoppedAnimation(color)),
+                    ),
+                  ),
+                )
+              : _phase == 2
+                  ? Row(
+                      key: const ValueKey('sent'),
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.check_circle_rounded, size: 18, color: green),
+                        const SizedBox(width: 6),
+                        Text('profile.friends.inviteSent'.tr(),
+                            style: const TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w800,
+                                color: green)),
+                      ],
+                    )
+                  : Icon(Icons.person_add_rounded,
+                      key: const ValueKey('idle'), size: 20, color: color),
+        ),
+      ),
+    );
+  }
+}
 
 Widget _buildEmptyState({
   required String illustration,
@@ -2199,54 +2165,27 @@ Widget _buildEmptyState({
 // ==================== PROFİL DÜZENLEME + ÇIKIŞ ====================
 
 /// Çıkış onay diyaloğu → onaylanırsa oturumu kapatır (settings ile aynı akış).
-void _confirmLogout(BuildContext context, ProfileViewModel vm) {
-  final isDark = Theme.of(context).brightness == Brightness.dark;
-  showDialog(
+// ==================== GÖRÜŞ / ŞİKAYET FORMU ====================
+
+/// Görüş / şikayet formunu açar (Ayarlar › Destek'ten çağrılır).
+void showFeedbackSheet(BuildContext context, bool isDark) {
+  showModalBottomSheet(
     context: context,
-    builder: (ctx) => AlertDialog(
-      backgroundColor: isDark ? ColorConstant.cardColorDark : ColorConstant.cardColorLight,
-      title: Text('settings.account.logout'.tr(),
-          style: TextStyle(
-              fontWeight: FontWeight.w800,
-              color: isDark
-                  ? ColorConstant.textPrimaryDark
-                  : ColorConstant.textPrimaryLight)),
-      content: Text('settings.account.logoutConfirm'.tr(),
-          style: TextStyle(
-              color: isDark
-                  ? ColorConstant.textSecondaryDark
-                  : ColorConstant.textSecondaryLight)),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(ctx),
-          child: Text('common.cancel'.tr()),
-        ),
-        TextButton(
-          onPressed: () {
-            Navigator.pop(ctx);
-            vm.logout(context);
-          },
-          child: Text('settings.account.logout'.tr(),
-              style: const TextStyle(
-                  color: Color(0xFFE53935), fontWeight: FontWeight.w700)),
-        ),
-      ],
-    ),
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => FeedbackSheet(isDark: isDark),
   );
 }
 
-/// Ad / kullanıcı adı / bio düzenleme alt sayfası.
-/// Backend PUT /profile (updateProfile) hazırdı ama hiçbir UI çağırmıyordu.
-// ==================== GÖRÜŞ / ŞİKAYET FORMU ====================
-class _FeedbackSheet extends StatefulWidget {
+class FeedbackSheet extends StatefulWidget {
   final bool isDark;
-  const _FeedbackSheet({required this.isDark});
+  const FeedbackSheet({super.key, required this.isDark});
 
   @override
-  State<_FeedbackSheet> createState() => _FeedbackSheetState();
+  State<FeedbackSheet> createState() => _FeedbackSheetState();
 }
 
-class _FeedbackSheetState extends State<_FeedbackSheet> {
+class _FeedbackSheetState extends State<FeedbackSheet> {
   final _ctrl = TextEditingController();
   String _category = 'suggestion';
   bool _sending = false;
@@ -3314,6 +3253,57 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
                       color: Colors.white, fontWeight: FontWeight.w600)),
         ),
       ],
+    );
+  }
+}
+
+/// Async ikon butonu: dokununca eyleme kadar yerinde dönen bir spinner
+/// gösterir ("gönderiliyor" hissi), sonra eski haline döner. Başarı/animasyonlu
+/// onay mesajını çağıran taraf (viewmodel) gösterir.
+class _AsyncIconButton extends StatefulWidget {
+  final IconData icon;
+  final Color color;
+  final Color? bg;
+  final Future<void> Function() onPressed;
+  const _AsyncIconButton({
+    required this.icon,
+    required this.color,
+    required this.onPressed,
+    this.bg,
+  });
+
+  @override
+  State<_AsyncIconButton> createState() => _AsyncIconButtonState();
+}
+
+class _AsyncIconButtonState extends State<_AsyncIconButton> {
+  bool _busy = false;
+
+  Future<void> _run() async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      await widget.onPressed();
+    } catch (_) {}
+    if (mounted) setState(() => _busy = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: _busy ? null : _run,
+      style: widget.bg != null
+          ? IconButton.styleFrom(backgroundColor: widget.bg)
+          : null,
+      icon: _busy
+          ? SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(
+                  strokeWidth: 2.2,
+                  valueColor: AlwaysStoppedAnimation(widget.color)),
+            )
+          : Icon(widget.icon, color: widget.color),
     );
   }
 }

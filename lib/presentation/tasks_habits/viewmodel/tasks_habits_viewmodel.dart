@@ -145,11 +145,6 @@ class TasksHabitsViewModel extends ChangeNotifier {
   TaskFilter _currentTaskFilter = TaskFilter.all;
   TaskFilter get currentTaskFilter => _currentTaskFilter;
 
-  void setTaskFilter(TaskFilter filter) {
-    _currentTaskFilter = filter;
-    notifyListeners();
-  }
-
   // Tasks
   List<Task> _tasks = [];
   List<Task> get tasks => _tasks;
@@ -200,11 +195,6 @@ class TasksHabitsViewModel extends ChangeNotifier {
 
   void setTaskPriority(int priority) {
     _taskPriority = priority;
-    notifyListeners();
-  }
-
-  void setTaskType(String type) {
-    _taskType = type;
     notifyListeners();
   }
 
@@ -514,10 +504,6 @@ class TasksHabitsViewModel extends ChangeNotifier {
   // Seçili gün (hafta seçici)
   DateTime _selectedDay = DateTime.now();
   DateTime get selectedDay => _selectedDay;
-  void setSelectedDay(DateTime d) {
-    _selectedDay = d;
-    notifyListeners();
-  }
 
   // Üst-seviye görev sayaçları (istatistik kartları)
   List<Task> get _openParents =>
@@ -553,10 +539,6 @@ class TasksHabitsViewModel extends ChangeNotifier {
   // Aktif istatistik filtresi: today | upcoming | overdue | completed
   String _taskStatFilter = 'today';
   String get taskStatFilter => _taskStatFilter;
-  void setTaskStatFilter(String f) {
-    _taskStatFilter = f;
-    notifyListeners();
-  }
 
   List<Task> get upcomingTasksList {
     final today = DateTime.now();
@@ -638,10 +620,6 @@ class TasksHabitsViewModel extends ChangeNotifier {
   // Sıralama
   String _taskSort = 'priority'; // priority | time | created
   String get taskSort => _taskSort;
-  void setTaskSort(String s) {
-    _taskSort = s;
-    notifyListeners();
-  }
 
   List<Task> _applySort(List<Task> list) {
     final l = List<Task>.from(list);
@@ -670,32 +648,6 @@ class TasksHabitsViewModel extends ChangeNotifier {
   /// Sürükle-bırak yalnız "manual" sıralama modunda ve arama yokken aktif.
   bool get canReorderTasks =>
       _taskSort == 'manual' && _taskSearch.trim().isEmpty;
-
-  /// Seçili günün görevlerini elle sırala (sürükle-bırak). reorderable_grid_view
-  /// konvansiyonu değil; ReorderableListView: oldIndex < newIndex ise newIndex--.
-  Future<void> reorderTasksForSelectedDay(int oldIndex, int newIndex) async {
-    final visible = sortedTasksForSelectedDay;
-    if (oldIndex < 0 || oldIndex >= visible.length) return;
-    if (oldIndex < newIndex) newIndex -= 1;
-    newIndex = newIndex.clamp(0, visible.length - 1);
-    if (oldIndex == newIndex) return;
-
-    final moved = visible.removeAt(oldIndex);
-    visible.insert(newIndex, moved);
-
-    // Yeni sırayı order_index olarak yerel Task'lara yaz (anında yansısın).
-    for (var i = 0; i < visible.length; i++) {
-      final idx = _tasks.indexWhere((t) => t.id == visible[i].id);
-      if (idx != -1) {
-        _tasks[idx] = _tasks[idx].copyWith(orderIndex: i);
-      }
-    }
-    notifyListeners();
-
-    try {
-      await _taskService.reorderTasks(visible.map((t) => t.id).toList());
-    } catch (_) {}
-  }
 
   // ---- Doğal dil girişi (Faz 2) ----
   /// Başlık değişince önizleme çubuğunu tazelemek için rebuild tetikler.
@@ -754,32 +706,8 @@ class TasksHabitsViewModel extends ChangeNotifier {
   String _habitTimePeriod = 'morning';
   String get habitTimePeriod => _habitTimePeriod;
 
-  // Zaman periyoduna göre bildirim saati
-  String getReminderTimeForPeriod(String period) {
-    switch (period) {
-      case 'morning':
-        return '09:00';
-      case 'noon':
-        return '13:00';
-      case 'evening':
-        return '17:00';
-      default:
-        return '09:00';
-    }
-  }
-
   void setHabitCategory(String category) {
     _habitCategory = category;
-    notifyListeners();
-  }
-
-  void setHabitDifficulty(String difficulty) {
-    _habitDifficulty = difficulty;
-    notifyListeners();
-  }
-
-  void setHabitTimePeriod(String period) {
-    _habitTimePeriod = period;
     notifyListeners();
   }
 
@@ -844,11 +772,6 @@ class TasksHabitsViewModel extends ChangeNotifier {
 
   TimeOfDay get habitReminderTime =>
       _habitReminderTimes.isNotEmpty ? habitReminderTimes.first : const TimeOfDay(hour: 9, minute: 0);
-
-  void setHabitReminderTime(TimeOfDay t) {
-    _habitReminderTimes = [t];
-    notifyListeners();
-  }
 
   void addHabitReminderTime(TimeOfDay t) {
     final exists = _habitReminderTimes
@@ -1529,41 +1452,6 @@ class TasksHabitsViewModel extends ChangeNotifier {
     }
   }
 
-  /// Tek bir gecikmiş görevi bugüne taşır (verisini koruyarak sadece
-  /// dueDate'i bugün yapar). Görevler ekranındaki "Bugüne al" butonu.
-  Future<void> moveTaskToToday(Task t, BuildContext context) async {
-    final today = _fmtDueDate(DateTime.now());
-    final req = TaskRequest(
-      title: t.title,
-      description: t.description,
-      taskType: t.taskType,
-      priority: t.priority,
-      reminderEnabled: t.reminderEnabled,
-      isRecurring: t.isRecurring,
-      recurringPattern: t.recurringPattern,
-      dueDate: today,
-      dueTime: t.dueTime,
-      reminderBeforeMinutes: t.reminderBeforeMinutes,
-      reminderTime: t.reminderTime,
-      estimatedDurationMinutes: t.estimatedDurationMinutes,
-      parentTaskId: t.parentTaskId,
-      category: t.category,
-      tags: t.tags.isEmpty ? null : List.from(t.tags),
-      location: t.location,
-      link: t.link,
-    );
-    try {
-      final resp = await _taskService.updateTask(t.id, req);
-      if (resp.isSuccess) {
-        await refreshAll();
-        if (context.mounted) {
-          CustomSnackBar.showSuccess(context,
-              'tasks.planner.movedCount'.tr(namedArgs: {'n': '1'}));
-        }
-      }
-    } catch (_) {}
-  }
-
   Future<void> toggleTaskComplete(Task task, BuildContext context) async {
     try {
       if (task.isCompleted) {
@@ -1680,19 +1568,6 @@ class TasksHabitsViewModel extends ChangeNotifier {
         notifyListeners();
       }
     } catch (_) {}
-  }
-
-  Color getTaskPriorityColor(int priority) {
-    switch (priority) {
-      case 0:
-        return const Color(0xFF81C784); // Green
-      case 1:
-        return const Color(0xFFFFD54F); // Yellow
-      case 2:
-        return const Color(0xFFFF5252); // Red
-      default:
-        return const Color(0xFF7EC8F5); // Blue
-    }
   }
 
   // ==================== HABITS ====================
@@ -1816,24 +1691,6 @@ class TasksHabitsViewModel extends ChangeNotifier {
     } catch (_) {
       return null;
     }
-  }
-
-  /// Bugünün tamamlama kaydına not ekler/günceller (markComplete upsert eder).
-  /// Not: alışkanlığı bugün için tamamlanmış olarak işaretler.
-  Future<bool> setHabitTodayNote(int habitId, String note) async {
-    try {
-      final today = DateTime.now().toIso8601String().split('T')[0];
-      final r = await _habitService.markComplete(
-        habitId,
-        CompleteHabitRequest(
-            date: today, notes: note.trim().isEmpty ? null : note.trim()),
-      );
-      if (r.isSuccess) {
-        await loadHabits();
-        return true;
-      }
-    } catch (_) {}
-    return false;
   }
 
   /// Alışkanlık günlük kayıtları (ısı haritası için) — son [days] gün.

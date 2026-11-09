@@ -56,3 +56,6 @@ app.*.map.json
 *.RECOVERED_OK
 *.truncated
 .artifacts/
+
+# Bildirim sesi adayları (onay bekliyor, yayına girmez)
+/sound_candidates/

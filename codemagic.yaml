@@ -65,7 +65,7 @@ workflows:
           BUILD_NUMBER=$((LATEST + 1))
           flutter build ipa --release \
             --obfuscate --split-debug-info=build/debug-info \
-            --build-name=4.1.0 \
+            --build-name=5.1.0 \
             --build-number=$BUILD_NUMBER \
             --export-options-plist=/Users/builder/export_options.plist
     artifacts:
@@ -142,7 +142,7 @@ workflows:
         script: |
           flutter build ipa --release \
             --obfuscate --split-debug-info=build/debug-info \
-            --build-name=4.1.0 \
+            --build-name=5.1.0 \
             --build-number=1 \
             --export-options-plist=/Users/builder/export_options.plist
     artifacts:
@@ -182,7 +182,7 @@ workflows:
         script: |
           flutter build appbundle --release \
             --obfuscate --split-debug-info=build/debug-info \
-            --build-name=4.1.0 \
+            --build-name=5.1.0 \
             --build-number=$(($(google-play get-latest-build-number \
               --package-name "$PACKAGE_NAME" \
               --tracks internal) + 1))

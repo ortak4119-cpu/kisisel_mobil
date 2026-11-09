@@ -222,12 +222,6 @@ class PaywallViewModel extends ChangeNotifier {
     }
   }
 
-  /// Hata mesajını temizle
-  void clearError() {
-    _errorMessage = null;
-    notifyListeners();
-  }
-
   /// Tasarruf yüzdesini hesapla (yıllık vs aylık)
   String getSavingsPercentage() {
     if (_monthlyPackage == null || _annualPackage == null) return '0';
@@ -314,19 +308,6 @@ class PaywallViewModel extends ChangeNotifier {
       'duration': duration,
       'price': price,
     });
-  }
-
-  /// Deneme süresini gün olarak döndür (zaman çizelgesi için)
-  int getTrialDays(Package? package) {
-    if (package == null || !hasTrialPeriod(package)) return 0;
-    final p = package.storeProduct.introductoryPrice!.period;
-    if (p.isEmpty) return 0;
-    final s = p.substring(1);
-    if (s.endsWith('D')) return int.tryParse(s.replaceAll('D', '')) ?? 0;
-    if (s.endsWith('W')) return (int.tryParse(s.replaceAll('W', '')) ?? 0) * 7;
-    if (s.endsWith('M')) return (int.tryParse(s.replaceAll('M', '')) ?? 0) * 30;
-    if (s.endsWith('Y')) return (int.tryParse(s.replaceAll('Y', '')) ?? 0) * 365;
-    return 0;
   }
 
   // ---------- İndirim kodu (kupon) ----------

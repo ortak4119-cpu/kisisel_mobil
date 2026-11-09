@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Bildirim sesi ham kaynakları (res/raw/notif_*.wav) yalnızca çalışma anında
+  string adıyla kullanılıyor (RawResourceAndroidNotificationSound + FCM payload),
+  statik referansları yok. Bu yüzden R8 `shrinkResources` release derlemesinde
+  "kullanılmıyor" sanıp siliyor -> bildirimler sessiz kalıyor.
+  Bu dosya, kaynak küçültücüye bu sesleri KORUMASINI söyler.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@raw/notif_chime,@raw/notif_marimba,@raw/notif_bell,@raw/notif_soft,@raw/notif_pop" />

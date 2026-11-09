@@ -1,12 +1,16 @@
 import 'dart:io';
+import 'dart:ui' show PlatformDispatcher;
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../../models/notification/notification_models.dart';
 import '../notification/notification_service.dart';
 import '../notification/notification_sound.dart';
+import '../notification/reminder_service.dart';
 import '../../core/init/locator.dart';
+import '../../core/utils/notification_bus.dart';
 
 // Background message handler - Top level function olmalı
 @pragma('vm:entry-point')
@@ -98,9 +102,14 @@ class FCMService {
     await flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
-        debugPrint('🔔 Local notification tapped: ${response.payload}');
-        // Burada notification tıklamasını handle edebilirsiniz
+        debugPrint('🔔 Local notification tapped: ${response.actionId}');
+        // Rutin hatırlatıcısı "Ertele" aksiyonu (uygulama ön plandayken).
+        if (response.actionId == 'snooze') {
+          ReminderService.snooze();
+        }
       },
+      // Uygulama kapalı/arka plandayken aksiyon (Ertele/Tamam).
+      onDidReceiveBackgroundNotificationResponse: reminderBackgroundResponse,
     );
 
     // Android: her bildirim sesi için AYRI kanal oluştur (kanal sesi sonradan
@@ -195,6 +204,8 @@ class FCMService {
         timezoneOffsetMinutes: DateTime.now().timeZoneOffset.inMinutes,
         // Arka plandaki push'ların doğru ses/kanalla gelmesi için seçili ses.
         notificationSound: NotifSoundPrefs.currentId,
+        // Backend bildirim metinlerini uygulamanın SEÇİLİ dilinde üretsin.
+        locale: await _appLanguageCode(),
       );
 
       final response = await _notificationService.storePushToken(request);
@@ -215,11 +226,26 @@ class FCMService {
   }
 
   /// Foreground message handler
+  /// easy_localization'ın kaydettiği seçili dil ('tr_TR' → 'tr'); yoksa cihaz dili.
+  Future<String> _appLanguageCode() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getString('locale');
+      if (saved != null && saved.isNotEmpty) {
+        return saved.split(RegExp('[_-]')).first.toLowerCase();
+      }
+    } catch (_) {}
+    return PlatformDispatcher.instance.locale.languageCode;
+  }
+
   void _handleForegroundMessage(RemoteMessage message) {
     debugPrint('📨 Foreground notification received');
     debugPrint('Title: ${message.notification?.title}');
     debugPrint('Body: ${message.notification?.body}');
     debugPrint('Data: ${message.data}');
+
+    // Bugün ekranındaki zil anında tazelensin/çalsın.
+    NotificationBus.notifyIncoming();
 
     // Foreground'da local notification göster (sesli)
     _showLocalNotification(message);
@@ -293,27 +319,6 @@ class FCMService {
     // if (message.data['type'] == 'task') {
     //   // Navigate to task detail
     // }
-  }
-
-  /// FCM token'ı backend'den sil (logout)
-  Future<void> deleteTokenFromBackend() async {
-    if (_fcmToken == null) {
-      debugPrint('⚠️ FCM Token is null, cannot delete from backend');
-      return;
-    }
-
-    try {
-      final deviceId = _fcmToken!;
-      final response = await _notificationService.deletePushToken(deviceId);
-
-      if (response.isSuccess) {
-        debugPrint('✅ FCM Token deleted from backend successfully');
-      } else {
-        debugPrint('❌ Failed to delete FCM token from backend: ${response.message}');
-      }
-    } catch (e) {
-      debugPrint('❌ Error deleting FCM token from backend: $e');
-    }
   }
 
   /// Subscribe to topic

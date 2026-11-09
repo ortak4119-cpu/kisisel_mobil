@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/design/app_design.dart';
 import '../../../core/design/app_loader.dart';
 import '../../../core/utils/color_constant.dart';
+import '../../../core/widgets/animated_save_button.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/utils/subscription_icons.dart';
 import '../../../core/utils/currency.dart';
@@ -344,6 +346,8 @@ class _FinanceViewState extends State<FinanceView> {
           _harcamaSummary(vm, c),
           const SizedBox(height: 14),
           _categoryBreakdown(vm, c),
+          const SizedBox(height: 14),
+          _monthlyTrendCard(vm, c),
           const SizedBox(height: 14),
           _transactionsCard(context, vm, c),
         ];
@@ -1180,7 +1184,9 @@ class _FinanceViewState extends State<FinanceView> {
           _panelHead(c, 'finance.distribution'.tr()),
           if (cats.isEmpty)
             Text('—', style: TextStyle(color: c.textMuted))
-          else
+          else ...[
+            _spendingDonut(c, cats, total),
+            const SizedBox(height: 18),
             ...cats.map((e) {
               final color = finCatById(e.key).color;
               final pct = total > 0 ? (e.value / total).clamp(0.0, 1.0) : 0.0;
@@ -1234,10 +1240,159 @@ class _FinanceViewState extends State<FinanceView> {
                 ),
               );
             }),
+          ],
         ],
       ),
     );
   }
+
+  /// Harcama kategorilerinin donut (halka) grafiği — ortada ay toplamı.
+  Widget _spendingDonut(
+      AppColors c, List<MapEntry<String, double>> cats, double total) {
+    final sections = <PieChartSectionData>[];
+    for (final e in cats) {
+      final color = finCatById(e.key).color;
+      final pct = total > 0 ? (e.value / total * 100) : 0.0;
+      sections.add(PieChartSectionData(
+        value: e.value <= 0 ? 0.0001 : e.value,
+        color: color,
+        radius: 26,
+        showTitle: pct >= 8,
+        title: '%${pct.round()}',
+        titleStyle: const TextStyle(
+            fontSize: 11, fontWeight: FontWeight.w800, color: Colors.white),
+        titlePositionPercentageOffset: 1.5,
+      ));
+    }
+    return SizedBox(
+      height: 172,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          PieChart(
+            PieChartData(
+              sections: sections,
+              sectionsSpace: 2,
+              centerSpaceRadius: 52,
+              startDegreeOffset: -90,
+            ),
+          ),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('finance.distribution'.tr(),
+                  style: TextStyle(fontSize: 11, color: c.textMuted)),
+              const SizedBox(height: 2),
+              Text(tl0(total),
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: c.textPrimary)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Son 6 ayın gelir/gider trendi — gruplu çubuk grafik.
+  Widget _monthlyTrendCard(FinanceViewModel vm, AppColors c) {
+    final series = vm.monthlyTrendSeries;
+    final maxVal = series.fold<double>(
+        0, (m, p) => [m, p.income, p.expense].reduce((a, b) => a > b ? a : b));
+    final months = 'calendar.monthNames'.tr().split(',');
+    final incomeColor = c.success;
+    final expenseColor = c.danger;
+    String shortMonth(int mo) {
+      final full = (mo >= 1 && mo <= months.length) ? months[mo - 1] : '$mo';
+      return full.length > 3 ? full.substring(0, 3) : full;
+    }
+
+    final groups = <BarChartGroupData>[];
+    for (int i = 0; i < series.length; i++) {
+      final p = series[i];
+      groups.add(BarChartGroupData(x: i, barsSpace: 3, barRods: [
+        BarChartRodData(
+            toY: p.income,
+            color: incomeColor,
+            width: 9,
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(3))),
+        BarChartRodData(
+            toY: p.expense,
+            color: expenseColor,
+            width: 9,
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(3))),
+      ]));
+    }
+    return _panel(
+      c,
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _panelHead(c, 'finance.trendTitle'.tr()),
+          Row(children: [
+            _legendDot(incomeColor, 'finance.income'.tr(), c),
+            const SizedBox(width: 16),
+            _legendDot(expenseColor, 'finance.expense'.tr(), c),
+          ]),
+          const SizedBox(height: 14),
+          SizedBox(
+            height: 170,
+            child: maxVal <= 0
+                ? Center(child: Text('—', style: TextStyle(color: c.textMuted)))
+                : BarChart(
+                    BarChartData(
+                      maxY: maxVal * 1.2,
+                      barGroups: groups,
+                      gridData: FlGridData(show: false),
+                      borderData: FlBorderData(show: false),
+                      titlesData: FlTitlesData(
+                        leftTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false)),
+                        topTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false)),
+                        rightTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false)),
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            getTitlesWidget: (value, meta) {
+                              final idx = value.toInt();
+                              if (idx < 0 || idx >= series.length) {
+                                return const SizedBox.shrink();
+                              }
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 6),
+                                child: Text(shortMonth(series[idx].month.month),
+                                    style: TextStyle(
+                                        fontSize: 10.5, color: c.textMuted)),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _legendDot(Color color, String label, AppColors c) => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+              width: 9,
+              height: 9,
+              decoration:
+                  BoxDecoration(color: color, shape: BoxShape.circle)),
+          const SizedBox(width: 6),
+          Text(label, style: TextStyle(fontSize: 12.5, color: c.textMuted)),
+        ],
+      );
 
   // ---------- PLAN sekmesi ----------
   Widget _planBudgetCard(
@@ -3320,28 +3475,14 @@ class _FinanceFormSheet extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           flex: 2,
-          child: ElevatedButton(
-            onPressed:
-                vm.isLoading ? null : () => vm.saveFinanceForm(context),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              backgroundColor: _accent,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
-            ),
-            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              const Icon(Icons.check_rounded, color: Colors.white, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                  income
-                      ? 'finance.saveIncome'.tr()
-                      : 'finance.saveExpense'.tr(),
-                  style: const TextStyle(
-                      fontSize: 15.5,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white)),
-            ]),
+          child: AnimatedSaveButton(
+            color: _accent,
+            height: 54,
+            enabled: !vm.isLoading,
+            label: income
+                ? 'finance.saveIncome'.tr()
+                : 'finance.saveExpense'.tr(),
+            onPressed: () => vm.saveFinanceForm(context),
           ),
         ),
       ]),

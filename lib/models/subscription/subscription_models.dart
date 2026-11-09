@@ -63,6 +63,21 @@ class Subscription {
       return DateTime.now();
     }
 
+    // next_billing_date bir TAKVİM tarihidir. Backend, Istanbul (GMT+3) gece
+    // yarısına göre UTC saklıyor (ör. 11 Kasım → "2026-11-10T21:00:00Z"). Cihaz
+    // saat diliminden bağımsız +3 uygulayıp amaçlanan günü al; aksi halde gün
+    // bir gün geri kayıyor (11 yerine 10 görünüyordu).
+    DateTime parseIstDate(dynamic value) {
+      if (value is String && value.contains('T')) {
+        try {
+          final ist =
+              DateTime.parse(value).toUtc().add(const Duration(hours: 3));
+          return DateTime(ist.year, ist.month, ist.day);
+        } catch (_) {}
+      }
+      return parseDateTime(value);
+    }
+
     return Subscription(
       id: json['id'] as int,
       userId: json['user_id'] as int,
@@ -73,7 +88,7 @@ class Subscription {
       currency: json['currency'] as String? ?? 'TRY',
       billingCycle: json['billing_cycle'] as String? ?? 'monthly',
       billingDate: json['billing_date'] as int? ?? 1,
-      nextBillingDate: parseDateTime(json['next_billing_date']),
+      nextBillingDate: parseIstDate(json['next_billing_date']),
       reminderEnabled: parseBool(json['reminder_enabled']),
       isActive: parseBool(json['is_active']),
       notes: json['notes'] as String?,

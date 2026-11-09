@@ -21,6 +21,9 @@
     <!-- Push notification (Android 13+) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- Yeniden başlatma sonrası planlı hatırlatıcıları (rutin) yeniden kur -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
     <application
         android:label="LifeSync"
         android:name="${applicationName}"

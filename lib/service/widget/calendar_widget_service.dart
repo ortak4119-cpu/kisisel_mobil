@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:home_widget/home_widget.dart';
 
 import '../../core/init/locator.dart';
@@ -23,7 +24,7 @@ class CalendarWidgetService {
         for (final e in evResp.data!) {
           if (e.eventDate != today) continue;
           final time = e.allDay
-              ? 'Tüm gün'
+              ? 'calendar.allDay'.tr()
               : (e.eventTime != null && e.eventTime!.length >= 5
                   ? e.eventTime!.substring(0, 5)
                   : '');

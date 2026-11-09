@@ -7,11 +7,14 @@ import '../viewmodel/settings_viewmodel.dart';
 import '../../../service/notification/notification_sound.dart';
 import '../../../service/notification/notification_service.dart';
 import '../../../core/utils/color_constant.dart';
-import '../../../core/utils/theme_provider.dart';
-import '../../../core/theme/app_palette.dart';
-import '../../../core/utils/premium_helper.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/utils/animation_prefs.dart';
+import '../../../core/utils/theme_provider.dart';
+import '../../../core/route/app_router.gr.dart';
+import '../../profile/view/profile_view.dart'
+    show showAccountInfoSheet, showFeedbackSheet;
+import '../../profile/viewmodel/profile_viewmodel.dart';
+import '../widgets/theme_picker_sheet.dart';
 
 @RoutePage()
 class SettingsView extends StatelessWidget {
@@ -115,24 +118,7 @@ class SettingsView extends StatelessWidget {
                       children: [
                         const SizedBox(height: 8),
 
-                        // Premium Bölümü - sadece premium OLMAYAN kullanıcıya göster.
-                        // Premium kullanıcıda en üstte "Premium" başlığı görünmez.
-                        if (viewModel.isUserLoaded &&
-                            !PremiumHelper.isPremiumUser(
-                                viewModel.currentUser)) ...[
-                          _buildSection(
-                            title: 'settings.sections.premium'.tr(),
-                            isDarkMode: isDarkMode,
-                            children: [
-                              _buildPremiumCard(
-                                context: context,
-                                viewModel: viewModel,
-                                isDarkMode: isDarkMode,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 20),
-                        ],
+                        // (Premium kartı kaldırıldı — üyelik Profil › Üyelik'te.)
 
                         // Bildirimler Bölümü — açılır/kapanır (varsayılan KAPALI).
                         _CollapsibleSettingsSection(
@@ -313,19 +299,20 @@ class SettingsView extends StatelessWidget {
                           sectionKey: sectionKeys['appearance'],
                           isDarkMode: isDarkMode,
                           children: [
-                            // Tema (5 tam palet, açık/koyu) — uygulama geneli.
+                            // Tema: açık/koyu/sistem + 5 palet (Dil ile aynı yerde).
                             _buildListTile(
-                              title: 'settings.theme_title'.tr(),
-                              subtitle:
-                                  'settings.theme_${AppPalette.currentId}'.tr(),
+                              title: 'settings.appearance.theme'.tr(),
+                              subtitle: themeModeLabel(
+                                  context.watch<ThemeProvider>().themeMode),
                               icon: Icons.palette_rounded,
                               isDarkMode: isDarkMode,
-                              onTap: () => _showThemePicker(context, isDarkMode),
-                              iconColor: AppPalette.accent,
+                              iconColor: ColorConstant.accentOrange,
                               iconBgColor: isDarkMode
-                                  ? ColorConstant.cardColorDark
-                                  : ColorConstant.cardColorLight,
+                                  ? ColorConstant.cardPurpleDark
+                                  : ColorConstant.cardPurpleLight,
+                              onTap: () => showThemePickerSheet(context),
                             ),
+                            _buildDivider(isDarkMode),
                             _buildLanguageTile(
                               context: context,
                               viewModel: viewModel,
@@ -432,16 +419,36 @@ class SettingsView extends StatelessWidget {
                           title: 'settings.sections.account'.tr(),
                           isDarkMode: isDarkMode,
                           children: [
+                            // Hesap bilgileri (e-posta, doğrulama, şifre) —
+                            // Profil'den taşındı; kimlik "Profili Düzenle"de.
                             _buildListTile(
-                              title: 'settings.account.logout'.tr(),
-                              subtitle: 'settings.account.logoutSubtitle'.tr(),
-                              icon: Icons.logout_rounded,
+                              title: 'profile.accountInfo'.tr(),
+                              subtitle: (viewModel.currentUser?.email
+                                          ?.isNotEmpty ??
+                                      false)
+                                  ? viewModel.currentUser!.email
+                                  : null,
+                              icon: Icons.badge_rounded,
                               isDarkMode: isDarkMode,
                               iconColor: ColorConstant.accentBlue,
                               iconBgColor: isDarkMode
                                   ? ColorConstant.cardBlueDark
                                   : ColorConstant.cardBlueLight,
-                              onTap: () => viewModel.showLogoutDialog(context),
+                              onTap: () => showAccountInfoSheet(
+                                  context, ProfileViewModel()..loadProfile()),
+                            ),
+                            _buildDivider(isDarkMode),
+                            _buildListTile(
+                              title: 'settings.account.exportData'.tr(),
+                              subtitle:
+                                  'settings.account.exportDataSubtitle'.tr(),
+                              icon: Icons.download_rounded,
+                              isDarkMode: isDarkMode,
+                              iconColor: ColorConstant.accentGreen,
+                              iconBgColor: isDarkMode
+                                  ? ColorConstant.cardColorDark
+                                  : ColorConstant.cardGreenLight,
+                              onTap: () => viewModel.exportData(context),
                             ),
                             _buildDivider(isDarkMode),
                             _buildListTile(
@@ -459,16 +466,15 @@ class SettingsView extends StatelessWidget {
                             ),
                             _buildDivider(isDarkMode),
                             _buildListTile(
-                              title: 'settings.account.exportData'.tr(),
-                              subtitle:
-                                  'settings.account.exportDataSubtitle'.tr(),
-                              icon: Icons.download_rounded,
+                              title: 'settings.account.logout'.tr(),
+                              subtitle: 'settings.account.logoutSubtitle'.tr(),
+                              icon: Icons.logout_rounded,
                               isDarkMode: isDarkMode,
-                              iconColor: ColorConstant.accentGreen,
+                              iconColor: ColorConstant.accentBlue,
                               iconBgColor: isDarkMode
-                                  ? ColorConstant.cardColorDark
-                                  : ColorConstant.cardGreenLight,
-                              onTap: () => viewModel.exportData(context),
+                                  ? ColorConstant.cardBlueDark
+                                  : ColorConstant.cardBlueLight,
+                              onTap: () => viewModel.showLogoutDialog(context),
                             ),
                             _buildDivider(isDarkMode),
                             _buildListTile(
@@ -491,45 +497,24 @@ class SettingsView extends StatelessWidget {
 
                         const SizedBox(height: 20),
 
-                        // Yasal Bölüm
-                        _buildSection(
-                          title: 'settings.sections.legal'.tr(),
-                          isDarkMode: isDarkMode,
-                          children: [
-                            _buildListTile(
-                              title: 'settings.legal.privacy'.tr(),
-                              subtitle: 'settings.legal.privacySubtitle'.tr(),
-                              icon: Icons.privacy_tip_rounded,
-                              isDarkMode: isDarkMode,
-                              iconColor: ColorConstant.accentGreen,
-                              iconBgColor: isDarkMode
-                                  ? ColorConstant.cardColorDark
-                                  : ColorConstant.cardGreenLight,
-                              onTap: () => viewModel.openPrivacyPolicy(),
-                            ),
-                            _buildDivider(isDarkMode),
-                            _buildListTile(
-                              title: 'settings.legal.terms'.tr(),
-                              subtitle: 'settings.legal.termsSubtitle'.tr(),
-                              icon: Icons.description_rounded,
-                              isDarkMode: isDarkMode,
-                              iconColor: ColorConstant.accentOrange,
-                              iconBgColor: isDarkMode
-                                  ? ColorConstant.cardPurpleDark
-                                  : ColorConstant.cardPurpleLight,
-                              onTap: () => viewModel.openTermsOfService(),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        // Destek Bölümü
+                        // Destek Bölümü (görüş/şikayet Profil'den taşındı)
                         _buildSection(
                           title: 'settings.sections.support'.tr(),
                           sectionKey: sectionKeys['support'],
                           isDarkMode: isDarkMode,
                           children: [
+                            _buildListTile(
+                              title: 'profile.feedback'.tr(),
+                              subtitle: 'profile.feedbackSubtitle'.tr(),
+                              icon: Icons.feedback_rounded,
+                              isDarkMode: isDarkMode,
+                              iconColor: ColorConstant.accentOrange,
+                              iconBgColor: isDarkMode
+                                  ? ColorConstant.cardPurpleDark
+                                  : ColorConstant.cardPurpleLight,
+                              onTap: () => showFeedbackSheet(context, isDarkMode),
+                            ),
+                            _buildDivider(isDarkMode),
                             _buildListTile(
                               title: 'settings.support.contact'.tr(),
                               subtitle: 'settings.support.contactSubtitle'.tr(),
@@ -556,75 +541,71 @@ class SettingsView extends StatelessWidget {
                           ],
                         ),
 
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 20),
 
-                        // Versiyon Bilgisi
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 16,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isDarkMode
-                                ? ColorConstant.cardColorDark
-                                    .withValues(alpha: 0.5)
-                                : ColorConstant.white.withValues(alpha: 0.5),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: isDarkMode
-                                  ? ColorConstant.borderColorDark
-                                  : ColorConstant.borderColorLight,
-                              width: 1,
+                        // Hakkında Bölümü (Yasal + sürüm + tanıtım burada birleşti)
+                        _buildSection(
+                          title: 'settings.sections.about'.tr(),
+                          isDarkMode: isDarkMode,
+                          children: [
+                            _buildListTile(
+                              title: 'profile.aboutApp'.tr(),
+                              subtitle: 'LifeSync · ${'settings.version'.tr(namedArgs: {'version': viewModel.appVersion})}',
+                              icon: Icons.info_rounded,
+                              isDarkMode: isDarkMode,
+                              iconColor: ColorConstant.accentBlue,
+                              iconBgColor: isDarkMode
+                                  ? ColorConstant.cardBlueDark
+                                  : ColorConstant.cardBlueLight,
+                              onTap: () => showAboutDialog(
+                                context: context,
+                                applicationName: 'LifeSync',
+                                applicationVersion: viewModel.appVersion,
+                                applicationIcon: const Padding(
+                                  padding: EdgeInsets.all(4),
+                                  child: Icon(Icons.auto_awesome_rounded,
+                                      color: Color(0xFFF6A821)),
+                                ),
+                                children: [Text('profile.aboutText'.tr())],
+                              ),
                             ),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      ColorConstant.accentOrange,
-                                      ColorConstant.accentBlue,
-                                    ],
-                                  ),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(
-                                  Icons.sync_rounded,
-                                  size: 16,
-                                  color: ColorConstant.white,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'LifeSync',
-                                    style: TextStyle(
-                                      color: isDarkMode
-                                          ? ColorConstant.textPrimaryDark
-                                          : ColorConstant.textPrimaryLight,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                  Text(
-                                    'Versiyon ${viewModel.appVersion}',
-                                    style: TextStyle(
-                                      color: isDarkMode
-                                          ? ColorConstant.textSecondaryDark
-                                          : ColorConstant.textSecondaryLight,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
+                            _buildDivider(isDarkMode),
+                            _buildListTile(
+                              title: 'profile.replayOnboarding'.tr(),
+                              icon: Icons.slideshow_rounded,
+                              isDarkMode: isDarkMode,
+                              iconColor: ColorConstant.accentOrange,
+                              iconBgColor: isDarkMode
+                                  ? ColorConstant.cardPurpleDark
+                                  : ColorConstant.cardPurpleLight,
+                              onTap: () =>
+                                  context.router.push(const OnboardingRoute()),
+                            ),
+                            _buildDivider(isDarkMode),
+                            _buildListTile(
+                              title: 'settings.legal.privacy'.tr(),
+                              subtitle: 'settings.legal.privacySubtitle'.tr(),
+                              icon: Icons.privacy_tip_rounded,
+                              isDarkMode: isDarkMode,
+                              iconColor: ColorConstant.accentGreen,
+                              iconBgColor: isDarkMode
+                                  ? ColorConstant.cardColorDark
+                                  : ColorConstant.cardGreenLight,
+                              onTap: () => viewModel.openPrivacyPolicy(),
+                            ),
+                            _buildDivider(isDarkMode),
+                            _buildListTile(
+                              title: 'settings.legal.terms'.tr(),
+                              subtitle: 'settings.legal.termsSubtitle'.tr(),
+                              icon: Icons.description_rounded,
+                              isDarkMode: isDarkMode,
+                              iconColor: ColorConstant.accentYellow,
+                              iconBgColor: isDarkMode
+                                  ? ColorConstant.cardYellowDark
+                                  : ColorConstant.cardYellowLight,
+                              onTap: () => viewModel.openTermsOfService(),
+                            ),
+                          ],
                         ),
 
                         const SizedBox(height: 24),
@@ -687,246 +668,7 @@ class SettingsView extends StatelessWidget {
     );
   }
 
-  Widget _buildPremiumCard({
-    required BuildContext context,
-    required SettingsViewModel viewModel,
-    required bool isDarkMode,
-  }) {
-    final isPremium = PremiumHelper.isPremiumUser(viewModel.currentUser);
 
-    // Premium kullanıcıya ayarlarda "üyesiniz" uyarısı gösterilmez
-    // (üyelik bilgisi artık Profil > Üyelik bölümünde).
-    if (isPremium) {
-      return const SizedBox.shrink();
-    }
-
-    // Premium olmayan kullanıcı için mevcut kart
-    return Container(
-      margin: const EdgeInsets.all(20),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            ColorConstant.accentYellow,
-            ColorConstant.accentOrange,
-          ],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: ColorConstant.accentYellow.withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: ColorConstant.white.withValues(alpha: 0.3),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.workspace_premium_rounded,
-                  color: ColorConstant.white,
-                  size: 32,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'paywall.title'.tr(),
-                      style: TextStyle(
-                        color: ColorConstant.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'paywall.unlockFeatures'.tr(),
-                      style: TextStyle(
-                        color: ColorConstant.white.withValues(alpha: 0.9),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          _buildFeatureRow(
-            icon: Icons.check_circle_rounded,
-            text: 'paywall.unlimitedHabits'.tr(),
-          ),
-          const SizedBox(height: 8),
-          _buildFeatureRow(
-            icon: Icons.check_circle_rounded,
-            text: 'paywall.advancedAnalytics'.tr(),
-          ),
-          const SizedBox(height: 8),
-          _buildFeatureRow(
-            icon: Icons.check_circle_rounded,
-            text: 'paywall.adFree'.tr(),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () => viewModel.purchasePremium(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ColorConstant.white,
-                    foregroundColor: ColorConstant.accentOrange,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: Text(
-                    'paywall.buyNow'.tr(),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              OutlinedButton(
-                onPressed: () => viewModel.restorePurchases(context),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: ColorConstant.white,
-                  side: BorderSide(color: ColorConstant.white, width: 2),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  padding: const EdgeInsets.all(16),
-                ),
-                child: const Icon(
-                  Icons.restore_rounded,
-                  size: 24,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFeatureRow({
-    required IconData icon,
-    required String text,
-  }) {
-    return Row(
-      children: [
-        Icon(
-          icon,
-          color: ColorConstant.white,
-          size: 20,
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            text,
-            style: TextStyle(
-              color: ColorConstant.white.withValues(alpha: 0.95),
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // Tema seçici (5 tam palet, önizlemeli) — seçince anında uygulanır.
-  void _showThemePicker(BuildContext context, bool isDarkMode) {
-    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (sheetCtx) => StatefulBuilder(
-        builder: (ctx, setSheet) {
-          final card = isDarkMode
-              ? ColorConstant.cardColorDark
-              : ColorConstant.cardColorLight;
-          final bg = isDarkMode
-              ? ColorConstant.bgColorDark
-              : ColorConstant.bgColorLight;
-          final txtP = isDarkMode
-              ? ColorConstant.textPrimaryDark
-              : ColorConstant.textPrimaryLight;
-          final txtM = isDarkMode
-              ? ColorConstant.textMutedDark
-              : ColorConstant.textMutedLight;
-          return Container(
-            decoration: BoxDecoration(
-              color: bg,
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(28)),
-            ),
-            child: SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                        width: 38,
-                        height: 4,
-                        decoration: BoxDecoration(
-                            color: txtM.withValues(alpha: 0.4),
-                            borderRadius: BorderRadius.circular(2))),
-                    const SizedBox(height: 14),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text('settings.theme_title'.tr(),
-                              style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w800,
-                                  color: txtP)),
-                        ),
-                        IconButton(
-                          onPressed: () => Navigator.pop(sheetCtx),
-                          icon: Icon(Icons.close_rounded, color: txtM),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    for (final o in AppPalette.all)
-                      _themeRow(o, isDarkMode, card, txtP, () {
-                        themeProvider.setPalette(o.id);
-                        setSheet(() {});
-                      }),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  // Bildirim sesi seçici — her satırda önizleme (çal) + seçim.
   void _showSoundPicker(BuildContext context, bool isDarkMode) {
     final player = AudioPlayer();
     Future<void> preview(NotifSound s) async {
@@ -1054,84 +796,6 @@ class SettingsView extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(color: border, width: 2),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _themeRow(AppThemeOption o, bool isDarkMode, Color card, Color txtP,
-      VoidCallback onTap) {
-    final surf = isDarkMode ? o.dark : o.light;
-    final selected = AppPalette.currentId == o.id;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: card,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-                color: selected ? o.accent : surf.border,
-                width: selected ? 2 : 1),
-          ),
-          child: Row(
-            children: [
-              // Mini önizleme: zemin + kart + aksan.
-              Container(
-                width: 58,
-                height: 44,
-                padding: const EdgeInsets.all(7),
-                decoration: BoxDecoration(
-                  color: surf.bg,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: surf.border),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Expanded(
-                      child: Container(
-                        height: 18,
-                        decoration: BoxDecoration(
-                          color: surf.card,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    Container(
-                      width: 12,
-                      height: 12,
-                      decoration:
-                          BoxDecoration(color: o.accent, shape: BoxShape.circle),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Text('settings.theme_${o.nameKey}'.tr(),
-                    style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: txtP)),
-              ),
-              if (selected)
-                Icon(Icons.check_circle_rounded, color: o.accent)
-              else
-                Container(
-                  width: 20,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: surf.border, width: 2),
                   ),
                 ),
             ],

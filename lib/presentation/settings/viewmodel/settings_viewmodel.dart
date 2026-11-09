@@ -184,11 +184,6 @@ class SettingsViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> purchasePremium(BuildContext context) async {
-    // Paywall ekranına git
-    context.router.push(const PaywallRoute());
-  }
-
   Future<void> restorePurchases(BuildContext context) async {
     // Paywall ekranına git (restore için)
     context.router.push(const PaywallRoute());
@@ -579,6 +574,15 @@ class SettingsViewModel extends ChangeNotifier {
   }
 
   Future<void> updateCurrencyForLocale(Locale locale) async {
+    // Dil tercihini ÖNCE kullanıcı kaydına senkronla (backend bildirim
+    // metinlerini bu dilde üretir); bütçe isteği başarısız olsa bile yazılsın.
+    try {
+      await _profileService.updateProfile(
+        ProfileUpdateRequest(preferredLanguage: locale.languageCode),
+      );
+    } catch (e) {
+      debugPrint('Error syncing preferred language: $e');
+    }
     try {
       // Get currency code for the selected locale
       final currencyCode = getCurrencyFromLocale(locale);
@@ -597,47 +601,8 @@ class SettingsViewModel extends ChangeNotifier {
 
         await _budgetService.updateBudget(request);
       }
-
-      // Faz 2: dil tercihini kullanıcı kaydına da senkronla (eskiden yalnızca
-      // cihazda setLocale yapılıyordu; backend preferred_language güncellenmiyordu).
-      await _profileService.updateProfile(
-        ProfileUpdateRequest(preferredLanguage: locale.languageCode),
-      );
     } catch (e) {
       debugPrint('Error updating currency: $e');
-    }
-  }
-
-  /// Faz 2: temayı backend'e senkronla (yerel ThemeProvider birincil kalır;
-  /// bu yalnızca cihazlar arası tutarlılık için). Sistem modunda yazma.
-  Future<void> updateThemeMode(ThemeMode mode) async {
-    if (mode == ThemeMode.system) return;
-    try {
-      await _settingsService.updateSettings(
-        SettingsUpdateRequest(darkMode: mode == ThemeMode.dark),
-      );
-      if (_settings != null) {
-        _settings = Settings(
-          id: _settings!.id,
-          userId: _settings!.userId,
-          notificationsEnabled: _settings!.notificationsEnabled,
-          taskNotifications: _settings!.taskNotifications,
-          habitNotifications: _settings!.habitNotifications,
-          subscriptionNotifications: _settings!.subscriptionNotifications,
-          noteNotifications: _settings!.noteNotifications,
-          diaryReminders: _settings!.diaryReminders,
-          socialNotifications: _settings!.socialNotifications,
-          darkMode: mode == ThemeMode.dark,
-          themeColor: _settings!.themeColor,
-          requireBiometric: _settings!.requireBiometric,
-          autoLockTimeout: _settings!.autoLockTimeout,
-          firstDayOfWeek: _settings!.firstDayOfWeek,
-          dateFormat: _settings!.dateFormat,
-          timeFormat: _settings!.timeFormat,
-        );
-      }
-    } catch (e) {
-      debugPrint('Error updating theme: $e');
     }
   }
 
